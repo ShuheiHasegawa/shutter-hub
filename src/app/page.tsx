@@ -1,101 +1,202 @@
-import Image from 'next/image';
+import { MainLayout } from '@/components/layout/main-layout';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Camera, Users, Zap, MapPin, Star, Calendar } from 'lucide-react';
+import Link from 'next/link';
 
-export default function Home() {
+export default function HomePage() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{' '}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <MainLayout>
+      {/* ヒーローセクション */}
+      <section className="relative bg-gradient-to-br from-shutter-primary to-shutter-primary-dark text-white">
+        <div className="container py-24 md:py-32">
+          <div className="max-w-3xl mx-auto text-center space-y-8">
+            <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
+              撮影業界をつなぐ
+              <br />
+              <span className="text-shutter-warning">統合プラットフォーム</span>
+            </h1>
+            <p className="text-xl md:text-2xl text-white/90">
+              モデル、カメラマン、運営者が出会う場所。
+              <br />
+              撮影会の予約から即座撮影まで、すべてがここに。
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button
+                asChild
+                size="lg"
+                className="bg-white text-shutter-primary hover:bg-white/90"
+              >
+                <Link href="/photo-sessions">撮影会を探す</Link>
+              </Button>
+              <Button
+                asChild
+                size="lg"
+                variant="outline"
+                className="border-white text-white hover:bg-white hover:text-shutter-primary"
+              >
+                <Link href="/instant">即座撮影を依頼</Link>
+              </Button>
+            </div>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+      </section>
+
+      {/* 特徴セクション */}
+      <section className="py-24">
+        <div className="container">
+          <div className="text-center space-y-4 mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold">ShutterHubの特徴</h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              撮影業界のすべてのニーズに応える、包括的なプラットフォーム
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <Card className="text-center">
+              <CardHeader>
+                <div className="mx-auto w-12 h-12 bg-shutter-primary/10 rounded-lg flex items-center justify-center mb-4">
+                  <Calendar className="h-6 w-6 text-shutter-primary" />
+                </div>
+                <CardTitle>撮影会予約システム</CardTitle>
+                <CardDescription>
+                  先着順から抽選まで、多様な予約方式に対応
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ul className="text-sm text-muted-foreground space-y-2">
+                  <li>• リアルタイム在庫管理</li>
+                  <li>• 公平な抽選システム</li>
+                  <li>• 優先予約・キャンセル待ち</li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center">
+              <CardHeader>
+                <div className="mx-auto w-12 h-12 bg-shutter-accent/10 rounded-lg flex items-center justify-center mb-4">
+                  <Zap className="h-6 w-6 text-shutter-accent" />
+                </div>
+                <CardTitle>即座撮影リクエスト</CardTitle>
+                <CardDescription>
+                  撮影業界のUber - 今すぐ撮影したい時に
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ul className="text-sm text-muted-foreground space-y-2">
+                  <li>• 位置ベースマッチング</li>
+                  <li>• 15分から対応可能</li>
+                  <li>• 透明な料金システム</li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center">
+              <CardHeader>
+                <div className="mx-auto w-12 h-12 bg-shutter-info/10 rounded-lg flex items-center justify-center mb-4">
+                  <MapPin className="h-6 w-6 text-shutter-info" />
+                </div>
+                <CardTitle>StudioWiki</CardTitle>
+                <CardDescription>
+                  コミュニティが作るスタジオ情報データベース
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ul className="text-sm text-muted-foreground space-y-2">
+                  <li>• 詳細なスタジオ情報</li>
+                  <li>• 実際の利用者レビュー</li>
+                  <li>• 役割別評価システム</li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center">
+              <CardHeader>
+                <div className="mx-auto w-12 h-12 bg-shutter-success/10 rounded-lg flex items-center justify-center mb-4">
+                  <Users className="h-6 w-6 text-shutter-success" />
+                </div>
+                <CardTitle>三者統合プラットフォーム</CardTitle>
+                <CardDescription>
+                  モデル・カメラマン・運営者が一つの場所で
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ul className="text-sm text-muted-foreground space-y-2">
+                  <li>• 統一されたプロフィール</li>
+                  <li>• 相互評価システム</li>
+                  <li>• 安全な決済システム</li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center">
+              <CardHeader>
+                <div className="mx-auto w-12 h-12 bg-shutter-warning/10 rounded-lg flex items-center justify-center mb-4">
+                  <Star className="h-6 w-6 text-shutter-warning" />
+                </div>
+                <CardTitle>評価・レビューシステム</CardTitle>
+                <CardDescription>
+                  透明性の高い評価で信頼関係を構築
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ul className="text-sm text-muted-foreground space-y-2">
+                  <li>• 5段階評価システム</li>
+                  <li>• 詳細なレビュー機能</li>
+                  <li>• ユーザーランクシステム</li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center">
+              <CardHeader>
+                <div className="mx-auto w-12 h-12 bg-shutter-primary/10 rounded-lg flex items-center justify-center mb-4">
+                  <Camera className="h-6 w-6 text-shutter-primary" />
+                </div>
+                <CardTitle>プロフェッショナル対応</CardTitle>
+                <CardDescription>
+                  業界のプロフェッショナルニーズに特化
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ul className="text-sm text-muted-foreground space-y-2">
+                  <li>• 高品質画像対応</li>
+                  <li>• 著作権・肖像権管理</li>
+                  <li>• 業界標準の機能</li>
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* CTAセクション */}
+      <section className="py-24 bg-muted">
+        <div className="container">
+          <div className="max-w-3xl mx-auto text-center space-y-8">
+            <h2 className="text-3xl md:text-4xl font-bold">
+              今すぐShutterHubを始めよう
+            </h2>
+            <p className="text-xl text-muted-foreground">
+              撮影業界の新しいスタンダードを体験してください
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button asChild size="lg">
+                <Link href="/auth/signup">無料で始める</Link>
+              </Button>
+              <Button asChild size="lg" variant="outline">
+                <Link href="/about">詳しく見る</Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </MainLayout>
   );
 }
