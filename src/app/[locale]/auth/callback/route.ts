@@ -1,11 +1,15 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ locale: string }> }
+) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
+  const { locale } = await params;
   // if "next" is in param, use it as the redirect URL
-  let next = searchParams.get('next') ?? '/';
+  let next = searchParams.get('next') ?? `/${locale}`;
 
   if (code) {
     const supabase = await createClient();
@@ -26,10 +30,10 @@ export async function GET(request: NextRequest) {
 
         // プロフィールが存在しない場合は設定ページにリダイレクト
         if (!profile) {
-          next = '/auth/setup-profile';
-        } else if (next === '/') {
+          next = `/${locale}/auth/setup-profile`;
+        } else if (next === `/${locale}`) {
           // プロフィールが存在する場合はダッシュボードにリダイレクト
-          next = '/dashboard';
+          next = `/${locale}/dashboard`;
         }
       }
 
@@ -48,5 +52,5 @@ export async function GET(request: NextRequest) {
   }
 
   // return the user to an error page with instructions
-  return NextResponse.redirect(`${origin}/auth/auth-code-error`);
+  return NextResponse.redirect(`${origin}/${locale}/auth/auth-code-error`);
 }

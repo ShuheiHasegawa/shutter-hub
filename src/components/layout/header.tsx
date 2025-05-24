@@ -34,7 +34,7 @@ import { useAuth } from '@/hooks/useAuth';
 
 export function Header() {
   const t = useTranslations('navigation');
-  const { user, profile, signOut } = useAuth();
+  const { user, signOut } = useAuth();
 
   const handleSignOut = async () => {
     await signOut();
@@ -127,8 +127,8 @@ export function Header() {
                   >
                     <Avatar className="h-8 w-8">
                       <AvatarImage
-                        src={profile?.avatar_url || ''}
-                        alt={profile?.display_name || user.email || ''}
+                        src={user.user_metadata?.avatar_url || ''}
+                        alt={user.user_metadata?.full_name || user.email || ''}
                       />
                       <AvatarFallback>
                         <User className="h-4 w-4" />
@@ -139,8 +139,10 @@ export function Header() {
                 <DropdownMenuContent className="w-56" align="end" forceMount>
                   <div className="flex items-center justify-start gap-2 p-2">
                     <div className="flex flex-col space-y-1 leading-none">
-                      {profile?.display_name && (
-                        <p className="font-medium">{profile.display_name}</p>
+                      {user.user_metadata?.full_name && (
+                        <p className="font-medium">
+                          {user.user_metadata.full_name}
+                        </p>
                       )}
                       <p className="w-[200px] truncate text-sm text-muted-foreground">
                         {user.email}

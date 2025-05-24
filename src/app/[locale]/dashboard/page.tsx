@@ -3,7 +3,7 @@
 import { useAuth } from '@/hooks/useAuth';
 import { getProfile } from '@/lib/auth/profile';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 
 interface Profile {
   id: string;
@@ -19,19 +19,21 @@ interface Profile {
 export default function DashboardPage() {
   const { user, loading, signOut } = useAuth();
   const router = useRouter();
+  const params = useParams();
+  const locale = params.locale || 'ja';
   const [profile, setProfile] = useState<Profile | null>(null);
   const [profileLoading, setProfileLoading] = useState(true);
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push('/auth/signin');
+      router.push(`/${locale}/auth/signin`);
       return;
     }
 
     if (user) {
       loadProfile();
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, locale]);
 
   const loadProfile = async () => {
     if (!user) return;
@@ -43,7 +45,7 @@ export default function DashboardPage() {
         console.error('プロフィール取得エラー:', error);
         // プロフィールが存在しない場合は設定ページにリダイレクト
         if (error.code === 'PGRST116') {
-          router.push('/auth/setup-profile');
+          router.push(`/${locale}/auth/setup-profile`);
           return;
         }
       } else {
@@ -58,7 +60,7 @@ export default function DashboardPage() {
 
   const handleSignOut = async () => {
     await signOut();
-    router.push('/');
+    router.push(`/${locale}`);
   };
 
   if (loading || profileLoading) {

@@ -3,11 +3,13 @@
 import { createProfile, UserType } from '@/lib/auth/profile';
 import { useAuth } from '@/hooks/useAuth';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 
 export default function SetupProfilePage() {
   const { user } = useAuth();
   const router = useRouter();
+  const params = useParams();
+  const locale = params.locale || 'ja';
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     user_type: 'model' as UserType,
@@ -35,7 +37,7 @@ export default function SetupProfilePage() {
       }
 
       // プロフィール作成成功後、ダッシュボードにリダイレクト
-      router.push('/dashboard');
+      router.push(`/${locale}/dashboard`);
     } catch (error) {
       console.error('予期しないエラー:', error);
       alert('予期しないエラーが発生しました。');

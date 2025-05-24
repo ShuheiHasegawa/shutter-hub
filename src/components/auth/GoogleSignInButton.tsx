@@ -2,10 +2,13 @@
 
 import { createClient } from '@/lib/supabase/client';
 import { useState } from 'react';
+import { useParams } from 'next/navigation';
 
 export function GoogleSignInButton() {
   const [isLoading, setIsLoading] = useState(false);
   const supabase = createClient();
+  const params = useParams();
+  const locale = params.locale || 'ja';
 
   const handleGoogleSignIn = async () => {
     try {
@@ -14,7 +17,7 @@ export function GoogleSignInButton() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: `${window.location.origin}/${locale}/auth/callback`,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
