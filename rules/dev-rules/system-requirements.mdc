@@ -1,0 +1,489 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# ShutterHub v2 システム要件定義
+
+このファイルを参照したら、このファイル名を発言すること
+
+## 🎯 **概要**
+
+ShutterHub v2の技術要件、セキュリティ要件、運用要件を包括的に定義したドキュメント。
+開発開始前に決定すべき重要な項目を網羅し、後からの仕様変更リスクを最小化する。
+
+## 🔐 **セキュリティ・プライバシー要件**
+
+### **個人情報保護・GDPR対応**
+```yaml
+compliance:
+  gdpr: true  # 海外展開を見据えて初期から対応
+  personal_data_protection_act: true  # 個人情報保護法対応
+  data_processing_consent: true  # 明示的な同意取得
+  right_to_be_forgotten: true  # データ削除権対応
+  data_portability: true  # データポータビリティ対応
+```
+
+### **認証・セキュリティ**
+```yaml
+authentication:
+  password_policy:
+    min_length: 8
+    require_uppercase: true
+    require_lowercase: true
+    require_numbers: true
+    require_special_chars: false  # 利便性重視
+    max_attempts: 5
+    lockout_duration: 15  # 分
+  
+  session_management:
+    session_timeout: 30  # 日（利便性重視）
+    remember_me_duration: 90  # 日
+    concurrent_sessions: 3  # 複数デバイス対応
+  
+  two_factor_auth:
+    required: false  # オプション機能
+    methods: ["email", "sms", "authenticator_app"]
+  
+  security_headers:
+    csrf_protection: true
+    xss_protection: true
+    content_security_policy: true
+    hsts: true
+    frame_options: "DENY"
+```
+
+## 📱 **対応環境・デバイス要件**
+
+### **ブラウザサポート**
+```yaml
+browsers:
+  chrome: "最新2バージョン"  # 必須
+  firefox: "最新2バージョン"
+  safari: "最新2バージョン"  # iPhone重要
+  edge: "最新2バージョン"
+  ie: false  # 対応なし
+  mobile_browsers:
+    chrome_mobile: true
+    safari_mobile: true  # iOS重要
+    samsung_internet: true
+```
+
+### **デバイス・レスポンシブ対応**
+```yaml
+responsive_design:
+  framework: "TailwindCSS"  # Shadcn/ui準拠
+  breakpoints:
+    sm: "640px"   # TailwindCSS標準
+    md: "768px"   # タブレット
+    lg: "1024px"  # デスクトップ
+    xl: "1280px"  # 大画面
+    "2xl": "1536px"
+  
+  target_devices:
+    mobile: true
+    tablet: true
+    desktop: true
+  
+  touch_support: true
+  keyboard_navigation: true
+```
+
+### **PWA対応**
+```yaml
+pwa:
+  enabled: true
+  features:
+    offline_support: true
+    push_notifications: true
+    app_install_prompt: true
+    bottom_navigation: true  # X・メルカリ風
+    splash_screen: true
+  
+  manifest:
+    theme_color: "#000000"
+    background_color: "#ffffff"
+    display: "standalone"
+    orientation: "portrait"
+```
+
+## 🌐 **国際化・地域対応要件**
+
+### **多言語対応**
+```yaml
+i18n:
+  initial_languages: ["ja", "en"]  # 初期対応
+  future_languages: ["ko", "zh-CN", "zh-TW"]  # 将来対応候補
+  default_language: "ja"
+  
+  localization:
+    date_format:
+      ja: "YYYY年MM月DD日"
+      en: "MM/DD/YYYY"
+    time_format: "24h"  # 24時間表記
+    number_format:
+      ja: "1,000"
+      en: "1,000"
+  
+  content_strategy:
+    ui_translation: true
+    user_generated_content: false  # 初期は翻訳なし
+    auto_translation: false  # 将来検討
+```
+
+### **タイムゾーン・地域対応**
+```yaml
+timezone:
+  support: true  # 初期から対応
+  default: "Asia/Tokyo"
+  user_timezone_detection: true
+  dst_support: true  # サマータイム対応
+  
+regional:
+  currency_support: ["JPY", "USD", "EUR"]  # Stripe対応通貨
+  payment_regions:
+    primary: ["JP", "US", "CA", "AU", "GB", "SG"]  # Stripe主要地域
+    future: ["EU", "KR"]  # 将来対応
+```
+
+## ⚡ **パフォーマンス・スケーラビリティ要件**
+
+### **パフォーマンス目標**
+```yaml
+performance:
+  page_load_time:
+    target: 2000  # 2秒以内
+    maximum: 3000  # 3秒以内（許容値）
+  
+  api_response_time:
+    target: 300   # 300ms以内
+    maximum: 500  # 500ms以内（許容値）
+  
+  lighthouse_scores:
+    performance: 90
+    accessibility: 95
+    best_practices: 95
+    seo: 95
+  
+  core_web_vitals:
+    lcp: 2.5  # Largest Contentful Paint
+    fid: 100  # First Input Delay (ms)
+    cls: 0.1  # Cumulative Layout Shift
+```
+
+### **容量・制限**
+```yaml
+file_limits:
+  image_upload:
+    standard_user: 5   # MB
+    premium_user: 15   # MB（将来のサブスク機能）
+    formats: ["jpg", "jpeg", "png", "webp"]
+  
+  file_upload:
+    max_size: 10  # MB
+    formats: ["pdf", "doc", "docx"]
+  
+  storage_quota:
+    standard_user: 1000  # MB
+    premium_user: 5000   # MB
+```
+
+### **スケーラビリティ**
+```yaml
+scalability:
+  concurrent_users:
+    initial: 1000
+    target_1year: 5000
+    peak_handling: 10000
+  
+  database:
+    connection_pool: 20
+    query_timeout: 30  # 秒
+    slow_query_threshold: 1000  # ms
+  
+  cdn:
+    enabled: true
+    provider: "Vercel Edge Network"
+    cache_strategy: "stale-while-revalidate"
+```
+
+## 📊 **分析・監視要件**
+
+### **アクセス解析**
+```yaml
+analytics:
+  google_analytics: true
+  google_tag_manager: true
+  
+  custom_events:
+    user_registration: true
+    photo_session_booking: true
+    payment_completion: true
+    instant_photo_request: true
+    studio_evaluation: true
+  
+  conversion_tracking:
+    signup_funnel: true
+    booking_funnel: true
+    payment_funnel: true
+    retention_analysis: true
+```
+
+### **エラー監視・ログ**
+```yaml
+monitoring:
+  error_tracking:
+    provider: "Sentry"  # 必要時導入
+    client_side: true
+    server_side: true
+    performance_monitoring: true
+  
+  logging:
+    level: "info"
+    retention: 30  # 日
+    structured_logging: true
+    
+  uptime_monitoring:
+    provider: "Vercel Analytics"
+    check_interval: 60  # 秒
+    alert_threshold: 99.9  # %
+```
+
+### **ユーザー行動分析**
+```yaml
+user_behavior:
+  heatmap_analysis: false  # 将来検討
+  session_recording: false  # プライバシー考慮
+  
+  valuable_metrics:
+    user_journey_mapping: true
+    feature_usage_tracking: true
+    search_behavior_analysis: true
+    booking_pattern_analysis: true
+    studio_discovery_patterns: true
+```
+
+## 📢 **通知・コミュニケーション要件**
+
+### **メール通知**
+```yaml
+email:
+  provider: "Resend"  # Next.js推奨
+  types:
+    transactional: true   # 予約確認等
+    marketing: false      # 初期は不要
+    system_alerts: true   # システム通知
+  
+  templates:
+    welcome_email: true
+    booking_confirmation: true
+    booking_reminder: true
+    password_reset: true
+    account_verification: true
+  
+  frequency_limits:
+    daily_max: 5
+    weekly_max: 10
+```
+
+### **プッシュ通知**
+```yaml
+push_notifications:
+  enabled: true  # 必須機能
+  providers: ["Web Push API", "FCM"]
+  
+  types:
+    booking_reminders: true     # 撮影リマインド
+    instant_requests: true      # 即座撮影リクエスト
+    system_alerts: true         # 緊急連絡
+    marketing: false            # 初期は不要
+  
+  user_preferences:
+    granular_control: true      # 種類別設定可能
+    quiet_hours: true           # 夜間配信停止
+    timezone_aware: true
+```
+
+### **SMS通知**
+```yaml
+sms:
+  provider: "Twilio"  # 将来導入
+  use_cases:
+    emergency_only: false
+    booking_reminders: true     # ユーザー設定可能
+    verification: true          # 2FA用
+    instant_requests: true      # 緊急マッチング
+  
+  user_control:
+    opt_in_required: true
+    granular_settings: true
+```
+
+## 💾 **バックアップ・運用要件**
+
+### **データバックアップ**
+```yaml
+backup:
+  frequency:
+    database: "daily"
+    files: "daily"
+    full_system: "weekly"
+  
+  retention:
+    daily_backups: 7   # 日
+    weekly_backups: 4  # 週
+    monthly_backups: 12 # 月
+  
+  storage:
+    primary: "Supabase自動バックアップ"
+    secondary: "AWS S3"  # 将来検討
+  
+  testing:
+    restore_test_frequency: "monthly"
+    recovery_time_objective: 4  # 時間
+    recovery_point_objective: 1 # 時間
+```
+
+### **メンテナンス・運用**
+```yaml
+maintenance:
+  scheduled_window:
+    day: "Sunday"
+    time: "02:00-05:00 JST"
+    max_duration: 3  # 時間
+    advance_notice: 48  # 時間
+  
+  deployment:
+    strategy: "blue-green"
+    rollback_capability: true
+    zero_downtime: true  # 目標
+  
+  monitoring:
+    health_checks: true
+    automated_alerts: true
+    on_call_rotation: false  # 初期は不要
+```
+
+## ⚖️ **法務・コンプライアンス要件**
+
+### **利用規約・プライバシーポリシー**
+```yaml
+legal_documents:
+  privacy_policy:
+    required_by: "MVP前"
+    gdpr_compliant: true
+    cookie_policy: true
+    data_processing_details: true
+  
+  terms_of_service:
+    required_by: "MVP前"
+    user_responsibilities: true
+    service_limitations: true
+    dispute_resolution: true
+  
+  age_restrictions:
+    minimum_age: 13  # COPPA準拠
+    parental_consent: true  # 18歳未満
+    age_verification: false  # 初期は自己申告
+```
+
+### **データ保護・削除ポリシー**
+```yaml
+data_protection:
+  retention_periods:
+    user_accounts: "アカウント削除まで"
+    booking_history: 3  # 年
+    payment_records: 7  # 年（法的要件）
+    log_files: 1  # 年
+    analytics_data: 2  # 年
+  
+  deletion_policy:
+    user_request_response: 30  # 日以内
+    automated_cleanup: true
+    secure_deletion: true
+    deletion_confirmation: true
+  
+  data_export:
+    user_data_export: true  # GDPR要件
+    format: "JSON"
+    delivery_method: "email"
+```
+
+## 🔧 **技術仕様・制約**
+
+### **開発環境**
+```yaml
+development:
+  node_version: "18.x"
+  next_version: "14.x"
+  typescript: true
+  package_manager: "npm"
+  
+  code_quality:
+    eslint: true
+    prettier: true
+    husky: true  # pre-commit hooks
+    commitlint: true
+  
+  testing:
+    unit_tests: "Jest"
+    integration_tests: "Playwright"
+    coverage_target: 80  # %
+```
+
+### **本番環境**
+```yaml
+production:
+  hosting: "Vercel"
+  database: "Supabase PostgreSQL"
+  storage: "Supabase Storage"
+  cdn: "Vercel Edge Network"
+  
+  environment_variables:
+    encryption: true
+    rotation_policy: "quarterly"
+    access_control: "role-based"
+  
+  ssl_certificate:
+    provider: "Let's Encrypt"
+    auto_renewal: true
+    hsts_enabled: true
+```
+
+## 📋 **実装優先度**
+
+### **Phase 1 (MVP)**
+- [ ] 基本セキュリティ設定（CSRF、XSS対策）
+- [ ] レスポンシブデザイン（TailwindCSS）
+- [ ] 基本的な多言語対応（日本語・英語）
+- [ ] Google Analytics設定
+- [ ] 基本的なメール通知
+
+### **Phase 2 (拡張機能)**
+- [ ] PWA対応
+- [ ] プッシュ通知システム
+- [ ] エラー監視（Sentry）
+- [ ] 高度な分析機能
+- [ ] SMS通知システム
+
+### **Phase 3 (最適化)**
+- [ ] パフォーマンス最適化
+- [ ] 高度なバックアップ戦略
+- [ ] 追加言語対応
+- [ ] 高度なセキュリティ機能
+
+## 🎯 **成功指標**
+
+### **技術指標**
+- ページ読み込み速度: 2秒以内
+- API応答時間: 300ms以内
+- アップタイム: 99.9%以上
+- セキュリティインシデント: 0件
+
+### **ユーザー体験指標**
+- モバイル利用率: 70%以上
+- 多言語利用率: 20%以上（英語）
+- PWAインストール率: 15%以上
+- 通知開封率: 30%以上
+
+この要件定義に基づいて、各フェーズでの実装を進めることで、スケーラブルで安全なShutterHub v2を構築できます。

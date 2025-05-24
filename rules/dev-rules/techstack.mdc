@@ -1,0 +1,82 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# ShutterHub v2 技術スタック
+
+このファイルを参照したら、このファイル名を発言すること
+
+## フロントエンド
+
+### コア技術
+- **Next.js** (v14.2.3) - App Router、Server Components優先
+- **React** (v18) - UI ライブラリ
+- **TypeScript** (v5.5.3) - 型安全性確保
+
+### UI・スタイリング
+- **Shadcn/ui** - UIコンポーネントライブラリ（Radix UI ベース）
+- **Tailwind CSS** (v3.4.0) - ユーティリティファーストCSS
+- **Lucide React** (v0.363.0) - アイコンライブラリ
+- **next-themes** - ダークモード対応
+
+### フォーム・バリデーション
+- **React Hook Form** (v7.51.0) - フォーム管理
+- **Zod** (v3.23.0) - スキーマバリデーション
+
+### 状態管理・データフェッチ
+- **SWR** (v2.2.5) - サーバー状態管理
+- **Zustand** (v4.5.0) - クライアント状態管理
+
+## バックエンド
+
+### BaaS
+- **Supabase** - 認証、データベース、ストレージ、リアルタイム
+  - @supabase/supabase-js (v2.43.4)
+  - @supabase/ssr (v0.3.0)
+- **PostgreSQL** - メインデータベース
+- **Row Level Security (RLS)** - データアクセス制御
+
+### 決済
+- **Stripe** (v15.8.0) - 決済処理
+
+## 開発ツール
+
+### コード品質
+- **ESLint** (v8.57.0) - 静的解析
+- **Prettier** (v3.2.5) - コードフォーマット
+- **TypeScript** - 型チェック
+
+### テスト
+- **Jest** (v29.7.0) - 単体テスト
+- **React Testing Library** (v14.2.0) - コンポーネントテスト
+- **Playwright** (v1.42.0) - E2Eテスト
+
+### ユーティリティ
+- **clsx** + **tailwind-merge** - クラス名結合
+- **date-fns** (v4.1.0) - 日付操作
+- **sonner** (v1.4.0) - トースト通知
+- **nanoid** (v5.0.0) - ID生成
+
+## インフラ・デプロイ
+
+### ホスティング
+- **Vercel** - Next.js最適化ホスティング
+
+### 監視
+- **Vercel Analytics** - パフォーマンス分析
+- **Sentry** (v7.100.0) - エラー監視
+
+## 開発環境
+
+- **Node.js**: 20.x LTS
+- **パッケージマネージャー**: npm 10.x
+- **エディタ**: VS Code（推奨拡張機能あり）
+
+## 重要な原則
+
+1. **Server Components優先** - クライアントコンポーネントは必要時のみ
+2. **型安全性** - anyの使用禁止、unknownを活用
+3. **パフォーマンス** - 画像最適化、コード分割の徹底
+4. **アクセシビリティ** - Radix UIによる自動対応
+5. **セキュリティ** - RLS、入力検証、認証の徹底

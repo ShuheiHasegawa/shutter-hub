@@ -1,0 +1,297 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# ShutterHub v2 開発ルール
+
+このファイルを参照したら、このファイル名を発言すること
+
+## 基本原則
+
+1. **型安全性**: TypeScript活用、anyの使用禁止
+2. **Server Components優先**: クライアントコンポーネントは必要時のみ
+3. **Shadcn/ui使用**: 一貫したUIコンポーネント
+4. **テスト必須**: 新機能には必ずテストを作成
+
+## ディレクトリ構造
+
+```
+src/
+├── app/                    # Next.js App Router
+│   ├── (auth)/            # 認証が必要なルート
+│   ├── (public)/          # 公開ルート
+│   ├── api/               # APIエンドポイント
+│   └── actions/           # Server Actions
+├── components/
+│   ├── ui/                # Shadcn/ui コンポーネント
+│   ├── features/          # 機能別コンポーネント
+│   └── layouts/           # レイアウトコンポーネント
+├── hooks/                 # カスタムフック
+├── lib/                   # ユーティリティ
+│   ├── supabase/         # Supabase関連
+│   ├── utils/            # 汎用ユーティリティ
+│   └── validations/      # Zodスキーマ
+├── types/                # 型定義
+└── styles/               # グローバルスタイル
+```
+
+## 命名規則
+
+- **コンポーネント**: PascalCase（例: `UserProfile.tsx`）
+- **関数・変数**: camelCase（例: `getUserProfile`）
+- **定数**: UPPER_SNAKE_CASE（例: `MAX_RETRY_COUNT`）
+- **ファイル**: kebab-case（例: `user-profile.tsx`）
+
+## コンポーネント設計
+
+### Server Components（デフォルト）
+```typescript
+// app/events/page.tsx
+import { createClient } from '@/lib/supabase/server';
+
+export default async function EventsPage() {
+  const supabase = createClient();
+  const { data: events } = await supabase
+    .from('events')
+    .select('*');
+
+  return <EventList events={events} />;
+}
+```
+
+### Client Components（必要時のみ）
+```typescript
+// components/features/EventForm.tsx
+'use client';
+
+import { useForm } from 'react-hook-form';
+import { Button } from '@/components/ui/button';
+
+export function EventForm() {
+  // インタラクティブな処理
+}
+```
+
+## スタイリング
+
+### 優先順位
+1. **Tailwind CSS**: 基本スタイリング
+2. **cn()ユーティリティ**: 条件付きクラス
+3. **CSS Variables**: テーマカスタマイズ
+
+### 実装例
+```tsx
+import { cn } from "@/lib/utils/cn";
+
+<Button
+  className={cn(
+    "w-full",
+    isLoading && "opacity-50 cursor-not-allowed"
+  )}
+  disabled={isLoading}
+>
+  {isLoading ? "処理中..." : "送信"}
+</Button>
+```
+
+## データ操作
+
+### Server Actions
+```typescript
+// app/actions/event.ts
+'use server';
+
+import { createClient } from '@/lib/supabase/server';
+import { revalidatePath } from 'next/cache';
+
+export async function createEvent(formData: FormData) {
+  const supabase = createClient();
+  
+  // バリデーション
+  const validatedData = eventSchema.parse({
+    title: formData.get('title'),
+  });
+  
+  // データ作成
+  const { error } = await supabase
+    .from('events')
+    .insert(validatedData);
+    
+  if (error) throw error;
+  revalidatePath('/events');
+}
+```
+
+### クライアントサイドフェッチ（SWR）
+```typescript
+// hooks/useEvents.ts
+import useSWR from 'swr';
+
+export function useEvents() {
+  return useSWR('events', fetcher, {
+    revalidateOnFocus: false,
+  });
+}
+```
+
+## エラーハンドリング
+
+### エラーバウンダリ
+```typescript
+// app/error.tsx
+'use client';
+
+export default function Error({ error, reset }) {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen">
+      <h2 className="text-2xl font-bold mb-4">エラーが発生しました</h2>
+      <Button onClick={reset}>再試行</Button>
+    </div>
+  );
+}
+```
+
+### トースト通知
+```typescript
+import { toast } from 'sonner';
+
+try {
+  await createEvent(formData);
+  toast.success('イベントを作成しました');
+} catch (error) {
+  toast.error('エラーが発生しました');
+}
+```
+
+## フォーム実装
+
+```typescript
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+
+const form = useForm({
+  resolver: zodResolver(eventSchema),
+});
+
+<Form {...form}>
+  <FormField
+    control={form.control}
+    name="title"
+    render={({ field }) => (
+      <FormItem>
+        <FormLabel>タイトル</FormLabel>
+        <FormControl>
+          <Input {...field} />
+        </FormControl>
+        <FormMessage />
+      </FormItem>
+    )}
+  />
+</Form>
+```
+
+## テスト
+
+### 単体テスト
+```typescript
+// __tests__/utils/formatDate.test.ts
+import { formatDate } from '@/lib/utils/formatDate';
+
+describe('formatDate', () => {
+  it('should format date correctly', () => {
+    const date = new Date('2024-01-01');
+    expect(formatDate(date)).toBe('2024年1月1日');
+  });
+});
+```
+
+### コンポーネントテスト
+```typescript
+// __tests__/components/EventCard.test.tsx
+import { render, screen } from '@testing-library/react';
+import { EventCard } from '@/components/features/EventCard';
+
+describe('EventCard', () => {
+  it('should render event title', () => {
+    render(<EventCard event={mockEvent} />);
+    expect(screen.getByText(mockEvent.title)).toBeInTheDocument();
+  });
+});
+```
+
+### テスト実行・報告
+- テスト完了後は実行報告書を作成
+- カバレッジ80%以上を目標
+- 失敗時は原因特定と修正を実施
+
+## セキュリティ
+
+### 認証・認可
+- すべての保護ルートでセッション確認
+- Row Level Security (RLS) の適切な設定
+- サーバーサイドでの権限チェック
+
+### 入力検証
+```typescript
+// Zodスキーマによる検証
+const eventSchema = z.object({
+  title: z.string().min(1).max(100),
+  date: z.string().datetime(),
+});
+
+// サーバーサイドで必ず検証
+const validated = eventSchema.parse(input);
+```
+
+## パフォーマンス
+
+### 画像最適化
+```tsx
+import Image from 'next/image';
+
+<Image
+  src="/images/event.jpg"
+  alt="イベント画像"
+  width={800}
+  height={600}
+  loading="lazy"
+/>
+```
+
+### コード分割
+```typescript
+import dynamic from 'next/dynamic';
+
+const HeavyComponent = dynamic(
+  () => import('@/components/HeavyComponent'),
+  { loading: () => <Skeleton /> }
+);
+```
+
+## Git コミット規則
+
+```
+<type>(<scope>): <subject>
+
+例:
+feat(auth): Supabase認証の実装
+fix(ui): ボタンのスタイル修正
+docs(readme): セットアップ手順を追加
+```
+
+## 禁止事項
+
+1. **any型の使用**（unknown を使用）
+2. **console.log の本番環境への混入**
+3. **ハードコードされた秘密情報**
+4. **インラインスタイルの過度な使用**
+5. **適切なローディング表示なしの非同期処理**
+
+## 推奨事項
+
+1. **早期リターン**で可読性向上
+2. **カスタムフック**でロジックの再利用
+3. **メモ化**によるパフォーマンス最適化
+4. **アクセシビリティファースト**の実装

@@ -1,0 +1,790 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# ShutterHub v2 詳細要件定義
+
+このファイルを参照したら、このファイル名を発言すること
+
+## 🚨 **緊急決定事項**
+
+### **1. 決済システム詳細設計**
+
+#### **Stripe設定**
+```yaml
+payment_methods:
+  enabled:
+    - credit_card      # クレジットカード
+    - debit_card       # デビットカード
+    - paypal          # PayPal
+    - apple_pay       # Apple Pay（iOS対応）
+    - google_pay      # Google Pay（Android対応）
+  
+  currencies:
+    primary: "JPY"
+    supported: ["JPY", "USD", "EUR"]
+```
+
+#### **手数料体系**
+```yaml
+platform_fees:
+  standard_rate: 10.0  # 10%のプラットフォーム手数料
+  calculation: "gross_amount"  # 総額から計算
+  
+  fee_breakdown:
+    platform_fee: 10.0    # プラットフォーム手数料
+    stripe_fee: ~3.6      # Stripe手数料（別途）
+    
+  payout_schedule:
+    frequency: "weekly"    # 週次支払い
+    minimum_amount: 1000   # 最小支払額（円）
+```
+
+#### **支払いタイミング**
+```yaml
+payment_timing:
+  default: "prepaid"           # デフォルト：前払い
+  
+  options:
+    prepaid:
+      description: "事前決済"
+      availability: "all_users"
+      
+    cash_on_site:
+      description: "現地払い"
+      availability: "subscription_users"  # サブスク限定
+      requirements:
+        - verified_account
+        - minimum_rating: 4.0
+        
+    split_payment:
+      description: "分割払い"
+      availability: "premium_subscription"  # プレミアム限定
+      options: [2, 3, 6]  # 分割回数
+```
+
+#### **返金ポリシー**
+```yaml
+refund_policy:
+  cancellation_rules:
+    - period: "7_days_before"
+      refund_rate: 100
+      description: "7日前まで：全額返金"
+      
+    - period: "3_days_before"
+      refund_rate: 50
+      description: "3-7日前：50%返金"
+      
+    - period: "1_day_before"
+      refund_rate: 20
+      description: "1-3日前：20%返金"
+      
+    - period: "same_day"
+      refund_rate: 0
+      description: "当日：返金なし"
+      
+  emergency_cancellation:
+    weather: 100          # 天候不良：全額返金
+    illness: 80           # 体調不良：80%返金
+    force_majeure: 100    # 不可抗力：全額返金
+```
+
+#### **税金処理**
+```yaml
+tax_handling:
+  display_method: "tax_inclusive"  # 税込表示
+  calculation:
+    consumption_tax: 10    # 消費税10%
+    display_format: "¥1,100（税込）"
+    breakdown_display: false  # 内訳表示なし
+```
+
+### **2. 画像・ファイル管理詳細**
+
+#### **画像圧縮戦略**
+```yaml
+image_optimization:
+  formats:
+    input: ["jpg", "jpeg", "png", "webp", "heic"]
+    output: ["webp", "jpg"]  # WebP優先、フォールバック用JPEG
+    
+  quality_settings:
+    high_quality: 85      # プロフィール画像、ポートフォリオ
+    standard_quality: 75  # 一般的な画像
+    thumbnail: 60         # サムネイル
+    
+  size_limits:
+    original: 15          # MB（アップロード時）
+    display_max: 2        # MB（表示用）
+    thumbnail: 200        # KB
+    
+  resize_breakpoints:
+    thumbnail: 300        # px
+    small: 600           # px
+    medium: 1200         # px
+    large: 1920          # px
+    original: "preserve"  # 元サイズ保持
+```
+
+#### **CDN設定**
+```yaml
+cdn_strategy:
+  primary: "Supabase Storage"
+  edge_network: "Vercel Edge Network"
+  
+  caching:
+    images: "1 year"
+    thumbnails: "6 months"
+    profile_images: "1 month"
+    
+  optimization:
+    auto_webp: true
+    responsive_images: true
+    lazy_loading: true
+```
+
+#### **レスポンシブ画像詳細**
+```yaml
+responsive_images:
+  implementation: "Next.js Image component"
+  
+  breakpoints:
+    mobile: 600          # px - スマホ用
+    tablet: 1200         # px - タブレット用
+    desktop: 1920        # px - デスクトップ用
+    
+  density_variants:
+    standard: "1x"       # 標準解像度
+    retina: "2x"         # 高解像度ディスプレイ用
+    
+  formats:
+    primary: "webp"      # 最優先
+    fallback: "jpg"      # フォールバック
+    
+  benefits:
+    - "スマホ：軽量画像で高速表示"
+    - "デスクトップ：高品質画像で美しい表示"
+    - "帯域幅削減：最適サイズ配信"
+    - "SEO向上：Core Web Vitals改善"
+```
+
+#### **画像承認フロー**
+```yaml
+image_moderation:
+  initial_implementation: "none"  # 後から制御追加
+  future_features:
+    - ai_content_detection
+    - manual_review_queue
+    - user_reporting_system
+```
+
+#### **著作権・肖像権管理**
+```yaml
+rights_management:
+  user_education:
+    upload_guidelines: true
+    rights_explanation: true
+    consent_forms: true
+    
+  self_management_tools:
+    - rights_declaration_checkbox
+    - model_consent_upload
+    - copyright_claim_system
+    - takedown_request_form
+    
+  legal_protection:
+    terms_of_service: "明確な権利関係記載"
+    dmca_compliance: true
+    user_responsibility: "明示"
+```
+
+### **3. 地図・位置情報サービス**
+
+#### **地図プロバイダー選定**
+```yaml
+map_provider:
+  primary: "OpenStreetMap + Leaflet.js"
+  fallback: "Google Maps"  # 必要時のみ
+  
+  implementation_strategy:
+    phase_1: "OpenStreetMap（無料）"
+    phase_2: "Google Maps検討（予算次第）"
+    
+  features_needed:
+    - location_display
+    - marker_placement
+    - basic_search
+    - mobile_responsive
+```
+
+#### **位置情報精度・プライバシー**
+```yaml
+location_services:
+  precision_requirement: "city_level"  # 市区町村レベル
+  
+  instant_photo_request:
+    matching_radius: 5000    # 5km（デフォルト）
+    user_selectable: true    # ユーザーが選択可能
+    options: [1, 3, 5, 10, 20]  # km
+    
+  privacy_settings:
+    storage_duration: "session_only"  # セッション中のみ
+    sharing_scope: "matched_users_only"
+    exact_location: false    # 正確な位置は非表示
+```
+
+## 🔄 **Phase 1実装前決定事項**
+
+### **4. データベース設計詳細**
+
+#### **ユーザーランクシステム**
+```yaml
+user_ranking:
+  calculation_factors:
+    completed_sessions: 40    # 完了した撮影会数
+    average_rating: 30        # 平均評価
+    response_time: 20         # 応答速度
+    cancellation_rate: 10     # キャンセル率（マイナス要因）
+    
+  rank_levels:
+    - name: "ブロンズ"
+      threshold: 0
+      benefits: ["基本機能"]
+      
+    - name: "シルバー"
+      threshold: 100
+      benefits: ["優先表示", "現地払い可能"]
+      
+    - name: "ゴールド"
+      threshold: 500
+      benefits: ["分割払い", "手数料割引5%"]
+      
+    - name: "プラチナ"
+      threshold: 1000
+      benefits: ["手数料割引10%", "専用サポート"]
+```
+
+#### **評価システム**
+```yaml
+rating_system:
+  scale: 5                    # 5段階評価
+  categories:
+    overall: "総合評価"
+    communication: "コミュニケーション"
+    punctuality: "時間厳守"
+    quality: "品質"
+    
+  display_format:
+    stars: true
+    numerical: true           # 4.2/5.0
+    review_count: true        # (123件)
+```
+
+#### **通報・ブロック機能**
+```yaml
+moderation_system:
+  report_categories:
+    - inappropriate_behavior
+    - harassment
+    - no_show
+    - poor_quality
+    - spam
+    - copyright_violation
+    
+  automated_actions:
+    multiple_reports: "temporary_suspension"
+    low_rating_threshold: 2.0
+    
+  manual_review:
+    serious_violations: true
+    appeal_process: true
+```
+
+#### **データ保持期間**
+```yaml
+data_retention:
+  user_accounts: "until_deletion"
+  session_history: "3_years"
+  messages: "1_year"
+  ratings_reviews: "permanent"
+  location_data: "session_only"
+  payment_records: "7_years"  # 法的要件
+  
+  automated_cleanup:
+    inactive_accounts: "2_years"
+    temporary_files: "7_days"
+    log_files: "90_days"
+```
+
+### **5. 通知システム詳細**
+
+#### **通知タイミング**
+```yaml
+notification_timing:
+  user_configurable: true
+  
+  default_settings:
+    booking_reminder: "24_hours"
+    instant_request: "immediate"
+    message_received: "immediate"
+    
+  user_options:
+    - "immediate"
+    - "15_minutes"
+    - "1_hour"
+    - "6_hours"
+    - "24_hours"
+    - "disabled"
+```
+
+#### **緊急通知**
+```yaml
+emergency_notifications:
+  weather_cancellation:
+    method: "push_notification"
+    fallback: "sms"
+    timing: "as_soon_as_possible"
+    
+  system_maintenance:
+    advance_notice: "24_hours"
+    method: "in_app_banner"
+    
+  security_alerts:
+    method: "email + push"
+    immediate: true
+```
+
+#### **スパム防止**
+```yaml
+notification_limits:
+  per_user_per_hour: 10
+  per_user_per_day: 50
+  marketing_per_week: 2
+  
+  rate_limiting:
+    same_content: "1_hour_cooldown"
+    bulk_notifications: "admin_approval_required"
+```
+
+### **6. 検索・推薦アルゴリズム**
+
+#### **検索ランキング重み付け**
+```yaml
+search_ranking:
+  configurable_weights: true  # 後から調整可能
+  
+  default_weights:
+    relevance: 30             # キーワード関連性
+    rating: 25                # 評価
+    distance: 20              # 距離
+    popularity: 15            # 人気度
+    recency: 10               # 新しさ
+    
+  admin_adjustable: true      # 管理画面で調整可能
+```
+
+#### **推薦システム**
+```yaml
+recommendation_system:
+  phase_1: "simple_rules"     # シンプルなルールベース
+  phase_2: "collaborative_filtering"  # 協調フィルタリング
+  
+  simple_rules:
+    - same_genre_preference
+    - similar_price_range
+    - nearby_locations
+    - similar_user_ratings
+```
+
+#### **フィルタリング**
+```yaml
+filtering_options:
+  required_filters:
+    - date_range
+    - location_area
+    - price_range
+    - session_type
+    
+  optional_filters:
+    - studio_name
+    - photographer_rating
+    - model_experience_level
+    - available_slots
+    - cancellation_policy
+```
+
+## 🎨 **UI/UX設計詳細**
+
+### **7. デザインシステム**
+
+#### **カラーパレット**
+```yaml
+color_palette:
+  primary: "#6F5091"          # プライマリー（紫）
+  secondary: "#101820"        # セカンダリー（ダークグレー）
+  
+  extended_palette:
+    primary_light: "#8B6BB1"
+    primary_dark: "#5A4073"
+    secondary_light: "#2A2A2A"
+    
+    accent: "#FF6B6B"         # アクセント（エラー・重要）
+    success: "#4ECDC4"        # 成功
+    warning: "#FFE66D"        # 警告
+    info: "#4D96FF"           # 情報
+    
+  neutral:
+    white: "#FFFFFF"
+    gray_50: "#F9FAFB"
+    gray_100: "#F3F4F6"
+    gray_200: "#E5E7EB"
+    gray_300: "#D1D5DB"
+    gray_400: "#9CA3AF"
+    gray_500: "#6B7280"
+    gray_600: "#4B5563"
+    gray_700: "#374151"
+    gray_800: "#1F2937"
+    gray_900: "#111827"
+    black: "#000000"
+```
+
+#### **タイポグラフィ**
+```yaml
+typography:
+  japanese: "Noto Sans JP"
+  english: "Inter"
+  fallback: "system-ui, sans-serif"
+  
+  font_weights:
+    light: 300
+    regular: 400
+    medium: 500
+    semibold: 600
+    bold: 700
+    
+  font_sizes:
+    xs: "0.75rem"    # 12px
+    sm: "0.875rem"   # 14px
+    base: "1rem"     # 16px
+    lg: "1.125rem"   # 18px
+    xl: "1.25rem"    # 20px
+    "2xl": "1.5rem"  # 24px
+    "3xl": "1.875rem" # 30px
+    "4xl": "2.25rem"  # 36px
+```
+
+#### **アイコンセット**
+```yaml
+icon_system:
+  library: "Lucide React"
+  style: "outline"
+  fallback: "Heroicons"
+  
+  custom_icons:
+    - camera_professional
+    - studio_location
+    - photo_session
+    - instant_request
+```
+
+#### **アニメーション**
+```yaml
+animations:
+  library: "GSAP"             # 高度なアニメーション用
+  css_transitions: "Tailwind" # 基本的なトランジション
+  
+  timing_functions:
+    ease_in_out: "cubic-bezier(0.4, 0, 0.2, 1)"
+    bounce: "cubic-bezier(0.68, -0.55, 0.265, 1.55)"
+    
+  durations:
+    fast: "150ms"
+    normal: "300ms"
+    slow: "500ms"
+```
+
+### **8. モバイルUX詳細**
+
+#### **ボトムナビゲーション**
+```yaml
+bottom_navigation:
+  tabs:
+    - icon: "home"
+      label: "ホーム"
+      route: "/"
+      
+    - icon: "search"
+      label: "検索"
+      route: "/search"
+      
+    - icon: "calendar"
+      label: "予約"
+      route: "/bookings"
+      
+    - icon: "zap"
+      label: "即座撮影"
+      route: "/instant"
+      
+    - icon: "user"
+      label: "プロフィール"
+      route: "/profile"
+```
+
+#### **ジェスチャー操作**
+```yaml
+gestures:
+  swipe_gallery:
+    enabled: true
+    library: "Swiper.js"
+    
+  pull_to_refresh:
+    enabled: true
+    threshold: 60  # px
+    
+  infinite_scroll:
+    enabled: true
+    threshold: 200  # px from bottom
+```
+
+## 📊 **ビジネスロジック詳細**
+
+### **9. 即座撮影リクエスト詳細**
+
+#### **マッチング設定**
+```yaml
+instant_matching:
+  default_radius: 5           # km
+  user_selectable_radius: [1, 3, 5, 10, 20]  # km
+  
+  response_time:
+    user_selectable: true
+    options: [5, 10, 15, 30]  # 分
+    default: 10               # 分
+    
+  matching_algorithm:
+    distance: 40              # %
+    rating: 25                # %
+    response_speed: 20        # %
+    price_compatibility: 15   # %
+```
+
+#### **料金設定システム**
+```yaml
+pricing_system:
+  client_side:
+    price_setting: "user_defined"  # クライアントが料金設定
+    suggested_range: "3000-12000"  # 15分3,000円〜60分12,000円
+    
+    price_components:
+      base_rate: "user_input"      # 基本料金（ユーザー入力）
+      duration: "user_selectable"  # 撮影時間選択
+      additional_services: "optional"  # 追加サービス
+      
+  photographer_side:
+    notification_filters:
+      minimum_rate: "user_configurable"  # 最低料金設定
+      maximum_rate: "user_configurable"  # 最高料金設定
+      preferred_duration: "user_selectable"  # 希望撮影時間
+      
+    rate_preferences:
+      hourly_minimum: "photographer_defined"
+      travel_compensation: "auto_calculated"  # 距離に応じた交通費
+      equipment_surcharge: "optional"
+      
+  dynamic_pricing:
+    surge_pricing: false        # 初期は固定料金
+    demand_based: false         # 将来検討
+    time_based: false           # 将来検討（夜間料金等）
+```
+
+#### **キャンセルポリシー**
+```yaml
+cancellation_policy:
+  free_cancellation_window: 5  # 分（受注後）
+  
+  penalties:
+    photographer:
+      late_cancellation: "rating_penalty"
+      no_show: "temporary_suspension"
+      
+    client:
+      late_cancellation: "partial_charge"
+      no_show: "full_charge"
+```
+
+### **10. StudioWiki詳細**
+
+#### **編集権限・承認フロー**
+```yaml
+studio_wiki:
+  edit_permissions: "authenticated_users"
+  
+  approval_system:
+    method: "community_moderation"
+    implementation:
+      - edit_suggestions        # 直接編集ではなく提案システム
+      - peer_review_system      # 複数ユーザーによる相互チェック
+      - reputation_based_auto_approval  # 高評価ユーザーは自動承認
+      
+  anti_vandalism:
+    version_control: true     # 編集履歴保持
+    rollback_capability: true # 荒らし編集の巻き戻し
+    edit_rate_limiting: true  # 編集頻度制限
+    
+    automated_detection:
+      - spam_content
+      - inappropriate_language
+      - mass_deletion
+      
+  data_structure:
+    hierarchical: true
+    categories:
+      - basic_info
+      - facilities
+      - equipment
+      - pricing
+      - reviews_ratings
+      - photos
+```
+
+### **11. サブスクリプション機能詳細**
+
+#### **サブスクリプション設計方針**
+```yaml
+subscription_system:
+  design_philosophy: "future_extensible"  # 将来の拡張を考慮した設計
+  
+  initial_implementation:
+    payment_options_unlock: true    # 現地払い・分割払い解放
+    feature_flags: true             # 機能フラグによる制御
+    database_schema: "subscription_ready"  # サブスク対応スキーマ
+    
+  planned_features:
+    tiered_plans:
+      - name: "ベーシック"
+        price: "未定"
+        features: ["現地払い", "優先表示"]
+        
+      - name: "プレミアム"  
+        price: "未定"
+        features: ["分割払い", "手数料割引", "専用サポート"]
+        
+    billing_cycle:
+      options: ["monthly", "yearly"]
+      default: "monthly"
+      billing_date: "registration_anniversary"  # 登録日課金
+      
+  technical_implementation:
+    payment_processor: "Stripe Subscriptions"
+    feature_gating: "database_flags"
+    upgrade_downgrade: "immediate_effect"
+    cancellation: "end_of_billing_period"
+```
+
+## 🔧 **技術設定詳細**
+
+### **12. パフォーマンス最適化**
+
+#### **キャッシュ戦略**
+```yaml
+caching:
+  static_assets: "1_year"
+  api_responses: "5_minutes"
+  user_profiles: "1_hour"
+  search_results: "15_minutes"
+  studio_info: "1_day"
+  
+  cache_invalidation:
+    user_data_update: "immediate"
+    content_update: "immediate"
+    system_update: "manual"
+```
+
+#### **画像最適化**
+```yaml
+image_optimization:
+  responsive_images:
+    description: "デバイス解像度に応じた最適サイズ配信"
+    implementation: "Next.js Image component"
+    formats: ["webp", "avif", "jpg"]
+    
+  lazy_loading: true
+  blur_placeholder: true
+  priority_loading: "above_fold_images"
+```
+
+#### **バンドル最適化**
+```yaml
+bundle_optimization:
+  code_splitting: true
+  tree_shaking: true
+  dynamic_imports: true
+  
+  targets:
+    initial_bundle: "< 200KB"
+    total_js: "< 1MB"
+    css: "< 100KB"
+```
+
+### **13. セキュリティ設定**
+
+#### **レート制限**
+```yaml
+rate_limiting:
+  api_calls:
+    authenticated: "1000/hour"
+    anonymous: "100/hour"
+    
+  specific_endpoints:
+    auth: "5/minute"
+    search: "60/minute"
+    upload: "10/minute"
+    
+  supabase_limits:
+    respect_tier_limits: true
+    monitor_usage: true
+```
+
+#### **CORS・CSP設定**
+```yaml
+security_headers:
+  cors:
+    allowed_origins: ["https://shutterhub.app"]
+    credentials: true
+    
+  csp:
+    default_src: "'self'"
+    script_src: "'self' 'unsafe-inline' https://js.stripe.com"
+    style_src: "'self' 'unsafe-inline'"
+    img_src: "'self' data: https:"
+    connect_src: "'self' https://api.stripe.com"
+```
+
+## 📋 **実装優先度**
+
+### **Phase 1 (MVP) - 必須実装**
+- [ ] 決済システム（Stripe + 基本設定）
+- [ ] 画像最適化（WebP変換 + レスポンシブ）
+- [ ] 地図表示（OpenStreetMap + Leaflet）
+- [ ] 5段階評価システム
+- [ ] 基本通知システム
+- [ ] カラーパレット適用
+- [ ] サブスク対応データベース設計
+
+### **Phase 2 - 拡張機能**
+- [ ] 高度な決済オプション（現地払い等）
+- [ ] ユーザーランクシステム
+- [ ] 推薦アルゴリズム
+- [ ] GSAP アニメーション
+- [ ] StudioWiki基本機能
+- [ ] 即座撮影料金設定システム
+
+### **Phase 3 - 最適化**
+- [ ] 高度なキャッシュ戦略
+- [ ] パフォーマンス最適化
+- [ ] セキュリティ強化
+- [ ] StudioWiki高度機能
+- [ ] サブスクリプション機能実装
+
+この詳細要件定義により、実装時の迷いを最小限に抑え、一貫性のあるShutterHub v2を構築できます。

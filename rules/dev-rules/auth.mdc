@@ -1,0 +1,421 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Supabase 認証実装ガイド
+
+このファイルを参照したら、このファイル名を発言すること
+
+## 環境変数設定
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://xxxxxxxxxxxxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+SUPABASE_SERVICE_ROLE_KEY=eyJxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+```
+
+## ミドルウェア設定
+
+```typescript
+// src/middleware.ts
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { updateSession } from "@/lib/supabase/middleware";
+
+export const middleware = (req: NextRequest) => {
+  return updateSession(req);
+};
+
+export const config = {
+  matcher: ["/((?!api|_next/static|_next/image|images|favicon.ico).*)"],
+};
+```
+
+## Supabaseクライアント設定
+
+### サーバーサイド
+```typescript
+// lib/supabase/server.ts
+import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { cookies } from 'next/headers'
+
+export function createClient() {
+  const cookieStore = cookies()
+
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value
+        },
+        set(name: string, value: string, options: CookieOptions) {
+          try {
+            cookieStore.set({ name, value, ...options })
+          } catch (error) {
+            // Server Componentからの呼び出し時は無視
+          }
+        },
+        remove(name: string, options: CookieOptions) {
+          try {
+            cookieStore.set({ name, value: '', ...options })
+          } catch (error) {
+            // Server Componentからの呼び出し時は無視
+          }
+        },
+      },
+    }
+  )
+}
+```
+
+### クライアントサイド
+```typescript
+// lib/supabase/client.ts
+import { createBrowserClient } from '@supabase/ssr'
+
+export function createClient() {
+  return createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
+}
+```
+
+### ミドルウェアユーティリティ
+```typescript
+// lib/supabase/middleware.ts
+import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { NextResponse, type NextRequest } from 'next/server'
+
+export async function updateSession(request: NextRequest) {
+  let response = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
+  })
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return request.cookies.get(name)?.value
+        },
+        set(name: string, value: string, options: CookieOptions) {
+          request.cookies.set({
+            name,
+            value,
+            ...options,
+          })
+          response = NextResponse.next({
+            request: {
+              headers: request.headers,
+            },
+          })
+          response.cookies.set({
+            name,
+            value,
+            ...options,
+          })
+        },
+        remove(name: string, options: CookieOptions) {
+          request.cookies.set({
+            name,
+            value: '',
+            ...options,
+          })
+          response = NextResponse.next({
+            request: {
+              headers: request.headers,
+            },
+          })
+          response.cookies.set({
+            name,
+            value: '',
+            ...options,
+          })
+        },
+      },
+    }
+  )
+
+  await supabase.auth.getUser()
+  return response
+}
+```
+
+## 認証コンポーネント
+
+### サインイン/サインアップ
+```typescript
+// components/auth/AuthForm.tsx
+"use client";
+
+import { useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { toast } from "sonner";
+
+export function AuthForm() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const supabase = createClient();
+
+  const handleSignIn = async () => {
+    setLoading(true);
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    
+    if (error) {
+      toast.error("サインインに失敗しました");
+    } else {
+      toast.success("サインインしました");
+    }
+    setLoading(false);
+  };
+
+  const handleSignUp = async () => {
+    setLoading(true);
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+    });
+    
+    if (error) {
+      toast.error("サインアップに失敗しました");
+    } else {
+      toast.success("確認メールを送信しました");
+    }
+    setLoading(false);
+  };
+
+  return (
+    <Card className="w-full max-w-md">
+      <CardHeader>
+        <CardTitle>ログイン</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <Input
+          type="email"
+          placeholder="メールアドレス"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <Input
+          type="password"
+          placeholder="パスワード"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <div className="space-y-2">
+          <Button 
+            onClick={handleSignIn} 
+            loading={loading}
+            className="w-full"
+          >
+            サインイン
+          </Button>
+          <Button 
+            onClick={handleSignUp} 
+            variant="outline"
+            loading={loading}
+            className="w-full"
+          >
+            サインアップ
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+```
+
+## 認証チェック
+
+### サーバーサイド
+```typescript
+// app/(auth)/dashboard/page.tsx
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
+
+export default async function DashboardPage() {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  return (
+    <div>
+      <h1>ダッシュボード</h1>
+      <p>こんにちは、{user.email}さん</p>
+    </div>
+  );
+}
+```
+
+### クライアントサイド
+```typescript
+// hooks/useAuth.ts
+"use client";
+
+import { useState, useEffect } from "react";
+import { createClient } from "@/lib/supabase/client";
+import type { User } from "@supabase/supabase-js";
+
+export function useAuth() {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const supabase = createClient();
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+      setLoading(false);
+    };
+
+    getUser();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user || null);
+        setLoading(false);
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, [supabase.auth]);
+
+  return { user, loading };
+}
+```
+
+## セキュリティ要件
+
+1. **環境変数管理**: `.env.local`で管理、Gitにコミットしない
+2. **RLSポリシー**: 必ず設定し、適切なアクセス制御を行う
+3. **入力検証**: Zodスキーマで必ずバリデーション
+4. **セッション管理**: ミドルウェアで自動更新
+5. **エラーハンドリング**: 適切なエラーメッセージとログ記録
+
+## 認証プロバイダー設定
+
+### 初回リリース推奨プロバイダー（厳選4つ）
+
+#### 🎯 **必須プロバイダー（優先度：高）**
+
+1. **Google** 
+   - **理由**: 最も普及、信頼性が高い
+   - **ターゲット**: 全ユーザー層（特に一般ユーザー）
+   - **メリット**: Gmail、Googleフォト連携可能性
+   - **設定優先度**: 🔴 最高
+   - **実装コスト**: 低
+
+2. **X (Twitter)**
+   - **理由**: 撮影業界・クリエイター界隈で主要SNS
+   - **ターゲット**: モデル、カメラマン、運営者
+   - **メリット**: ポートフォリオ・作品共有文化との親和性
+   - **設定優先度**: 🔴 最高
+   - **実装コスト**: 低
+
+#### 🎨 **推奨プロバイダー（優先度：中）**
+
+3. **Discord**
+   - **理由**: クリエイター・コミュニティで急速に普及
+   - **ターゲット**: 若年層モデル、アマチュアカメラマン
+   - **メリット**: コミュニティ機能との連携可能性
+   - **設定優先度**: 🟡 中
+   - **実装コスト**: 低
+
+4. **LINE**
+   - **理由**: 日本国内での圧倒的普及率（90%以上）
+   - **ターゲット**: 日本のユーザー全般
+   - **メリット**: 通知・連絡手段としても活用可能
+   - **設定優先度**: 🟡 中
+   - **実装コスト**: 中
+
+#### ❌ **初回リリースでは見送り**
+- **GitHub**: 開発者向けすぎる、ターゲット層と不一致
+- **Facebook**: 若年層離れ、プライバシー懸念
+- **Instagram**: Meta Business API複雑、初回には重い
+- **Apple**: iOS限定、実装コスト高
+- **Microsoft**: 企業向け、個人クリエイターには不適
+
+### 実装順序
+
+```typescript
+// 1. Google（最優先）
+const handleGoogleSignIn = async () => {
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: `${window.location.origin}/auth/callback`
+    }
+  });
+};
+
+// 2. X (Twitter)（最優先）
+const handleTwitterSignIn = async () => {
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: 'twitter',
+    options: {
+      redirectTo: `${window.location.origin}/auth/callback`
+    }
+  });
+};
+
+// 3. Discord（中優先）
+const handleDiscordSignIn = async () => {
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: 'discord',
+    options: {
+      redirectTo: `${window.location.origin}/auth/callback`
+    }
+  });
+};
+
+// 4. LINE（中優先）
+const handleLineSignIn = async () => {
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: 'line',
+    options: {
+      redirectTo: `${window.location.origin}/auth/callback`
+    }
+  });
+};
+```
+
+### 設定手順
+
+1. **Supabase Dashboard**で各プロバイダーを有効化
+2. **OAuth設定**で適切なリダイレクトURLを設定
+3. **環境変数**に各プロバイダーのクライアントIDを追加
+4. **コールバックページ**の実装
+
+### 戦略的判断理由
+
+- **Google**: 必須（信頼性・普及率）
+- **X**: 必須（業界親和性・作品共有文化）
+- **Discord**: 推奨（若年層・コミュニティ）
+- **LINE**: 推奨（日本市場特化）
+
+この4つで日本の撮影業界ユーザーの95%以上をカバー可能。
+
+## 重要事項
+
+- ミドルウェアの設定は必須（セッション管理のため）
+- Server ComponentとClient Componentで異なるクライアントを使用
+- 認証状態の変更は適切にハンドリング
+- プロフィール情報は`profiles`テーブルで管理
+- **初回リリースは4プロバイダーに絞り、段階的に拡張**

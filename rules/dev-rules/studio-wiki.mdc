@@ -1,0 +1,348 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# StudioWiki - スタジオ情報一元化プラットフォーム
+
+このファイルを参照したら、このファイル名を発言すること
+
+## 🏢 **機能概要**
+
+### **コンセプト**
+カメラマンやクリエイターが使用したスタジオ情報をWikipediaのように一元化し、撮影会参加者全員による信頼性の高い評価システムを構築する。
+
+### **目標**
+- 撮影業界のスタジオ情報格差解消
+- 透明性の高い評価システム構築
+- 撮影会とスタジオの相互連携強化
+- 業界全体の情報共有促進
+
+## 🎯 **主要機能**
+
+### **1. スタジオ情報データベース**
+- **基本情報**: 名称、住所、アクセス、営業時間
+- **設備情報**: 機材、照明、背景、小道具
+- **料金体系**: 時間単価、パック料金、オプション
+- **利用規約**: 撮影可能ジャンル、禁止事項
+- **写真ギャラリー**: スタジオ内部、設備写真
+
+### **2. 撮影会連動評価システム**
+- **参加者全員評価**: モデル、カメラマン、運営者すべてが評価
+- **多角的評価項目**: 設備、アクセス、スタッフ対応、コスパ
+- **信頼性担保**: 実際の撮影会参加者のみ評価可能
+- **評価の透明性**: 評価者の属性（役割）表示
+
+### **3. 情報共有・編集機能**
+- **Wiki形式編集**: 誰でも情報追加・修正可能
+- **変更履歴管理**: 編集者、変更内容の記録
+- **情報検証**: コミュニティによる情報精度向上
+- **写真投稿**: 利用者による最新写真追加
+
+## 📊 **評価システム詳細**
+
+### **評価権限管理**
+```typescript
+interface EvaluationPermission {
+  userId: string;
+  photoSessionId: string;
+  studioId: string;
+  role: 'model' | 'photographer' | 'organizer';
+  canEvaluate: boolean;
+  evaluatedAt?: Date;
+}
+```
+
+### **評価項目構成**
+```typescript
+interface StudioEvaluation {
+  // 基本評価（全員共通）
+  overall: number; // 1-5点
+  accessibility: number; // アクセス性
+  cleanliness: number; // 清潔度
+  staff_support: number; // スタッフ対応
+  cost_performance: number; // コストパフォーマンス
+  
+  // 役割別評価
+  role_specific: {
+    // モデル視点
+    changing_room?: number; // 更衣室
+    comfort?: number; // 快適性
+    privacy?: number; // プライバシー
+    
+    // カメラマン視点
+    equipment_quality?: number; // 機材品質
+    lighting_setup?: number; // 照明環境
+    shooting_space?: number; // 撮影スペース
+    
+    // 運営者視点
+    booking_ease?: number; // 予約の取りやすさ
+    flexibility?: number; // 時間変更等の柔軟性
+    communication?: number; // 連絡対応
+  };
+  
+  // コメント
+  comment: string;
+  photos?: string[]; // 投稿写真
+}
+```
+
+### **評価集計・表示**
+- **総合評価**: 全参加者の平均値
+- **役割別評価**: モデル・カメラマン・運営者別の平均
+- **評価分布**: 星の数ごとの分布グラフ
+- **最新評価**: 直近の評価コメント表示
+
+## 🗄️ **データベース設計**
+
+### **スタジオ基本情報**
+```sql
+CREATE TABLE studios (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  name TEXT NOT NULL,
+  description TEXT,
+  address TEXT NOT NULL,
+  prefecture TEXT NOT NULL,
+  city TEXT NOT NULL,
+  access_info TEXT, -- アクセス情報
+  phone TEXT,
+  email TEXT,
+  website_url TEXT,
+  
+  -- 基本設備
+  total_area DECIMAL, -- 総面積（㎡）
+  max_capacity INTEGER, -- 最大収容人数
+  parking_available BOOLEAN DEFAULT false,
+  wifi_available BOOLEAN DEFAULT false,
+  
+  -- 営業情報
+  business_hours JSONB, -- {"mon": "9:00-21:00", ...}
+  regular_holidays TEXT[], -- 定休日
+  
+  -- 料金情報
+  hourly_rate_min INTEGER, -- 最低時間料金
+  hourly_rate_max INTEGER, -- 最高時間料金
+  
+  -- メタ情報
+  created_by UUID REFERENCES auth.users(id),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  
+  -- 検索用
+  search_vector tsvector
+);
+```
+
+### **スタジオ設備詳細**
+```sql
+CREATE TABLE studio_equipment (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  studio_id UUID REFERENCES studios(id) ON DELETE CASCADE,
+  category TEXT NOT NULL, -- 'lighting', 'camera', 'backdrop', 'props', 'furniture'
+  name TEXT NOT NULL,
+  description TEXT,
+  quantity INTEGER DEFAULT 1,
+  rental_fee INTEGER, -- 追加料金（円/時間）
+  is_included BOOLEAN DEFAULT true, -- 基本料金に含まれるか
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+### **スタジオ写真**
+```sql
+CREATE TABLE studio_photos (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  studio_id UUID REFERENCES studios(id) ON DELETE CASCADE,
+  photo_url TEXT NOT NULL,
+  caption TEXT,
+  category TEXT, -- 'interior', 'equipment', 'exterior', 'sample_work'
+  uploaded_by UUID REFERENCES auth.users(id),
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+### **撮影会-スタジオ連携**
+```sql
+CREATE TABLE photo_session_studios (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  photo_session_id UUID REFERENCES photo_sessions(id) ON DELETE CASCADE,
+  studio_id UUID REFERENCES studios(id),
+  usage_date DATE NOT NULL,
+  start_time TIME NOT NULL,
+  end_time TIME NOT NULL,
+  total_cost INTEGER, -- 実際の利用料金
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+### **評価システム**
+```sql
+CREATE TABLE studio_evaluations (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  studio_id UUID REFERENCES studios(id) ON DELETE CASCADE,
+  photo_session_id UUID REFERENCES photo_sessions(id),
+  user_id UUID REFERENCES auth.users(id),
+  user_role TEXT NOT NULL, -- 'model', 'photographer', 'organizer'
+  
+  -- 基本評価（1-5点）
+  overall_rating DECIMAL(2,1) NOT NULL,
+  accessibility_rating DECIMAL(2,1),
+  cleanliness_rating DECIMAL(2,1),
+  staff_support_rating DECIMAL(2,1),
+  cost_performance_rating DECIMAL(2,1),
+  
+  -- 役割別評価
+  role_specific_ratings JSONB, -- 役割別の詳細評価
+  
+  -- コメント・写真
+  comment TEXT,
+  evaluation_photos TEXT[], -- 評価時に投稿した写真
+  
+  -- メタ情報
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  
+  -- 制約: 同じユーザーが同じ撮影会で同じスタジオを複数回評価できない
+  UNIQUE(studio_id, photo_session_id, user_id)
+);
+```
+
+### **Wiki編集履歴**
+```sql
+CREATE TABLE studio_edit_history (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  studio_id UUID REFERENCES studios(id) ON DELETE CASCADE,
+  edited_by UUID REFERENCES auth.users(id),
+  edit_type TEXT NOT NULL, -- 'create', 'update', 'delete'
+  changed_fields JSONB, -- 変更されたフィールド
+  old_values JSONB, -- 変更前の値
+  new_values JSONB, -- 変更後の値
+  edit_reason TEXT, -- 編集理由
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+## 🎨 **UI/UX設計**
+
+### **スタジオ検索・一覧**
+```typescript
+// StudioSearchPage.tsx
+interface StudioSearchFilters {
+  prefecture?: string;
+  city?: string;
+  priceRange?: [number, number];
+  equipment?: string[];
+  rating?: number;
+  availability?: Date;
+}
+
+// StudioCard.tsx
+interface StudioCardProps {
+  studio: Studio;
+  averageRating: number;
+  evaluationCount: number;
+  priceRange: [number, number];
+  distance?: number;
+}
+```
+
+### **スタジオ詳細ページ**
+```typescript
+// StudioDetailPage.tsx
+interface StudioDetailProps {
+  studio: Studio;
+  equipment: StudioEquipment[];
+  photos: StudioPhoto[];
+  evaluations: StudioEvaluation[];
+  averageRatings: {
+    overall: number;
+    byRole: {
+      model: number;
+      photographer: number;
+      organizer: number;
+    };
+  };
+}
+```
+
+### **評価投稿フォーム**
+```typescript
+// StudioEvaluationForm.tsx
+interface EvaluationFormProps {
+  studioId: string;
+  photoSessionId: string;
+  userRole: 'model' | 'photographer' | 'organizer';
+  onSubmit: (evaluation: StudioEvaluation) => void;
+}
+```
+
+### **Wiki編集フォーム**
+```typescript
+// StudioEditForm.tsx
+interface StudioEditFormProps {
+  studio?: Studio; // 新規作成時はundefined
+  mode: 'create' | 'edit';
+  onSave: (studio: Studio) => void;
+}
+```
+
+## 🔧 **実装手順**
+
+### **フェーズ1: 基本機能**
+1. **データベース構築**: スタジオ情報テーブル作成
+2. **CRUD機能**: スタジオ情報の登録・編集・削除
+3. **検索機能**: 地域・設備・料金での絞り込み
+4. **基本UI**: 一覧・詳細・編集画面
+
+### **フェーズ2: 評価システム**
+1. **評価権限管理**: 撮影会参加者のみ評価可能
+2. **評価投稿**: 役割別評価フォーム
+3. **評価表示**: 集計結果・コメント表示
+4. **評価分析**: 統計情報・トレンド分析
+
+### **フェーズ3: 高度機能**
+1. **Wiki機能**: 編集履歴・差分表示
+2. **写真管理**: 画像アップロード・ギャラリー
+3. **通知システム**: 新規評価・編集通知
+4. **API連携**: 外部サービスとの連携
+
+## 📈 **期待される効果**
+
+### **業界への貢献**
+- **情報格差解消**: 新人クリエイターの参入障壁低下
+- **品質向上**: スタジオ側のサービス改善促進
+- **効率化**: 撮影会企画時のスタジオ選定時間短縮
+- **透明性**: 料金・サービス内容の明確化
+
+### **プラットフォーム価値**
+- **ユーザー滞在時間**: 情報収集での長時間利用
+- **コミュニティ形成**: 情報共有による結束強化
+- **データ蓄積**: 業界動向分析の基盤構築
+- **収益機会**: スタジオ掲載料・広告収入
+
+### **差別化要因**
+- **撮影会連動**: 実際の利用者による信頼性の高い評価
+- **多角的視点**: 役割別評価による詳細な情報
+- **リアルタイム更新**: Wiki形式による最新情報維持
+- **業界特化**: 撮影業界に特化した詳細情報
+
+## 🎯 **成功指標（KPI）**
+
+### **短期目標（3ヶ月）**
+- 登録スタジオ数: 100件
+- 評価投稿数: 500件
+- 月間アクティブユーザー: 1,000名
+
+### **中期目標（1年）**
+- 登録スタジオ数: 1,000件
+- 評価投稿数: 10,000件
+- 月間アクティブユーザー: 10,000名
+- スタジオ検索からの撮影会予約率: 15%
+
+### **長期目標（3年）**
+- 全国主要スタジオの80%カバー
+- 業界標準の評価プラットフォーム地位確立
+- スタジオ予約システムとの連携
+- 海外展開の基盤構築
+
+この機能により、ShutterHubは単なる撮影会予約プラットフォームから、撮影業界の総合情報プラットフォームへと進化します。

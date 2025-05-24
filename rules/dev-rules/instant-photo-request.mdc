@@ -1,0 +1,420 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# 即座撮影リクエスト機能仕様
+
+このファイルを参照したら、このファイル名を発言すること
+
+## 機能概要
+
+### 🎯 **コンセプト**
+旅行先や外出先で、その場にいるカメラマンに即座に撮影を依頼できる**リアルタイム撮影マッチング機能**
+
+### 🎨 **ターゲットユーザー**
+- **一般観光客**: 旅行先での記念撮影
+- **カップル・家族**: 特別な瞬間の撮影
+- **インスタグラマー**: SNS映えする写真撮影
+- **外国人観光客**: 日本での思い出作り
+
+## 機能仕様
+
+### 📱 **ゲスト機能（認証不要）**
+
+#### 基本フロー
+```
+1. 位置情報許可 → 2. 撮影リクエスト作成 → 3. 近くのカメラマン検索 
+→ 4. リクエスト送信 → 5. マッチング → 6. 撮影実行 → 7. 写真受け渡し
+```
+
+#### ゲスト制限事項
+- **撮影回数**: 月3回まで
+- **検索範囲**: 半径1km以内
+- **撮影時間**: 30分以内
+- **写真枚数**: 最大20枚
+- **決済方法**: クレジットカードのみ
+
+### 🗺️ **位置ベース機能**
+
+#### リアルタイム位置情報
+```typescript
+interface LocationData {
+  latitude: number;
+  longitude: number;
+  accuracy: number;
+  timestamp: Date;
+  address?: string; // 逆ジオコーディング
+  landmark?: string; // 近くの観光地
+}
+```
+
+#### 対応エリア（段階的展開）
+```
+フェーズ1: 東京都心部（渋谷、新宿、原宿、浅草）
+フェーズ2: 大阪・京都・神戸
+フェーズ3: 全国主要観光地
+フェーズ4: 海外展開
+```
+
+### 📸 **撮影リクエスト仕様**
+
+#### リクエスト内容
+```typescript
+interface InstantPhotoRequest {
+  id: string;
+  location: LocationData;
+  requestType: 'portrait' | 'couple' | 'family' | 'group' | 'landscape';
+  urgency: 'now' | 'within_30min' | 'within_1hour';
+  duration: 15 | 30 | 60; // 分
+  budget: number; // 円
+  specialRequests?: string;
+  guestInfo: {
+    name: string;
+    phone: string;
+    partySize: number;
+  };
+  status: 'pending' | 'matched' | 'in_progress' | 'completed' | 'cancelled';
+  createdAt: Date;
+  expiresAt: Date; // 2時間後に自動キャンセル
+}
+```
+
+#### 料金体系
+```typescript
+const instantPricing = {
+  portrait_15min: 3000,    // ポートレート15分
+  couple_30min: 5000,      // カップル30分
+  family_30min: 6000,      // 家族30分
+  group_30min: 8000,       // グループ30分
+  premium_60min: 12000,    // プレミアム60分
+  
+  // 追加料金
+  rush_fee: 1000,          // 緊急料金（30分以内）
+  holiday_fee: 1500,       // 休日料金
+  night_fee: 2000,         // 夜間料金（18時以降）
+};
+```
+
+### 👨‍💼 **カメラマン側機能**
+
+#### オンライン状態管理
+```typescript
+interface PhotographerStatus {
+  userId: string;
+  isOnline: boolean;
+  currentLocation: LocationData;
+  availableUntil: Date;
+  acceptingRequests: boolean;
+  currentBooking?: string;
+  responseRadius: number; // km
+  instantRates: {
+    portrait: number;
+    couple: number;
+    family: number;
+    group: number;
+  };
+}
+```
+
+#### 通知システム
+- **プッシュ通知**: 新しいリクエスト受信
+- **音声アラート**: 緊急リクエスト
+- **バイブレーション**: 位置情報更新
+- **SMS**: アプリ未起動時のバックアップ
+
+### 🔄 **マッチングアルゴリズム**
+
+#### 優先順位
+```typescript
+const matchingCriteria = {
+  distance: 0.4,        // 距離（40%）
+  rating: 0.25,         // 評価（25%）
+  responseTime: 0.2,    // 応答速度（20%）
+  priceMatch: 0.15,     // 料金適合性（15%）
+};
+```
+
+#### 自動マッチング
+```
+1. 半径500m以内のオンラインカメラマン検索
+2. 予算・時間・撮影タイプでフィルタリング
+3. 優先順位アルゴリズムでソート
+4. 上位3名に同時リクエスト送信
+5. 最初に応答したカメラマンとマッチング
+```
+
+## データベース設計
+
+### テーブル構造
+```sql
+-- instant_photo_requests テーブル
+CREATE TABLE instant_photo_requests (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  guest_name TEXT NOT NULL,
+  guest_phone TEXT NOT NULL,
+  guest_email TEXT,
+  location_lat DECIMAL(10, 8) NOT NULL,
+  location_lng DECIMAL(11, 8) NOT NULL,
+  location_address TEXT,
+  request_type TEXT NOT NULL,
+  urgency TEXT NOT NULL,
+  duration INTEGER NOT NULL,
+  budget INTEGER NOT NULL,
+  party_size INTEGER DEFAULT 1,
+  special_requests TEXT,
+  status TEXT DEFAULT 'pending',
+  matched_photographer_id UUID REFERENCES auth.users(id),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  expires_at TIMESTAMPTZ NOT NULL,
+  completed_at TIMESTAMPTZ
+);
+
+-- photographer_locations テーブル（リアルタイム位置情報）
+CREATE TABLE photographer_locations (
+  photographer_id UUID PRIMARY KEY REFERENCES auth.users(id),
+  latitude DECIMAL(10, 8) NOT NULL,
+  longitude DECIMAL(11, 8) NOT NULL,
+  accuracy DECIMAL(5, 2),
+  is_online BOOLEAN DEFAULT false,
+  available_until TIMESTAMPTZ,
+  response_radius INTEGER DEFAULT 1000, -- メートル
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- instant_bookings テーブル
+CREATE TABLE instant_bookings (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  request_id UUID REFERENCES instant_photo_requests(id),
+  photographer_id UUID REFERENCES auth.users(id),
+  start_time TIMESTAMPTZ,
+  end_time TIMESTAMPTZ,
+  actual_duration INTEGER,
+  photos_delivered INTEGER,
+  guest_rating INTEGER,
+  photographer_rating INTEGER,
+  total_amount INTEGER NOT NULL,
+  payment_status TEXT DEFAULT 'pending',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+## UI/UX設計
+
+### 🎨 **ゲスト向けUI**
+
+#### ランディングページ
+```typescript
+// components/instant/InstantPhotoLanding.tsx
+export function InstantPhotoLanding() {
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+      <Hero />
+      <LocationPermission />
+      <QuickRequestForm />
+      <HowItWorks />
+      <PricingDisplay />
+      <TestimonialCarousel />
+    </div>
+  );
+}
+```
+
+#### リクエストフォーム
+```typescript
+// components/instant/QuickRequestForm.tsx
+interface QuickRequestFormProps {
+  location: LocationData;
+}
+
+export function QuickRequestForm({ location }: QuickRequestFormProps) {
+  return (
+    <Card className="w-full max-w-md mx-auto">
+      <CardHeader>
+        <CardTitle>📸 今すぐ撮影リクエスト</CardTitle>
+        <CardDescription>
+          {location.address}で撮影できるカメラマンを探します
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <RequestTypeSelector />
+        <UrgencySelector />
+        <BudgetSlider />
+        <GuestInfoForm />
+        <SubmitButton />
+      </CardContent>
+    </Card>
+  );
+}
+```
+
+### 📱 **カメラマン向けUI**
+
+#### リアルタイムダッシュボード
+```typescript
+// components/instant/PhotographerDashboard.tsx
+export function PhotographerDashboard() {
+  return (
+    <div className="space-y-6">
+      <OnlineStatusToggle />
+      <LocationDisplay />
+      <IncomingRequestsPanel />
+      <EarningsTracker />
+      <AvailabilityCalendar />
+    </div>
+  );
+}
+```
+
+#### リクエスト通知
+```typescript
+// components/instant/RequestNotification.tsx
+export function RequestNotification({ request }: { request: InstantPhotoRequest }) {
+  return (
+    <Alert className="border-orange-200 bg-orange-50">
+      <Camera className="h-4 w-4" />
+      <AlertTitle>新しい撮影リクエスト</AlertTitle>
+      <AlertDescription>
+        <div className="space-y-2">
+          <p>{request.requestType} • {request.duration}分 • ¥{request.budget}</p>
+          <p>📍 {request.location.address}</p>
+          <div className="flex gap-2">
+            <Button size="sm" onClick={() => acceptRequest(request.id)}>
+              受諾
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => declineRequest(request.id)}>
+              辞退
+            </Button>
+          </div>
+        </div>
+      </AlertDescription>
+    </Alert>
+  );
+}
+```
+
+## 技術実装
+
+### 🗺️ **位置情報・地図機能**
+```typescript
+// hooks/useGeolocation.ts
+export function useGeolocation() {
+  const [location, setLocation] = useState<LocationData | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      setError('位置情報がサポートされていません');
+      return;
+    }
+
+    const watchId = navigator.geolocation.watchPosition(
+      (position) => {
+        setLocation({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          accuracy: position.coords.accuracy,
+          timestamp: new Date(),
+        });
+      },
+      (error) => setError(error.message),
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
+
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, []);
+
+  return { location, error };
+}
+```
+
+### 🔄 **リアルタイム通信**
+```typescript
+// lib/realtime/instant-matching.ts
+export class InstantMatchingService {
+  private supabase = createClient();
+
+  async subscribeToRequests(photographerId: string, callback: (request: InstantPhotoRequest) => void) {
+    return this.supabase
+      .channel('instant-requests')
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'instant_photo_requests',
+        filter: `location_lat=gte.${lat-0.01}&location_lat=lte.${lat+0.01}`,
+      }, callback)
+      .subscribe();
+  }
+
+  async updatePhotographerLocation(photographerId: string, location: LocationData) {
+    return this.supabase
+      .from('photographer_locations')
+      .upsert({
+        photographer_id: photographerId,
+        latitude: location.latitude,
+        longitude: location.longitude,
+        accuracy: location.accuracy,
+        updated_at: new Date().toISOString(),
+      });
+  }
+}
+```
+
+### 💳 **決済統合**
+```typescript
+// lib/payment/instant-payment.ts
+export async function processInstantPayment(
+  requestId: string,
+  amount: number,
+  paymentMethod: string
+) {
+  // Stripe Instant Payment
+  const paymentIntent = await stripe.paymentIntents.create({
+    amount: amount * 100, // 円 to セント
+    currency: 'jpy',
+    metadata: {
+      type: 'instant_photo',
+      request_id: requestId,
+    },
+    capture_method: 'manual', // 撮影完了後にキャプチャ
+  });
+
+  return paymentIntent;
+}
+```
+
+## ビジネスモデル
+
+### 💰 **収益構造**
+- **手数料**: 撮影料金の20%
+- **ゲスト登録促進**: 3回目以降は会員登録必須
+- **プレミアム機能**: 優先マッチング、写真編集サービス
+- **観光地パートナーシップ**: 観光協会との提携
+
+### 📊 **KPI設定**
+- **マッチング成功率**: 80%以上
+- **平均応答時間**: 5分以内
+- **ゲスト→会員転換率**: 30%以上
+- **リピート利用率**: 40%以上
+
+## 段階的実装計画
+
+### フェーズ1（MVP）
+- [ ] 基本的なゲスト機能
+- [ ] 位置情報ベースマッチング
+- [ ] 簡単決済システム
+- [ ] 東京都心部限定
+
+### フェーズ2（拡張）
+- [ ] リアルタイム通知
+- [ ] 写真自動配信
+- [ ] 評価システム
+- [ ] 関西圏展開
+
+### フェーズ3（最適化）
+- [ ] AI マッチング最適化
+- [ ] 多言語対応
+- [ ] 観光地連携
+- [ ] 全国展開
+
+この機能により、ShutterHubは**撮影業界のUber**として一般層にも大きくリーチできます！
