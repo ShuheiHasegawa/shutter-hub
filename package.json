@@ -2,6 +2,7 @@
   "name": "shutter-hub-v2",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
@@ -11,7 +12,11 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "type-check": "tsc --noEmit",
-    "prepare": "husky"
+    "prepare": "husky",
+    "migrate": "node scripts/migrate.js",
+    "migrate:init": "node scripts/migrate.js 001_initial_schema",
+    "migrate:auto": "node scripts/migrate-auto.js",
+    "migrate:auto:init": "node scripts/migrate-auto.js 001_initial_schema"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
@@ -38,6 +43,7 @@
     "@supabase/supabase-js": "^2.49.8",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "dotenv": "^16.5.0",
     "lucide-react": "^0.511.0",
     "next": "^15.3.2",
     "next-intl": "^4.1.0",
