@@ -1,40 +1,42 @@
 'use client';
 
-import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Home, Search, Calendar, Zap, User } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
-
-const navigationItems = [
-  {
-    icon: Home,
-    label: 'ホーム',
-    href: '/',
-  },
-  {
-    icon: Search,
-    label: '検索',
-    href: '/search',
-  },
-  {
-    icon: Calendar,
-    label: '予約',
-    href: '/bookings',
-  },
-  {
-    icon: Zap,
-    label: '即座撮影',
-    href: '/instant',
-  },
-  {
-    icon: User,
-    label: 'プロフィール',
-    href: '/profile',
-  },
-];
+import { Link } from '@/i18n/routing';
 
 export function BottomNavigation() {
+  const t = useTranslations('navigation');
   const pathname = usePathname();
+
+  const navigationItems = [
+    {
+      icon: Home,
+      label: t('home'),
+      href: '/' as const,
+    },
+    {
+      icon: Search,
+      label: t('search'),
+      href: '/search' as const,
+    },
+    {
+      icon: Calendar,
+      label: t('bookings'),
+      href: '/bookings' as const,
+    },
+    {
+      icon: Zap,
+      label: t('instant'),
+      href: '/instant' as const,
+    },
+    {
+      icon: User,
+      label: t('profile'),
+      href: '/profile' as const,
+    },
+  ];
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t md:hidden">

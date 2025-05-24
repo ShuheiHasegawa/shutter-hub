@@ -1,7 +1,10 @@
-import Link from 'next/link';
 import { Camera } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/routing';
 
 export function Footer() {
+  const t = useTranslations('footer');
+
   return (
     <footer className="border-t bg-background">
       <div className="container py-8 md:py-12">
@@ -12,21 +15,19 @@ export function Footer() {
               <Camera className="h-6 w-6 text-shutter-primary" />
               <span className="font-bold text-xl">ShutterHub</span>
             </Link>
-            <p className="text-sm text-muted-foreground">
-              撮影業界をつなぐ統合型プラットフォーム
-            </p>
+            <p className="text-sm text-muted-foreground">{t('brand')}</p>
           </div>
 
           {/* サービス */}
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold">サービス</h3>
+            <h3 className="text-sm font-semibold">{t('services.title')}</h3>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link
                   href="/photo-sessions"
                   className="text-muted-foreground hover:text-foreground"
                 >
-                  撮影会を探す
+                  {t('services.findSessions')}
                 </Link>
               </li>
               <li>
@@ -34,7 +35,7 @@ export function Footer() {
                   href="/photo-sessions/create"
                   className="text-muted-foreground hover:text-foreground"
                 >
-                  撮影会を開催
+                  {t('services.createSession')}
                 </Link>
               </li>
               <li>
@@ -42,7 +43,7 @@ export function Footer() {
                   href="/instant"
                   className="text-muted-foreground hover:text-foreground"
                 >
-                  即座撮影リクエスト
+                  {t('services.instantRequest')}
                 </Link>
               </li>
               <li>
@@ -50,7 +51,7 @@ export function Footer() {
                   href="/studios"
                   className="text-muted-foreground hover:text-foreground"
                 >
-                  スタジオWiki
+                  {t('services.studioWiki')}
                 </Link>
               </li>
             </ul>
@@ -58,14 +59,14 @@ export function Footer() {
 
           {/* サポート */}
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold">サポート</h3>
+            <h3 className="text-sm font-semibold">{t('support.title')}</h3>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link
                   href="/help"
                   className="text-muted-foreground hover:text-foreground"
                 >
-                  ヘルプセンター
+                  {t('support.helpCenter')}
                 </Link>
               </li>
               <li>
@@ -73,7 +74,7 @@ export function Footer() {
                   href="/contact"
                   className="text-muted-foreground hover:text-foreground"
                 >
-                  お問い合わせ
+                  {t('support.contact')}
                 </Link>
               </li>
               <li>
@@ -81,7 +82,7 @@ export function Footer() {
                   href="/faq"
                   className="text-muted-foreground hover:text-foreground"
                 >
-                  よくある質問
+                  {t('support.faq')}
                 </Link>
               </li>
             </ul>
@@ -89,14 +90,14 @@ export function Footer() {
 
           {/* 法的情報 */}
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold">法的情報</h3>
+            <h3 className="text-sm font-semibold">{t('legal.title')}</h3>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link
                   href="/terms"
                   className="text-muted-foreground hover:text-foreground"
                 >
-                  利用規約
+                  {t('legal.terms')}
                 </Link>
               </li>
               <li>
@@ -104,7 +105,7 @@ export function Footer() {
                   href="/privacy"
                   className="text-muted-foreground hover:text-foreground"
                 >
-                  プライバシーポリシー
+                  {t('legal.privacy')}
                 </Link>
               </li>
               <li>
@@ -112,7 +113,7 @@ export function Footer() {
                   href="/cookies"
                   className="text-muted-foreground hover:text-foreground"
                 >
-                  Cookie ポリシー
+                  {t('legal.cookies')}
                 </Link>
               </li>
             </ul>
@@ -120,7 +121,7 @@ export function Footer() {
         </div>
 
         <div className="mt-8 border-t pt-8 text-center text-sm text-muted-foreground">
-          <p>&copy; 2024 ShutterHub. All rights reserved.</p>
+          <p>{t('copyright')}</p>
         </div>
       </div>
     </footer>

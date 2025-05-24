@@ -1,9 +1,10 @@
 'use client';
 
-import Link from 'next/link';
 import { Camera, Menu } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { LanguageToggle } from '@/components/ui/language-toggle';
 import {
   Sheet,
   SheetContent,
@@ -20,8 +21,11 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from '@/components/ui/navigation-menu';
+import { Link } from '@/i18n/routing';
 
 export function Header() {
+  const t = useTranslations('navigation');
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center">
@@ -35,7 +39,9 @@ export function Header() {
         <NavigationMenu className="hidden md:flex mx-6">
           <NavigationMenuList>
             <NavigationMenuItem>
-              <NavigationMenuTrigger>撮影会</NavigationMenuTrigger>
+              <NavigationMenuTrigger>
+                {t('photoSessions')}
+              </NavigationMenuTrigger>
               <NavigationMenuContent>
                 <div className="grid gap-3 p-6 w-[400px]">
                   <NavigationMenuLink asChild>
@@ -73,7 +79,7 @@ export function Header() {
                   href="/instant"
                   className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50"
                 >
-                  即座撮影
+                  {t('instant')}
                 </Link>
               </NavigationMenuLink>
             </NavigationMenuItem>
@@ -83,7 +89,7 @@ export function Header() {
                   href="/studios"
                   className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50"
                 >
-                  スタジオ
+                  {t('studios')}
                 </Link>
               </NavigationMenuLink>
             </NavigationMenuItem>
@@ -93,12 +99,13 @@ export function Header() {
         {/* 右側のアクション */}
         <div className="flex flex-1 items-center justify-end space-x-4">
           <nav className="flex items-center space-x-2">
+            <LanguageToggle />
             <ThemeToggle />
             <Button asChild variant="ghost">
-              <Link href="/auth/signin">ログイン</Link>
+              <Link href="/auth/signin">{t('signin')}</Link>
             </Button>
             <Button asChild>
-              <Link href="/auth/signup">新規登録</Link>
+              <Link href="/auth/signup">{t('signup')}</Link>
             </Button>
           </nav>
         </div>
@@ -131,10 +138,10 @@ export function Header() {
                 撮影会を開催
               </Link>
               <Link href="/instant" className="block px-2 py-1 text-lg">
-                即座撮影
+                {t('instant')}
               </Link>
               <Link href="/studios" className="block px-2 py-1 text-lg">
-                スタジオ
+                {t('studios')}
               </Link>
             </div>
           </SheetContent>

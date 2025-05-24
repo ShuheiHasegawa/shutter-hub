@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import { MainLayout } from '@/components/layout/main-layout';
 import { Button } from '@/components/ui/button';
 import {
@@ -8,9 +9,11 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Camera, Users, Zap, MapPin, Star, Calendar } from 'lucide-react';
-import Link from 'next/link';
+import { Link } from '@/i18n/routing';
 
 export default function HomePage() {
+  const t = useTranslations('home');
+
   return (
     <MainLayout>
       {/* ヒーローセクション */}
@@ -18,14 +21,16 @@ export default function HomePage() {
         <div className="container py-24 md:py-32">
           <div className="max-w-3xl mx-auto text-center space-y-8">
             <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
-              撮影業界をつなぐ
+              {t('hero.title')}
               <br />
-              <span className="text-shutter-warning">統合プラットフォーム</span>
+              <span className="text-shutter-warning">
+                {t('hero.titleHighlight')}
+              </span>
             </h1>
             <p className="text-xl md:text-2xl text-white/90">
-              モデル、カメラマン、運営者が出会う場所。
+              {t('hero.subtitle')}
               <br />
-              撮影会の予約から即座撮影まで、すべてがここに。
+              {t('hero.subtitleSecond')}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
@@ -33,7 +38,7 @@ export default function HomePage() {
                 size="lg"
                 className="bg-white text-shutter-primary hover:bg-white/90"
               >
-                <Link href="/photo-sessions">撮影会を探す</Link>
+                <Link href="/photo-sessions">{t('hero.findSessions')}</Link>
               </Button>
               <Button
                 asChild
@@ -41,7 +46,7 @@ export default function HomePage() {
                 variant="outline"
                 className="border-white text-white hover:bg-white hover:text-shutter-primary"
               >
-                <Link href="/instant">即座撮影を依頼</Link>
+                <Link href="/instant">{t('hero.requestInstant')}</Link>
               </Button>
             </div>
           </div>
@@ -52,9 +57,11 @@ export default function HomePage() {
       <section className="py-24">
         <div className="container">
           <div className="text-center space-y-4 mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold">ShutterHubの特徴</h2>
+            <h2 className="text-3xl md:text-4xl font-bold">
+              {t('features.title')}
+            </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              撮影業界のすべてのニーズに応える、包括的なプラットフォーム
+              {t('features.subtitle')}
             </p>
           </div>
 
@@ -64,16 +71,16 @@ export default function HomePage() {
                 <div className="mx-auto w-12 h-12 bg-shutter-primary/10 rounded-lg flex items-center justify-center mb-4">
                   <Calendar className="h-6 w-6 text-shutter-primary" />
                 </div>
-                <CardTitle>撮影会予約システム</CardTitle>
+                <CardTitle>{t('features.booking.title')}</CardTitle>
                 <CardDescription>
-                  先着順から抽選まで、多様な予約方式に対応
+                  {t('features.booking.description')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <ul className="text-sm text-muted-foreground space-y-2">
-                  <li>• リアルタイム在庫管理</li>
-                  <li>• 公平な抽選システム</li>
-                  <li>• 優先予約・キャンセル待ち</li>
+                  <li>• {t('features.booking.features.0')}</li>
+                  <li>• {t('features.booking.features.1')}</li>
+                  <li>• {t('features.booking.features.2')}</li>
                 </ul>
               </CardContent>
             </Card>
@@ -83,16 +90,16 @@ export default function HomePage() {
                 <div className="mx-auto w-12 h-12 bg-shutter-accent/10 rounded-lg flex items-center justify-center mb-4">
                   <Zap className="h-6 w-6 text-shutter-accent" />
                 </div>
-                <CardTitle>即座撮影リクエスト</CardTitle>
+                <CardTitle>{t('features.instant.title')}</CardTitle>
                 <CardDescription>
-                  撮影業界のUber - 今すぐ撮影したい時に
+                  {t('features.instant.description')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <ul className="text-sm text-muted-foreground space-y-2">
-                  <li>• 位置ベースマッチング</li>
-                  <li>• 15分から対応可能</li>
-                  <li>• 透明な料金システム</li>
+                  <li>• {t('features.instant.features.0')}</li>
+                  <li>• {t('features.instant.features.1')}</li>
+                  <li>• {t('features.instant.features.2')}</li>
                 </ul>
               </CardContent>
             </Card>
@@ -102,16 +109,16 @@ export default function HomePage() {
                 <div className="mx-auto w-12 h-12 bg-shutter-info/10 rounded-lg flex items-center justify-center mb-4">
                   <MapPin className="h-6 w-6 text-shutter-info" />
                 </div>
-                <CardTitle>StudioWiki</CardTitle>
+                <CardTitle>{t('features.wiki.title')}</CardTitle>
                 <CardDescription>
-                  コミュニティが作るスタジオ情報データベース
+                  {t('features.wiki.description')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <ul className="text-sm text-muted-foreground space-y-2">
-                  <li>• 詳細なスタジオ情報</li>
-                  <li>• 実際の利用者レビュー</li>
-                  <li>• 役割別評価システム</li>
+                  <li>• {t('features.wiki.features.0')}</li>
+                  <li>• {t('features.wiki.features.1')}</li>
+                  <li>• {t('features.wiki.features.2')}</li>
                 </ul>
               </CardContent>
             </Card>
@@ -121,16 +128,16 @@ export default function HomePage() {
                 <div className="mx-auto w-12 h-12 bg-shutter-success/10 rounded-lg flex items-center justify-center mb-4">
                   <Users className="h-6 w-6 text-shutter-success" />
                 </div>
-                <CardTitle>三者統合プラットフォーム</CardTitle>
+                <CardTitle>{t('features.platform.title')}</CardTitle>
                 <CardDescription>
-                  モデル・カメラマン・運営者が一つの場所で
+                  {t('features.platform.description')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <ul className="text-sm text-muted-foreground space-y-2">
-                  <li>• 統一されたプロフィール</li>
-                  <li>• 相互評価システム</li>
-                  <li>• 安全な決済システム</li>
+                  <li>• {t('features.platform.features.0')}</li>
+                  <li>• {t('features.platform.features.1')}</li>
+                  <li>• {t('features.platform.features.2')}</li>
                 </ul>
               </CardContent>
             </Card>
@@ -140,16 +147,16 @@ export default function HomePage() {
                 <div className="mx-auto w-12 h-12 bg-shutter-warning/10 rounded-lg flex items-center justify-center mb-4">
                   <Star className="h-6 w-6 text-shutter-warning" />
                 </div>
-                <CardTitle>評価・レビューシステム</CardTitle>
+                <CardTitle>{t('features.review.title')}</CardTitle>
                 <CardDescription>
-                  透明性の高い評価で信頼関係を構築
+                  {t('features.review.description')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <ul className="text-sm text-muted-foreground space-y-2">
-                  <li>• 5段階評価システム</li>
-                  <li>• 詳細なレビュー機能</li>
-                  <li>• ユーザーランクシステム</li>
+                  <li>• {t('features.review.features.0')}</li>
+                  <li>• {t('features.review.features.1')}</li>
+                  <li>• {t('features.review.features.2')}</li>
                 </ul>
               </CardContent>
             </Card>
@@ -159,16 +166,16 @@ export default function HomePage() {
                 <div className="mx-auto w-12 h-12 bg-shutter-primary/10 rounded-lg flex items-center justify-center mb-4">
                   <Camera className="h-6 w-6 text-shutter-primary" />
                 </div>
-                <CardTitle>プロフェッショナル対応</CardTitle>
+                <CardTitle>{t('features.professional.title')}</CardTitle>
                 <CardDescription>
-                  業界のプロフェッショナルニーズに特化
+                  {t('features.professional.description')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <ul className="text-sm text-muted-foreground space-y-2">
-                  <li>• 高品質画像対応</li>
-                  <li>• 著作権・肖像権管理</li>
-                  <li>• 業界標準の機能</li>
+                  <li>• {t('features.professional.features.0')}</li>
+                  <li>• {t('features.professional.features.1')}</li>
+                  <li>• {t('features.professional.features.2')}</li>
                 </ul>
               </CardContent>
             </Card>
@@ -180,18 +187,14 @@ export default function HomePage() {
       <section className="py-24 bg-muted">
         <div className="container">
           <div className="max-w-3xl mx-auto text-center space-y-8">
-            <h2 className="text-3xl md:text-4xl font-bold">
-              今すぐShutterHubを始めよう
-            </h2>
-            <p className="text-xl text-muted-foreground">
-              撮影業界の新しいスタンダードを体験してください
-            </p>
+            <h2 className="text-3xl md:text-4xl font-bold">{t('cta.title')}</h2>
+            <p className="text-xl text-muted-foreground">{t('cta.subtitle')}</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button asChild size="lg">
-                <Link href="/auth/signup">無料で始める</Link>
+                <Link href="/auth/signup">{t('cta.getStarted')}</Link>
               </Button>
               <Button asChild size="lg" variant="outline">
-                <Link href="/about">詳しく見る</Link>
+                <Link href="/about">{t('cta.learnMore')}</Link>
               </Button>
             </div>
           </div>

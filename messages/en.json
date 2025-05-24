@@ -1,0 +1,153 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "success": "Success",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "edit": "Edit",
+    "delete": "Delete",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "more": "More"
+  },
+  "navigation": {
+    "home": "Home",
+    "search": "Search",
+    "bookings": "Bookings",
+    "instant": "Instant Photo",
+    "profile": "Profile",
+    "photoSessions": "Photo Sessions",
+    "studios": "Studios",
+    "signin": "Sign In",
+    "signup": "Sign Up",
+    "signout": "Sign Out"
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
+    "toggle": "Toggle theme"
+  },
+  "home": {
+    "hero": {
+      "title": "Connecting the Photography Industry",
+      "titleHighlight": "Integrated Platform",
+      "subtitle": "Where models, photographers, and organizers meet.",
+      "subtitleSecond": "From photo session bookings to instant photography requests, everything is here.",
+      "findSessions": "Find Photo Sessions",
+      "requestInstant": "Request Instant Photo"
+    },
+    "features": {
+      "title": "ShutterHub Features",
+      "subtitle": "A comprehensive platform that meets all the needs of the photography industry",
+      "booking": {
+        "title": "Photo Session Booking System",
+        "description": "Supporting various booking methods from first-come-first-served to lottery",
+        "features": [
+          "Real-time inventory management",
+          "Fair lottery system",
+          "Priority booking & waitlist"
+        ]
+      },
+      "instant": {
+        "title": "Instant Photo Request",
+        "description": "The Uber of photography - when you need a photo right now",
+        "features": [
+          "Location-based matching",
+          "Available from 15 minutes",
+          "Transparent pricing system"
+        ]
+      },
+      "wiki": {
+        "title": "StudioWiki",
+        "description": "Community-created studio information database",
+        "features": [
+          "Detailed studio information",
+          "Real user reviews",
+          "Role-based rating system"
+        ]
+      },
+      "platform": {
+        "title": "Three-Party Integrated Platform",
+        "description": "Models, photographers, and organizers in one place",
+        "features": [
+          "Unified profiles",
+          "Mutual rating system",
+          "Secure payment system"
+        ]
+      },
+      "review": {
+        "title": "Rating & Review System",
+        "description": "Building trust through transparent ratings",
+        "features": [
+          "5-star rating system",
+          "Detailed review features",
+          "User rank system"
+        ]
+      },
+      "professional": {
+        "title": "Professional Support",
+        "description": "Specialized for industry professional needs",
+        "features": [
+          "High-quality image support",
+          "Copyright & portrait rights management",
+          "Industry-standard features"
+        ]
+      }
+    },
+    "cta": {
+      "title": "Start ShutterHub Now",
+      "subtitle": "Experience the new standard of the photography industry",
+      "getStarted": "Get Started for Free",
+      "learnMore": "Learn More"
+    }
+  },
+  "footer": {
+    "brand": "Integrated platform connecting the photography industry",
+    "services": {
+      "title": "Services",
+      "findSessions": "Find Photo Sessions",
+      "createSession": "Host Photo Sessions",
+      "instantRequest": "Instant Photo Request",
+      "studioWiki": "Studio Wiki"
+    },
+    "support": {
+      "title": "Support",
+      "helpCenter": "Help Center",
+      "contact": "Contact Us",
+      "faq": "FAQ"
+    },
+    "legal": {
+      "title": "Legal",
+      "terms": "Terms of Service",
+      "privacy": "Privacy Policy",
+      "cookies": "Cookie Policy"
+    },
+    "copyright": "© 2024 ShutterHub. All rights reserved."
+  },
+  "pages": {
+    "search": {
+      "title": "Search Photo Sessions",
+      "placeholder": "Search functionality will be implemented in a later phase."
+    },
+    "bookings": {
+      "title": "Booking Management",
+      "placeholder": "Booking management functionality will be implemented in a later phase."
+    },
+    "instant": {
+      "title": "Instant Photo Request",
+      "placeholder": "Instant photo functionality will be implemented in a later phase."
+    },
+    "profile": {
+      "title": "Profile",
+      "placeholder": "Profile functionality will be implemented in a later phase."
+    }
+  }
+}

@@ -1,0 +1,149 @@
+{
+  "common": {
+    "loading": "読み込み中...",
+    "error": "エラーが発生しました",
+    "success": "成功しました",
+    "cancel": "キャンセル",
+    "confirm": "確認",
+    "save": "保存",
+    "edit": "編集",
+    "delete": "削除",
+    "close": "閉じる",
+    "back": "戻る",
+    "next": "次へ",
+    "previous": "前へ",
+    "search": "検索",
+    "filter": "フィルター",
+    "sort": "並び替え",
+    "more": "もっと見る"
+  },
+  "navigation": {
+    "home": "ホーム",
+    "search": "検索",
+    "bookings": "予約",
+    "instant": "即座撮影",
+    "profile": "プロフィール",
+    "photoSessions": "撮影会",
+    "studios": "スタジオ",
+    "signin": "ログイン",
+    "signup": "新規登録",
+    "signout": "ログアウト"
+  },
+  "theme": {
+    "light": "ライト",
+    "dark": "ダーク",
+    "system": "システム",
+    "toggle": "テーマを切り替え"
+  },
+  "home": {
+    "hero": {
+      "title": "撮影業界をつなぐ",
+      "titleHighlight": "統合プラットフォーム",
+      "subtitle": "モデル、カメラマン、運営者が出会う場所。",
+      "subtitleSecond": "撮影会の予約から即座撮影まで、すべてがここに。",
+      "findSessions": "撮影会を探す",
+      "requestInstant": "即座撮影を依頼"
+    },
+    "features": {
+      "title": "ShutterHubの特徴",
+      "subtitle": "撮影業界のすべてのニーズに応える、包括的なプラットフォーム",
+      "booking": {
+        "title": "撮影会予約システム",
+        "description": "先着順から抽選まで、多様な予約方式に対応",
+        "features": [
+          "リアルタイム在庫管理",
+          "公平な抽選システム",
+          "優先予約・キャンセル待ち"
+        ]
+      },
+      "instant": {
+        "title": "即座撮影リクエスト",
+        "description": "撮影業界のUber - 今すぐ撮影したい時に",
+        "features": [
+          "位置ベースマッチング",
+          "15分から対応可能",
+          "透明な料金システム"
+        ]
+      },
+      "wiki": {
+        "title": "StudioWiki",
+        "description": "コミュニティが作るスタジオ情報データベース",
+        "features": [
+          "詳細なスタジオ情報",
+          "実際の利用者レビュー",
+          "役割別評価システム"
+        ]
+      },
+      "platform": {
+        "title": "三者統合プラットフォーム",
+        "description": "モデル・カメラマン・運営者が一つの場所で",
+        "features": [
+          "統一されたプロフィール",
+          "相互評価システム",
+          "安全な決済システム"
+        ]
+      },
+      "review": {
+        "title": "評価・レビューシステム",
+        "description": "透明性の高い評価で信頼関係を構築",
+        "features": [
+          "5段階評価システム",
+          "詳細なレビュー機能",
+          "ユーザーランクシステム"
+        ]
+      },
+      "professional": {
+        "title": "プロフェッショナル対応",
+        "description": "業界のプロフェッショナルニーズに特化",
+        "features": ["高品質画像対応", "著作権・肖像権管理", "業界標準の機能"]
+      }
+    },
+    "cta": {
+      "title": "今すぐShutterHubを始めよう",
+      "subtitle": "撮影業界の新しいスタンダードを体験してください",
+      "getStarted": "無料で始める",
+      "learnMore": "詳しく見る"
+    }
+  },
+  "footer": {
+    "brand": "撮影業界をつなぐ統合型プラットフォーム",
+    "services": {
+      "title": "サービス",
+      "findSessions": "撮影会を探す",
+      "createSession": "撮影会を開催",
+      "instantRequest": "即座撮影リクエスト",
+      "studioWiki": "スタジオWiki"
+    },
+    "support": {
+      "title": "サポート",
+      "helpCenter": "ヘルプセンター",
+      "contact": "お問い合わせ",
+      "faq": "よくある質問"
+    },
+    "legal": {
+      "title": "法的情報",
+      "terms": "利用規約",
+      "privacy": "プライバシーポリシー",
+      "cookies": "Cookie ポリシー"
+    },
+    "copyright": "© 2024 ShutterHub. All rights reserved."
+  },
+  "pages": {
+    "search": {
+      "title": "撮影会を検索",
+      "placeholder": "検索機能は後のフェーズで実装予定です。"
+    },
+    "bookings": {
+      "title": "予約管理",
+      "placeholder": "予約管理機能は後のフェーズで実装予定です。"
+    },
+    "instant": {
+      "title": "即座撮影リクエスト",
+      "placeholder": "即座撮影機能は後のフェーズで実装予定です。"
+    },
+    "profile": {
+      "title": "プロフィール",
+      "placeholder": "プロフィール機能は後のフェーズで実装予定です。"
+    }
+  }
+}
