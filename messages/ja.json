@@ -902,6 +902,29 @@
       "additionalInfoPlaceholder": "詳細な説明があれば記入してください",
       "submit": "報告する",
       "submitting": "送信中..."
+    },
+    "stats": {
+      "title": "評価統計",
+      "reviewCount": "{count}件のレビュー"
+    },
+    "list": {
+      "title": "レビュー",
+      "writeReview": "レビューを書く",
+      "writeFirstReview": "最初のレビューを書く",
+      "noReviews": "まだレビューがありません",
+      "noReviewsDescription": "この撮影会のレビューはまだ投稿されていません。",
+      "noReviewsWithFilter": "条件に一致するレビューがありません",
+      "filters": {
+        "allRatings": "すべての評価",
+        "stars": "つ星"
+      },
+      "sort": {
+        "newest": "新しい順",
+        "oldest": "古い順",
+        "highest": "評価の高い順",
+        "lowest": "評価の低い順",
+        "helpful": "参考になった順"
+      }
     }
   }
 }

@@ -845,6 +845,29 @@
       "additionalInfoPlaceholder": "Provide additional details if needed",
       "submit": "Submit Report",
       "submitting": "Submitting..."
+    },
+    "stats": {
+      "title": "Rating Statistics",
+      "reviewCount": "{count} reviews"
+    },
+    "list": {
+      "title": "Reviews",
+      "writeReview": "Write Review",
+      "writeFirstReview": "Write First Review",
+      "noReviews": "No reviews yet",
+      "noReviewsDescription": "No reviews have been posted for this photo session yet.",
+      "noReviewsWithFilter": "No reviews match the selected filters",
+      "filters": {
+        "allRatings": "All Ratings",
+        "stars": "stars"
+      },
+      "sort": {
+        "newest": "Newest",
+        "oldest": "Oldest",
+        "highest": "Highest Rated",
+        "lowest": "Lowest Rated",
+        "helpful": "Most Helpful"
+      }
     }
   }
 }
