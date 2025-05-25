@@ -73,9 +73,15 @@ alwaysApply: true
 ## 開発タスク（ShutterHub v2）
 
 ### フェーズ1（MVP）
-- [ ] プロジェクト初期設定
-- [ ] 認証システム実装（`auth.mdc`参照）
-- [ ] 基本的なユーザー管理
+- [x] プロジェクト初期設定
+- [x] 認証システム実装（`auth.mdc`参照）
+  - [x] Google OAuth認証
+  - [x] X (Twitter) OAuth認証
+  - [x] Discord OAuth認証
+  - [x] プロフィール作成・編集機能（Shadcn/ui対応）
+  - [x] 認証ガード機能
+  - [x] セッション管理
+- [x] 基本的なユーザー管理
 - [ ] 撮影会（PhotoSession）作成・管理機能
 - [ ] **撮影会予約システム実装**（`prompts-booking.mdc`参照）
   - [ ] 🔴 先着順予約システム

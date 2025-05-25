@@ -1,4 +1,4 @@
-import { GoogleSignInButton } from '@/components/auth/GoogleSignInButton';
+import { OAuthButtons } from '@/components/auth/OAuthButtons';
 import Link from 'next/link';
 
 export default async function SignInPage({
@@ -25,15 +25,7 @@ export default async function SignInPage({
                 アカウントにサインイン
               </h3>
 
-              <GoogleSignInButton />
-            </div>
-
-            <div className="text-center">
-              <p className="text-sm text-gray-600">
-                アカウントをお持ちでない場合は、
-                <br />
-                Googleでサインインすると自動的に作成されます
-              </p>
+              <OAuthButtons />
             </div>
 
             <div className="text-center">
