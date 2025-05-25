@@ -13,6 +13,7 @@ export interface PhotoSessionData {
   max_participants: number;
   price_per_person: number;
   is_published: boolean;
+  image_urls?: string[];
 }
 
 export async function createPhotoSessionAction(data: PhotoSessionData) {

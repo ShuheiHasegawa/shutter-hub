@@ -15,6 +15,7 @@ import {
 } from '@/app/actions/photo-session';
 import type { PhotoSessionWithOrganizer } from '@/types/database';
 import { useTranslations } from 'next-intl';
+import { ImageUpload } from '@/components/ui/image-upload';
 
 interface PhotoSessionFormProps {
   initialData?: PhotoSessionWithOrganizer;
@@ -49,6 +50,7 @@ export function PhotoSessionForm({
     max_participants: initialData?.max_participants || 1,
     price_per_person: initialData?.price_per_person || 0,
     is_published: initialData?.is_published || false,
+    image_urls: initialData?.image_urls || [],
   });
 
   const handleInputChange = (
@@ -63,6 +65,10 @@ export function PhotoSessionForm({
 
   const handleSwitchChange = (checked: boolean) => {
     setFormData(prev => ({ ...prev, is_published: checked }));
+  };
+
+  const handleImageUrlsChange = (urls: string[]) => {
+    setFormData(prev => ({ ...prev, image_urls: urls }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -139,6 +145,7 @@ export function PhotoSessionForm({
         max_participants: formData.max_participants,
         price_per_person: formData.price_per_person,
         is_published: formData.is_published,
+        image_urls: formData.image_urls,
       };
 
       let result;
@@ -195,6 +202,17 @@ export function PhotoSessionForm({
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* 画像アップロード */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium">イメージ画像</h3>
+            <ImageUpload
+              value={formData.image_urls}
+              onChange={handleImageUrlsChange}
+              maxImages={5}
+              disabled={isLoading}
+            />
+          </div>
+
           {/* 基本情報 */}
           <div className="space-y-4">
             <h3 className="text-lg font-medium">{t('form.basicInfo')}</h3>
