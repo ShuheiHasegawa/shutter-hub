@@ -64,6 +64,50 @@ export interface PhotoSessionWithBookings extends PhotoSession {
   bookings: Booking[];
 }
 
+// 抽選撮影会関連の型定義
+export interface LotteryPhotoSession {
+  id: string;
+  photo_session_id: string;
+  entry_start: string;
+  entry_end: string;
+  lottery_date: string;
+  winners_count: number;
+  status: 'upcoming' | 'accepting' | 'closed' | 'completed';
+  created_at: string;
+  updated_at: string;
+}
+
+export interface LotteryEntry {
+  id: string;
+  lottery_photo_session_id: string;
+  user_id: string;
+  application_message?: string;
+  status: 'entered' | 'won' | 'lost';
+  created_at: string;
+  updated_at: string;
+}
+
+export interface LotteryResult {
+  id: string;
+  lottery_photo_session_id: string;
+  drawn_at: string;
+  total_entries: number;
+  winners_selected: number;
+  algorithm_used: string;
+  seed_value?: string;
+  created_at: string;
+}
+
+// 抽選撮影会と撮影会の結合型
+export interface LotteryPhotoSessionWithDetails extends LotteryPhotoSession {
+  photo_session: PhotoSessionWithOrganizer;
+}
+
+// 抽選エントリーとユーザー情報の結合型
+export interface LotteryEntryWithUser extends LotteryEntry {
+  user: Profile;
+}
+
 // フォーム用の型定義
 export interface CreateProfileData {
   display_name: string;

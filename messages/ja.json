@@ -264,6 +264,52 @@
       "loadMore": "さらに読み込む"
     }
   },
+  "lottery": {
+    "title": "抽選撮影会",
+    "organizer": "主催者",
+    "free": "無料",
+    "winnersCount": "当選者数: {count}名",
+    "sessionNotFound": "抽選撮影会が見つかりません",
+    "loginRequired": "ログインが必要です",
+    "loginRequiredDescription": "抽選に参加するにはログインしてください。",
+    "pleaseLogin": "ログインしてください",
+    "status": {
+      "upcoming": "開始前",
+      "accepting": "エントリー受付中",
+      "closed": "エントリー終了",
+      "completed": "抽選完了"
+    },
+    "entryStatus": {
+      "entered": "エントリー済み",
+      "won": "当選",
+      "lost": "落選"
+    },
+    "schedule": {
+      "title": "抽選スケジュール",
+      "entryPeriod": "エントリー期間",
+      "lotteryDate": "抽選日時"
+    },
+    "applicationMessage": "応募メッセージ",
+    "optional": "任意",
+    "applicationMessagePlaceholder": "参加への意気込みや自己紹介をお書きください...",
+    "enterLottery": "抽選に参加する",
+    "entryInProgress": "エントリー中...",
+    "entryCompleted": "エントリーが完了しました。抽選結果をお待ちください。",
+    "congratulations": "おめでとうございます！当選しました！",
+    "winnerInstructions": "撮影会への参加が確定しました。詳細は別途ご連絡いたします。",
+    "betterLuckNextTime": "残念ながら落選となりました。次回もぜひご参加ください。",
+    "yourMessage": "あなたのメッセージ",
+    "entryNotStarted": "エントリー期間はまだ開始されていません",
+    "entryEnded": "エントリー期間は終了しました",
+    "entryNotAccepting": "現在エントリーを受け付けていません",
+    "notes": {
+      "title": "注意事項",
+      "fairLottery": "抽選は公平にランダムで行われます",
+      "resultNotification": "抽選結果は抽選日時後に通知されます",
+      "winnerBooking": "当選者は自動的に撮影会に予約されます",
+      "noRefund": "エントリー後のキャンセルはできません"
+    }
+  },
   "errors": {
     "title": "エラー",
     "bookingFailed": "予約に失敗しました",
@@ -273,13 +319,19 @@
     "sessionFull": "申し訳ございません。この撮影会は満席です。",
     "alreadyBooked": "この撮影会は既に予約済みです。",
     "sessionEnded": "この撮影会は既に終了しています。",
-    "unauthorized": "権限がありません"
+    "unauthorized": "権限がありません",
+    "entryFailed": "抽選エントリーに失敗しました",
+    "lotteryFailed": "抽選の実行に失敗しました"
   },
   "success": {
     "title": "成功",
     "bookingCompleted": "予約完了！",
     "bookingCompletedDescription": "撮影会の予約が完了しました。",
     "cancelCompleted": "キャンセル完了",
-    "cancelCompletedDescription": "予約をキャンセルしました。"
+    "cancelCompletedDescription": "予約をキャンセルしました。",
+    "entryCompleted": "エントリー完了！",
+    "entryCompletedDescription": "抽選エントリーが完了しました。",
+    "lotteryCompleted": "抽選完了",
+    "lotteryCompletedDescription": "抽選が正常に実行されました。"
   }
 }

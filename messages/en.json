@@ -268,6 +268,52 @@
       "loadMore": "Load more"
     }
   },
+  "lottery": {
+    "title": "Lottery Photo Session",
+    "organizer": "Organizer",
+    "free": "Free",
+    "winnersCount": "Winners: {count}",
+    "sessionNotFound": "Lottery photo session not found",
+    "loginRequired": "Login Required",
+    "loginRequiredDescription": "Please log in to participate in the lottery.",
+    "pleaseLogin": "Please log in",
+    "status": {
+      "upcoming": "Upcoming",
+      "accepting": "Accepting Entries",
+      "closed": "Entry Closed",
+      "completed": "Lottery Completed"
+    },
+    "entryStatus": {
+      "entered": "Entered",
+      "won": "Won",
+      "lost": "Lost"
+    },
+    "schedule": {
+      "title": "Lottery Schedule",
+      "entryPeriod": "Entry Period",
+      "lotteryDate": "Lottery Date"
+    },
+    "applicationMessage": "Application Message",
+    "optional": "Optional",
+    "applicationMessagePlaceholder": "Please write your motivation or self-introduction...",
+    "enterLottery": "Enter Lottery",
+    "entryInProgress": "Entering...",
+    "entryCompleted": "Entry completed. Please wait for the lottery results.",
+    "congratulations": "Congratulations! You won!",
+    "winnerInstructions": "Your participation in the photo session is confirmed. Details will be sent separately.",
+    "betterLuckNextTime": "Unfortunately, you were not selected. Please try again next time.",
+    "yourMessage": "Your Message",
+    "entryNotStarted": "Entry period has not started yet",
+    "entryEnded": "Entry period has ended",
+    "entryNotAccepting": "Currently not accepting entries",
+    "notes": {
+      "title": "Notes",
+      "fairLottery": "The lottery is conducted fairly and randomly",
+      "resultNotification": "Lottery results will be notified after the lottery date",
+      "winnerBooking": "Winners will be automatically booked for the photo session",
+      "noRefund": "Cancellation after entry is not allowed"
+    }
+  },
   "errors": {
     "title": "Error",
     "bookingFailed": "Booking failed",
@@ -277,13 +323,19 @@
     "sessionFull": "Sorry, this photo session is full.",
     "alreadyBooked": "This photo session is already booked.",
     "sessionEnded": "This photo session has already ended.",
-    "unauthorized": "Unauthorized"
+    "unauthorized": "Unauthorized",
+    "entryFailed": "Failed to enter lottery",
+    "lotteryFailed": "Failed to conduct lottery"
   },
   "success": {
     "title": "Success",
     "bookingCompleted": "Booking Completed!",
     "bookingCompletedDescription": "Your photo session booking has been completed.",
     "cancelCompleted": "Cancellation Completed",
-    "cancelCompletedDescription": "Your booking has been canceled."
+    "cancelCompletedDescription": "Your booking has been canceled.",
+    "entryCompleted": "Entry Completed!",
+    "entryCompletedDescription": "Your lottery entry has been completed.",
+    "lotteryCompleted": "Lottery Completed",
+    "lotteryCompletedDescription": "The lottery has been conducted successfully."
   }
 }
