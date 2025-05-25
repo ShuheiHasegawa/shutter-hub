@@ -4,6 +4,12 @@ export type UserType = 'model' | 'photographer' | 'organizer';
 
 export type BookingStatus = 'pending' | 'confirmed' | 'cancelled';
 
+export type BookingType =
+  | 'first_come'
+  | 'lottery'
+  | 'admin_lottery'
+  | 'priority';
+
 export interface Profile {
   id: string;
   email: string;
@@ -36,6 +42,7 @@ export interface PhotoSession {
   current_participants: number;
   price_per_person: number;
   image_urls: string[] | null;
+  booking_type: BookingType;
   is_published: boolean;
   created_at: string;
   updated_at: string;
@@ -205,7 +212,42 @@ export interface CreatePhotoSessionData {
   max_participants: number;
   price_per_person: number;
   image_urls?: string[];
+  booking_type: BookingType;
   is_published?: boolean;
+}
+
+// 予約設定の型定義
+export interface BookingSettings {
+  // 抽選設定
+  lottery?: {
+    entry_start_time: string;
+    entry_end_time: string;
+    lottery_date: string;
+    max_winners: number;
+  };
+  // 管理抽選設定
+  admin_lottery?: {
+    entry_start_time: string;
+    entry_end_time: string;
+    selection_deadline: string;
+    max_selections: number;
+  };
+  // 優先予約設定
+  priority?: {
+    general_booking_start: string;
+    ticket_priority_enabled: boolean;
+    ticket_priority_start?: string;
+    ticket_priority_end?: string;
+    rank_priority_enabled: boolean;
+    vip_start_time?: string;
+    vip_end_time?: string;
+    platinum_start_time?: string;
+    platinum_end_time?: string;
+    gold_start_time?: string;
+    gold_end_time?: string;
+    silver_start_time?: string;
+    silver_end_time?: string;
+  };
 }
 
 export type UpdatePhotoSessionData = Partial<CreatePhotoSessionData>;

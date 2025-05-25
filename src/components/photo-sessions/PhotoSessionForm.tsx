@@ -13,9 +13,15 @@ import {
   createPhotoSessionAction,
   updatePhotoSessionAction,
 } from '@/app/actions/photo-session';
-import type { PhotoSessionWithOrganizer } from '@/types/database';
+import type {
+  PhotoSessionWithOrganizer,
+  BookingType,
+  BookingSettings,
+} from '@/types/database';
 import { useTranslations } from 'next-intl';
 import { ImageUpload } from '@/components/photo-sessions/ImageUpload';
+import { BookingTypeSelector } from '@/components/photo-sessions/BookingTypeSelector';
+import { BookingSettingsForm } from '@/components/photo-sessions/BookingSettingsForm';
 
 interface PhotoSessionFormProps {
   initialData?: PhotoSessionWithOrganizer;
@@ -49,9 +55,12 @@ export function PhotoSessionForm({
       : '',
     max_participants: initialData?.max_participants || 1,
     price_per_person: initialData?.price_per_person || 0,
+    booking_type: (initialData?.booking_type as BookingType) || 'first_come',
     is_published: initialData?.is_published || false,
     image_urls: initialData?.image_urls || [],
   });
+
+  const [bookingSettings, setBookingSettings] = useState<BookingSettings>({});
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -69,6 +78,10 @@ export function PhotoSessionForm({
 
   const handleImageUrlsChange = (urls: string[]) => {
     setFormData(prev => ({ ...prev, image_urls: urls }));
+  };
+
+  const handleBookingTypeChange = (bookingType: BookingType) => {
+    setFormData(prev => ({ ...prev, booking_type: bookingType }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -144,6 +157,7 @@ export function PhotoSessionForm({
         end_time: endTime.toISOString(),
         max_participants: formData.max_participants,
         price_per_person: formData.price_per_person,
+        booking_type: formData.booking_type,
         is_published: formData.is_published,
         image_urls: formData.image_urls,
       };
@@ -373,6 +387,21 @@ export function PhotoSessionForm({
               </div>
             </div>
           </div>
+
+          {/* 予約方式選択 */}
+          <BookingTypeSelector
+            value={formData.booking_type}
+            onChange={handleBookingTypeChange}
+            disabled={isLoading}
+          />
+
+          {/* 予約設定 */}
+          <BookingSettingsForm
+            bookingType={formData.booking_type}
+            settings={bookingSettings}
+            onChange={setBookingSettings}
+            disabled={isLoading}
+          />
 
           {/* 公開設定 */}
           <div className="space-y-4">
