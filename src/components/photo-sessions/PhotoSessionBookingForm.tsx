@@ -16,7 +16,8 @@ import {
   CircleDollarSignIcon,
   UserIcon,
 } from 'lucide-react';
-import { formatDate, formatTime } from '@/lib/utils/date';
+import { formatDateLocalized, formatTimeLocalized } from '@/lib/utils/date';
+import { useTranslations, useLocale } from 'next-intl';
 
 interface PhotoSessionBookingFormProps {
   session: PhotoSessionWithOrganizer;
@@ -31,6 +32,11 @@ export function PhotoSessionBookingForm({
 }: PhotoSessionBookingFormProps) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const t = useTranslations('booking');
+  const tErrors = useTranslations('errors');
+  const tSuccess = useTranslations('success');
+  const tPhotoSessions = useTranslations('photoSessions');
+  const locale = useLocale();
   const [isLoading, setIsLoading] = useState(false);
   const [canJoin, setCanJoin] = useState<{
     canJoin: boolean;
@@ -55,8 +61,8 @@ export function PhotoSessionBookingForm({
   const handleBooking = async () => {
     if (!user) {
       toast({
-        title: 'ログインが必要です',
-        description: '予約するにはログインしてください。',
+        title: t('loginRequired'),
+        description: t('loginRequiredDescription'),
         variant: 'destructive',
       });
       return;
@@ -68,17 +74,17 @@ export function PhotoSessionBookingForm({
 
       if (result.success) {
         toast({
-          title: '予約完了！',
-          description: '撮影会の予約が完了しました。',
+          title: tSuccess('bookingCompleted'),
+          description: tSuccess('bookingCompletedDescription'),
         });
 
         if (onBookingSuccess) {
           onBookingSuccess();
         }
       } else {
-        const errorMessage = result.error || '予約に失敗しました。';
+        const errorMessage = result.error || tErrors('bookingFailed');
         toast({
-          title: '予約失敗',
+          title: tErrors('title'),
           description: errorMessage,
           variant: 'destructive',
         });
@@ -89,9 +95,9 @@ export function PhotoSessionBookingForm({
       }
     } catch (error) {
       console.error('予約エラー:', error);
-      const errorMessage = '予期しないエラーが発生しました。';
+      const errorMessage = tErrors('unexpectedError');
       toast({
-        title: 'エラー',
+        title: tErrors('title'),
         description: errorMessage,
         variant: 'destructive',
       });
@@ -115,13 +121,19 @@ export function PhotoSessionBookingForm({
 
   const getStatusBadge = () => {
     if (isPast) {
-      return <Badge variant="secondary">終了</Badge>;
+      return (
+        <Badge variant="secondary">{tPhotoSessions('status.ended')}</Badge>
+      );
     }
     if (isOngoing) {
-      return <Badge variant="default">開催中</Badge>;
+      return (
+        <Badge variant="default">{tPhotoSessions('status.ongoing')}</Badge>
+      );
     }
     if (isUpcoming) {
-      return <Badge variant="outline">予定</Badge>;
+      return (
+        <Badge variant="outline">{tPhotoSessions('status.upcoming')}</Badge>
+      );
     }
     return null;
   };
@@ -129,12 +141,24 @@ export function PhotoSessionBookingForm({
   const getAvailabilityBadge = () => {
     const available = session.max_participants - session.current_participants;
     if (available <= 0) {
-      return <Badge variant="destructive">満員</Badge>;
+      return (
+        <Badge variant="destructive">
+          {tPhotoSessions('availability.full')}
+        </Badge>
+      );
     }
     if (available <= 2) {
-      return <Badge variant="secondary">残りわずか</Badge>;
+      return (
+        <Badge variant="secondary">
+          {tPhotoSessions('availability.fewLeft')}
+        </Badge>
+      );
     }
-    return <Badge variant="outline">空きあり</Badge>;
+    return (
+      <Badge variant="outline">
+        {tPhotoSessions('availability.available')}
+      </Badge>
+    );
   };
 
   const canBookNow = canJoin?.canJoin && isUpcoming && session.is_published;
@@ -146,14 +170,19 @@ export function PhotoSessionBookingForm({
           <CardTitle className="text-xl">{session.title}</CardTitle>
           <div className="flex gap-2">
             {getStatusBadge()}
-            {!session.is_published && <Badge variant="outline">非公開</Badge>}
+            {!session.is_published && (
+              <Badge variant="outline">
+                {tPhotoSessions('status.unpublished')}
+              </Badge>
+            )}
           </div>
         </div>
 
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <UserIcon className="h-4 w-4" />
           <span>
-            主催者: {session.organizer.display_name || session.organizer.email}
+            {t('organizer')}:{' '}
+            {session.organizer.display_name || session.organizer.email}
           </span>
         </div>
       </CardHeader>
@@ -168,9 +197,10 @@ export function PhotoSessionBookingForm({
           <div className="flex items-center gap-2">
             <CalendarIcon className="h-4 w-4 text-muted-foreground" />
             <div>
-              <div>{formatDate(startDate, 'long')}</div>
+              <div>{formatDateLocalized(startDate, locale, 'long')}</div>
               <div className="text-muted-foreground">
-                {formatTime(startDate)} - {formatTime(endDate)}
+                {formatTimeLocalized(startDate, locale)} -{' '}
+                {formatTimeLocalized(endDate, locale)}
               </div>
             </div>
           </div>
@@ -189,7 +219,8 @@ export function PhotoSessionBookingForm({
             <UsersIcon className="h-4 w-4 text-muted-foreground" />
             <div className="flex items-center gap-2">
               <span>
-                {session.current_participants}/{session.max_participants}人
+                {session.current_participants}/{session.max_participants}
+                {t('people')}
               </span>
               {getAvailabilityBadge()}
             </div>
@@ -199,7 +230,7 @@ export function PhotoSessionBookingForm({
             <CircleDollarSignIcon className="h-4 w-4 text-muted-foreground" />
             <span>
               {session.price_per_person === 0
-                ? '無料'
+                ? t('free')
                 : `¥${session.price_per_person.toLocaleString()}`}
             </span>
           </div>
@@ -210,10 +241,10 @@ export function PhotoSessionBookingForm({
           {!user ? (
             <div className="text-center">
               <p className="text-muted-foreground mb-4">
-                予約するにはログインが必要です
+                {t('loginRequiredDescription')}
               </p>
               <Button variant="outline" disabled>
-                ログインしてください
+                {t('pleaseLogin')}
               </Button>
             </div>
           ) : !canJoin ? (
@@ -226,7 +257,7 @@ export function PhotoSessionBookingForm({
           ) : canBookNow ? (
             <div className="text-center">
               <p className="text-sm text-muted-foreground mb-4">
-                この撮影会に参加しますか？
+                {t('participateQuestion')}
               </p>
               <Button
                 onClick={handleBooking}
@@ -237,10 +268,10 @@ export function PhotoSessionBookingForm({
                 {isLoading ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                    予約中...
+                    {t('bookingInProgress')}
                   </>
                 ) : (
-                  '予約する'
+                  t('reserve')
                 )}
               </Button>
             </div>
@@ -248,7 +279,7 @@ export function PhotoSessionBookingForm({
             <div className="text-center">
               <p className="text-muted-foreground mb-4">{canJoin.reason}</p>
               <Button variant="outline" disabled>
-                予約できません
+                {t('cannotBook')}
               </Button>
             </div>
           )}
@@ -256,9 +287,9 @@ export function PhotoSessionBookingForm({
 
         {/* 注意事項 */}
         <div className="text-xs text-muted-foreground space-y-1 border-t pt-4">
-          <p>• 予約は先着順です</p>
-          <p>• キャンセルは開始時刻の24時間前まで可能です</p>
-          <p>• 当日のキャンセルはキャンセル料が発生する場合があります</p>
+          <p>• {t('notes.firstCome')}</p>
+          <p>• {t('notes.cancelDeadline')}</p>
+          <p>• {t('notes.cancelFee')}</p>
         </div>
       </CardContent>
     </Card>

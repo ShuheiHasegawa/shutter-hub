@@ -17,6 +17,7 @@ import { PlusIcon, SearchIcon } from 'lucide-react';
 import { getPhotoSessions, searchPhotoSessions } from '@/lib/photo-sessions';
 import { useAuth } from '@/hooks/useAuth';
 import type { PhotoSessionWithOrganizer } from '@/types/database';
+import { useTranslations } from 'next-intl';
 
 interface PhotoSessionListProps {
   showCreateButton?: boolean;
@@ -27,10 +28,11 @@ interface PhotoSessionListProps {
 export function PhotoSessionList({
   showCreateButton = false,
   organizerId,
-  title = '撮影会一覧',
+  title,
 }: PhotoSessionListProps) {
   const { user } = useAuth();
   const router = useRouter();
+  const t = useTranslations('photoSessions');
   const [sessions, setSessions] = useState<PhotoSessionWithOrganizer[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -136,11 +138,11 @@ export function PhotoSessionList({
     <div className="space-y-6">
       {/* ヘッダー */}
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">{title}</h2>
+        <h2 className="text-2xl font-bold">{title || t('list.title')}</h2>
         {showCreateButton && (
           <Button onClick={handleCreate}>
             <PlusIcon className="h-4 w-4 mr-2" />
-            撮影会を作成
+            {t('createSession')}
           </Button>
         )}
       </div>
@@ -148,14 +150,14 @@ export function PhotoSessionList({
       {/* 検索・フィルター */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">検索・フィルター</CardTitle>
+          <CardTitle className="text-lg">{t('list.searchFilter')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="relative">
               <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="キーワード検索..."
+                placeholder={t('list.keywordPlaceholder')}
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 className="pl-10"
@@ -163,7 +165,7 @@ export function PhotoSessionList({
             </div>
 
             <Input
-              placeholder="場所で絞り込み..."
+              placeholder={t('list.locationPlaceholder')}
               value={locationFilter}
               onChange={e => setLocationFilter(e.target.value)}
             />
@@ -175,12 +177,16 @@ export function PhotoSessionList({
               }
             >
               <SelectTrigger>
-                <SelectValue placeholder="並び順" />
+                <SelectValue placeholder={t('list.sortBy')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="start_time">開始日時順</SelectItem>
-                <SelectItem value="price">料金順</SelectItem>
-                <SelectItem value="created_at">作成日順</SelectItem>
+                <SelectItem value="start_time">
+                  {t('list.sortByStartTime')}
+                </SelectItem>
+                <SelectItem value="price">{t('list.sortByPrice')}</SelectItem>
+                <SelectItem value="created_at">
+                  {t('list.sortByCreatedAt')}
+                </SelectItem>
               </SelectContent>
             </Select>
 
@@ -192,7 +198,7 @@ export function PhotoSessionList({
                 setSortBy('start_time');
               }}
             >
-              リセット
+              {t('list.reset')}
             </Button>
           </div>
         </CardContent>
@@ -204,13 +210,13 @@ export function PhotoSessionList({
           <CardContent className="text-center py-12">
             <p className="text-muted-foreground mb-4">
               {searchQuery || locationFilter
-                ? '検索条件に一致する撮影会が見つかりませんでした。'
-                : '撮影会がまだありません。'}
+                ? t('list.noResults')
+                : t('list.noSessions')}
             </p>
             {showCreateButton && !searchQuery && !locationFilter && (
               <Button onClick={handleCreate}>
                 <PlusIcon className="h-4 w-4 mr-2" />
-                最初の撮影会を作成
+                {t('list.createFirst')}
               </Button>
             )}
           </CardContent>
@@ -233,7 +239,7 @@ export function PhotoSessionList({
       {/* ページネーション（将来的に追加） */}
       {sessions.length >= 20 && (
         <div className="flex justify-center">
-          <Button variant="outline">さらに読み込む</Button>
+          <Button variant="outline">{t('list.loadMore')}</Button>
         </div>
       )}
     </div>

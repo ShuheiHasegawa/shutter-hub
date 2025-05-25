@@ -203,6 +203,65 @@
       "available": "空きあり",
       "fewLeft": "残りわずか",
       "full": "満員"
+    },
+    "form": {
+      "createTitle": "撮影会作成",
+      "editTitle": "撮影会編集",
+      "createDescription": "新しい撮影会を作成してください",
+      "editDescription": "撮影会の情報を編集してください",
+      "basicInfo": "基本情報",
+      "titleLabel": "タイトル",
+      "titlePlaceholder": "撮影会のタイトルを入力してください",
+      "descriptionLabel": "説明",
+      "descriptionPlaceholder": "撮影会の詳細な説明を入力してください...",
+      "locationInfo": "場所情報",
+      "locationLabel": "場所",
+      "locationPlaceholder": "東京都渋谷区",
+      "addressLabel": "詳細住所",
+      "addressPlaceholder": "東京都渋谷区○○1-2-3",
+      "dateTimeInfo": "日時情報",
+      "startTimeLabel": "開始日時",
+      "endTimeLabel": "終了日時",
+      "participantInfo": "参加者・料金情報",
+      "maxParticipantsLabel": "最大参加者数",
+      "priceLabel": "参加費（1人あたり）",
+      "publishSettings": "公開設定",
+      "publishLabel": "撮影会を公開する",
+      "publishDescription": "公開すると他のユーザーが検索・予約できるようになります。",
+      "createButton": "撮影会を作成",
+      "updateButton": "撮影会を更新",
+      "creating": "作成中...",
+      "updating": "更新中...",
+      "required": "*",
+      "validation": {
+        "titleRequired": "タイトルは必須です",
+        "locationRequired": "場所は必須です",
+        "dateTimeRequired": "開始日時と終了日時は必須です",
+        "startTimeInvalid": "開始日時は現在時刻より後である必要があります",
+        "endTimeInvalid": "終了日時は開始日時より後である必要があります"
+      },
+      "success": {
+        "created": "撮影会を作成しました",
+        "updated": "撮影会を更新しました"
+      },
+      "error": {
+        "saveFailed": "撮影会の保存に失敗しました"
+      }
+    },
+    "list": {
+      "title": "撮影会一覧",
+      "searchFilter": "検索・フィルター",
+      "keywordPlaceholder": "キーワード検索...",
+      "locationPlaceholder": "場所で絞り込み...",
+      "sortBy": "並び順",
+      "sortByStartTime": "開始日時順",
+      "sortByPrice": "料金順",
+      "sortByCreatedAt": "作成日順",
+      "reset": "リセット",
+      "noResults": "検索条件に一致する撮影会が見つかりませんでした。",
+      "noSessions": "撮影会がまだありません。",
+      "createFirst": "最初の撮影会を作成",
+      "loadMore": "さらに読み込む"
     }
   },
   "errors": {

@@ -19,7 +19,8 @@ import {
   CircleDollarSignIcon,
   UserIcon,
 } from 'lucide-react';
-import { formatDate, formatTime } from '@/lib/utils/date';
+import { formatDateLocalized, formatTimeLocalized } from '@/lib/utils/date';
+import { useTranslations, useLocale } from 'next-intl';
 
 interface BookingConfirmationProps {
   isOpen: boolean;
@@ -43,6 +44,10 @@ export function BookingConfirmation({
   onCancel,
 }: BookingConfirmationProps) {
   const { toast } = useToast();
+  const t = useTranslations('booking');
+  const tErrors = useTranslations('errors');
+  const tSuccess = useTranslations('success');
+  const locale = useLocale();
   const [isLoading, setIsLoading] = useState(false);
 
   const handleConfirm = async () => {
@@ -58,8 +63,8 @@ export function BookingConfirmation({
 
         if (result.success) {
           toast({
-            title: 'キャンセル完了',
-            description: '予約をキャンセルしました。',
+            title: tSuccess('cancelCompleted'),
+            description: tSuccess('cancelCompletedDescription'),
           });
 
           if (onCancel) {
@@ -68,16 +73,16 @@ export function BookingConfirmation({
           onClose();
         } else {
           toast({
-            title: 'キャンセル失敗',
-            description: result.error || 'キャンセルに失敗しました。',
+            title: tErrors('title'),
+            description: result.error || tErrors('cancelFailed'),
             variant: 'destructive',
           });
         }
       } catch (error) {
         console.error('キャンセルエラー:', error);
         toast({
-          title: 'エラー',
-          description: '予期しないエラーが発生しました。',
+          title: tErrors('title'),
+          description: tErrors('unexpectedError'),
           variant: 'destructive',
         });
       } finally {
@@ -94,12 +99,12 @@ export function BookingConfirmation({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>
-            {mode === 'confirm' ? '予約確認' : '予約キャンセル'}
+            {mode === 'confirm' ? t('confirm') : t('confirmCancel')}
           </DialogTitle>
           <DialogDescription>
             {mode === 'confirm'
-              ? '以下の撮影会を予約しますか？'
-              : '本当に予約をキャンセルしますか？'}
+              ? t('confirmBookingQuestion')
+              : t('confirmCancelQuestion')}
           </DialogDescription>
         </DialogHeader>
 
@@ -111,7 +116,7 @@ export function BookingConfirmation({
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <UserIcon className="h-4 w-4" />
               <span>
-                主催者:{' '}
+                {t('organizer')}:{' '}
                 {session.organizer.display_name || session.organizer.email}
               </span>
             </div>
@@ -120,9 +125,10 @@ export function BookingConfirmation({
               <div className="flex items-center gap-2">
                 <CalendarIcon className="h-4 w-4 text-muted-foreground" />
                 <div>
-                  <div>{formatDate(startDate, 'long')}</div>
+                  <div>{formatDateLocalized(startDate, locale, 'long')}</div>
                   <div className="text-muted-foreground">
-                    {formatTime(startDate)} - {formatTime(endDate)}
+                    {formatTimeLocalized(startDate, locale)} -{' '}
+                    {formatTimeLocalized(endDate, locale)}
                   </div>
                 </div>
               </div>
@@ -143,7 +149,7 @@ export function BookingConfirmation({
                 <CircleDollarSignIcon className="h-4 w-4 text-muted-foreground" />
                 <span>
                   {session.price_per_person === 0
-                    ? '無料'
+                    ? t('free')
                     : `¥${session.price_per_person.toLocaleString()}`}
                 </span>
               </div>
@@ -153,30 +159,27 @@ export function BookingConfirmation({
           {/* 注意事項 */}
           {mode === 'confirm' && (
             <div className="text-xs text-muted-foreground space-y-1 bg-muted/50 p-3 rounded">
-              <p className="font-medium">注意事項:</p>
-              <p>• 予約は先着順で確定されます</p>
-              <p>• キャンセルは開始時刻の24時間前まで可能です</p>
-              <p>• 当日のキャンセルはキャンセル料が発生する場合があります</p>
+              <p className="font-medium">{t('notes.title')}</p>
+              <p>• {t('notes.firstCome')}</p>
+              <p>• {t('notes.cancelDeadline')}</p>
+              <p>• {t('notes.cancelFee')}</p>
             </div>
           )}
 
           {mode === 'cancel' && (
             <div className="text-xs text-muted-foreground space-y-1 bg-destructive/10 p-3 rounded">
               <p className="font-medium text-destructive">
-                キャンセルについて:
+                {t('cancelNotes.title')}
               </p>
-              <p>• キャンセル後の再予約は先着順となります</p>
-              <p>
-                •
-                開始時刻まで24時間を切っている場合、キャンセル料が発生する可能性があります
-              </p>
+              <p>• {t('cancelNotes.reBooking')}</p>
+              <p>• {t('cancelNotes.lateCancelFee')}</p>
             </div>
           )}
         </div>
 
         <DialogFooter className="flex gap-2">
           <Button variant="outline" onClick={onClose} disabled={isLoading}>
-            {mode === 'confirm' ? 'やめる' : '戻る'}
+            {mode === 'confirm' ? t('actions.cancel') : t('actions.back')}
           </Button>
           <Button
             onClick={handleConfirm}
@@ -186,12 +189,14 @@ export function BookingConfirmation({
             {isLoading ? (
               <>
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                {mode === 'confirm' ? '予約中...' : 'キャンセル中...'}
+                {mode === 'confirm'
+                  ? t('bookingInProgress')
+                  : t('cancelInProgress')}
               </>
             ) : mode === 'confirm' ? (
-              '予約する'
+              t('actions.confirmBooking')
             ) : (
-              'キャンセルする'
+              t('actions.confirmCancel')
             )}
           </Button>
         </DialogFooter>

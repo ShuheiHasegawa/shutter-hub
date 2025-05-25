@@ -207,6 +207,65 @@
       "available": "Available",
       "fewLeft": "Few left",
       "full": "Full"
+    },
+    "form": {
+      "createTitle": "Create Photo Session",
+      "editTitle": "Edit Photo Session",
+      "createDescription": "Please create a new photo session",
+      "editDescription": "Please edit the photo session information",
+      "basicInfo": "Basic Information",
+      "titleLabel": "Title",
+      "titlePlaceholder": "Enter the title of the photo session",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Enter a detailed description of the photo session...",
+      "locationInfo": "Location Information",
+      "locationLabel": "Location",
+      "locationPlaceholder": "Tokyo, Shibuya",
+      "addressLabel": "Detailed Address",
+      "addressPlaceholder": "1-2-3 XX, Shibuya, Tokyo",
+      "dateTimeInfo": "Date & Time Information",
+      "startTimeLabel": "Start Time",
+      "endTimeLabel": "End Time",
+      "participantInfo": "Participant & Fee Information",
+      "maxParticipantsLabel": "Maximum Participants",
+      "priceLabel": "Fee (per person)",
+      "publishSettings": "Publish Settings",
+      "publishLabel": "Publish Photo Session",
+      "publishDescription": "When published, other users can search and book this session.",
+      "createButton": "Create Photo Session",
+      "updateButton": "Update Photo Session",
+      "creating": "Creating...",
+      "updating": "Updating...",
+      "required": "*",
+      "validation": {
+        "titleRequired": "Title is required",
+        "locationRequired": "Location is required",
+        "dateTimeRequired": "Start time and end time are required",
+        "startTimeInvalid": "Start time must be after current time",
+        "endTimeInvalid": "End time must be after start time"
+      },
+      "success": {
+        "created": "Photo session created successfully",
+        "updated": "Photo session updated successfully"
+      },
+      "error": {
+        "saveFailed": "Failed to save photo session"
+      }
+    },
+    "list": {
+      "title": "Photo Sessions",
+      "searchFilter": "Search & Filter",
+      "keywordPlaceholder": "Search keywords...",
+      "locationPlaceholder": "Filter by location...",
+      "sortBy": "Sort by",
+      "sortByStartTime": "Start time",
+      "sortByPrice": "Price",
+      "sortByCreatedAt": "Created date",
+      "reset": "Reset",
+      "noResults": "No photo sessions found matching your search criteria.",
+      "noSessions": "No photo sessions yet.",
+      "createFirst": "Create your first photo session",
+      "loadMore": "Load more"
     }
   },
   "errors": {

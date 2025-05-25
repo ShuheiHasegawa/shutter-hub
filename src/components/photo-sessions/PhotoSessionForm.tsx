@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { createPhotoSession, updatePhotoSession } from '@/lib/photo-sessions';
 import type { PhotoSessionWithOrganizer } from '@/types/database';
+import { useTranslations } from 'next-intl';
 
 interface PhotoSessionFormProps {
   initialData?: PhotoSessionWithOrganizer;
@@ -26,6 +27,9 @@ export function PhotoSessionForm({
   const { user } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
+  const t = useTranslations('photoSessions');
+  const tCommon = useTranslations('common');
+  const tErrors = useTranslations('errors');
   const [isLoading, setIsLoading] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -63,8 +67,8 @@ export function PhotoSessionForm({
 
     if (!user) {
       toast({
-        title: 'エラー',
-        description: '認証が必要です',
+        title: tErrors('title'),
+        description: tErrors('unauthorized'),
         variant: 'destructive',
       });
       return;
@@ -73,8 +77,8 @@ export function PhotoSessionForm({
     // バリデーション
     if (!formData.title.trim()) {
       toast({
-        title: 'エラー',
-        description: 'タイトルは必須です',
+        title: tErrors('title'),
+        description: t('form.validation.titleRequired'),
         variant: 'destructive',
       });
       return;
@@ -82,8 +86,8 @@ export function PhotoSessionForm({
 
     if (!formData.location.trim()) {
       toast({
-        title: 'エラー',
-        description: '場所は必須です',
+        title: tErrors('title'),
+        description: t('form.validation.locationRequired'),
         variant: 'destructive',
       });
       return;
@@ -91,8 +95,8 @@ export function PhotoSessionForm({
 
     if (!formData.start_time || !formData.end_time) {
       toast({
-        title: 'エラー',
-        description: '開始日時と終了日時は必須です',
+        title: tErrors('title'),
+        description: t('form.validation.dateTimeRequired'),
         variant: 'destructive',
       });
       return;
@@ -104,8 +108,8 @@ export function PhotoSessionForm({
 
     if (startTime <= now) {
       toast({
-        title: 'エラー',
-        description: '開始日時は現在時刻より後である必要があります',
+        title: tErrors('title'),
+        description: t('form.validation.startTimeInvalid'),
         variant: 'destructive',
       });
       return;
@@ -113,8 +117,8 @@ export function PhotoSessionForm({
 
     if (endTime <= startTime) {
       toast({
-        title: 'エラー',
-        description: '終了日時は開始日時より後である必要があります',
+        title: tErrors('title'),
+        description: t('form.validation.endTimeInvalid'),
         variant: 'destructive',
       });
       return;
@@ -145,18 +149,18 @@ export function PhotoSessionForm({
       if (result.error) {
         console.error('撮影会保存エラー:', result.error);
         toast({
-          title: 'エラー',
-          description: '撮影会の保存に失敗しました',
+          title: tErrors('title'),
+          description: t('form.error.saveFailed'),
           variant: 'destructive',
         });
         return;
       }
 
       toast({
-        title: '成功',
+        title: tCommon('success'),
         description: isEditing
-          ? '撮影会を更新しました'
-          : '撮影会を作成しました',
+          ? t('form.success.updated')
+          : t('form.success.created'),
       });
 
       if (onSuccess) {
@@ -167,8 +171,8 @@ export function PhotoSessionForm({
     } catch (error) {
       console.error('予期しないエラー:', error);
       toast({
-        title: 'エラー',
-        description: '予期しないエラーが発生しました',
+        title: tErrors('title'),
+        description: tErrors('unexpectedError'),
         variant: 'destructive',
       });
     } finally {
@@ -180,30 +184,28 @@ export function PhotoSessionForm({
     <Card className="w-full max-w-4xl mx-auto">
       <CardHeader>
         <CardTitle className="text-center">
-          {isEditing ? '撮影会編集' : '撮影会作成'}
+          {isEditing ? t('form.editTitle') : t('form.createTitle')}
         </CardTitle>
         <p className="text-center text-muted-foreground">
-          {isEditing
-            ? '撮影会の情報を編集してください'
-            : '新しい撮影会を作成してください'}
+          {isEditing ? t('form.editDescription') : t('form.createDescription')}
         </p>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* 基本情報 */}
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">基本情報</h3>
+            <h3 className="text-lg font-medium">{t('form.basicInfo')}</h3>
 
             <div>
               <label htmlFor="title" className="block text-sm font-medium mb-2">
-                タイトル *
+                {t('form.titleLabel')} {t('form.required')}
               </label>
               <Input
                 id="title"
                 name="title"
                 value={formData.title}
                 onChange={handleInputChange}
-                placeholder="撮影会のタイトルを入力してください"
+                placeholder={t('form.titlePlaceholder')}
                 required
               />
             </div>
@@ -213,14 +215,14 @@ export function PhotoSessionForm({
                 htmlFor="description"
                 className="block text-sm font-medium mb-2"
               >
-                説明
+                {t('form.descriptionLabel')}
               </label>
               <Textarea
                 id="description"
                 name="description"
                 value={formData.description}
                 onChange={handleInputChange}
-                placeholder="撮影会の詳細な説明を入力してください..."
+                placeholder={t('form.descriptionPlaceholder')}
                 rows={4}
               />
             </div>
@@ -228,21 +230,21 @@ export function PhotoSessionForm({
 
           {/* 場所情報 */}
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">場所情報</h3>
+            <h3 className="text-lg font-medium">{t('form.locationInfo')}</h3>
 
             <div>
               <label
                 htmlFor="location"
                 className="block text-sm font-medium mb-2"
               >
-                場所 *
+                {t('form.locationLabel')} {t('form.required')}
               </label>
               <Input
                 id="location"
                 name="location"
                 value={formData.location}
                 onChange={handleInputChange}
-                placeholder="東京都渋谷区"
+                placeholder={t('form.locationPlaceholder')}
                 required
               />
             </div>
@@ -252,21 +254,21 @@ export function PhotoSessionForm({
                 htmlFor="address"
                 className="block text-sm font-medium mb-2"
               >
-                詳細住所
+                {t('form.addressLabel')}
               </label>
               <Input
                 id="address"
                 name="address"
                 value={formData.address}
                 onChange={handleInputChange}
-                placeholder="東京都渋谷区○○1-2-3"
+                placeholder={t('form.addressPlaceholder')}
               />
             </div>
           </div>
 
           {/* 日時情報 */}
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">日時情報</h3>
+            <h3 className="text-lg font-medium">{t('form.dateTimeInfo')}</h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -274,7 +276,7 @@ export function PhotoSessionForm({
                   htmlFor="start_time"
                   className="block text-sm font-medium mb-2"
                 >
-                  開始日時 *
+                  {t('form.startTimeLabel')} {t('form.required')}
                 </label>
                 <Input
                   id="start_time"
@@ -291,7 +293,7 @@ export function PhotoSessionForm({
                   htmlFor="end_time"
                   className="block text-sm font-medium mb-2"
                 >
-                  終了日時 *
+                  {t('form.endTimeLabel')} {t('form.required')}
                 </label>
                 <Input
                   id="end_time"
@@ -307,7 +309,7 @@ export function PhotoSessionForm({
 
           {/* 参加者・料金情報 */}
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">参加者・料金情報</h3>
+            <h3 className="text-lg font-medium">{t('form.participantInfo')}</h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -315,7 +317,7 @@ export function PhotoSessionForm({
                   htmlFor="max_participants"
                   className="block text-sm font-medium mb-2"
                 >
-                  最大参加者数 *
+                  {t('form.maxParticipantsLabel')} {t('form.required')}
                 </label>
                 <Input
                   id="max_participants"
@@ -334,7 +336,7 @@ export function PhotoSessionForm({
                   htmlFor="price_per_person"
                   className="block text-sm font-medium mb-2"
                 >
-                  参加費（1人あたり） *
+                  {t('form.priceLabel')} {t('form.required')}
                 </label>
                 <Input
                   id="price_per_person"
@@ -352,15 +354,15 @@ export function PhotoSessionForm({
 
           {/* 公開設定 */}
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">公開設定</h3>
+            <h3 className="text-lg font-medium">{t('form.publishSettings')}</h3>
 
             <div className="flex items-center justify-between rounded-lg border p-4">
               <div className="space-y-0.5">
                 <label className="text-base font-medium">
-                  撮影会を公開する
+                  {t('form.publishLabel')}
                 </label>
                 <p className="text-sm text-muted-foreground">
-                  公開すると他のユーザーが検索・予約できるようになります。
+                  {t('form.publishDescription')}
                 </p>
               </div>
               <Switch
@@ -374,12 +376,12 @@ export function PhotoSessionForm({
             {isLoading ? (
               <>
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                {isEditing ? '更新中...' : '作成中...'}
+                {isEditing ? t('form.updating') : t('form.creating')}
               </>
             ) : isEditing ? (
-              '撮影会を更新'
+              t('form.updateButton')
             ) : (
-              '撮影会を作成'
+              t('form.createButton')
             )}
           </Button>
         </form>
