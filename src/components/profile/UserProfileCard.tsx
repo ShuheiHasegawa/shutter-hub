@@ -52,7 +52,7 @@ export function UserProfileCard({ profile }: UserProfileCardProps) {
             プロフィール
           </span>
           <Button variant="outline" size="sm" asChild>
-            <Link href="/auth/setup-profile">
+            <Link href="/profile/edit">
               <Edit className="h-4 w-4 mr-2" />
               編集
             </Link>

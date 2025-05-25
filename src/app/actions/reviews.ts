@@ -409,7 +409,7 @@ export async function getPhotoSessionReviews(photoSessionId: string) {
       .select(
         `
         *,
-        reviewer:profiles!photo_session_reviews_reviewer_id_fkey(
+        reviewer:profiles(
           id,
           display_name,
           avatar_url
@@ -442,7 +442,7 @@ export async function getUserReviews(userId: string) {
       .select(
         `
         *,
-        reviewer:profiles!user_reviews_reviewer_id_fkey(
+        reviewer:profiles(
           id,
           display_name,
           avatar_url
