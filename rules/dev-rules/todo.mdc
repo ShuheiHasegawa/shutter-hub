@@ -106,9 +106,12 @@ alwaysApply: true
     - [x] 予約方式選択機能（先着順・抽選・管理抽選・優先予約）
     - [x] BookingTypeSelectorコンポーネント
     - [x] BookingSettingsFormコンポーネント
+    - [x] ImageUploadコンポーネント（ドラッグ&ドロップ対応）
     - [x] 各予約方式の詳細設定フォーム
     - [x] 型定義拡張（BookingType、BookingSettings）
-    - [x] 多言語化対応
+    - [x] データベースマイグレーション（booking_typeフィールド追加）
+    - [x] RadioGroupコンポーネント追加
+    - [x] 多言語化対応（日本語・英語翻訳追加）
   - [x] **撮影会一覧サイドバー統合**
     - [x] PhotoSessionsSidebarコンポーネント作成
     - [x] 高度なフィルタリング機能（キーワード・場所・日時・料金・参加者数・予約方式）

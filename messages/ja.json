@@ -19,12 +19,14 @@
   },
   "navigation": {
     "home": "ホーム",
+    "dashboard": "ダッシュボード",
     "search": "検索",
     "bookings": "予約",
     "instant": "即座撮影",
     "profile": "プロフィール",
     "photoSessions": "撮影会",
     "studios": "スタジオ",
+    "settings": "設定",
     "signin": "ログイン",
     "signup": "新規登録",
     "signout": "ログアウト"

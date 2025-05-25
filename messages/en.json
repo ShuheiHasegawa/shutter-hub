@@ -19,12 +19,14 @@
   },
   "navigation": {
     "home": "Home",
+    "dashboard": "Dashboard",
     "search": "Search",
     "bookings": "Bookings",
     "instant": "Instant Photo",
     "profile": "Profile",
     "photoSessions": "Photo Sessions",
     "studios": "Studios",
+    "settings": "Settings",
     "signin": "Sign In",
     "signup": "Sign Up",
     "signout": "Sign Out"
