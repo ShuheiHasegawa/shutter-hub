@@ -303,11 +303,10 @@
     },
     "bookingType": {
       "title": "Booking Type",
-      "description": "Select the booking method for this photo session",
+      "selected": "Selected",
       "firstCome": {
         "title": "First Come First Served",
         "description": "Bookings accepted on first-come basis",
-        "badge": "Standard",
         "feature1": "Real-time inventory management",
         "feature2": "Instant booking confirmation",
         "feature3": "Simple and straightforward"
@@ -315,7 +314,6 @@
       "lottery": {
         "title": "Lottery Booking",
         "description": "Fair lottery selection after entry period",
-        "badge": "Fair",
         "feature1": "Fair random lottery",
         "feature2": "Configurable entry period",
         "feature3": "Perfect for popular sessions"
@@ -323,7 +321,6 @@
       "adminLottery": {
         "title": "Admin Lottery",
         "description": "Manual selection by organizer",
-        "badge": "Curated",
         "feature1": "Manual selection by organizer",
         "feature2": "Flexible selection criteria",
         "feature3": "Quality-focused sessions"
@@ -331,48 +328,88 @@
       "priority": {
         "title": "Priority Booking",
         "description": "Tiered booking based on rank and tickets",
-        "badge": "Premium",
         "feature1": "User rank-based priority",
         "feature2": "Priority ticket support",
         "feature3": "Repeat customer benefits"
       }
     },
     "bookingSettings": {
+      "title": "Booking Settings",
+      "description": "Configure detailed settings for the selected booking type",
       "firstCome": {
         "title": "First Come First Served Settings",
-        "description": "No special settings required for first-come bookings. Booking starts at session start time."
+        "bookingStartTime": "Booking Start Time",
+        "bookingStartTimeHelp": "Booking will start accepting from this time",
+        "enableWaitlist": "Enable Waitlist",
+        "enableWaitlistHelp": "Accept waitlist registrations when full",
+        "maxWaitlistSize": "Maximum Waitlist Size"
       },
       "lottery": {
         "title": "Lottery Booking Settings",
-        "entryStartTime": "Entry Start Time",
-        "entryEndTime": "Entry End Time",
-        "lotteryDate": "Lottery Execution Date",
-        "maxWinners": "Number of Winners"
+        "applicationStartTime": "Application Start Time",
+        "applicationEndTime": "Application End Time",
+        "lotteryDateTime": "Lottery Execution Date & Time",
+        "lotteryDateTimeHelp": "Lottery will be automatically executed at this time",
+        "autoLottery": "Enable Auto Lottery",
+        "autoLotteryHelp": "Automatically execute lottery at specified time"
       },
       "adminLottery": {
         "title": "Admin Lottery Settings",
-        "entryStartTime": "Application Start Time",
-        "entryEndTime": "Application End Time",
-        "selectionDeadline": "Selection Deadline",
-        "maxSelections": "Target Selection Count"
+        "applicationStartTime": "Application Start Time",
+        "applicationEndTime": "Application End Time",
+        "selectionCriteria": "Selection Criteria",
+        "selectionCriteriaPlaceholder": "Please describe the criteria for selection...",
+        "selectionCriteriaHelp": "Selection criteria displayed to applicants",
+        "applicationMessage": "Application Message",
+        "applicationMessagePlaceholder": "Please describe what you want applicants to include in their message..."
       },
       "priority": {
         "title": "Priority Booking Settings",
-        "generalBookingStart": "General Booking Start Time",
-        "ticketPriority": "Priority Ticket Feature",
-        "ticketPriorityDescription": "Early booking with priority tickets for specific users",
-        "ticketStartTime": "Ticket Priority Start Time",
-        "ticketEndTime": "Ticket Priority End Time",
-        "rankPriority": "Rank Priority Feature",
-        "rankPriorityDescription": "Gradual booking start based on user rank",
-        "vipStartTime": "VIP Start Time",
-        "vipEndTime": "VIP End Time",
-        "platinumStartTime": "Platinum Start Time",
-        "platinumEndTime": "Platinum End Time",
-        "goldStartTime": "Gold Start Time",
-        "goldEndTime": "Gold End Time",
-        "silverStartTime": "Silver Start Time",
-        "silverEndTime": "Silver End Time"
+        "bookingStartTime": "Booking Start Time",
+        "vipSlots": "VIP Slots",
+        "platinumSlots": "Platinum Slots",
+        "goldSlots": "Gold Slots",
+        "enableGeneralBooking": "Enable General Booking",
+        "enableGeneralBookingHelp": "Allow general users to book after priority slots end",
+        "generalBookingStartTime": "General Booking Start Time"
+      },
+      "note": {
+        "title": "Note",
+        "description": "Settings can be changed after creating the photo session, but may affect existing bookings."
+      }
+    },
+    "imageUpload": {
+      "title": "Upload Images",
+      "description": "Upload image files for the photo session",
+      "selectFiles": "Select Files",
+      "orDragAndDrop": "or drag & drop",
+      "uploading": "Uploading...",
+      "maxSize": "Max Size",
+      "supportedFormats": "Supported Formats",
+      "maxImages": "Max Images",
+      "preview": "Preview",
+      "mainImage": "Main Image",
+      "firstIsMain": "First is Main",
+      "main": "Main",
+      "tips": {
+        "title": "Tips",
+        "firstImageMain": "The first image will be displayed as the main image",
+        "dragToReorder": "Drag to reorder images",
+        "highQuality": "We recommend using high-quality images"
+      },
+      "success": {
+        "uploaded": "Images uploaded successfully",
+        "removed": "Image removed successfully"
+      },
+      "error": {
+        "maxImagesReached": "Maximum images reached",
+        "maxImagesReachedDescription": "You can select up to {max} images",
+        "fileTooLarge": "File too large",
+        "fileTooLargeDescription": "File size must be 10MB or less",
+        "invalidFileType": "Invalid file type",
+        "invalidFileTypeDescription": "Only JPEG, PNG, WebP, and GIF files are supported",
+        "uploadFailed": "Upload failed",
+        "uploadFailedDescription": "Failed to upload images. Please try again."
       }
     }
   },

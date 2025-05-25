@@ -5,7 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Separator } from '@/components/ui/separator';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { Clock, Calendar, Users, Settings, Info } from 'lucide-react';
 import type { BookingType, BookingSettings } from '@/types/database';
 
 interface BookingSettingsFormProps {
@@ -21,472 +23,374 @@ export function BookingSettingsForm({
   onChange,
   disabled = false,
 }: BookingSettingsFormProps) {
-  const t = useTranslations('photoSessions.bookingSettings');
+  const t = useTranslations('photoSessions');
 
-  const updateSettings = (key: keyof BookingSettings, value: unknown) => {
+  const updateSetting = (key: string, value: unknown) => {
     onChange({
       ...settings,
       [key]: value,
     });
   };
 
-  if (bookingType === 'first_come') {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">{t('firstCome.title')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            {t('firstCome.description')}
+  const renderFirstComeSettings = () => (
+    <div className="space-y-4">
+      <div className="flex items-center gap-2">
+        <Clock className="h-4 w-4" />
+        <h4 className="font-medium">{t('bookingSettings.firstCome.title')}</h4>
+      </div>
+
+      <div className="space-y-3">
+        <div>
+          <Label className="text-sm">
+            {t('bookingSettings.firstCome.bookingStartTime')}
+          </Label>
+          <Input
+            type="datetime-local"
+            value={settings.booking_start_time || ''}
+            onChange={e => updateSetting('booking_start_time', e.target.value)}
+            disabled={disabled}
+          />
+          <p className="text-xs text-muted-foreground mt-1">
+            {t('bookingSettings.firstCome.bookingStartTimeHelp')}
           </p>
-        </CardContent>
-      </Card>
-    );
-  }
+        </div>
 
-  if (bookingType === 'lottery') {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">{t('lottery.title')}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="lottery-entry-start">
-                {t('lottery.entryStartTime')}
-              </Label>
-              <Input
-                id="lottery-entry-start"
-                type="datetime-local"
-                value={settings.lottery?.entry_start_time || ''}
-                onChange={e =>
-                  updateSettings('lottery', {
-                    ...settings.lottery,
-                    entry_start_time: e.target.value,
-                  })
-                }
-                disabled={disabled}
-              />
-            </div>
-            <div>
-              <Label htmlFor="lottery-entry-end">
-                {t('lottery.entryEndTime')}
-              </Label>
-              <Input
-                id="lottery-entry-end"
-                type="datetime-local"
-                value={settings.lottery?.entry_end_time || ''}
-                onChange={e =>
-                  updateSettings('lottery', {
-                    ...settings.lottery,
-                    entry_end_time: e.target.value,
-                  })
-                }
-                disabled={disabled}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="lottery-date">{t('lottery.lotteryDate')}</Label>
-              <Input
-                id="lottery-date"
-                type="datetime-local"
-                value={settings.lottery?.lottery_date || ''}
-                onChange={e =>
-                  updateSettings('lottery', {
-                    ...settings.lottery,
-                    lottery_date: e.target.value,
-                  })
-                }
-                disabled={disabled}
-              />
-            </div>
-            <div>
-              <Label htmlFor="lottery-winners">{t('lottery.maxWinners')}</Label>
-              <Input
-                id="lottery-winners"
-                type="number"
-                min="1"
-                value={settings.lottery?.max_winners || 1}
-                onChange={e =>
-                  updateSettings('lottery', {
-                    ...settings.lottery,
-                    max_winners: parseInt(e.target.value) || 1,
-                  })
-                }
-                disabled={disabled}
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (bookingType === 'admin_lottery') {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">{t('adminLottery.title')}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="admin-entry-start">
-                {t('adminLottery.entryStartTime')}
-              </Label>
-              <Input
-                id="admin-entry-start"
-                type="datetime-local"
-                value={settings.admin_lottery?.entry_start_time || ''}
-                onChange={e =>
-                  updateSettings('admin_lottery', {
-                    ...settings.admin_lottery,
-                    entry_start_time: e.target.value,
-                  })
-                }
-                disabled={disabled}
-              />
-            </div>
-            <div>
-              <Label htmlFor="admin-entry-end">
-                {t('adminLottery.entryEndTime')}
-              </Label>
-              <Input
-                id="admin-entry-end"
-                type="datetime-local"
-                value={settings.admin_lottery?.entry_end_time || ''}
-                onChange={e =>
-                  updateSettings('admin_lottery', {
-                    ...settings.admin_lottery,
-                    entry_end_time: e.target.value,
-                  })
-                }
-                disabled={disabled}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="admin-deadline">
-                {t('adminLottery.selectionDeadline')}
-              </Label>
-              <Input
-                id="admin-deadline"
-                type="datetime-local"
-                value={settings.admin_lottery?.selection_deadline || ''}
-                onChange={e =>
-                  updateSettings('admin_lottery', {
-                    ...settings.admin_lottery,
-                    selection_deadline: e.target.value,
-                  })
-                }
-                disabled={disabled}
-              />
-            </div>
-            <div>
-              <Label htmlFor="admin-selections">
-                {t('adminLottery.maxSelections')}
-              </Label>
-              <Input
-                id="admin-selections"
-                type="number"
-                min="1"
-                value={settings.admin_lottery?.max_selections || 1}
-                onChange={e =>
-                  updateSettings('admin_lottery', {
-                    ...settings.admin_lottery,
-                    max_selections: parseInt(e.target.value) || 1,
-                  })
-                }
-                disabled={disabled}
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (bookingType === 'priority') {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">{t('priority.title')}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* 一般予約開始時間 */}
+        <div className="flex items-center justify-between">
           <div>
-            <Label htmlFor="general-booking-start">
-              {t('priority.generalBookingStart')}
+            <Label className="text-sm">
+              {t('bookingSettings.firstCome.enableWaitlist')}
+            </Label>
+            <p className="text-xs text-muted-foreground">
+              {t('bookingSettings.firstCome.enableWaitlistHelp')}
+            </p>
+          </div>
+          <Switch
+            checked={settings.enable_waitlist || false}
+            onCheckedChange={checked =>
+              updateSetting('enable_waitlist', checked)
+            }
+            disabled={disabled}
+          />
+        </div>
+
+        {settings.enable_waitlist && (
+          <div>
+            <Label className="text-sm">
+              {t('bookingSettings.firstCome.maxWaitlistSize')}
             </Label>
             <Input
-              id="general-booking-start"
-              type="datetime-local"
-              value={settings.priority?.general_booking_start || ''}
+              type="number"
+              min="1"
+              max="100"
+              value={settings.max_waitlist_size || 10}
               onChange={e =>
-                updateSettings('priority', {
-                  ...settings.priority,
-                  general_booking_start: e.target.value,
-                })
+                updateSetting(
+                  'max_waitlist_size',
+                  parseInt(e.target.value) || 10
+                )
               }
               disabled={disabled}
             />
           </div>
+        )}
+      </div>
+    </div>
+  );
 
-          <Separator />
+  const renderLotterySettings = () => (
+    <div className="space-y-4">
+      <div className="flex items-center gap-2">
+        <Calendar className="h-4 w-4" />
+        <h4 className="font-medium">{t('bookingSettings.lottery.title')}</h4>
+      </div>
 
-          {/* 優先チケット設定 */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="text-sm font-medium">
-                  {t('priority.ticketPriority')}
-                </h4>
-                <p className="text-xs text-muted-foreground">
-                  {t('priority.ticketPriorityDescription')}
-                </p>
-              </div>
-              <Switch
-                checked={settings.priority?.ticket_priority_enabled || false}
-                onCheckedChange={checked =>
-                  updateSettings('priority', {
-                    ...settings.priority,
-                    ticket_priority_enabled: checked,
-                  })
-                }
-                disabled={disabled}
-              />
-            </div>
-
-            {settings.priority?.ticket_priority_enabled && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="ticket-start">
-                    {t('priority.ticketStartTime')}
-                  </Label>
-                  <Input
-                    id="ticket-start"
-                    type="datetime-local"
-                    value={settings.priority?.ticket_priority_start || ''}
-                    onChange={e =>
-                      updateSettings('priority', {
-                        ...settings.priority,
-                        ticket_priority_start: e.target.value,
-                      })
-                    }
-                    disabled={disabled}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="ticket-end">
-                    {t('priority.ticketEndTime')}
-                  </Label>
-                  <Input
-                    id="ticket-end"
-                    type="datetime-local"
-                    value={settings.priority?.ticket_priority_end || ''}
-                    onChange={e =>
-                      updateSettings('priority', {
-                        ...settings.priority,
-                        ticket_priority_end: e.target.value,
-                      })
-                    }
-                    disabled={disabled}
-                  />
-                </div>
-              </div>
-            )}
+      <div className="space-y-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div>
+            <Label className="text-sm">
+              {t('bookingSettings.lottery.applicationStartTime')}
+            </Label>
+            <Input
+              type="datetime-local"
+              value={settings.application_start_time || ''}
+              onChange={e =>
+                updateSetting('application_start_time', e.target.value)
+              }
+              disabled={disabled}
+            />
           </div>
-
-          <Separator />
-
-          {/* ランク優先設定 */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="text-sm font-medium">
-                  {t('priority.rankPriority')}
-                </h4>
-                <p className="text-xs text-muted-foreground">
-                  {t('priority.rankPriorityDescription')}
-                </p>
-              </div>
-              <Switch
-                checked={settings.priority?.rank_priority_enabled || false}
-                onCheckedChange={checked =>
-                  updateSettings('priority', {
-                    ...settings.priority,
-                    rank_priority_enabled: checked,
-                  })
-                }
-                disabled={disabled}
-              />
-            </div>
-
-            {settings.priority?.rank_priority_enabled && (
-              <div className="space-y-4">
-                {/* VIP */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="vip-start">
-                      {t('priority.vipStartTime')}
-                    </Label>
-                    <Input
-                      id="vip-start"
-                      type="datetime-local"
-                      value={settings.priority?.vip_start_time || ''}
-                      onChange={e =>
-                        updateSettings('priority', {
-                          ...settings.priority,
-                          vip_start_time: e.target.value,
-                        })
-                      }
-                      disabled={disabled}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="vip-end">{t('priority.vipEndTime')}</Label>
-                    <Input
-                      id="vip-end"
-                      type="datetime-local"
-                      value={settings.priority?.vip_end_time || ''}
-                      onChange={e =>
-                        updateSettings('priority', {
-                          ...settings.priority,
-                          vip_end_time: e.target.value,
-                        })
-                      }
-                      disabled={disabled}
-                    />
-                  </div>
-                </div>
-
-                {/* Platinum */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="platinum-start">
-                      {t('priority.platinumStartTime')}
-                    </Label>
-                    <Input
-                      id="platinum-start"
-                      type="datetime-local"
-                      value={settings.priority?.platinum_start_time || ''}
-                      onChange={e =>
-                        updateSettings('priority', {
-                          ...settings.priority,
-                          platinum_start_time: e.target.value,
-                        })
-                      }
-                      disabled={disabled}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="platinum-end">
-                      {t('priority.platinumEndTime')}
-                    </Label>
-                    <Input
-                      id="platinum-end"
-                      type="datetime-local"
-                      value={settings.priority?.platinum_end_time || ''}
-                      onChange={e =>
-                        updateSettings('priority', {
-                          ...settings.priority,
-                          platinum_end_time: e.target.value,
-                        })
-                      }
-                      disabled={disabled}
-                    />
-                  </div>
-                </div>
-
-                {/* Gold */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="gold-start">
-                      {t('priority.goldStartTime')}
-                    </Label>
-                    <Input
-                      id="gold-start"
-                      type="datetime-local"
-                      value={settings.priority?.gold_start_time || ''}
-                      onChange={e =>
-                        updateSettings('priority', {
-                          ...settings.priority,
-                          gold_start_time: e.target.value,
-                        })
-                      }
-                      disabled={disabled}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="gold-end">
-                      {t('priority.goldEndTime')}
-                    </Label>
-                    <Input
-                      id="gold-end"
-                      type="datetime-local"
-                      value={settings.priority?.gold_end_time || ''}
-                      onChange={e =>
-                        updateSettings('priority', {
-                          ...settings.priority,
-                          gold_end_time: e.target.value,
-                        })
-                      }
-                      disabled={disabled}
-                    />
-                  </div>
-                </div>
-
-                {/* Silver */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="silver-start">
-                      {t('priority.silverStartTime')}
-                    </Label>
-                    <Input
-                      id="silver-start"
-                      type="datetime-local"
-                      value={settings.priority?.silver_start_time || ''}
-                      onChange={e =>
-                        updateSettings('priority', {
-                          ...settings.priority,
-                          silver_start_time: e.target.value,
-                        })
-                      }
-                      disabled={disabled}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="silver-end">
-                      {t('priority.silverEndTime')}
-                    </Label>
-                    <Input
-                      id="silver-end"
-                      type="datetime-local"
-                      value={settings.priority?.silver_end_time || ''}
-                      onChange={e =>
-                        updateSettings('priority', {
-                          ...settings.priority,
-                          silver_end_time: e.target.value,
-                        })
-                      }
-                      disabled={disabled}
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
+          <div>
+            <Label className="text-sm">
+              {t('bookingSettings.lottery.applicationEndTime')}
+            </Label>
+            <Input
+              type="datetime-local"
+              value={settings.application_end_time || ''}
+              onChange={e =>
+                updateSetting('application_end_time', e.target.value)
+              }
+              disabled={disabled}
+            />
           </div>
-        </CardContent>
-      </Card>
-    );
-  }
+        </div>
 
-  return null;
+        <div>
+          <Label className="text-sm">
+            {t('bookingSettings.lottery.lotteryDateTime')}
+          </Label>
+          <Input
+            type="datetime-local"
+            value={settings.lottery_date_time || ''}
+            onChange={e => updateSetting('lottery_date_time', e.target.value)}
+            disabled={disabled}
+          />
+          <p className="text-xs text-muted-foreground mt-1">
+            {t('bookingSettings.lottery.lotteryDateTimeHelp')}
+          </p>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div>
+            <Label className="text-sm">
+              {t('bookingSettings.lottery.autoLottery')}
+            </Label>
+            <p className="text-xs text-muted-foreground">
+              {t('bookingSettings.lottery.autoLotteryHelp')}
+            </p>
+          </div>
+          <Switch
+            checked={settings.auto_lottery || false}
+            onCheckedChange={checked => updateSetting('auto_lottery', checked)}
+            disabled={disabled}
+          />
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderAdminLotterySettings = () => (
+    <div className="space-y-4">
+      <div className="flex items-center gap-2">
+        <Users className="h-4 w-4" />
+        <h4 className="font-medium">
+          {t('bookingSettings.adminLottery.title')}
+        </h4>
+      </div>
+
+      <div className="space-y-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div>
+            <Label className="text-sm">
+              {t('bookingSettings.adminLottery.applicationStartTime')}
+            </Label>
+            <Input
+              type="datetime-local"
+              value={settings.application_start_time || ''}
+              onChange={e =>
+                updateSetting('application_start_time', e.target.value)
+              }
+              disabled={disabled}
+            />
+          </div>
+          <div>
+            <Label className="text-sm">
+              {t('bookingSettings.adminLottery.applicationEndTime')}
+            </Label>
+            <Input
+              type="datetime-local"
+              value={settings.application_end_time || ''}
+              onChange={e =>
+                updateSetting('application_end_time', e.target.value)
+              }
+              disabled={disabled}
+            />
+          </div>
+        </div>
+
+        <div>
+          <Label className="text-sm">
+            {t('bookingSettings.adminLottery.selectionCriteria')}
+          </Label>
+          <Textarea
+            value={settings.selection_criteria || ''}
+            onChange={e => updateSetting('selection_criteria', e.target.value)}
+            placeholder={t(
+              'bookingSettings.adminLottery.selectionCriteriaPlaceholder'
+            )}
+            rows={3}
+            disabled={disabled}
+          />
+          <p className="text-xs text-muted-foreground mt-1">
+            {t('bookingSettings.adminLottery.selectionCriteriaHelp')}
+          </p>
+        </div>
+
+        <div>
+          <Label className="text-sm">
+            {t('bookingSettings.adminLottery.applicationMessage')}
+          </Label>
+          <Textarea
+            value={settings.application_message || ''}
+            onChange={e => updateSetting('application_message', e.target.value)}
+            placeholder={t(
+              'bookingSettings.adminLottery.applicationMessagePlaceholder'
+            )}
+            rows={2}
+            disabled={disabled}
+          />
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderPrioritySettings = () => (
+    <div className="space-y-4">
+      <div className="flex items-center gap-2">
+        <Settings className="h-4 w-4" />
+        <h4 className="font-medium">{t('bookingSettings.priority.title')}</h4>
+      </div>
+
+      <div className="space-y-3">
+        <div>
+          <Label className="text-sm">
+            {t('bookingSettings.priority.bookingStartTime')}
+          </Label>
+          <Input
+            type="datetime-local"
+            value={settings.booking_start_time || ''}
+            onChange={e => updateSetting('booking_start_time', e.target.value)}
+            disabled={disabled}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div>
+            <Label className="text-sm">
+              {t('bookingSettings.priority.vipSlots')}
+            </Label>
+            <Input
+              type="number"
+              min="0"
+              value={settings.vip_slots || 0}
+              onChange={e =>
+                updateSetting('vip_slots', parseInt(e.target.value) || 0)
+              }
+              disabled={disabled}
+            />
+          </div>
+          <div>
+            <Label className="text-sm">
+              {t('bookingSettings.priority.platinumSlots')}
+            </Label>
+            <Input
+              type="number"
+              min="0"
+              value={settings.platinum_slots || 0}
+              onChange={e =>
+                updateSetting('platinum_slots', parseInt(e.target.value) || 0)
+              }
+              disabled={disabled}
+            />
+          </div>
+          <div>
+            <Label className="text-sm">
+              {t('bookingSettings.priority.goldSlots')}
+            </Label>
+            <Input
+              type="number"
+              min="0"
+              value={settings.gold_slots || 0}
+              onChange={e =>
+                updateSetting('gold_slots', parseInt(e.target.value) || 0)
+              }
+              disabled={disabled}
+            />
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div>
+            <Label className="text-sm">
+              {t('bookingSettings.priority.enableGeneralBooking')}
+            </Label>
+            <p className="text-xs text-muted-foreground">
+              {t('bookingSettings.priority.enableGeneralBookingHelp')}
+            </p>
+          </div>
+          <Switch
+            checked={settings.enable_general_booking || false}
+            onCheckedChange={checked =>
+              updateSetting('enable_general_booking', checked)
+            }
+            disabled={disabled}
+          />
+        </div>
+
+        {settings.enable_general_booking && (
+          <div>
+            <Label className="text-sm">
+              {t('bookingSettings.priority.generalBookingStartTime')}
+            </Label>
+            <Input
+              type="datetime-local"
+              value={settings.general_booking_start_time || ''}
+              onChange={e =>
+                updateSetting('general_booking_start_time', e.target.value)
+              }
+              disabled={disabled}
+            />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  const renderSettings = () => {
+    switch (bookingType) {
+      case 'first_come':
+        return renderFirstComeSettings();
+      case 'lottery':
+        return renderLotterySettings();
+      case 'admin_lottery':
+        return renderAdminLotterySettings();
+      case 'priority':
+        return renderPrioritySettings();
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex items-center gap-2">
+          <Settings className="h-5 w-5" />
+          <CardTitle className="text-lg">
+            {t('bookingSettings.title')}
+          </CardTitle>
+          <Badge variant="outline" className="ml-auto">
+            {t(`bookingType.${bookingType}.title`)}
+          </Badge>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          {t('bookingSettings.description')}
+        </p>
+      </CardHeader>
+      <CardContent>
+        {renderSettings()}
+
+        <div className="mt-6 p-4 bg-muted/50 rounded-lg">
+          <div className="flex items-start gap-2">
+            <Info className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+            <div className="text-sm text-muted-foreground">
+              <p className="font-medium mb-1">
+                {t('bookingSettings.note.title')}
+              </p>
+              <p>{t('bookingSettings.note.description')}</p>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
 }

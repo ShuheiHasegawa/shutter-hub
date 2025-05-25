@@ -333,42 +333,115 @@
         "feature3": "リピーター優遇"
       }
     },
+    "bookingType": {
+      "title": "予約方式",
+      "selected": "選択中",
+      "firstCome": {
+        "title": "先着順予約",
+        "description": "予約開始と同時に先着順で受付",
+        "feature1": "リアルタイム在庫管理",
+        "feature2": "即座に予約確定",
+        "feature3": "シンプルで分かりやすい"
+      },
+      "lottery": {
+        "title": "抽選予約",
+        "description": "エントリー期間後に公平な抽選で決定",
+        "feature1": "公平なランダム抽選",
+        "feature2": "エントリー期間設定可能",
+        "feature3": "人気撮影会に最適"
+      },
+      "adminLottery": {
+        "title": "管理抽選",
+        "description": "開催者が応募者から手動で選出",
+        "feature1": "開催者による手動選出",
+        "feature2": "選出基準を自由設定",
+        "feature3": "質重視の撮影会向け"
+      },
+      "priority": {
+        "title": "優先予約",
+        "description": "ランクやチケットによる段階的予約",
+        "feature1": "ユーザーランク別優先",
+        "feature2": "優先チケット対応",
+        "feature3": "リピーター優遇"
+      }
+    },
     "bookingSettings": {
+      "title": "予約設定",
+      "description": "選択した予約方式に応じた詳細設定を行います",
       "firstCome": {
         "title": "先着順予約設定",
-        "description": "先着順予約では特別な設定は不要です。撮影会の開始時刻から予約が開始されます。"
+        "bookingStartTime": "予約開始時刻",
+        "bookingStartTimeHelp": "この時刻から予約受付を開始します",
+        "enableWaitlist": "キャンセル待ちを有効にする",
+        "enableWaitlistHelp": "満席時にキャンセル待ち登録を受け付けます",
+        "maxWaitlistSize": "最大キャンセル待ち数"
       },
       "lottery": {
         "title": "抽選予約設定",
-        "entryStartTime": "エントリー開始時刻",
-        "entryEndTime": "エントリー終了時刻",
-        "lotteryDate": "抽選実行日時",
-        "maxWinners": "当選者数"
+        "applicationStartTime": "応募開始時刻",
+        "applicationEndTime": "応募終了時刻",
+        "lotteryDateTime": "抽選実行日時",
+        "lotteryDateTimeHelp": "この日時に自動で抽選が実行されます",
+        "autoLottery": "自動抽選を有効にする",
+        "autoLotteryHelp": "指定日時に自動で抽選を実行します"
       },
       "adminLottery": {
         "title": "管理抽選設定",
-        "entryStartTime": "応募開始時刻",
-        "entryEndTime": "応募終了時刻",
-        "selectionDeadline": "選出期限",
-        "maxSelections": "選出予定数"
+        "applicationStartTime": "応募開始時刻",
+        "applicationEndTime": "応募終了時刻",
+        "selectionCriteria": "選出基準",
+        "selectionCriteriaPlaceholder": "選出時に重視する基準を記載してください...",
+        "selectionCriteriaHelp": "応募者に表示される選出基準です",
+        "applicationMessage": "応募時メッセージ",
+        "applicationMessagePlaceholder": "応募者に求めるメッセージの内容を記載してください..."
       },
       "priority": {
         "title": "優先予約設定",
-        "generalBookingStart": "一般予約開始時刻",
-        "ticketPriority": "優先チケット機能",
-        "ticketPriorityDescription": "特定ユーザーに発行した優先チケットによる早期予約",
-        "ticketStartTime": "チケット優先開始時刻",
-        "ticketEndTime": "チケット優先終了時刻",
-        "rankPriority": "ランク優先機能",
-        "rankPriorityDescription": "ユーザーランクに基づく段階的な予約開始",
-        "vipStartTime": "VIP開始時刻",
-        "vipEndTime": "VIP終了時刻",
-        "platinumStartTime": "プラチナ開始時刻",
-        "platinumEndTime": "プラチナ終了時刻",
-        "goldStartTime": "ゴールド開始時刻",
-        "goldEndTime": "ゴールド終了時刻",
-        "silverStartTime": "シルバー開始時刻",
-        "silverEndTime": "シルバー終了時刻"
+        "bookingStartTime": "予約開始時刻",
+        "vipSlots": "VIP枠数",
+        "platinumSlots": "プラチナ枠数",
+        "goldSlots": "ゴールド枠数",
+        "enableGeneralBooking": "一般予約を有効にする",
+        "enableGeneralBookingHelp": "優先枠終了後に一般ユーザーも予約可能にします",
+        "generalBookingStartTime": "一般予約開始時刻"
+      },
+      "note": {
+        "title": "注意",
+        "description": "設定は撮影会作成後も変更可能ですが、既存の予約に影響する場合があります。"
+      }
+    },
+    "imageUpload": {
+      "title": "画像をアップロード",
+      "description": "撮影会のイメージ画像をアップロードしてください",
+      "selectFiles": "ファイルを選択",
+      "orDragAndDrop": "またはドラッグ&ドロップ",
+      "uploading": "アップロード中...",
+      "maxSize": "最大サイズ",
+      "supportedFormats": "対応形式",
+      "maxImages": "最大枚数",
+      "preview": "プレビュー",
+      "mainImage": "メイン画像",
+      "firstIsMain": "最初がメイン",
+      "main": "メイン",
+      "tips": {
+        "title": "ヒント",
+        "firstImageMain": "最初の画像がメイン画像として表示されます",
+        "dragToReorder": "ドラッグで順序を変更できます",
+        "highQuality": "高品質な画像を使用することをお勧めします"
+      },
+      "success": {
+        "uploaded": "画像をアップロードしました",
+        "removed": "画像を削除しました"
+      },
+      "error": {
+        "maxImagesReached": "最大枚数に達しました",
+        "maxImagesReachedDescription": "最大{max}枚まで選択できます",
+        "fileTooLarge": "ファイルサイズが大きすぎます",
+        "fileTooLargeDescription": "ファイルサイズは10MB以下にしてください",
+        "invalidFileType": "対応していないファイル形式です",
+        "invalidFileTypeDescription": "JPEG、PNG、WebP、GIFファイルのみ対応しています",
+        "uploadFailed": "アップロードに失敗しました",
+        "uploadFailedDescription": "画像のアップロードに失敗しました。再度お試しください。"
       }
     }
   },

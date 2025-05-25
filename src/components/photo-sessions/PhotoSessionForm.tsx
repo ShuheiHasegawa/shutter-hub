@@ -160,6 +160,7 @@ export function PhotoSessionForm({
         booking_type: formData.booking_type,
         is_published: formData.is_published,
         image_urls: formData.image_urls,
+        booking_settings: bookingSettings,
       };
 
       let result;

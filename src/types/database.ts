@@ -213,26 +213,47 @@ export interface CreatePhotoSessionData {
   price_per_person: number;
   image_urls?: string[];
   booking_type: BookingType;
+  booking_settings?: BookingSettings;
   is_published?: boolean;
 }
 
 // 予約設定の型定義
 export interface BookingSettings {
+  // 共通設定
+  booking_start_time?: string;
+  enable_waitlist?: boolean;
+  max_waitlist_size?: number;
+
   // 抽選設定
+  application_start_time?: string;
+  application_end_time?: string;
+  lottery_date_time?: string;
+  auto_lottery?: boolean;
+
+  // 管理抽選設定
+  selection_criteria?: string;
+  application_message?: string;
+
+  // 優先予約設定
+  vip_slots?: number;
+  platinum_slots?: number;
+  gold_slots?: number;
+  enable_general_booking?: boolean;
+  general_booking_start_time?: string;
+
+  // 旧設定（後方互換性のため保持）
   lottery?: {
     entry_start_time: string;
     entry_end_time: string;
     lottery_date: string;
     max_winners: number;
   };
-  // 管理抽選設定
   admin_lottery?: {
     entry_start_time: string;
     entry_end_time: string;
     selection_deadline: string;
     max_selections: number;
   };
-  // 優先予約設定
   priority?: {
     general_booking_start: string;
     ticket_priority_enabled: boolean;

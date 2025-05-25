@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Clock, Shuffle, UserCheck, Star } from 'lucide-react';
+import { Clock, Shuffle, UserCheck, Star, Info } from 'lucide-react';
 import type { BookingType } from '@/types/database';
 
 interface BookingTypeSelectorProps {
@@ -19,115 +19,126 @@ export function BookingTypeSelector({
   onChange,
   disabled = false,
 }: BookingTypeSelectorProps) {
-  const t = useTranslations('photoSessions.bookingType');
+  const t = useTranslations('photoSessions');
 
   const bookingTypes = [
     {
       value: 'first_come' as BookingType,
+      title: t('bookingType.firstCome.title'),
+      description: t('bookingType.firstCome.description'),
       icon: Clock,
-      title: t('firstCome.title'),
-      description: t('firstCome.description'),
-      badge: t('firstCome.badge'),
-      badgeVariant: 'default' as const,
+      color: 'bg-blue-100 text-blue-800 border-blue-200',
       features: [
-        t('firstCome.feature1'),
-        t('firstCome.feature2'),
-        t('firstCome.feature3'),
+        t('bookingType.firstCome.feature1'),
+        t('bookingType.firstCome.feature2'),
+        t('bookingType.firstCome.feature3'),
       ],
     },
     {
       value: 'lottery' as BookingType,
+      title: t('bookingType.lottery.title'),
+      description: t('bookingType.lottery.description'),
       icon: Shuffle,
-      title: t('lottery.title'),
-      description: t('lottery.description'),
-      badge: t('lottery.badge'),
-      badgeVariant: 'secondary' as const,
+      color: 'bg-green-100 text-green-800 border-green-200',
       features: [
-        t('lottery.feature1'),
-        t('lottery.feature2'),
-        t('lottery.feature3'),
+        t('bookingType.lottery.feature1'),
+        t('bookingType.lottery.feature2'),
+        t('bookingType.lottery.feature3'),
       ],
     },
     {
       value: 'admin_lottery' as BookingType,
+      title: t('bookingType.adminLottery.title'),
+      description: t('bookingType.adminLottery.description'),
       icon: UserCheck,
-      title: t('adminLottery.title'),
-      description: t('adminLottery.description'),
-      badge: t('adminLottery.badge'),
-      badgeVariant: 'outline' as const,
+      color: 'bg-purple-100 text-purple-800 border-purple-200',
       features: [
-        t('adminLottery.feature1'),
-        t('adminLottery.feature2'),
-        t('adminLottery.feature3'),
+        t('bookingType.adminLottery.feature1'),
+        t('bookingType.adminLottery.feature2'),
+        t('bookingType.adminLottery.feature3'),
       ],
     },
     {
       value: 'priority' as BookingType,
+      title: t('bookingType.priority.title'),
+      description: t('bookingType.priority.description'),
       icon: Star,
-      title: t('priority.title'),
-      description: t('priority.description'),
-      badge: t('priority.badge'),
-      badgeVariant: 'destructive' as const,
+      color: 'bg-yellow-100 text-yellow-800 border-yellow-200',
       features: [
-        t('priority.feature1'),
-        t('priority.feature2'),
-        t('priority.feature3'),
+        t('bookingType.priority.feature1'),
+        t('bookingType.priority.feature2'),
+        t('bookingType.priority.feature3'),
       ],
     },
   ];
 
   return (
     <div className="space-y-4">
-      <div>
-        <h3 className="text-lg font-medium mb-2">{t('title')}</h3>
-        <p className="text-sm text-muted-foreground">{t('description')}</p>
-      </div>
+      <h3 className="text-lg font-medium">{t('bookingType.title')}</h3>
 
       <RadioGroup
         value={value}
-        onValueChange={onChange}
+        onValueChange={newValue => onChange(newValue as BookingType)}
         disabled={disabled}
-        className="grid grid-cols-1 md:grid-cols-2 gap-4"
+        className="space-y-4"
       >
         {bookingTypes.map(type => {
           const Icon = type.icon;
+          const isSelected = value === type.value;
+
           return (
             <div key={type.value} className="relative">
               <RadioGroupItem
                 value={type.value}
                 id={type.value}
-                className="peer sr-only"
+                className="sr-only"
               />
-              <Label htmlFor={type.value} className="cursor-pointer">
-                <Card className="peer-checked:ring-2 peer-checked:ring-primary peer-checked:border-primary transition-all hover:shadow-md">
+              <Label
+                htmlFor={type.value}
+                className={`block cursor-pointer transition-all duration-200 ${
+                  disabled ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+              >
+                <Card
+                  className={`transition-all duration-200 hover:shadow-md ${
+                    isSelected
+                      ? 'ring-2 ring-primary shadow-md'
+                      : 'hover:border-muted-foreground/20'
+                  }`}
+                >
                   <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Icon className="h-5 w-5 text-primary" />
-                        <CardTitle className="text-base">
-                          {type.title}
-                        </CardTitle>
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className={`p-2 rounded-lg ${type.color}`}>
+                          <Icon className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <CardTitle className="text-base">
+                            {type.title}
+                          </CardTitle>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {type.description}
+                          </p>
+                        </div>
                       </div>
-                      <Badge variant={type.badgeVariant} className="text-xs">
-                        {type.badge}
-                      </Badge>
+                      {isSelected && (
+                        <Badge variant="default" className="ml-2">
+                          {t('bookingType.selected')}
+                        </Badge>
+                      )}
                     </div>
                   </CardHeader>
                   <CardContent className="pt-0">
-                    <p className="text-sm text-muted-foreground mb-3">
-                      {type.description}
-                    </p>
-                    <ul className="space-y-1">
+                    <div className="space-y-2">
                       {type.features.map((feature, index) => (
-                        <li
-                          key={index}
-                          className="text-xs text-muted-foreground flex items-center gap-1"
-                        >
-                          <span className="w-1 h-1 bg-muted-foreground rounded-full" />
-                          {feature}
-                        </li>
+                        <div key={index} className="flex items-start gap-2">
+                          <Info className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                          <span className="text-sm text-muted-foreground">
+                            {feature}
+                          </span>
+                        </div>
                       ))}
-                    </ul>
+                    </div>
                   </CardContent>
                 </Card>
               </Label>
