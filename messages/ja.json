@@ -488,5 +488,93 @@
     "success": {
       "settings_saved": "設定が保存されました"
     }
+  },
+  "waitlist": {
+    "form": {
+      "title": "キャンセル待ち登録",
+      "description": "満員の撮影会にキャンセル待ちで登録できます",
+      "message_label": "メッセージ（任意）",
+      "message_placeholder": "参加への意気込みやメッセージをお書きください",
+      "message_optional": "メッセージは任意です。主催者への参考情報として使用されます。",
+      "notice": {
+        "title": "キャンセル待ちについて",
+        "auto_promote": "空きが発生した場合、自動的に繰り上げ当選します",
+        "deadline": "繰り上げ当選後は期限内に予約を確定してください",
+        "notification": "繰り上げ当選時にはメールで通知されます"
+      }
+    },
+    "waiting": {
+      "title": "キャンセル待ち中",
+      "description": "現在キャンセル待ちに登録されています",
+      "position": "待ち順位",
+      "position_value": "{position}番目",
+      "joined_at": "登録日",
+      "your_message": "あなたのメッセージ",
+      "notice": "空きが発生次第、自動的に繰り上げ当選の通知をお送りします。"
+    },
+    "promotion": {
+      "title": "繰り上げ当選",
+      "description": "おめでとうございます！繰り上げ当選しました",
+      "reason": "繰り上げ理由",
+      "default_reason": "空きが発生したため",
+      "deadline": "予約確定期限",
+      "expired": "期限切れ",
+      "expired_notice": "期限が過ぎたため、この繰り上げ当選は無効になりました。"
+    },
+    "button": {
+      "join_waitlist": "キャンセル待ちに登録",
+      "joining": "登録中...",
+      "cancel_waitlist": "キャンセル待ちを取り消す",
+      "cancelling": "取り消し中...",
+      "confirm_booking": "予約を確定する",
+      "confirming": "確定中...",
+      "decline": "辞退する"
+    },
+    "success": {
+      "joined": "キャンセル待ちに登録しました",
+      "cancelled": "キャンセル待ちを取り消しました",
+      "booking_confirmed": "予約を確定しました"
+    },
+    "error": {
+      "load_failed": "キャンセル待ち状況の取得に失敗しました",
+      "join_failed": "キャンセル待ちの登録に失敗しました",
+      "cancel_failed": "キャンセル待ちの取り消しに失敗しました",
+      "confirm_failed": "予約の確定に失敗しました",
+      "unexpected": "予期しないエラーが発生しました"
+    }
+  },
+  "waitlist_settings": {
+    "title": "キャンセル待ち設定",
+    "description": "撮影会のキャンセル待ち機能を設定します",
+    "basic": {
+      "enabled": "キャンセル待ちを有効にする",
+      "enabled_description": "参加者がキャンセル待ちに登録できるようになります",
+      "max_size": "最大キャンセル待ち数",
+      "max_size_description": "キャンセル待ちに登録できる最大人数を設定します"
+    },
+    "auto_promote": {
+      "enabled": "自動繰り上げを有効にする",
+      "enabled_description": "空きが発生した際に自動的にキャンセル待ちから繰り上げます",
+      "deadline_hours": "繰り上げ確定期限（時間）",
+      "deadline_hours_description": "繰り上げ当選者が予約を確定するまでの期限を設定します"
+    },
+    "notifications": {
+      "title": "通知設定",
+      "description": "キャンセル待ちに関する通知方法を設定します",
+      "email": "メール通知",
+      "push": "プッシュ通知"
+    },
+    "button": {
+      "save_settings": "設定を保存",
+      "saving": "保存中..."
+    },
+    "success": {
+      "settings_saved": "設定を保存しました"
+    },
+    "error": {
+      "load_failed": "設定の取得に失敗しました",
+      "save_failed": "設定の保存に失敗しました",
+      "unexpected": "予期しないエラーが発生しました"
+    }
   }
 }

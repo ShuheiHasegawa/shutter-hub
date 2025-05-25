@@ -141,19 +141,31 @@ export function PhotoSessionCard({
               </Button>
             )}
             {!isOwner && onViewDetails && (
-              <Button
-                variant="default"
-                size="sm"
-                onClick={() => onViewDetails(session.id)}
-                className="flex-1"
-                disabled={
-                  session.current_participants >= session.max_participants
-                }
-              >
-                {session.current_participants >= session.max_participants
-                  ? tBooking('sessionFull')
-                  : tBooking('reserve')}
-              </Button>
+              <>
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => onViewDetails(session.id)}
+                  className="flex-1"
+                  disabled={
+                    session.current_participants >= session.max_participants
+                  }
+                >
+                  {session.current_participants >= session.max_participants
+                    ? tBooking('sessionFull')
+                    : tBooking('reserve')}
+                </Button>
+                {session.current_participants >= session.max_participants && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onViewDetails(session.id)}
+                    className="flex-1"
+                  >
+                    キャンセル待ち
+                  </Button>
+                )}
+              </>
             )}
             {isOwner && onEdit && (
               <Button

@@ -492,5 +492,93 @@
     "success": {
       "settings_saved": "Settings saved successfully"
     }
+  },
+  "waitlist": {
+    "form": {
+      "title": "Join Waitlist",
+      "description": "Join the waitlist for this fully booked photo session",
+      "message_label": "Message (Optional)",
+      "message_placeholder": "Share your enthusiasm or message here",
+      "message_optional": "Message is optional. It will be used as reference information for the organizer.",
+      "notice": {
+        "title": "About Waitlist",
+        "auto_promote": "You will be automatically promoted when a spot becomes available",
+        "deadline": "Please confirm your booking within the deadline after promotion",
+        "notification": "You will be notified by email when promoted"
+      }
+    },
+    "waiting": {
+      "title": "On Waitlist",
+      "description": "You are currently on the waitlist",
+      "position": "Position",
+      "position_value": "#{position}",
+      "joined_at": "Joined Date",
+      "your_message": "Your Message",
+      "notice": "We will automatically notify you when a spot becomes available."
+    },
+    "promotion": {
+      "title": "Promoted!",
+      "description": "Congratulations! You have been promoted from the waitlist",
+      "reason": "Promotion Reason",
+      "default_reason": "A spot became available",
+      "deadline": "Booking Confirmation Deadline",
+      "expired": "Expired",
+      "expired_notice": "This promotion has expired due to the deadline passing."
+    },
+    "button": {
+      "join_waitlist": "Join Waitlist",
+      "joining": "Joining...",
+      "cancel_waitlist": "Cancel Waitlist",
+      "cancelling": "Cancelling...",
+      "confirm_booking": "Confirm Booking",
+      "confirming": "Confirming...",
+      "decline": "Decline"
+    },
+    "success": {
+      "joined": "Successfully joined the waitlist",
+      "cancelled": "Successfully cancelled waitlist",
+      "booking_confirmed": "Booking confirmed successfully"
+    },
+    "error": {
+      "load_failed": "Failed to load waitlist status",
+      "join_failed": "Failed to join waitlist",
+      "cancel_failed": "Failed to cancel waitlist",
+      "confirm_failed": "Failed to confirm booking",
+      "unexpected": "An unexpected error occurred"
+    }
+  },
+  "waitlist_settings": {
+    "title": "Waitlist Settings",
+    "description": "Configure waitlist functionality for this photo session",
+    "basic": {
+      "enabled": "Enable Waitlist",
+      "enabled_description": "Allow participants to join the waitlist",
+      "max_size": "Maximum Waitlist Size",
+      "max_size_description": "Set the maximum number of people who can join the waitlist"
+    },
+    "auto_promote": {
+      "enabled": "Enable Auto Promotion",
+      "enabled_description": "Automatically promote from waitlist when spots become available",
+      "deadline_hours": "Promotion Deadline (Hours)",
+      "deadline_hours_description": "Set the deadline for promoted users to confirm their booking"
+    },
+    "notifications": {
+      "title": "Notification Settings",
+      "description": "Configure notification methods for waitlist events",
+      "email": "Email Notifications",
+      "push": "Push Notifications"
+    },
+    "button": {
+      "save_settings": "Save Settings",
+      "saving": "Saving..."
+    },
+    "success": {
+      "settings_saved": "Settings saved successfully"
+    },
+    "error": {
+      "load_failed": "Failed to load settings",
+      "save_failed": "Failed to save settings",
+      "unexpected": "An unexpected error occurred"
+    }
   }
 }
