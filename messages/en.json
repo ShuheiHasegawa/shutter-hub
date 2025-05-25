@@ -314,6 +314,77 @@
       "noRefund": "Cancellation after entry is not allowed"
     }
   },
+  "adminLottery": {
+    "title": "Admin Lottery Photo Session",
+    "organizer": "Organizer",
+    "free": "Free",
+    "winnersCount": "Selection Target: {count}",
+    "sessionNotFound": "Admin lottery photo session not found",
+    "loginRequired": "Login Required",
+    "loginRequiredDescription": "Please log in to apply.",
+    "pleaseLogin": "Please log in",
+    "adminLotteryType": "Admin Lottery",
+    "adminLotteryDescription": "Organizer manually selects participants from applicants",
+    "status": {
+      "upcoming": "Upcoming",
+      "accepting": "Accepting Applications",
+      "selecting": "Selecting",
+      "completed": "Selection Completed"
+    },
+    "entryStatus": {
+      "applied": "Applied",
+      "selected": "Selected",
+      "rejected": "Not Selected"
+    },
+    "schedule": {
+      "title": "Selection Schedule",
+      "entryPeriod": "Application Period",
+      "selectionDeadline": "Selection Deadline"
+    },
+    "applicationMessage": "Application Message",
+    "optional": "Optional",
+    "applicationMessagePlaceholder": "Please write your motivation, self-introduction, portfolio, etc...",
+    "enterAdminLottery": "Apply",
+    "entryInProgress": "Applying...",
+    "entryCompleted": "Application completed. Please wait for the selection results.",
+    "congratulations": "Congratulations! You have been selected!",
+    "selectedInstructions": "Your participation in the photo session is confirmed. Details will be sent separately.",
+    "betterLuckNextTime": "Unfortunately, you were not selected. Please apply again next time.",
+    "yourMessage": "Your Message",
+    "entryNotStarted": "Application period has not started yet",
+    "entryEnded": "Application period has ended",
+    "entryNotAccepting": "Currently not accepting applications",
+    "notes": {
+      "title": "Notes",
+      "manualSelection": "Organizer manually selects from applicants",
+      "organizerDecision": "Selection criteria are at the organizer's discretion",
+      "resultNotification": "Selection results will be notified after the selection deadline",
+      "selectedBooking": "Selected applicants will be automatically booked for the photo session",
+      "noRefund": "Cancellation after application is not allowed"
+    },
+    "applicationStats": "Application Statistics",
+    "totalEntries": "Total Applications",
+    "selectedCount": "Selected",
+    "firstTimeParticipants": "First-time Participants",
+    "repeatParticipants": "Repeat Participants",
+    "startSelection": "Start Selection",
+    "startSelectionDescription": "Application period has ended. Please start selecting applicants.",
+    "startSelectionButton": "Start Selection",
+    "selectionControl": "Selection Control",
+    "clearSelection": "Clear Selection",
+    "selectionNotes": "Selection Reason/Notes",
+    "selectionNotesPlaceholder": "Please write selection reasons or notes for future reference...",
+    "selectionInProgress": "Selecting...",
+    "completeSelection": "Complete Selection",
+    "applicantsList": "Applicants List",
+    "noApplicants": "No applicants",
+    "userBio": "Profile",
+    "selectedAt": "Selected At",
+    "selectionLimitReached": "Selection limit reached",
+    "selectionLimitDescription": "You can select up to {count} people.",
+    "noSelectionMade": "No selection made",
+    "noSelectionMadeDescription": "Please select at least one person."
+  },
   "errors": {
     "title": "Error",
     "bookingFailed": "Booking failed",
@@ -325,7 +396,8 @@
     "sessionEnded": "This photo session has already ended.",
     "unauthorized": "Unauthorized",
     "entryFailed": "Failed to enter lottery",
-    "lotteryFailed": "Failed to conduct lottery"
+    "lotteryFailed": "Failed to conduct lottery",
+    "selectionFailed": "Failed to complete selection"
   },
   "success": {
     "title": "Success",
@@ -336,6 +408,10 @@
     "entryCompleted": "Entry Completed!",
     "entryCompletedDescription": "Your lottery entry has been completed.",
     "lotteryCompleted": "Lottery Completed",
-    "lotteryCompletedDescription": "The lottery has been conducted successfully."
+    "lotteryCompletedDescription": "The lottery has been conducted successfully.",
+    "selectionStarted": "Selection Started",
+    "selectionStartedDescription": "Selection phase has started.",
+    "selectionCompleted": "Selection Completed",
+    "selectionCompletedDescription": "Selection of {count} people has been completed."
   }
 }

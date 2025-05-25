@@ -310,6 +310,77 @@
       "noRefund": "エントリー後のキャンセルはできません"
     }
   },
+  "adminLottery": {
+    "title": "管理抽選撮影会",
+    "organizer": "主催者",
+    "free": "無料",
+    "winnersCount": "選出予定数: {count}名",
+    "sessionNotFound": "管理抽選撮影会が見つかりません",
+    "loginRequired": "ログインが必要です",
+    "loginRequiredDescription": "応募するにはログインしてください。",
+    "pleaseLogin": "ログインしてください",
+    "adminLotteryType": "管理抽選",
+    "adminLotteryDescription": "開催者が応募者の中から手動で参加者を選出します",
+    "status": {
+      "upcoming": "開始前",
+      "accepting": "応募受付中",
+      "selecting": "選出中",
+      "completed": "選出完了"
+    },
+    "entryStatus": {
+      "applied": "応募済み",
+      "selected": "選出",
+      "rejected": "非選出"
+    },
+    "schedule": {
+      "title": "選出スケジュール",
+      "entryPeriod": "応募期間",
+      "selectionDeadline": "選出期限"
+    },
+    "applicationMessage": "応募メッセージ",
+    "optional": "任意",
+    "applicationMessagePlaceholder": "参加への意気込み、自己紹介、ポートフォリオなどをお書きください...",
+    "enterAdminLottery": "応募する",
+    "entryInProgress": "応募中...",
+    "entryCompleted": "応募が完了しました。選出結果をお待ちください。",
+    "congratulations": "おめでとうございます！選出されました！",
+    "selectedInstructions": "撮影会への参加が確定しました。詳細は別途ご連絡いたします。",
+    "betterLuckNextTime": "残念ながら選出されませんでした。次回もぜひご応募ください。",
+    "yourMessage": "あなたのメッセージ",
+    "entryNotStarted": "応募期間はまだ開始されていません",
+    "entryEnded": "応募期間は終了しました",
+    "entryNotAccepting": "現在応募を受け付けていません",
+    "notes": {
+      "title": "注意事項",
+      "manualSelection": "開催者が応募者の中から手動で選出します",
+      "organizerDecision": "選出基準は開催者の判断によります",
+      "resultNotification": "選出結果は選出期限後に通知されます",
+      "selectedBooking": "選出者は自動的に撮影会に予約されます",
+      "noRefund": "応募後のキャンセルはできません"
+    },
+    "applicationStats": "応募統計",
+    "totalEntries": "総応募数",
+    "selectedCount": "選出数",
+    "firstTimeParticipants": "初回参加者",
+    "repeatParticipants": "リピーター",
+    "startSelection": "選出開始",
+    "startSelectionDescription": "応募期間が終了しました。応募者の選出を開始してください。",
+    "startSelectionButton": "選出を開始",
+    "selectionControl": "選出コントロール",
+    "clearSelection": "選択をクリア",
+    "selectionNotes": "選出理由・メモ",
+    "selectionNotesPlaceholder": "選出理由や今後の参考になるメモを記入してください...",
+    "selectionInProgress": "選出中...",
+    "completeSelection": "選出を完了",
+    "applicantsList": "応募者一覧",
+    "noApplicants": "応募者がいません",
+    "userBio": "プロフィール",
+    "selectedAt": "選出日時",
+    "selectionLimitReached": "選出上限に達しました",
+    "selectionLimitDescription": "選出できるのは最大{count}名までです。",
+    "noSelectionMade": "選出されていません",
+    "noSelectionMadeDescription": "少なくとも1名を選出してください。"
+  },
   "errors": {
     "title": "エラー",
     "bookingFailed": "予約に失敗しました",
@@ -321,7 +392,8 @@
     "sessionEnded": "この撮影会は既に終了しています。",
     "unauthorized": "権限がありません",
     "entryFailed": "抽選エントリーに失敗しました",
-    "lotteryFailed": "抽選の実行に失敗しました"
+    "lotteryFailed": "抽選の実行に失敗しました",
+    "selectionFailed": "選出に失敗しました"
   },
   "success": {
     "title": "成功",
@@ -332,6 +404,10 @@
     "entryCompleted": "エントリー完了！",
     "entryCompletedDescription": "抽選エントリーが完了しました。",
     "lotteryCompleted": "抽選完了",
-    "lotteryCompletedDescription": "抽選が正常に実行されました。"
+    "lotteryCompletedDescription": "抽選が正常に実行されました。",
+    "selectionStarted": "選出開始",
+    "selectionStartedDescription": "選出フェーズが開始されました。",
+    "selectionCompleted": "選出完了",
+    "selectionCompletedDescription": "{count}名の選出が完了しました。"
   }
 }

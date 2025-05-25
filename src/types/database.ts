@@ -108,6 +108,75 @@ export interface LotteryEntryWithUser extends LotteryEntry {
   user: Profile;
 }
 
+// 管理抽選撮影会関連の型定義
+export interface AdminLotteryPhotoSession {
+  id: string;
+  photo_session_id: string;
+  entry_start: string;
+  entry_end: string;
+  selection_deadline: string;
+  winners_count: number;
+  status: 'upcoming' | 'accepting' | 'selecting' | 'completed';
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AdminLotteryEntry {
+  id: string;
+  admin_lottery_photo_session_id: string;
+  user_id: string;
+  application_message?: string;
+  status: 'applied' | 'selected' | 'rejected';
+  selected_at?: string;
+  selected_by?: string;
+  selection_reason?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SelectionCriteria {
+  id: string;
+  admin_lottery_photo_session_id: string;
+  criteria_name: string;
+  weight: number;
+  description?: string;
+  created_at: string;
+}
+
+export interface AdminLotteryResult {
+  id: string;
+  admin_lottery_photo_session_id: string;
+  selected_at: string;
+  total_entries: number;
+  winners_selected: number;
+  selection_method: string;
+  selected_by?: string;
+  notes?: string;
+  created_at: string;
+}
+
+// 管理抽選撮影会と撮影会の結合型
+export interface AdminLotteryPhotoSessionWithDetails
+  extends AdminLotteryPhotoSession {
+  photo_session: PhotoSessionWithOrganizer;
+}
+
+// 管理抽選エントリーとユーザー情報の結合型
+export interface AdminLotteryEntryWithUser extends AdminLotteryEntry {
+  user: Profile;
+}
+
+// 管理抽選統計情報
+export interface AdminLotteryStats {
+  total_entries: number;
+  selected_count: number;
+  rejected_count: number;
+  pending_count: number;
+  first_time_participants: number;
+  repeat_participants: number;
+}
+
 // フォーム用の型定義
 export interface CreateProfileData {
   display_name: string;
