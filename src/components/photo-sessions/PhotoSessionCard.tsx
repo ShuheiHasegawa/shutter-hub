@@ -1,7 +1,6 @@
 'use client';
 
-import { format } from 'date-fns';
-import { ja } from 'date-fns/locale';
+import { formatDate, formatTime } from '@/lib/utils/date';
 import {
   CalendarIcon,
   MapPinIcon,
@@ -89,9 +88,9 @@ export function PhotoSessionCard({
           <div className="flex items-center gap-2">
             <CalendarIcon className="h-4 w-4 text-muted-foreground" />
             <div>
-              <div>{format(startDate, 'PPP', { locale: ja })}</div>
+              <div>{formatDate(startDate, 'long')}</div>
               <div className="text-muted-foreground">
-                {format(startDate, 'HH:mm')} - {format(endDate, 'HH:mm')}
+                {formatTime(startDate)} - {formatTime(endDate)}
               </div>
             </div>
           </div>
