@@ -413,5 +413,84 @@
     "selectionStartedDescription": "Selection phase has started.",
     "selectionCompleted": "Selection Completed",
     "selectionCompletedDescription": "Selection of {count} people has been completed."
+  },
+  "priority_booking": {
+    "title": "Priority Booking",
+    "description": "Booking system based on rank and priority tickets",
+    "user_rank": {
+      "title": "Your Rank",
+      "bronze": "Bronze",
+      "silver": "Silver",
+      "gold": "Gold",
+      "platinum": "Platinum",
+      "vip": "VIP",
+      "points": "{points} points",
+      "participation_count": "Participation Count",
+      "total_bookings": "Total Bookings"
+    },
+    "booking_status": {
+      "title": "Booking Status",
+      "available": "Available",
+      "unavailable": "Unavailable",
+      "available_from": "Available From"
+    },
+    "booking_type": {
+      "ticket_priority": "Ticket Priority",
+      "rank_priority": "Rank Priority",
+      "general": "General Booking"
+    },
+    "button": {
+      "book_now": "Book Now",
+      "booking": "Booking...",
+      "unavailable": "Unavailable"
+    },
+    "notice": {
+      "ticket_will_be_used": "※ Priority ticket will be used"
+    },
+    "error": {
+      "load_failed": "Failed to load data",
+      "booking_failed": "Booking failed",
+      "unexpected": "An unexpected error occurred",
+      "no_eligibility": "Could not check booking eligibility"
+    },
+    "success": {
+      "booking_created": "Booking completed successfully"
+    }
+  },
+  "priority_settings": {
+    "title": "Priority Booking Settings",
+    "description": "Manage ticket priority and rank priority settings",
+    "general_booking": {
+      "title": "General Booking Start Time",
+      "description": "Time when all users can start booking"
+    },
+    "ticket_priority": {
+      "title": "Priority Ticket Feature",
+      "description": "Early booking with priority tickets issued to specific users",
+      "start_time": "Start Time",
+      "end_time": "End Time"
+    },
+    "rank_priority": {
+      "title": "Rank Priority Feature",
+      "description": "Gradual booking start based on user rank",
+      "vip": "VIP Rank",
+      "platinum": "Platinum Rank",
+      "gold": "Gold Rank",
+      "silver": "Silver Rank",
+      "start_time": "Start Time",
+      "end_time": "End Time"
+    },
+    "button": {
+      "save_settings": "Save Settings",
+      "saving": "Saving..."
+    },
+    "error": {
+      "load_failed": "Failed to load settings",
+      "save_failed": "Failed to save settings",
+      "unexpected": "An unexpected error occurred"
+    },
+    "success": {
+      "settings_saved": "Settings saved successfully"
+    }
   }
 }

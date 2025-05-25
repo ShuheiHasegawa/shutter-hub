@@ -409,5 +409,84 @@
     "selectionStartedDescription": "選出フェーズが開始されました。",
     "selectionCompleted": "選出完了",
     "selectionCompletedDescription": "{count}名の選出が完了しました。"
+  },
+  "priority_booking": {
+    "title": "優先予約",
+    "description": "ランクや優先チケットによる予約システム",
+    "user_rank": {
+      "title": "あなたのランク",
+      "bronze": "ブロンズ",
+      "silver": "シルバー",
+      "gold": "ゴールド",
+      "platinum": "プラチナ",
+      "vip": "VIP",
+      "points": "{points}ポイント",
+      "participation_count": "参加回数",
+      "total_bookings": "総予約数"
+    },
+    "booking_status": {
+      "title": "予約状況",
+      "available": "予約可能",
+      "unavailable": "予約不可",
+      "available_from": "予約開始"
+    },
+    "booking_type": {
+      "ticket_priority": "チケット優先",
+      "rank_priority": "ランク優先",
+      "general": "一般予約"
+    },
+    "button": {
+      "book_now": "今すぐ予約",
+      "booking": "予約中...",
+      "unavailable": "予約不可"
+    },
+    "notice": {
+      "ticket_will_be_used": "※ 優先チケットが使用されます"
+    },
+    "error": {
+      "load_failed": "データの取得に失敗しました",
+      "booking_failed": "予約に失敗しました",
+      "unexpected": "予期しないエラーが発生しました",
+      "no_eligibility": "予約可能性を確認できませんでした"
+    },
+    "success": {
+      "booking_created": "予約が完了しました"
+    }
+  },
+  "priority_settings": {
+    "title": "優先予約設定",
+    "description": "チケット優先やランク優先の設定を管理します",
+    "general_booking": {
+      "title": "一般予約開始時間",
+      "description": "すべてのユーザーが予約可能になる時間"
+    },
+    "ticket_priority": {
+      "title": "優先チケット機能",
+      "description": "特定のユーザーに発行した優先チケットによる早期予約",
+      "start_time": "開始時間",
+      "end_time": "終了時間"
+    },
+    "rank_priority": {
+      "title": "ランク優先機能",
+      "description": "ユーザーランクに基づく段階的な予約開始",
+      "vip": "VIPランク",
+      "platinum": "プラチナランク",
+      "gold": "ゴールドランク",
+      "silver": "シルバーランク",
+      "start_time": "開始時間",
+      "end_time": "終了時間"
+    },
+    "button": {
+      "save_settings": "設定を保存",
+      "saving": "保存中..."
+    },
+    "error": {
+      "load_failed": "設定の取得に失敗しました",
+      "save_failed": "設定の保存に失敗しました",
+      "unexpected": "予期しないエラーが発生しました"
+    },
+    "success": {
+      "settings_saved": "設定が保存されました"
+    }
   }
 }
