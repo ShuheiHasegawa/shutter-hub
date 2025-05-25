@@ -131,6 +131,21 @@ export function PhotoSessionCard({
                 詳細を見る
               </Button>
             )}
+            {!isOwner && onViewDetails && (
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => onViewDetails(session.id)}
+                className="flex-1"
+                disabled={
+                  session.current_participants >= session.max_participants
+                }
+              >
+                {session.current_participants >= session.max_participants
+                  ? '満席'
+                  : '予約する'}
+              </Button>
+            )}
             {isOwner && onEdit && (
               <Button
                 variant="secondary"
