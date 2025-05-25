@@ -250,6 +250,8 @@
     },
     "list": {
       "title": "撮影会一覧",
+      "description": "開催予定の撮影会を検索・予約できます",
+      "loading": "読み込み中...",
       "searchFilter": "検索・フィルター",
       "keywordPlaceholder": "キーワード検索...",
       "locationPlaceholder": "場所で絞り込み...",
@@ -261,7 +263,22 @@
       "noResults": "検索条件に一致する撮影会が見つかりませんでした。",
       "noSessions": "撮影会がまだありません。",
       "createFirst": "最初の撮影会を作成",
-      "loadMore": "さらに読み込む"
+      "loadMore": "さらに読み込む",
+      "activeFilters": "フィルター適用中",
+      "clearFilters": "フィルターをクリア"
+    },
+    "sidebar": {
+      "dateRange": "開催日",
+      "dateFrom": "開始日",
+      "dateTo": "終了日",
+      "priceRange": "参加費",
+      "priceMin": "最低料金",
+      "priceMax": "最高料金",
+      "participantsRange": "参加者数",
+      "participantsMin": "最少人数",
+      "participantsMax": "最多人数",
+      "options": "その他のオプション",
+      "onlyAvailable": "空きがある撮影会のみ"
     },
     "imageUpload": {
       "selectImages": "画像を選択",

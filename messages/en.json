@@ -254,6 +254,8 @@
     },
     "list": {
       "title": "Photo Sessions",
+      "description": "Search and book upcoming photo sessions",
+      "loading": "Loading...",
       "searchFilter": "Search & Filter",
       "keywordPlaceholder": "Search keywords...",
       "locationPlaceholder": "Filter by location...",
@@ -265,7 +267,22 @@
       "noResults": "No photo sessions found matching your search criteria.",
       "noSessions": "No photo sessions yet.",
       "createFirst": "Create your first photo session",
-      "loadMore": "Load more"
+      "loadMore": "Load more",
+      "activeFilters": "Filters Active",
+      "clearFilters": "Clear Filters"
+    },
+    "sidebar": {
+      "dateRange": "Event Date",
+      "dateFrom": "From Date",
+      "dateTo": "To Date",
+      "priceRange": "Participation Fee",
+      "priceMin": "Min Price",
+      "priceMax": "Max Price",
+      "participantsRange": "Participants",
+      "participantsMin": "Min Participants",
+      "participantsMax": "Max Participants",
+      "options": "Other Options",
+      "onlyAvailable": "Available sessions only"
     },
     "imageUpload": {
       "selectImages": "Select Images",

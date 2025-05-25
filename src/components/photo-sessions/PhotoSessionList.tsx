@@ -16,19 +16,34 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PlusIcon, SearchIcon } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { createClient } from '@/lib/supabase/client';
-import type { PhotoSessionWithOrganizer } from '@/types/database';
+import type { PhotoSessionWithOrganizer, BookingType } from '@/types/database';
 import { useTranslations } from 'next-intl';
+
+interface FilterState {
+  keyword: string;
+  location: string;
+  priceMin: string;
+  priceMax: string;
+  dateFrom: string;
+  dateTo: string;
+  bookingTypes: BookingType[];
+  participantsMin: string;
+  participantsMax: string;
+  onlyAvailable: boolean;
+}
 
 interface PhotoSessionListProps {
   showCreateButton?: boolean;
   organizerId?: string;
   title?: string;
+  filters?: FilterState;
 }
 
 export function PhotoSessionList({
   showCreateButton = false,
   organizerId,
   title,
+  filters,
 }: PhotoSessionListProps) {
   const { user } = useAuth();
   const router = useRouter();
@@ -43,7 +58,7 @@ export function PhotoSessionList({
 
   useEffect(() => {
     loadSessions();
-  }, [organizerId, searchQuery, locationFilter, sortBy]);
+  }, [organizerId, searchQuery, locationFilter, sortBy, filters]);
 
   const loadSessions = async () => {
     setLoading(true);
@@ -66,14 +81,64 @@ export function PhotoSessionList({
         query = query.eq('is_published', true);
       }
 
-      if (searchQuery) {
+      // サイドバーフィルターを優先、なければ従来のフィルターを使用
+      const keyword = filters?.keyword || searchQuery;
+      const location = filters?.location || locationFilter;
+
+      if (keyword) {
         query = query.or(
-          `title.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`
+          `title.ilike.%${keyword}%,description.ilike.%${keyword}%`
         );
       }
 
-      if (locationFilter) {
-        query = query.ilike('location', `%${locationFilter}%`);
+      if (location) {
+        query = query.ilike('location', `%${location}%`);
+      }
+
+      // 追加のフィルター条件（サイドバーから）
+      if (filters) {
+        // 料金フィルター
+        if (filters.priceMin) {
+          query = query.gte('price_per_person', parseInt(filters.priceMin));
+        }
+        if (filters.priceMax) {
+          query = query.lte('price_per_person', parseInt(filters.priceMax));
+        }
+
+        // 日時フィルター
+        if (filters.dateFrom) {
+          query = query.gte('start_time', filters.dateFrom);
+        }
+        if (filters.dateTo) {
+          query = query.lte('start_time', filters.dateTo + 'T23:59:59');
+        }
+
+        // 参加者数フィルター
+        if (filters.participantsMin) {
+          query = query.gte(
+            'max_participants',
+            parseInt(filters.participantsMin)
+          );
+        }
+        if (filters.participantsMax) {
+          query = query.lte(
+            'max_participants',
+            parseInt(filters.participantsMax)
+          );
+        }
+
+        // 予約方式フィルター
+        if (filters.bookingTypes.length > 0) {
+          query = query.in('booking_type', filters.bookingTypes);
+        }
+
+        // 空きありフィルター
+        if (filters.onlyAvailable) {
+          query = query.lt(
+            'current_participants',
+            query.select('max_participants')
+          );
+        }
       }
 
       // ソート条件を適用
@@ -158,62 +223,64 @@ export function PhotoSessionList({
         )}
       </div>
 
-      {/* 検索・フィルター */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">{t('list.searchFilter')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="relative">
-              <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      {/* 検索・フィルター（サイドバーがない場合のみ表示） */}
+      {!filters && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">{t('list.searchFilter')}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="relative">
+                <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder={t('list.keywordPlaceholder')}
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+
               <Input
-                placeholder={t('list.keywordPlaceholder')}
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                className="pl-10"
+                placeholder={t('list.locationPlaceholder')}
+                value={locationFilter}
+                onChange={e => setLocationFilter(e.target.value)}
               />
+
+              <Select
+                value={sortBy}
+                onValueChange={(value: 'start_time' | 'price' | 'created_at') =>
+                  setSortBy(value)
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={t('list.sortBy')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="start_time">
+                    {t('list.sortByStartTime')}
+                  </SelectItem>
+                  <SelectItem value="price">{t('list.sortByPrice')}</SelectItem>
+                  <SelectItem value="created_at">
+                    {t('list.sortByCreatedAt')}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setSearchQuery('');
+                  setLocationFilter('');
+                  setSortBy('start_time');
+                }}
+              >
+                {t('list.reset')}
+              </Button>
             </div>
-
-            <Input
-              placeholder={t('list.locationPlaceholder')}
-              value={locationFilter}
-              onChange={e => setLocationFilter(e.target.value)}
-            />
-
-            <Select
-              value={sortBy}
-              onValueChange={(value: 'start_time' | 'price' | 'created_at') =>
-                setSortBy(value)
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder={t('list.sortBy')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="start_time">
-                  {t('list.sortByStartTime')}
-                </SelectItem>
-                <SelectItem value="price">{t('list.sortByPrice')}</SelectItem>
-                <SelectItem value="created_at">
-                  {t('list.sortByCreatedAt')}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Button
-              variant="outline"
-              onClick={() => {
-                setSearchQuery('');
-                setLocationFilter('');
-                setSortBy('start_time');
-              }}
-            >
-              {t('list.reset')}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
       {/* 撮影会一覧 */}
       {sessions.length === 0 ? (

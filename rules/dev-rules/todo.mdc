@@ -102,6 +102,13 @@ alwaysApply: true
     - [x] 撮影会フォームに画像アップロード統合
     - [x] 画像最適化・サムネイル生成
     - [x] 多言語化対応
+  - [x] **撮影会作成フォーム拡張**
+    - [x] 予約方式選択機能（先着順・抽選・管理抽選・優先予約）
+    - [x] BookingTypeSelectorコンポーネント
+    - [x] BookingSettingsFormコンポーネント
+    - [x] 各予約方式の詳細設定フォーム
+    - [x] 型定義拡張（BookingType、BookingSettings）
+    - [x] 多言語化対応
 - [x] 多言語化対応（日本語/英語）
   - [x] next-intl統合
   - [x] 全コンポーネント多言語化
