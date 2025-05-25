@@ -152,7 +152,7 @@ export function PhotoSessionReviewForm({
   );
 
   return (
-    <Card>
+    <Card data-review-form>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Star className="h-5 w-5" />

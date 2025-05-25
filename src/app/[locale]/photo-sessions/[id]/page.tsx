@@ -2,12 +2,14 @@ import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { PhotoSessionBookingForm } from '@/components/photo-sessions/PhotoSessionBookingForm';
 import { WaitlistForm } from '@/components/photo-sessions/WaitlistForm';
+import { PhotoSessionReviewWrapper } from '@/components/reviews/PhotoSessionReviewWrapper';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Calendar, MapPin, Users, DollarSign } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import { formatDateLocalized, formatTimeLocalized } from '@/lib/utils/date';
+import { getTranslations } from 'next-intl/server';
 
 interface PhotoSessionDetailPageProps {
   params: Promise<{
@@ -21,7 +23,9 @@ export default async function PhotoSessionDetailPage({
 }: PhotoSessionDetailPageProps) {
   const { id, locale } = await params;
   const supabase = await createClient();
+  const t = await getTranslations('photoSessions');
 
+  // 撮影会情報を取得
   const { data: session, error } = await supabase
     .from('photo_sessions')
     .select(
@@ -42,6 +46,45 @@ export default async function PhotoSessionDetailPage({
     notFound();
   }
 
+  // 現在のユーザーを取得
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // ユーザーの予約情報を取得（レビュー投稿権限チェック用）
+  let userBooking = null;
+  let canWriteReview = false;
+
+  if (user) {
+    const { data: booking } = await supabase
+      .from('bookings')
+      .select('*')
+      .eq('photo_session_id', id)
+      .eq('user_id', user.id)
+      .eq('status', 'confirmed')
+      .single();
+
+    userBooking = booking;
+
+    // 撮影会が終了していて、参加していて、まだレビューを書いていない場合のみレビュー投稿可能
+    const now = new Date();
+    const endTime = new Date(session.end_time);
+    const hasParticipated = !!booking;
+    const sessionEnded = endTime < now;
+
+    if (hasParticipated && sessionEnded) {
+      // 既存のレビューをチェック
+      const { data: existingReview } = await supabase
+        .from('photo_session_reviews')
+        .select('id')
+        .eq('photo_session_id', id)
+        .eq('reviewer_id', user.id)
+        .single();
+
+      canWriteReview = !existingReview;
+    }
+  }
+
   const startDate = new Date(session.start_time);
   const endDate = new Date(session.end_time);
   const now = new Date();
@@ -51,13 +94,13 @@ export default async function PhotoSessionDetailPage({
 
   const getStatusBadge = () => {
     if (isPast) {
-      return <Badge variant="secondary">終了</Badge>;
+      return <Badge variant="secondary">{t('status.ended')}</Badge>;
     }
     if (isOngoing) {
-      return <Badge variant="default">開催中</Badge>;
+      return <Badge variant="default">{t('status.ongoing')}</Badge>;
     }
     if (isUpcoming) {
-      return <Badge variant="outline">予定</Badge>;
+      return <Badge variant="outline">{t('status.upcoming')}</Badge>;
     }
     return null;
   };
@@ -65,12 +108,12 @@ export default async function PhotoSessionDetailPage({
   const getAvailabilityBadge = () => {
     const available = session.max_participants - session.current_participants;
     if (available <= 0) {
-      return <Badge variant="destructive">満席</Badge>;
+      return <Badge variant="destructive">{t('availability.full')}</Badge>;
     }
     if (available <= 2) {
-      return <Badge variant="secondary">残りわずか</Badge>;
+      return <Badge variant="secondary">{t('availability.fewLeft')}</Badge>;
     }
-    return <Badge variant="outline">空きあり</Badge>;
+    return <Badge variant="outline">{t('availability.available')}</Badge>;
   };
 
   return (
@@ -79,7 +122,7 @@ export default async function PhotoSessionDetailPage({
         <Button variant="ghost" asChild className="mb-4">
           <Link href="/photo-sessions">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            撮影会一覧に戻る
+            {t('list.title')}に戻る
           </Link>
         </Button>
       </div>
@@ -94,7 +137,7 @@ export default async function PhotoSessionDetailPage({
                 <div className="flex gap-2">
                   {getStatusBadge()}
                   {!session.is_published && (
-                    <Badge variant="outline">非公開</Badge>
+                    <Badge variant="outline">{t('status.unpublished')}</Badge>
                   )}
                 </div>
               </div>
@@ -102,7 +145,9 @@ export default async function PhotoSessionDetailPage({
             <CardContent className="space-y-6">
               {session.description && (
                 <div>
-                  <h3 className="font-semibold mb-2">詳細</h3>
+                  <h3 className="font-semibold mb-2">
+                    {t('form.descriptionLabel')}
+                  </h3>
                   <p className="text-muted-foreground whitespace-pre-wrap">
                     {session.description}
                   </p>
@@ -181,6 +226,13 @@ export default async function PhotoSessionDetailPage({
               </div>
             </CardContent>
           </Card>
+
+          {/* レビューセクション */}
+          <PhotoSessionReviewWrapper
+            photoSessionId={session.id}
+            bookingId={userBooking?.id}
+            canWriteReview={canWriteReview}
+          />
         </div>
 
         {/* 予約・キャンセル待ちフォーム */}
