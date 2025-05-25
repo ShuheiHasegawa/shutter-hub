@@ -826,5 +826,82 @@
       "searchFailed": "検索に失敗しました",
       "unexpectedError": "予期しないエラーが発生しました"
     }
+  },
+  "reviews": {
+    "form": {
+      "title": "レビューを投稿",
+      "overallRating": "総合評価",
+      "detailedRatings": "詳細評価",
+      "organizationRating": "運営・進行",
+      "communicationRating": "コミュニケーション",
+      "valueRating": "コストパフォーマンス",
+      "venueRating": "会場・環境",
+      "reviewContent": "レビュー内容",
+      "reviewTitle": "タイトル",
+      "reviewTitlePlaceholder": "レビューのタイトルを入力してください",
+      "reviewContentPlaceholder": "撮影会の感想や詳細なレビューを記入してください",
+      "pros": "良かった点",
+      "prosPlaceholder": "特に良かった点があれば記入してください",
+      "cons": "改善点",
+      "consPlaceholder": "改善してほしい点があれば記入してください",
+      "options": "オプション",
+      "postAnonymously": "匿名で投稿する",
+      "anonymousDescription": "匿名で投稿すると、あなたの名前は表示されません",
+      "submitReview": "レビューを投稿",
+      "submitting": "投稿中...",
+      "notRated": "未評価",
+      "guidelines": {
+        "title": "レビューガイドライン",
+        "honest": "正直で建設的なレビューを心がけてください",
+        "respectful": "他の参加者や主催者を尊重してください",
+        "constructive": "改善点は具体的で建設的に記載してください",
+        "noPersonalInfo": "個人情報や連絡先は記載しないでください",
+        "editPolicy": "投稿後の編集はできませんのでご注意ください"
+      }
+    },
+    "display": {
+      "anonymousUser": "匿名ユーザー",
+      "verified": "参加確認済み",
+      "detailedRatings": "詳細評価",
+      "helpfulCount": "{count}人が参考になったと評価"
+    },
+    "actions": {
+      "helpful": "参考になった",
+      "notHelpful": "参考にならない",
+      "report": "報告する"
+    },
+    "validation": {
+      "overallRatingRequired": "総合評価は必須です",
+      "pleaseSelectRating": "1〜5の評価を選択してください",
+      "reportReasonRequired": "報告理由を選択してください",
+      "pleaseSelectReason": "報告理由を選択してください"
+    },
+    "success": {
+      "reviewSubmitted": "レビューを投稿しました",
+      "voteSubmitted": "評価を送信しました",
+      "reportSubmitted": "報告を送信しました"
+    },
+    "error": {
+      "submitFailed": "投稿に失敗しました",
+      "voteFailed": "評価の送信に失敗しました",
+      "reportFailed": "報告の送信に失敗しました",
+      "unexpectedError": "予期しないエラーが発生しました"
+    },
+    "report": {
+      "title": "レビューを報告",
+      "description": "不適切なレビューを報告してください。報告内容は運営チームが確認します。",
+      "reason": "報告理由",
+      "reasons": {
+        "spam": "スパム・宣伝",
+        "inappropriate": "不適切な内容",
+        "fake": "虚偽の情報",
+        "harassment": "嫌がらせ・誹謗中傷",
+        "other": "その他"
+      },
+      "additionalInfo": "追加情報（任意）",
+      "additionalInfoPlaceholder": "詳細な説明があれば記入してください",
+      "submit": "報告する",
+      "submitting": "送信中..."
+    }
   }
 }

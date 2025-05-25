@@ -769,5 +769,82 @@
       "searchFailed": "Search failed",
       "unexpectedError": "An unexpected error occurred"
     }
+  },
+  "reviews": {
+    "form": {
+      "title": "Write a Review",
+      "overallRating": "Overall Rating",
+      "detailedRatings": "Detailed Ratings",
+      "organizationRating": "Organization & Management",
+      "communicationRating": "Communication",
+      "valueRating": "Value for Money",
+      "venueRating": "Venue & Environment",
+      "reviewContent": "Review Content",
+      "reviewTitle": "Title",
+      "reviewTitlePlaceholder": "Enter a title for your review",
+      "reviewContentPlaceholder": "Share your experience and detailed review of the photo session",
+      "pros": "What went well",
+      "prosPlaceholder": "Mention what you particularly enjoyed",
+      "cons": "Areas for improvement",
+      "consPlaceholder": "Suggest areas that could be improved",
+      "options": "Options",
+      "postAnonymously": "Post anonymously",
+      "anonymousDescription": "Your name will not be displayed when posting anonymously",
+      "submitReview": "Submit Review",
+      "submitting": "Submitting...",
+      "notRated": "Not rated",
+      "guidelines": {
+        "title": "Review Guidelines",
+        "honest": "Please provide honest and constructive feedback",
+        "respectful": "Be respectful to other participants and organizers",
+        "constructive": "Make improvement suggestions specific and constructive",
+        "noPersonalInfo": "Do not include personal information or contact details",
+        "editPolicy": "Reviews cannot be edited after posting"
+      }
+    },
+    "display": {
+      "anonymousUser": "Anonymous User",
+      "verified": "Verified Participant",
+      "detailedRatings": "Detailed Ratings",
+      "helpfulCount": "{count} people found this helpful"
+    },
+    "actions": {
+      "helpful": "Helpful",
+      "notHelpful": "Not Helpful",
+      "report": "Report"
+    },
+    "validation": {
+      "overallRatingRequired": "Overall rating is required",
+      "pleaseSelectRating": "Please select a rating from 1 to 5",
+      "reportReasonRequired": "Report reason is required",
+      "pleaseSelectReason": "Please select a reason for reporting"
+    },
+    "success": {
+      "reviewSubmitted": "Review submitted successfully",
+      "voteSubmitted": "Vote submitted successfully",
+      "reportSubmitted": "Report submitted successfully"
+    },
+    "error": {
+      "submitFailed": "Failed to submit review",
+      "voteFailed": "Failed to submit vote",
+      "reportFailed": "Failed to submit report",
+      "unexpectedError": "An unexpected error occurred"
+    },
+    "report": {
+      "title": "Report Review",
+      "description": "Report inappropriate reviews. Reports will be reviewed by our moderation team.",
+      "reason": "Reason for reporting",
+      "reasons": {
+        "spam": "Spam or advertising",
+        "inappropriate": "Inappropriate content",
+        "fake": "False information",
+        "harassment": "Harassment or abuse",
+        "other": "Other"
+      },
+      "additionalInfo": "Additional information (optional)",
+      "additionalInfoPlaceholder": "Provide additional details if needed",
+      "submit": "Submit Report",
+      "submitting": "Submitting..."
+    }
   }
 }
