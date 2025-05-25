@@ -133,7 +133,7 @@
   "pages": {
     "search": {
       "title": "撮影会を検索",
-      "placeholder": "検索機能は後のフェーズで実装予定です。"
+      "description": "詳細な条件で撮影会を検索できます"
     },
     "bookings": {
       "title": "予約管理",
@@ -783,6 +783,48 @@
       "load_failed": "設定の取得に失敗しました",
       "save_failed": "設定の保存に失敗しました",
       "unexpected": "予期しないエラーが発生しました"
+    }
+  },
+  "search": {
+    "filters": {
+      "title": "検索フィルター",
+      "keyword": "キーワード",
+      "keywordPlaceholder": "撮影会のタイトルや説明で検索...",
+      "location": "場所",
+      "locationPlaceholder": "東京都、渋谷区など...",
+      "dateRange": "開催日",
+      "dateFrom": "開始日",
+      "dateTo": "終了日",
+      "selectDate": "日付を選択",
+      "priceRange": "参加費",
+      "priceMin": "最低料金",
+      "priceMax": "最高料金",
+      "participantsRange": "参加者数",
+      "participantsMin": "最少人数",
+      "participantsMax": "最多人数",
+      "bookingTypes": "予約方式",
+      "options": "その他のオプション",
+      "onlyAvailable": "空きがある撮影会のみ",
+      "sortBy": "並び順",
+      "sortByStartTime": "開始日時順",
+      "sortByPrice": "料金順",
+      "sortByCreatedAt": "作成日順",
+      "sortByParticipants": "参加者数順",
+      "ascending": "昇順",
+      "descending": "降順"
+    },
+    "search": "検索",
+    "searching": "検索中...",
+    "reset": "リセット",
+    "results": {
+      "title": "検索結果",
+      "count": "件",
+      "noResults": "検索条件に一致する撮影会が見つかりませんでした",
+      "tryDifferentFilters": "検索条件を変更してお試しください"
+    },
+    "error": {
+      "searchFailed": "検索に失敗しました",
+      "unexpectedError": "予期しないエラーが発生しました"
     }
   }
 }

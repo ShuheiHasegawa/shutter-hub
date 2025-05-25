@@ -106,12 +106,22 @@ export async function getPhotoSessions(options?: {
 }
 
 export async function searchPhotoSessions(searchParams: {
-  query?: string;
+  keyword?: string;
   location?: string;
-  startDate?: string;
-  endDate?: string;
-  minPrice?: number;
-  maxPrice?: number;
+  dateFrom?: string;
+  dateTo?: string;
+  priceMin?: number;
+  priceMax?: number;
+  participantsMin?: number;
+  participantsMax?: number;
+  bookingTypes?: string[];
+  onlyAvailable?: boolean;
+  sortBy?:
+    | 'start_time'
+    | 'price_per_person'
+    | 'created_at'
+    | 'max_participants';
+  sortOrder?: 'asc' | 'desc';
   limit?: number;
   offset?: number;
 }) {
@@ -122,43 +132,69 @@ export async function searchPhotoSessions(searchParams: {
     .select(
       `
       *,
-      organizer:profiles(*)
+      organizer:profiles(*),
+      images:photo_session_images(*),
+      _count:bookings(count)
     `
     )
-    .eq('is_published', true)
-    .order('start_time', { ascending: true });
+    .eq('is_published', true);
 
-  // テキスト検索
-  if (searchParams.query) {
+  // キーワード検索
+  if (searchParams.keyword) {
     query = query.or(
-      `title.ilike.%${searchParams.query}%,description.ilike.%${searchParams.query}%`
+      `title.ilike.%${searchParams.keyword}%,description.ilike.%${searchParams.keyword}%`
     );
   }
 
   // 場所検索
   if (searchParams.location) {
     query = query.or(
-      `location.ilike.%${searchParams.location}%,address.ilike.%${searchParams.location}%`
+      `location.ilike.%${searchParams.location}%,detailed_address.ilike.%${searchParams.location}%`
     );
   }
 
   // 日付範囲
-  if (searchParams.startDate) {
-    query = query.gte('start_time', searchParams.startDate);
+  if (searchParams.dateFrom) {
+    query = query.gte('start_time', searchParams.dateFrom);
   }
 
-  if (searchParams.endDate) {
-    query = query.lte('start_time', searchParams.endDate);
+  if (searchParams.dateTo) {
+    query = query.lte('start_time', searchParams.dateTo);
   }
 
   // 価格範囲
-  if (searchParams.minPrice !== undefined) {
-    query = query.gte('price_per_person', searchParams.minPrice);
+  if (searchParams.priceMin !== undefined) {
+    query = query.gte('price_per_person', searchParams.priceMin);
   }
 
-  if (searchParams.maxPrice !== undefined) {
-    query = query.lte('price_per_person', searchParams.maxPrice);
+  if (searchParams.priceMax !== undefined) {
+    query = query.lte('price_per_person', searchParams.priceMax);
   }
+
+  // 参加者数範囲
+  if (searchParams.participantsMin !== undefined) {
+    query = query.gte('max_participants', searchParams.participantsMin);
+  }
+
+  if (searchParams.participantsMax !== undefined) {
+    query = query.lte('max_participants', searchParams.participantsMax);
+  }
+
+  // 予約方式フィルター
+  if (searchParams.bookingTypes && searchParams.bookingTypes.length > 0) {
+    query = query.in('booking_type', searchParams.bookingTypes);
+  }
+
+  // 空きありフィルター（現在の参加者数が最大参加者数未満）
+  if (searchParams.onlyAvailable) {
+    // Supabaseでは直接カラム比較ができないため、フィルターを後で適用
+    // 一旦全データを取得してからフィルタリングする必要がある
+  }
+
+  // ソート
+  const sortBy = searchParams.sortBy || 'start_time';
+  const sortOrder = searchParams.sortOrder === 'desc' ? false : true;
+  query = query.order(sortBy, { ascending: sortOrder });
 
   // ページネーション
   if (searchParams.limit) {

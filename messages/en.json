@@ -137,7 +137,7 @@
   "pages": {
     "search": {
       "title": "Search Photo Sessions",
-      "placeholder": "Search functionality will be implemented in a later phase."
+      "description": "Search photo sessions with detailed filters"
     },
     "bookings": {
       "title": "Booking Management",
@@ -726,6 +726,48 @@
       "load_failed": "Failed to load settings",
       "save_failed": "Failed to save settings",
       "unexpected": "An unexpected error occurred"
+    }
+  },
+  "search": {
+    "filters": {
+      "title": "Search Filters",
+      "keyword": "Keyword",
+      "keywordPlaceholder": "Search by title or description...",
+      "location": "Location",
+      "locationPlaceholder": "Tokyo, Shibuya, etc...",
+      "dateRange": "Date Range",
+      "dateFrom": "From Date",
+      "dateTo": "To Date",
+      "selectDate": "Select Date",
+      "priceRange": "Price Range",
+      "priceMin": "Min Price",
+      "priceMax": "Max Price",
+      "participantsRange": "Participants",
+      "participantsMin": "Min Participants",
+      "participantsMax": "Max Participants",
+      "bookingTypes": "Booking Types",
+      "options": "Other Options",
+      "onlyAvailable": "Available sessions only",
+      "sortBy": "Sort By",
+      "sortByStartTime": "Start Time",
+      "sortByPrice": "Price",
+      "sortByCreatedAt": "Created Date",
+      "sortByParticipants": "Participants",
+      "ascending": "Ascending",
+      "descending": "Descending"
+    },
+    "search": "Search",
+    "searching": "Searching...",
+    "reset": "Reset",
+    "results": {
+      "title": "Search Results",
+      "count": "results",
+      "noResults": "No photo sessions found matching your criteria",
+      "tryDifferentFilters": "Try adjusting your search filters"
+    },
+    "error": {
+      "searchFailed": "Search failed",
+      "unexpectedError": "An unexpected error occurred"
     }
   }
 }
