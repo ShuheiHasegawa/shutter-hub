@@ -19,9 +19,10 @@ alwaysApply: true
 ```
 src/
 ├── app/                    # Next.js App Router
-│   ├── (auth)/            # 認証が必要なルート
-│   ├── (public)/          # 公開ルート
-│   ├── api/               # APIエンドポイント
+│   ├── [locale]/          # 多言語対応ルート
+│   │   ├── (auth)/        # 認証が必要なルート
+│   │   ├── (public)/      # 公開ルート
+│   │   └── api/           # APIエンドポイント
 │   └── actions/           # Server Actions
 ├── components/
 │   ├── ui/                # Shadcn/ui コンポーネント
@@ -33,7 +34,25 @@ src/
 │   ├── utils/            # 汎用ユーティリティ
 │   └── validations/      # Zodスキーマ
 ├── types/                # 型定義
+├── i18n/                 # 多言語化設定
+├── constants/            # 定数定義
 └── styles/               # グローバルスタイル
+
+supabase/
+├── migrations/           # データベースマイグレーション
+│   ├── 20241201000001_initial_schema.sql
+│   ├── 20241201000002_complete_schema.sql
+│   └── ...               # タイムスタンプ順のマイグレーション
+└── config.toml          # Supabase設定
+
+messages/                 # 多言語化メッセージ
+├── ja.json              # 日本語
+├── en.json              # 英語
+└── [locale].json        # 追加言語
+
+rules/                   # 開発ルール・プロンプト
+├── dev-rules/           # 開発ルール
+└── prompts/             # 機能別プロンプト
 ```
 
 ## 命名規則
@@ -537,11 +556,12 @@ const hoursUntil = differenceInHours(startTime, new Date());
 
 ### マイグレーション管理の自動化
 1. **新規マイグレーションファイル作成**: DB変更が必要な場合
-   - `src/lib/database/migrations/` ディレクトリに連番ファイルを作成
-   - ファイル名形式: `003_[変更内容].sql`
+   - `supabase/migrations/` ディレクトリにタイムスタンプ形式でファイル作成
+   - ファイル名形式: `YYYYMMDDHHMMSS_[変更内容].sql`
+   - 例: `20241201000008_add_user_preferences.sql`
    - 必要な情報: Migration名、Description、Date、実行SQL
 2. **統合マイグレーションファイル更新**: 新しいマイグレーションが作成された場合
-   - `src/lib/database/migrations/002_complete_schema.sql` を最新状態に更新
+   - `supabase/migrations/20241201000002_complete_schema.sql` を最新状態に更新
    - 全てのテーブル、インデックス、RLS、ストアドプロシージャを含める
 3. **MCP連携**: マイグレーションファイル変更時
    - Supabaseプロジェクトとの同期を確認
@@ -551,8 +571,21 @@ const hoursUntil = differenceInHours(startTime, new Date());
    - 現在のスキーマ状態を記録
    - ロールバック手順を明確化
 
+### マイグレーションファイル命名規則
+```
+supabase/migrations/
+├── 20241201000001_initial_schema.sql           # 初期スキーマ
+├── 20241201000002_complete_schema.sql          # 統合スキーマ（最新状態）
+├── 20241201000003_add_photo_session_images.sql # 機能追加
+├── 20241201000004_create_admin_lottery_system.sql
+├── 20241201000005_add_booking_type_to_photo_sessions.sql
+├── 20241201000006_create_storage_bucket.sql
+├── 20241201000007_create_review_system.sql
+└── 20241201000008_[次の変更].sql              # 新規追加時
+```
+
 ### DB変更時の必須手順
-1. **マイグレーションファイル作成**: `src/lib/database/migrations/` に追加
+1. **マイグレーションファイル作成**: `supabase/migrations/` に追加
 2. **MCP実行**: Supabaseプロジェクトに変更を適用
 3. **型定義更新**: 必要に応じてTypeScript型を更新
 4. **テスト実行**: DB変更に関連するテストを実行
