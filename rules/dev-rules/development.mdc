@@ -281,6 +281,108 @@ fix(ui): ボタンのスタイル修正
 docs(readme): セットアップ手順を追加
 ```
 
+## 依存関係管理ルール
+
+### 基本原則
+- **依存関係の追加・更新時は必ず互換性を確認**
+- **Vercelデプロイエラーを防ぐための事前チェック必須**
+- **ピア依存関係の競合は事前に解決**
+
+### 必須手順
+
+#### 1. 新しい依存関係の追加時
+```bash
+# 1. 依存関係の互換性確認
+npm info [package-name] peerDependencies
+
+# 2. 既存依存関係との競合チェック
+npm install [package-name] --dry-run
+
+# 3. 競合がある場合は --legacy-peer-deps で解決
+npm install [package-name] --legacy-peer-deps
+
+# 4. ビルドテスト必須
+npm run build
+```
+
+#### 2. 依存関係更新時
+```bash
+# 1. 段階的更新（一度に全て更新しない）
+npm update [specific-package]
+
+# 2. 更新後は必ずビルドテスト
+npm run build
+
+# 3. エラーが発生した場合は即座に修正
+```
+
+#### 3. 競合解決の優先順位
+1. **バージョン調整**: 互換性のあるバージョンに変更
+2. **--legacy-peer-deps**: .npmrcファイルで設定
+3. **代替パッケージ**: 競合が解決できない場合は代替を検討
+
+### .npmrcファイルの管理
+```
+legacy-peer-deps=true
+auto-install-peers=true
+```
+- **必須設定**: Vercelデプロイ時の競合回避
+- **プロジェクトルートに配置**: 全環境で統一設定
+
+### よくある競合パターンと解決法
+
+#### React バージョン競合
+```bash
+# 問題: React 19 vs パッケージがReact 18を要求
+# 解決: --legacy-peer-deps で回避
+npm install --legacy-peer-deps
+```
+
+#### date-fns バージョン競合
+```bash
+# 問題: date-fns v4 vs react-day-picker が v3を要求
+# 解決: date-fnsをダウングレード
+npm install date-fns@^3.6.0 --legacy-peer-deps
+```
+
+#### TypeScript バージョン競合
+```bash
+# 問題: TypeScript v5 vs パッケージがv4を要求
+# 解決: 段階的更新または代替パッケージ検討
+```
+
+### API変更への対応
+
+#### react-day-picker API変更例
+```tsx
+// 旧API (v8.x)
+components={{
+  IconLeft: ({ className, ...props }) => <ChevronLeft />,
+  IconRight: ({ className, ...props }) => <ChevronRight />,
+}}
+
+// 新API (v9.x)
+components={{
+  Chevron: ({ orientation, className, ...props }) => {
+    const Icon = orientation === 'left' ? ChevronLeft : ChevronRight;
+    return <Icon className={cn('h-4 w-4', className)} {...props} />;
+  },
+}}
+```
+
+### 禁止事項
+1. **依存関係の無計画な一括更新**
+2. **ビルドテストなしでの依存関係変更**
+3. **競合エラーの放置**
+4. **--force フラグの安易な使用**
+
+### 必須チェックリスト
+- [ ] 新規依存関係追加時の互換性確認
+- [ ] ビルドテスト実行
+- [ ] .npmrcファイルの適切な設定
+- [ ] Vercelデプロイテスト
+- [ ] API変更への対応確認
+
 ## 禁止事項
 
 1. **any型の使用**（unknown を使用）
@@ -288,6 +390,7 @@ docs(readme): セットアップ手順を追加
 3. **ハードコードされた秘密情報**
 4. **インラインスタイルの過度な使用**
 5. **適切なローディング表示なしの非同期処理**
+6. **依存関係の無計画な更新**（上記ルール参照）
 
 ## 推奨事項
 
