@@ -29,6 +29,37 @@ export function formatDate(
   return new Intl.DateTimeFormat('ja-JP', options).format(date);
 }
 
+// 多言語対応の日付フォーマット関数
+export function formatDateLocalized(
+  date: Date,
+  locale: string = 'ja-JP',
+  format: 'short' | 'long' | 'time' = 'short'
+): string {
+  const options: Intl.DateTimeFormatOptions = {
+    timeZone: 'Asia/Tokyo',
+  };
+
+  switch (format) {
+    case 'short':
+      options.year = 'numeric';
+      options.month = 'numeric';
+      options.day = 'numeric';
+      break;
+    case 'long':
+      options.year = 'numeric';
+      options.month = 'long';
+      options.day = 'numeric';
+      options.weekday = 'long';
+      break;
+    case 'time':
+      options.hour = '2-digit';
+      options.minute = '2-digit';
+      break;
+  }
+
+  return new Intl.DateTimeFormat(locale, options).format(date);
+}
+
 export function formatDateTime(date: Date): string {
   return new Intl.DateTimeFormat('ja-JP', {
     year: 'numeric',
@@ -41,8 +72,34 @@ export function formatDateTime(date: Date): string {
   }).format(date);
 }
 
+export function formatDateTimeLocalized(
+  date: Date,
+  locale: string = 'ja-JP'
+): string {
+  return new Intl.DateTimeFormat(locale, {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    weekday: 'long',
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'Asia/Tokyo',
+  }).format(date);
+}
+
 export function formatTime(date: Date): string {
   return new Intl.DateTimeFormat('ja-JP', {
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'Asia/Tokyo',
+  }).format(date);
+}
+
+export function formatTimeLocalized(
+  date: Date,
+  locale: string = 'ja-JP'
+): string {
+  return new Intl.DateTimeFormat(locale, {
     hour: '2-digit',
     minute: '2-digit',
     timeZone: 'Asia/Tokyo',

@@ -149,5 +149,82 @@
       "title": "Profile",
       "placeholder": "Profile functionality will be implemented in a later phase."
     }
+  },
+  "booking": {
+    "reserve": "Reserve",
+    "cancel": "Cancel",
+    "confirm": "Booking Confirmation",
+    "confirmCancel": "Cancel Booking",
+    "loginRequired": "Login Required",
+    "loginRequiredDescription": "Please log in to make a reservation.",
+    "pleaseLogin": "Please log in",
+    "sessionFull": "Full",
+    "availableSlots": "Available",
+    "fewSlotsLeft": "Few slots left",
+    "alreadyBooked": "Already booked",
+    "sessionEnded": "This photo session has already started or ended",
+    "notPublished": "This photo session is not published",
+    "cannotBook": "Cannot book",
+    "participateQuestion": "Would you like to participate in this photo session?",
+    "bookingInProgress": "Booking...",
+    "cancelInProgress": "Canceling...",
+    "confirmBookingQuestion": "Would you like to book the following photo session?",
+    "confirmCancelQuestion": "Are you sure you want to cancel this booking?",
+    "organizer": "Organizer",
+    "free": "Free",
+    "people": "people",
+    "notes": {
+      "title": "Notes:",
+      "firstCome": "Reservations are first-come, first-served",
+      "cancelDeadline": "Cancellation is possible up to 24 hours before the start time",
+      "cancelFee": "Cancellation fees may apply for same-day cancellations"
+    },
+    "cancelNotes": {
+      "title": "About Cancellation:",
+      "reBooking": "Re-booking after cancellation will be first-come, first-served",
+      "lateCancelFee": "Cancellation fees may apply if less than 24 hours before start time"
+    },
+    "actions": {
+      "back": "Back",
+      "cancel": "Cancel",
+      "confirmBooking": "Book",
+      "confirmCancel": "Cancel Booking"
+    }
+  },
+  "photoSessions": {
+    "title": "Photo Sessions",
+    "createSession": "Create Photo Session",
+    "editSession": "Edit Photo Session",
+    "viewDetails": "View Details",
+    "edit": "Edit",
+    "status": {
+      "upcoming": "Upcoming",
+      "ongoing": "Ongoing",
+      "ended": "Ended",
+      "unpublished": "Unpublished"
+    },
+    "availability": {
+      "available": "Available",
+      "fewLeft": "Few left",
+      "full": "Full"
+    }
+  },
+  "errors": {
+    "title": "Error",
+    "bookingFailed": "Booking failed",
+    "cancelFailed": "Cancellation failed",
+    "unexpectedError": "An unexpected error occurred",
+    "sessionNotFound": "Photo session not found",
+    "sessionFull": "Sorry, this photo session is full.",
+    "alreadyBooked": "This photo session is already booked.",
+    "sessionEnded": "This photo session has already ended.",
+    "unauthorized": "Unauthorized"
+  },
+  "success": {
+    "title": "Success",
+    "bookingCompleted": "Booking Completed!",
+    "bookingCompletedDescription": "Your photo session booking has been completed.",
+    "cancelCompleted": "Cancellation Completed",
+    "cancelCompletedDescription": "Your booking has been canceled."
   }
 }

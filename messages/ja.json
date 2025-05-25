@@ -145,5 +145,82 @@
       "title": "プロフィール",
       "placeholder": "プロフィール機能は後のフェーズで実装予定です。"
     }
+  },
+  "booking": {
+    "reserve": "予約する",
+    "cancel": "キャンセル",
+    "confirm": "予約確認",
+    "confirmCancel": "予約キャンセル",
+    "loginRequired": "ログインが必要です",
+    "loginRequiredDescription": "予約するにはログインしてください。",
+    "pleaseLogin": "ログインしてください",
+    "sessionFull": "満席",
+    "availableSlots": "空きあり",
+    "fewSlotsLeft": "残りわずか",
+    "alreadyBooked": "既に予約済みです",
+    "sessionEnded": "この撮影会は既に開始または終了しています",
+    "notPublished": "この撮影会は公開されていません",
+    "cannotBook": "予約できません",
+    "participateQuestion": "この撮影会に参加しますか？",
+    "bookingInProgress": "予約中...",
+    "cancelInProgress": "キャンセル中...",
+    "confirmBookingQuestion": "以下の撮影会を予約しますか？",
+    "confirmCancelQuestion": "本当に予約をキャンセルしますか？",
+    "organizer": "主催者",
+    "free": "無料",
+    "people": "人",
+    "notes": {
+      "title": "注意事項:",
+      "firstCome": "予約は先着順です",
+      "cancelDeadline": "キャンセルは開始時刻の24時間前まで可能です",
+      "cancelFee": "当日のキャンセルはキャンセル料が発生する場合があります"
+    },
+    "cancelNotes": {
+      "title": "キャンセルについて:",
+      "reBooking": "キャンセル後の再予約は先着順となります",
+      "lateCancelFee": "開始時刻まで24時間を切っている場合、キャンセル料が発生する可能性があります"
+    },
+    "actions": {
+      "back": "戻る",
+      "cancel": "やめる",
+      "confirmBooking": "予約する",
+      "confirmCancel": "キャンセルする"
+    }
+  },
+  "photoSessions": {
+    "title": "撮影会",
+    "createSession": "撮影会を作成",
+    "editSession": "撮影会を編集",
+    "viewDetails": "詳細を見る",
+    "edit": "編集",
+    "status": {
+      "upcoming": "予定",
+      "ongoing": "開催中",
+      "ended": "終了",
+      "unpublished": "非公開"
+    },
+    "availability": {
+      "available": "空きあり",
+      "fewLeft": "残りわずか",
+      "full": "満員"
+    }
+  },
+  "errors": {
+    "title": "エラー",
+    "bookingFailed": "予約に失敗しました",
+    "cancelFailed": "キャンセルに失敗しました",
+    "unexpectedError": "予期しないエラーが発生しました",
+    "sessionNotFound": "撮影会が見つかりません",
+    "sessionFull": "申し訳ございません。この撮影会は満席です。",
+    "alreadyBooked": "この撮影会は既に予約済みです。",
+    "sessionEnded": "この撮影会は既に終了しています。",
+    "unauthorized": "権限がありません"
+  },
+  "success": {
+    "title": "成功",
+    "bookingCompleted": "予約完了！",
+    "bookingCompletedDescription": "撮影会の予約が完了しました。",
+    "cancelCompleted": "キャンセル完了",
+    "cancelCompletedDescription": "予約をキャンセルしました。"
   }
 }

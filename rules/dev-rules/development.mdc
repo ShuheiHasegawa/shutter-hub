@@ -296,6 +296,131 @@ docs(readme): セットアップ手順を追加
 3. **メモ化**によるパフォーマンス最適化
 4. **アクセシビリティファースト**の実装
 
+## 多言語化ルール
+
+### 基本原則
+- **すべてのユーザー向けテキストは多言語化対応必須**
+- **ハードコードされた日本語・英語テキストは禁止**
+- **next-intl を使用した統一的な多言語化**
+
+### 実装ルール
+
+#### 1. テキストの多言語化
+```tsx
+// ❌ 悪い例
+<Button>予約する</Button>
+<p>この撮影会は満席です</p>
+
+// ✅ 良い例
+import { useTranslations } from 'next-intl';
+
+const t = useTranslations('booking');
+<Button>{t('reserve')}</Button>
+<p>{t('sessionFull')}</p>
+```
+
+#### 2. エラーメッセージの多言語化
+```tsx
+// ❌ 悪い例
+toast({
+  title: 'エラー',
+  description: '予約に失敗しました',
+  variant: 'destructive',
+});
+
+// ✅ 良い例
+const t = useTranslations('errors');
+toast({
+  title: t('title'),
+  description: t('bookingFailed'),
+  variant: 'destructive',
+});
+```
+
+#### 3. 日付・時刻の多言語化
+```tsx
+// ❌ 悪い例
+const options = { locale: 'ja-JP' };
+
+// ✅ 良い例
+import { useLocale } from 'next-intl';
+const locale = useLocale();
+const options = { locale };
+```
+
+### ファイル構造
+```
+messages/
+├── ja.json    # 日本語
+├── en.json    # 英語
+└── [locale].json  # 追加言語
+```
+
+### 言語ファイルの構造
+```json
+{
+  "common": { "基本的な共通テキスト" },
+  "navigation": { "ナビゲーション関連" },
+  "booking": { "予約関連" },
+  "photoSessions": { "撮影会関連" },
+  "errors": { "エラーメッセージ" },
+  "success": { "成功メッセージ" },
+  "validation": { "バリデーションメッセージ" }
+}
+```
+
+## 日付ユーティリティルール
+
+### 基本原則
+- **ネイティブ JavaScript Date API を使用**
+- **外部ライブラリ（date-fns等）は使用禁止**
+- **タイムゾーンは Asia/Tokyo 固定**
+- **多言語化対応必須**
+
+### 実装ルール
+
+#### 1. 日付フォーマット関数の使用
+```tsx
+// ✅ 推奨: src/lib/utils/date.ts の関数を使用
+import { formatDate, formatTime, formatDateTime } from '@/lib/utils/date';
+
+// 基本的な日付表示
+formatDate(date, 'short')  // 2024/1/1
+formatDate(date, 'long')   // 2024年1月1日月曜日
+formatTime(date)           // 14:30
+formatDateTime(date)       // 2024年1月1日月曜日 14:30
+```
+
+#### 2. 多言語対応の日付フォーマット
+```tsx
+import { useLocale } from 'next-intl';
+import { formatDateLocalized } from '@/lib/utils/date';
+
+const locale = useLocale();
+const formattedDate = formatDateLocalized(date, locale, 'long');
+```
+
+#### 3. 日付計算
+```tsx
+import { addDays, addHours, differenceInHours } from '@/lib/utils/date';
+
+// 日付計算
+const tomorrow = addDays(new Date(), 1);
+const deadline = addHours(startTime, -24);
+const hoursUntil = differenceInHours(startTime, new Date());
+```
+
+### 禁止事項
+- `date-fns` の使用
+- `moment.js` の使用
+- ハードコードされたロケール指定
+- タイムゾーンの直接指定（Asia/Tokyo以外）
+
+### 必須実装
+- すべての日付表示は多言語化対応
+- ユーザーのロケール設定に基づく表示
+- 一貫したタイムゾーン処理
+
 ## 自動化ルール
 
 ### 機能実装完了時の自動処理

@@ -1,6 +1,6 @@
 'use client';
 
-import { formatDate, formatTime } from '@/lib/utils/date';
+import { formatDateLocalized, formatTimeLocalized } from '@/lib/utils/date';
 import {
   CalendarIcon,
   MapPinIcon,
@@ -10,6 +10,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { useTranslations, useLocale } from 'next-intl';
 import type { PhotoSessionWithOrganizer } from '@/types/database';
 
 interface PhotoSessionCardProps {
@@ -27,6 +28,10 @@ export function PhotoSessionCard({
   showActions = true,
   isOwner = false,
 }: PhotoSessionCardProps) {
+  const t = useTranslations('photoSessions');
+  const tBooking = useTranslations('booking');
+  const locale = useLocale();
+
   const startDate = new Date(session.start_time);
   const endDate = new Date(session.end_time);
   const now = new Date();
@@ -36,13 +41,13 @@ export function PhotoSessionCard({
 
   const getStatusBadge = () => {
     if (isPast) {
-      return <Badge variant="secondary">終了</Badge>;
+      return <Badge variant="secondary">{t('status.ended')}</Badge>;
     }
     if (isOngoing) {
-      return <Badge variant="default">開催中</Badge>;
+      return <Badge variant="default">{t('status.ongoing')}</Badge>;
     }
     if (isUpcoming) {
-      return <Badge variant="outline">予定</Badge>;
+      return <Badge variant="outline">{t('status.upcoming')}</Badge>;
     }
     return null;
   };
@@ -50,12 +55,12 @@ export function PhotoSessionCard({
   const getAvailabilityBadge = () => {
     const available = session.max_participants - session.current_participants;
     if (available <= 0) {
-      return <Badge variant="destructive">満員</Badge>;
+      return <Badge variant="destructive">{t('availability.full')}</Badge>;
     }
     if (available <= 2) {
-      return <Badge variant="secondary">残りわずか</Badge>;
+      return <Badge variant="secondary">{t('availability.fewLeft')}</Badge>;
     }
-    return <Badge variant="outline">空きあり</Badge>;
+    return <Badge variant="outline">{t('availability.available')}</Badge>;
   };
 
   return (
@@ -67,12 +72,15 @@ export function PhotoSessionCard({
           </CardTitle>
           <div className="flex gap-2 ml-2">
             {getStatusBadge()}
-            {!session.is_published && <Badge variant="outline">非公開</Badge>}
+            {!session.is_published && (
+              <Badge variant="outline">{t('status.unpublished')}</Badge>
+            )}
           </div>
         </div>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <span>
-            主催者: {session.organizer.display_name || session.organizer.email}
+            {tBooking('organizer')}:{' '}
+            {session.organizer.display_name || session.organizer.email}
           </span>
         </div>
       </CardHeader>
@@ -88,9 +96,10 @@ export function PhotoSessionCard({
           <div className="flex items-center gap-2">
             <CalendarIcon className="h-4 w-4 text-muted-foreground" />
             <div>
-              <div>{formatDate(startDate, 'long')}</div>
+              <div>{formatDateLocalized(startDate, locale, 'long')}</div>
               <div className="text-muted-foreground">
-                {formatTime(startDate)} - {formatTime(endDate)}
+                {formatTimeLocalized(startDate, locale)} -{' '}
+                {formatTimeLocalized(endDate, locale)}
               </div>
             </div>
           </div>
@@ -103,7 +112,8 @@ export function PhotoSessionCard({
           <div className="flex items-center gap-2">
             <UsersIcon className="h-4 w-4 text-muted-foreground" />
             <span>
-              {session.current_participants}/{session.max_participants}人
+              {session.current_participants}/{session.max_participants}
+              {tBooking('people')}
             </span>
             {getAvailabilityBadge()}
           </div>
@@ -112,7 +122,7 @@ export function PhotoSessionCard({
             <CircleDollarSignIcon className="h-4 w-4 text-muted-foreground" />
             <span>
               {session.price_per_person === 0
-                ? '無料'
+                ? tBooking('free')
                 : `¥${session.price_per_person.toLocaleString()}`}
             </span>
           </div>
@@ -127,7 +137,7 @@ export function PhotoSessionCard({
                 onClick={() => onViewDetails(session.id)}
                 className="flex-1"
               >
-                詳細を見る
+                {t('viewDetails')}
               </Button>
             )}
             {!isOwner && onViewDetails && (
@@ -141,8 +151,8 @@ export function PhotoSessionCard({
                 }
               >
                 {session.current_participants >= session.max_participants
-                  ? '満席'
-                  : '予約する'}
+                  ? tBooking('sessionFull')
+                  : tBooking('reserve')}
               </Button>
             )}
             {isOwner && onEdit && (
@@ -151,7 +161,7 @@ export function PhotoSessionCard({
                 size="sm"
                 onClick={() => onEdit(session.id)}
               >
-                編集
+                {t('edit')}
               </Button>
             )}
           </div>
