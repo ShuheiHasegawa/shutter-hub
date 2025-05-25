@@ -74,6 +74,12 @@ alwaysApply: true
 
 ### フェーズ1（MVP）
 - [x] プロジェクト初期設定
+- [x] マイグレーションファイル一元化とMCP連携自動化
+  - [x] 統合マイグレーションファイル作成（002_complete_schema.sql）
+  - [x] MCPツールでSupabaseプロジェクトに適用
+  - [x] 古いマイグレーションファイル削除
+  - [x] 開発ルールに自動化プロセス追加
+  - [x] positionカラム名修正（queue_position）
 - [x] 認証システム実装（`auth.mdc`参照）
   - [x] Google OAuth認証
   - [x] X (Twitter) OAuth認証

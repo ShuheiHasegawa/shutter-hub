@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { createPhotoSessionBooking } from '@/app/actions/photo-session-booking';
-import { canJoinPhotoSession } from '@/lib/photo-sessions';
+import { canJoinPhotoSessionAction } from '@/app/actions/photo-session';
 import type { PhotoSessionWithOrganizer } from '@/types/database';
 import {
   CalendarIcon,
@@ -47,7 +47,7 @@ export function PhotoSessionBookingForm({
   const checkCanJoin = async () => {
     if (!user) return;
 
-    const result = await canJoinPhotoSession(session.id, user.id);
+    const result = await canJoinPhotoSessionAction(session.id, user.id);
     setCanJoin(result);
   };
 

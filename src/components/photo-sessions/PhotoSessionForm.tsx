@@ -9,7 +9,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { createPhotoSession, updatePhotoSession } from '@/lib/photo-sessions';
+import {
+  createPhotoSessionAction,
+  updatePhotoSessionAction,
+} from '@/app/actions/photo-session';
 import type { PhotoSessionWithOrganizer } from '@/types/database';
 import { useTranslations } from 'next-intl';
 
@@ -141,9 +144,9 @@ export function PhotoSessionForm({
       let result;
 
       if (isEditing && initialData) {
-        result = await updatePhotoSession(initialData.id, sessionData);
+        result = await updatePhotoSessionAction(initialData.id, sessionData);
       } else {
-        result = await createPhotoSession(sessionData);
+        result = await createPhotoSessionAction(sessionData);
       }
 
       if (result.error) {

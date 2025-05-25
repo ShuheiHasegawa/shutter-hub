@@ -14,8 +14,8 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PlusIcon, SearchIcon } from 'lucide-react';
-import { getPhotoSessions, searchPhotoSessions } from '@/lib/photo-sessions';
 import { useAuth } from '@/hooks/useAuth';
+import { createClient } from '@/lib/supabase/client';
 import type { PhotoSessionWithOrganizer } from '@/types/database';
 import { useTranslations } from 'next-intl';
 
@@ -48,46 +48,57 @@ export function PhotoSessionList({
   const loadSessions = async () => {
     setLoading(true);
     try {
-      let result;
+      const supabase = createClient();
+      let query = supabase.from('photo_sessions').select(`
+          *,
+          organizer:profiles!photo_sessions_organizer_id_fkey(
+            id,
+            display_name,
+            email,
+            avatar_url
+          )
+        `);
 
-      if (searchQuery || locationFilter) {
-        // 検索モード
-        result = await searchPhotoSessions({
-          query: searchQuery || undefined,
-          location: locationFilter || undefined,
-          limit: 20,
-        });
+      // フィルター条件を適用
+      if (organizerId) {
+        query = query.eq('organizer_id', organizerId);
       } else {
-        // 通常の一覧取得
-        result = await getPhotoSessions({
-          published: organizerId ? undefined : true, // 自分の撮影会の場合は非公開も含む
-          organizerId,
-          limit: 20,
-        });
+        query = query.eq('is_published', true);
       }
 
-      if (result.data) {
-        // ソート処理
-        const sortedSessions = [...result.data].sort((a, b) => {
-          switch (sortBy) {
-            case 'start_time':
-              return (
-                new Date(a.start_time).getTime() -
-                new Date(b.start_time).getTime()
-              );
-            case 'price':
-              return a.price_per_person - b.price_per_person;
-            case 'created_at':
-              return (
-                new Date(b.created_at).getTime() -
-                new Date(a.created_at).getTime()
-              );
-            default:
-              return 0;
-          }
-        });
-        setSessions(sortedSessions);
+      if (searchQuery) {
+        query = query.or(
+          `title.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`
+        );
       }
+
+      if (locationFilter) {
+        query = query.ilike('location', `%${locationFilter}%`);
+      }
+
+      // ソート条件を適用
+      switch (sortBy) {
+        case 'start_time':
+          query = query.order('start_time', { ascending: true });
+          break;
+        case 'price':
+          query = query.order('price_per_person', { ascending: true });
+          break;
+        case 'created_at':
+          query = query.order('created_at', { ascending: false });
+          break;
+      }
+
+      query = query.limit(20);
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error('撮影会一覧取得エラー:', error);
+        return;
+      }
+
+      setSessions(data || []);
     } catch (error) {
       console.error('撮影会一覧取得エラー:', error);
     } finally {
