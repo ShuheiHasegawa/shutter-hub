@@ -262,6 +262,23 @@
       "noSessions": "撮影会がまだありません。",
       "createFirst": "最初の撮影会を作成",
       "loadMore": "さらに読み込む"
+    },
+    "imageUpload": {
+      "selectImages": "画像を選択",
+      "uploading": "アップロード中...",
+      "uploadProgress": "アップロード進行状況",
+      "uploadSuccess": "{count}枚の画像をアップロードしました",
+      "uploadPartialFailure": "{failed}枚の画像のアップロードに失敗しました",
+      "uploadError": "画像のアップロードに失敗しました",
+      "deleteSuccess": "画像を削除しました",
+      "deleteError": "画像の削除に失敗しました",
+      "maxImagesExceeded": "最大{max}枚まで選択できます",
+      "imageAlt": "画像 {index}",
+      "mainImage": "メイン画像",
+      "noImages": "画像がアップロードされていません",
+      "supportedFormats": "対応形式: JPEG、PNG、WebP、GIF",
+      "maxFileSize": "最大ファイルサイズ: 10MB",
+      "firstImageIsMain": "最初の画像がメイン画像として表示されます"
     }
   },
   "lottery": {

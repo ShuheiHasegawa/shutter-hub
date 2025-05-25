@@ -266,6 +266,23 @@
       "noSessions": "No photo sessions yet.",
       "createFirst": "Create your first photo session",
       "loadMore": "Load more"
+    },
+    "imageUpload": {
+      "selectImages": "Select Images",
+      "uploading": "Uploading...",
+      "uploadProgress": "Upload Progress",
+      "uploadSuccess": "Successfully uploaded {count} images",
+      "uploadPartialFailure": "Failed to upload {failed} images",
+      "uploadError": "Failed to upload images",
+      "deleteSuccess": "Image deleted successfully",
+      "deleteError": "Failed to delete image",
+      "maxImagesExceeded": "You can select up to {max} images",
+      "imageAlt": "Image {index}",
+      "mainImage": "Main Image",
+      "noImages": "No images uploaded",
+      "supportedFormats": "Supported formats: JPEG, PNG, WebP, GIF",
+      "maxFileSize": "Maximum file size: 10MB",
+      "firstImageIsMain": "The first image will be displayed as the main image"
     }
   },
   "lottery": {

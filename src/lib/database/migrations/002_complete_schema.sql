@@ -900,4 +900,59 @@ CREATE TRIGGER update_priority_booking_settings_updated_at
 
 CREATE TRIGGER update_waitlist_settings_updated_at 
   BEFORE UPDATE ON waitlist_settings 
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column(); 
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- =============================================================================
+-- 撮影会画像機能 (Photo Session Images)
+-- =============================================================================
+
+-- 撮影会テーブルに画像URL配列フィールドを追加
+ALTER TABLE photo_sessions ADD COLUMN IF NOT EXISTS image_urls TEXT[] DEFAULT '{}';
+
+-- インデックスを追加（検索性能向上）
+CREATE INDEX IF NOT EXISTS idx_photo_sessions_image_urls ON photo_sessions USING GIN (image_urls);
+
+-- コメント追加
+COMMENT ON COLUMN photo_sessions.image_urls IS '撮影会の画像URL配列（最初の要素がメイン画像）';
+
+-- =============================================================================
+-- Supabase Storage設定 (Storage Configuration)
+-- =============================================================================
+
+-- ストレージバケットを作成
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+  'photo-sessions',
+  'photo-sessions',
+  true,
+  10485760, -- 10MB
+  ARRAY['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif']
+) ON CONFLICT (id) DO NOTHING;
+
+-- 公開読み取りポリシー
+CREATE POLICY "Public read access for photo session images" ON storage.objects
+FOR SELECT USING (bucket_id = 'photo-sessions');
+
+-- 認証済みユーザーのアップロードポリシー
+CREATE POLICY "Authenticated users can upload photo session images" ON storage.objects
+FOR INSERT WITH CHECK (
+  bucket_id = 'photo-sessions' 
+  AND auth.role() = 'authenticated'
+);
+
+-- 所有者のみ削除可能ポリシー
+CREATE POLICY "Users can delete their own photo session images" ON storage.objects
+FOR DELETE USING (
+  bucket_id = 'photo-sessions' 
+  AND auth.uid() = owner
+);
+
+-- 所有者のみ更新可能ポリシー
+CREATE POLICY "Users can update their own photo session images" ON storage.objects
+FOR UPDATE USING (
+  bucket_id = 'photo-sessions' 
+  AND auth.uid() = owner
+) WITH CHECK (
+  bucket_id = 'photo-sessions' 
+  AND auth.uid() = owner
+); 

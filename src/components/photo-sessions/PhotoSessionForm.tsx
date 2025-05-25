@@ -15,7 +15,7 @@ import {
 } from '@/app/actions/photo-session';
 import type { PhotoSessionWithOrganizer } from '@/types/database';
 import { useTranslations } from 'next-intl';
-import { ImageUpload } from '@/components/ui/image-upload';
+import { ImageUpload } from '@/components/photo-sessions/ImageUpload';
 
 interface PhotoSessionFormProps {
   initialData?: PhotoSessionWithOrganizer;
@@ -206,8 +206,9 @@ export function PhotoSessionForm({
           <div className="space-y-4">
             <h3 className="text-lg font-medium">イメージ画像</h3>
             <ImageUpload
-              value={formData.image_urls}
-              onChange={handleImageUrlsChange}
+              photoSessionId={initialData?.id || 'temp'}
+              initialImages={formData.image_urls}
+              onImagesChange={handleImageUrlsChange}
               maxImages={5}
               disabled={isLoading}
             />
