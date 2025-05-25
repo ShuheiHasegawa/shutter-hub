@@ -7,7 +7,7 @@ export interface WaitlistEntry {
   id?: string;
   photo_session_id: string;
   user_id: string;
-  position: number;
+  queue_position: number;
   status: 'waiting' | 'promoted' | 'expired' | 'cancelled';
   auto_promote: boolean;
   notification_sent: boolean;
@@ -95,7 +95,7 @@ export async function joinWaitlist(
     return {
       success: true,
       data: {
-        position: result.position,
+        position: result.queue_position,
         waitlist_entry_id: result.waitlist_entry_id,
       },
     };
@@ -210,7 +210,7 @@ export async function getPhotoSessionWaitlist(
       )
       .eq('photo_session_id', photoSessionId)
       .in('status', ['waiting', 'promoted'])
-      .order('position', { ascending: true });
+      .order('queue_position', { ascending: true });
 
     if (error) {
       console.error('キャンセル待ち一覧取得エラー:', error);
@@ -445,9 +445,7 @@ export async function confirmPromotedBooking(
 }
 
 // ユーザーの通知一覧を取得
-export async function getUserWaitlistNotifications(
-  userId?: string
-): Promise<{
+export async function getUserWaitlistNotifications(userId?: string): Promise<{
   success: boolean;
   error?: string;
   data?: WaitlistNotification[];

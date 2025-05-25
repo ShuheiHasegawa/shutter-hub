@@ -235,7 +235,7 @@ export function WaitlistForm({
             <span className="text-sm font-medium">{t('waiting.position')}</span>
             <Badge variant="secondary" className="bg-blue-100 text-blue-700">
               {t('waiting.position_value', {
-                position: waitlistEntry.position,
+                position: waitlistEntry.queue_position,
               })}
             </Badge>
           </div>
