@@ -224,6 +224,24 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
     searchNearbyPhotographers();
   }, [location, formData.requestType]);
 
+  const requestTypes = [
+    { value: 'portrait', label: 'ポートレート', icon: '👤', price: '¥3,000〜' },
+    { value: 'couple', label: 'カップル・友人', icon: '👫', price: '¥5,000〜' },
+    { value: 'family', label: 'ファミリー', icon: '👨‍👩‍👧‍👦', price: '¥8,000〜' },
+    { value: 'group', label: 'グループ', icon: '👥', price: '¥10,000〜' },
+  ];
+
+  const urgencyOptions = [
+    { value: 'now', label: '今すぐ', extra: '+¥2,000', icon: '⚡' },
+    { value: 'within_30min', label: '30分以内', extra: '+¥1,000', icon: '🕐' },
+    {
+      value: 'within_1hour',
+      label: '1時間以内',
+      extra: '追加料金なし',
+      icon: '⏰',
+    },
+  ];
+
   return (
     <Card id="quick-request" className="w-full max-w-2xl mx-auto">
       <CardHeader>
@@ -297,46 +315,72 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
           {/* 撮影タイプ */}
           <div className="space-y-2">
             <Label htmlFor="requestType">撮影タイプ</Label>
-            <Select
-              value={formData.requestType}
-              onValueChange={(value: RequestType) =>
-                setFormData(prev => ({ ...prev, requestType: value }))
-              }
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="portrait">ポートレート（個人）</SelectItem>
-                <SelectItem value="couple">カップル・友人</SelectItem>
-                <SelectItem value="family">ファミリー</SelectItem>
-                <SelectItem value="group">グループ</SelectItem>
-                <SelectItem value="landscape">風景・観光地</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="grid grid-cols-2 gap-2">
+              {requestTypes.map(type => (
+                <button
+                  key={type.value}
+                  type="button"
+                  className={`p-3 border rounded-lg text-left transition-colors ${
+                    formData.requestType === type.value
+                      ? 'border-blue-500 bg-blue-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                  onClick={() =>
+                    setFormData(prev => ({
+                      ...prev,
+                      requestType: type.value as RequestType,
+                    }))
+                  }
+                >
+                  <div className="text-lg mb-1">{type.icon}</div>
+                  <div className="text-sm font-medium">{type.label}</div>
+                  <div className="text-xs text-gray-500">{type.price}</div>
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* 緊急度と撮影時間 */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="urgency">緊急度</Label>
-              <Select
-                value={formData.urgency}
-                onValueChange={(value: RequestUrgency) =>
-                  setFormData(prev => ({ ...prev, urgency: value }))
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="now">今すぐ (+¥2,000)</SelectItem>
-                  <SelectItem value="within_30min">
-                    30分以内 (+¥1,000)
-                  </SelectItem>
-                  <SelectItem value="within_1hour">1時間以内</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="space-y-2">
+                {urgencyOptions.map(option => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    className={`w-full p-3 border rounded-lg text-left transition-colors ${
+                      formData.urgency === option.value
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                    onClick={() =>
+                      setFormData(prev => ({
+                        ...prev,
+                        urgency: option.value as RequestUrgency,
+                      }))
+                    }
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">{option.icon}</span>
+                        <span className="font-medium">{option.label}</span>
+                      </div>
+                      <Badge
+                        variant={
+                          option.value === 'now'
+                            ? 'destructive'
+                            : option.value === 'within_30min'
+                              ? 'default'
+                              : 'secondary'
+                        }
+                      >
+                        {option.extra}
+                      </Badge>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
 
             <div className="space-y-2">

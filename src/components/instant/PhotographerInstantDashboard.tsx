@@ -29,6 +29,7 @@ import {
   updateRequestStatus,
 } from '@/app/actions/instant-photo';
 import { useGeolocation } from '@/hooks/useGeolocation';
+import { NotificationCenter } from '@/components/instant/NotificationCenter';
 import type { InstantPhotoRequest } from '@/types/instant-photo';
 
 interface PhotographerInstantDashboardProps {
@@ -222,10 +223,13 @@ export function PhotographerInstantDashboard({
       {/* オンライン状態管理 */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Zap className="h-5 w-5" />
-            即座撮影対応状態
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Zap className="h-5 w-5" />
+              即座撮影対応状態
+            </CardTitle>
+            <NotificationCenter userType="photographer" enableSound={true} />
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* 位置情報状態 */}

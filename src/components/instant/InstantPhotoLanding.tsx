@@ -11,6 +11,7 @@ import { HowItWorks } from './HowItWorks';
 import { PricingDisplay } from './PricingDisplay';
 import { TestimonialCarousel } from './TestimonialCarousel';
 import { useGeolocation } from '@/hooks/useGeolocation';
+import { NotificationCenter } from '@/components/instant/NotificationCenter';
 import { Camera, MapPin, Clock, Shield, Star, Users } from 'lucide-react';
 
 export function InstantPhotoLanding() {
@@ -45,6 +46,12 @@ export function InstantPhotoLanding() {
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-indigo-600/10" />
+
+        {/* 通知センター（右上固定） */}
+        <div className="absolute top-4 right-4 z-10">
+          <NotificationCenter userType="guest" enableSound={false} />
+        </div>
+
         <div className="relative container mx-auto px-4 py-16 lg:py-24">
           <div className="text-center max-w-4xl mx-auto">
             <div className="flex justify-center mb-6">
@@ -91,7 +98,7 @@ export function InstantPhotoLanding() {
                 <LocationPermissionCheck
                   isSupported={isSupported}
                   isLoading={isLoading}
-                  error={error}
+                  error={error?.message || null}
                   onRequestLocation={handleLocationRequest}
                   onSkip={handleSkipLocation}
                 />
