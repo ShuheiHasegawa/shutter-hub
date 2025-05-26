@@ -1,15 +1,13 @@
-import { useTranslations } from 'next-intl';
-import { MainLayout } from '@/components/layout/main-layout';
+import { Suspense } from 'react';
+import { InstantPhotoLanding } from '@/components/instant/InstantPhotoLanding';
+import { LoadingCard } from '@/components/ui/loading-card';
 
-export default function InstantPage() {
-  const t = useTranslations('pages.instant');
-
+export default function InstantPhotoPage() {
   return (
-    <MainLayout>
-      <div className="container py-8">
-        <h1 className="text-3xl font-bold mb-8">{t('title')}</h1>
-        <p className="text-muted-foreground">{t('placeholder')}</p>
-      </div>
-    </MainLayout>
+    <div className="min-h-screen">
+      <Suspense fallback={<LoadingCard />}>
+        <InstantPhotoLanding />
+      </Suspense>
+    </div>
   );
 }
