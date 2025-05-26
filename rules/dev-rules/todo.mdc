@@ -254,21 +254,52 @@ alwaysApply: true
 ### ✅ **完了済み**
 - [x] **t0-014**: カメラマンダッシュボード統合（リクエスト受信・応答機能）
 
+### ✅ **完了済み**
+- [x] **t0-015**: 即座撮影システム完成（リアルタイム通知とランディングページ実装）
+
 ### 🔄 **進行中**
-- [ ] **t0-015**: 即座撮影システム完成（通知・決済統合）
+- [ ] **t0-016**: 抽選予約システム実装
 
 ### 📋 **次のタスク**
-- [ ] **t0-015**: リアルタイム通知システム実装（WebSocket/Server-Sent Events）
-- [ ] **t0-016**: 抽選予約システム実装
 - [ ] **t0-017**: 優先予約システム実装
-- [ ] **t0-016**: レビュー・評価システム実装
-- [ ] **t0-017**: 通知システム実装
-- [ ] **t0-018**: 決済システム統合
-- [ ] **t0-019**: 管理者ダッシュボード実装
-- [ ] **t0-020**: パフォーマンス最適化
-- [ ] **t0-021**: セキュリティ監査・テスト
+- [ ] **t0-018**: レビュー・評価システム実装
+- [ ] **t0-019**: 通知システム実装
+- [ ] **t0-020**: 決済システム統合
+- [ ] **t0-021**: 管理者ダッシュボード実装
+- [ ] **t0-022**: パフォーマンス最適化
+- [ ] **t0-023**: セキュリティ監査・テスト
 
 ## 📝 **最新の更新内容**
+
+### **t0-015: 即座撮影システム完成（リアルタイム通知とランディングページ実装）** ✅
+**実装内容:**
+- **リアルタイム通知システム**: useRealtimeNotificationsフック実装
+- **NotificationCenter**: 通知センター（ベル型アイコン・未読数表示・音声通知）
+- **InstantPhotoLanding**: 完全機能ランディングページ（Hero・統計・使い方・料金・お客様の声）
+- **LocationPermissionCheck**: 位置情報許可チェックコンポーネント
+- **HowItWorks**: 4ステップ使い方説明コンポーネント
+- **PricingDisplay**: 料金体系表示（基本料金・追加料金・特典）
+- **TestimonialCarousel**: お客様の声カルーセル（自動スライド・ナビゲーション）
+- **QuickRequestForm**: 完全機能リクエストフォーム（型安全性向上）
+
+**技術的実装:**
+- Supabaseリアルタイム機能統合（postgres_changes監視）
+- 通知タイプ別処理（新規リクエスト・マッチング・撮影開始・完了）
+- ユーザータイプ別通知（photographer/guest/all）
+- 音声通知・トースト通知・未読数管理
+- 型安全性向上（RequestType・RequestUrgency型アサーション）
+- Shadcn/uiコンポーネント追加（scroll-area・popover）
+
+**ファイル変更:**
+- `src/hooks/useRealtimeNotifications.ts`: 新規作成
+- `src/components/instant/NotificationCenter.tsx`: 新規作成
+- `src/components/instant/InstantPhotoLanding.tsx`: 完全実装
+- `src/components/instant/LocationPermissionCheck.tsx`: 新規作成
+- `src/components/instant/HowItWorks.tsx`: 新規作成
+- `src/components/instant/PricingDisplay.tsx`: 新規作成
+- `src/components/instant/TestimonialCarousel.tsx`: 新規作成
+- `src/components/instant/QuickRequestForm.tsx`: 型エラー修正
+- `src/components/instant/PhotographerInstantDashboard.tsx`: 通知センター統合
 
 ### **t0-014: カメラマンダッシュボード統合（リクエスト受信・応答機能）** ✅
 **実装内容:**
