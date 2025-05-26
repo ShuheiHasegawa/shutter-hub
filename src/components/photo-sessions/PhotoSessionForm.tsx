@@ -23,7 +23,6 @@ import { ImageUpload } from '@/components/photo-sessions/ImageUpload';
 import { BookingTypeSelector } from '@/components/photo-sessions/BookingTypeSelector';
 import { BookingSettingsForm } from '@/components/photo-sessions/BookingSettingsForm';
 import PhotoSessionSlotForm from '@/components/photo-sessions/PhotoSessionSlotForm';
-import { PhotoSessionSlot } from '@/types/photo-session';
 
 interface PhotoSessionFormProps {
   initialData?: PhotoSessionWithOrganizer;
@@ -63,8 +62,6 @@ export function PhotoSessionForm({
   });
 
   const [bookingSettings, setBookingSettings] = useState<BookingSettings>({});
-  const [slots, setSlots] = useState<PhotoSessionSlot[]>([]);
-  const [useSlotSystem, setUseSlotSystem] = useState(false);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -408,35 +405,19 @@ export function PhotoSessionForm({
             disabled={isLoading}
           />
 
-          {/* スロットシステム設定 */}
+          {/* スロット設定 */}
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">スロット管理</h3>
+            <h3 className="text-lg font-medium">スロット設定</h3>
+            <p className="text-sm text-muted-foreground">
+              時間枠を細分化して、枠ごとに料金・衣装・参加者数を設定できます
+            </p>
 
-            <div className="flex items-center justify-between rounded-lg border p-4">
-              <div className="space-y-0.5">
-                <label className="text-base font-medium">
-                  スロット制を使用する
-                </label>
-                <p className="text-sm text-muted-foreground">
-                  時間枠を細分化して、枠ごとに料金・衣装・参加者数を設定できます
-                </p>
-              </div>
-              <Switch
-                checked={useSlotSystem}
-                onCheckedChange={setUseSlotSystem}
-                disabled={isLoading}
-              />
-            </div>
-
-            {useSlotSystem && (
-              <PhotoSessionSlotForm
-                photoSessionId={initialData?.id || 'temp'}
-                slots={slots}
-                onSlotsChange={setSlots}
-                baseStartTime={formData.start_time}
-                locale="ja"
-              />
-            )}
+            <PhotoSessionSlotForm
+              photoSessionId={initialData?.id || 'temp'}
+              onSlotsChange={() => {}} // 一時的な空の関数
+              baseStartTime={formData.start_time}
+              locale="ja"
+            />
           </div>
 
           {/* 公開設定 */}

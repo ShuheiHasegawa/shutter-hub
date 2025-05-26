@@ -141,10 +141,9 @@ export async function cancelSlotBooking(
 }
 
 // サーバーサイド用関数（Server Componentで使用）
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export async function getPhotoSessionSlotsServer(
-  _photoSessionId: string
-): Promise<PhotoSessionSlot[]> {
+export async function getPhotoSessionSlotsServer(): Promise<
+  PhotoSessionSlot[]
+> {
   // Server Componentでのみ使用可能
   // 実装は後で追加
   return [];
