@@ -257,6 +257,13 @@ export interface ApiResponse<T = unknown> {
   error?: string;
 }
 
+// Server Action用の戻り値型
+export interface ActionResult<T = unknown> {
+  success: boolean;
+  data?: T;
+  error?: string;
+}
+
 // リアルタイム通信用の型
 export interface RealtimeChannelData {
   event: string;

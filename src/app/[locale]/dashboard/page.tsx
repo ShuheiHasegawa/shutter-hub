@@ -8,6 +8,7 @@ import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { PhotographerInstantDashboard } from '@/components/instant/PhotographerInstantDashboard';
 
 interface Profile {
   id: string;
@@ -173,6 +174,11 @@ export default function DashboardPage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* カメラマン向け即座撮影ダッシュボード */}
+        {profile.user_type === 'photographer' && (
+          <PhotographerInstantDashboard userId={user.id} />
+        )}
       </div>
     </DashboardLayout>
   );

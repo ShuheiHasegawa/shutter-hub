@@ -9,9 +9,9 @@ import type {
   PhotographerLocation,
   NearbyPhotographer,
   AutoMatchResult,
-  ResponseResult,
   GuestUsageLimit,
   ApiResponse,
+  ActionResult,
 } from '@/types/instant-photo';
 
 // 即座撮影リクエストを作成
@@ -183,48 +183,6 @@ export async function autoMatchRequest(
   }
 }
 
-// カメラマンがリクエストに応答
-export async function respondToRequest(
-  requestId: string,
-  responseType: 'accept' | 'decline',
-  declineReason?: string,
-  estimatedArrivalTime?: number
-): Promise<ApiResponse<ResponseResult>> {
-  try {
-    const supabase = await createClient();
-
-    // 認証チェック
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      return { success: false, error: '認証が必要です' };
-    }
-
-    const { data, error } = await supabase.rpc('respond_to_request', {
-      request_id: requestId,
-      photographer_id: user.id,
-      response_type: responseType,
-      decline_reason: declineReason,
-      estimated_arrival_time: estimatedArrivalTime,
-    });
-
-    if (error) {
-      console.error('リクエスト応答エラー:', error);
-      return { success: false, error: 'リクエストへの応答に失敗しました' };
-    }
-
-    const result = data?.[0] as ResponseResult;
-    revalidatePath('/dashboard');
-    revalidatePath('/instant');
-
-    return { success: true, data: result };
-  } catch (error) {
-    console.error('予期しないエラー:', error);
-    return { success: false, error: '予期しないエラーが発生しました' };
-  }
-}
-
 // ゲストの利用制限をチェック
 export async function checkGuestUsageLimit(
   guestPhone: string
@@ -303,105 +261,6 @@ export async function getGuestRequestHistory(
   }
 }
 
-// カメラマンの受信リクエスト一覧を取得
-export async function getPhotographerRequests(): Promise<
-  ApiResponse<InstantPhotoRequest[]>
-> {
-  try {
-    const supabase = await createClient();
-
-    // 認証チェック
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      return { success: false, error: '認証が必要です' };
-    }
-
-    // カメラマンに通知されたリクエストを取得
-    const { data, error } = await supabase
-      .from('photographer_request_responses')
-      .select(
-        `
-        *,
-        request:instant_photo_requests(*)
-      `
-      )
-      .eq('photographer_id', user.id)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('リクエスト一覧取得エラー:', error);
-      return { success: false, error: 'リクエスト一覧の取得に失敗しました' };
-    }
-
-    const requests = data?.map(item => item.request).filter(Boolean) || [];
-    return { success: true, data: requests };
-  } catch (error) {
-    console.error('予期しないエラー:', error);
-    return { success: false, error: '予期しないエラーが発生しました' };
-  }
-}
-
-// リクエストのステータスを更新
-export async function updateRequestStatus(
-  requestId: string,
-  status: 'in_progress' | 'completed' | 'cancelled'
-): Promise<ApiResponse<InstantPhotoRequest>> {
-  try {
-    const supabase = await createClient();
-
-    // 認証チェック
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      return { success: false, error: '認証が必要です' };
-    }
-
-    // リクエストの所有者チェック（マッチしたカメラマンのみ更新可能）
-    const { data: request, error: checkError } = await supabase
-      .from('instant_photo_requests')
-      .select('matched_photographer_id')
-      .eq('id', requestId)
-      .single();
-
-    if (checkError || !request) {
-      return { success: false, error: 'リクエストが見つかりません' };
-    }
-
-    if (request.matched_photographer_id !== user.id) {
-      return { success: false, error: '権限がありません' };
-    }
-
-    // ステータス更新
-    const updateData: Record<string, unknown> = { status };
-    if (status === 'completed') {
-      updateData.completed_at = new Date().toISOString();
-    }
-
-    const { data: updatedRequest, error } = await supabase
-      .from('instant_photo_requests')
-      .update(updateData)
-      .eq('id', requestId)
-      .select()
-      .single();
-
-    if (error) {
-      console.error('ステータス更新エラー:', error);
-      return { success: false, error: 'ステータスの更新に失敗しました' };
-    }
-
-    revalidatePath('/dashboard');
-    revalidatePath('/instant');
-
-    return { success: true, data: updatedRequest };
-  } catch (error) {
-    console.error('予期しないエラー:', error);
-    return { success: false, error: '予期しないエラーが発生しました' };
-  }
-}
-
 // 期限切れリクエストの自動処理
 export async function expireOldRequests(): Promise<ApiResponse<number>> {
   try {
@@ -424,38 +283,242 @@ export async function expireOldRequests(): Promise<ApiResponse<number>> {
 // カメラマンのオンライン状態を切り替え
 export async function togglePhotographerOnlineStatus(
   isOnline: boolean
-): Promise<ApiResponse<PhotographerLocation>> {
+): Promise<ActionResult<PhotographerLocation | null>> {
   try {
     const supabase = await createClient();
 
     // 認証チェック
     const {
       data: { user },
+      error: authError,
     } = await supabase.auth.getUser();
-    if (!user) {
+    if (authError || !user) {
       return { success: false, error: '認証が必要です' };
     }
 
-    const { data, error } = await supabase
-      .from('photographer_locations')
-      .update({
-        is_online: isOnline,
-        accepting_requests: isOnline, // オフラインの場合はリクエストも受け付けない
-        available_until: isOnline ? null : new Date().toISOString(),
-      })
-      .eq('photographer_id', user.id)
-      .select()
-      .single();
+    if (isOnline) {
+      // オンラインにする場合は位置情報が必要
+      // フロントエンドから位置情報を受け取る必要があるため、
+      // 実際の実装では位置情報をパラメータとして受け取る
+      return { success: false, error: '位置情報が必要です' };
+    } else {
+      // オフラインにする場合は位置情報を削除
+      const { error } = await supabase
+        .from('photographer_locations')
+        .delete()
+        .eq('photographer_id', user.id);
 
-    if (error) {
-      console.error('オンライン状態更新エラー:', error);
-      return { success: false, error: 'オンライン状態の更新に失敗しました' };
+      if (error) {
+        console.error('位置情報削除エラー:', error);
+        return { success: false, error: '状態の更新に失敗しました' };
+      }
+
+      return { success: true, data: null };
+    }
+  } catch (error) {
+    console.error('オンライン状態切り替えエラー:', error);
+    return { success: false, error: '予期しないエラーが発生しました' };
+  }
+}
+
+/**
+ * カメラマンのオンライン状態を切り替え（位置情報付き）
+ */
+export async function togglePhotographerOnlineStatusWithLocation(
+  isOnline: boolean,
+  latitude?: number,
+  longitude?: number
+): Promise<ActionResult<PhotographerLocation | null>> {
+  try {
+    const supabase = await createClient();
+
+    // 認証チェック
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return { success: false, error: '認証が必要です' };
     }
 
-    revalidatePath('/dashboard');
-    return { success: true, data };
+    if (isOnline) {
+      if (!latitude || !longitude) {
+        return { success: false, error: '位置情報が必要です' };
+      }
+
+      // 位置情報を更新してオンラインにする
+      const { data, error } = await supabase
+        .from('photographer_locations')
+        .upsert({
+          photographer_id: user.id,
+          latitude,
+          longitude,
+          is_available: true,
+          last_updated: new Date().toISOString(),
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('位置情報更新エラー:', error);
+        return { success: false, error: '状態の更新に失敗しました' };
+      }
+
+      return { success: true, data };
+    } else {
+      // オフラインにする場合は位置情報を削除
+      const { error } = await supabase
+        .from('photographer_locations')
+        .delete()
+        .eq('photographer_id', user.id);
+
+      if (error) {
+        console.error('位置情報削除エラー:', error);
+        return { success: false, error: '状態の更新に失敗しました' };
+      }
+
+      return { success: true, data: null };
+    }
   } catch (error) {
-    console.error('予期しないエラー:', error);
+    console.error('オンライン状態切り替えエラー:', error);
+    return { success: false, error: '予期しないエラーが発生しました' };
+  }
+}
+
+/**
+ * カメラマンが受信したリクエスト一覧を取得
+ */
+export async function getPhotographerRequests(): Promise<
+  ActionResult<InstantPhotoRequest[]>
+> {
+  try {
+    const supabase = await createClient();
+
+    // 認証チェック
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return { success: false, error: '認証が必要です' };
+    }
+
+    // カメラマンに関連するリクエストを取得
+    // 1. 近くのリクエスト（pending状態）
+    // 2. 自分がマッチしたリクエスト
+    const { data, error } = await supabase
+      .from('instant_photo_requests')
+      .select('*')
+      .or(`status.eq.pending,matched_photographer_id.eq.${user.id}`)
+      .order('created_at', { ascending: false })
+      .limit(20);
+
+    if (error) {
+      console.error('リクエスト取得エラー:', error);
+      return { success: false, error: 'リクエストの取得に失敗しました' };
+    }
+
+    return { success: true, data: data || [] };
+  } catch (error) {
+    console.error('リクエスト取得エラー:', error);
+    return { success: false, error: '予期しないエラーが発生しました' };
+  }
+}
+
+/**
+ * リクエストに応答する
+ */
+export async function respondToRequest(
+  requestId: string,
+  responseType: 'accept' | 'decline',
+  declineReason?: string,
+  estimatedArrivalTime?: number
+): Promise<ActionResult<void>> {
+  try {
+    const supabase = await createClient();
+
+    // 認証チェック
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return { success: false, error: '認証が必要です' };
+    }
+
+    if (responseType === 'accept') {
+      // リクエストを受諾する
+      const { error } = await supabase.rpc('accept_instant_photo_request', {
+        p_request_id: requestId,
+        p_photographer_id: user.id,
+        p_estimated_arrival_time: estimatedArrivalTime || 15,
+      });
+
+      if (error) {
+        console.error('リクエスト受諾エラー:', error);
+        return { success: false, error: 'リクエストの受諾に失敗しました' };
+      }
+    } else {
+      // 応答を記録（辞退）
+      const { error } = await supabase
+        .from('photographer_request_responses')
+        .insert({
+          request_id: requestId,
+          photographer_id: user.id,
+          response_type: 'decline',
+          decline_reason: declineReason,
+        });
+
+      if (error) {
+        console.error('応答記録エラー:', error);
+        return { success: false, error: '応答の記録に失敗しました' };
+      }
+    }
+
+    return { success: true, data: undefined };
+  } catch (error) {
+    console.error('リクエスト応答エラー:', error);
+    return { success: false, error: '予期しないエラーが発生しました' };
+  }
+}
+
+/**
+ * リクエストのステータスを更新
+ */
+export async function updateRequestStatus(
+  requestId: string,
+  status: 'in_progress' | 'completed' | 'cancelled'
+): Promise<ActionResult<void>> {
+  try {
+    const supabase = await createClient();
+
+    // 認証チェック
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return { success: false, error: '認証が必要です' };
+    }
+
+    // リクエストのステータスを更新
+    const { error } = await supabase
+      .from('instant_photo_requests')
+      .update({
+        status,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', requestId)
+      .eq('matched_photographer_id', user.id); // 自分がマッチしたリクエストのみ更新可能
+
+    if (error) {
+      console.error('ステータス更新エラー:', error);
+      return { success: false, error: 'ステータスの更新に失敗しました' };
+    }
+
+    return { success: true, data: undefined };
+  } catch (error) {
+    console.error('ステータス更新エラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
