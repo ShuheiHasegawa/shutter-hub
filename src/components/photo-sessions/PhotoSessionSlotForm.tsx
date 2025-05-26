@@ -14,21 +14,22 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Clock, Trash2, Plus, ArrowDown } from 'lucide-react';
+import { Clock, Trash2, Plus, ArrowDown, Copy, Image } from 'lucide-react';
 import { PhotoSessionSlot, DiscountType } from '@/types/photo-session';
 import { calculateDiscountedPrice } from '@/lib/photo-sessions/slots';
 import { uploadPhotoSessionImage } from '@/lib/storage/photo-session-images';
 import { toast } from 'sonner';
-import { addMinutes, format } from 'date-fns';
+import { addMinutes, format, parse } from 'date-fns';
 
 interface SlotFormData {
   slot_number: number;
-  start_time: string;
-  end_time: string;
+  start_time: string; // HH:mm format
+  shooting_duration_minutes: number; // 撮影時間（分）
   break_duration_minutes: number;
   price_per_person: number;
   max_participants: number;
   costume_image_url?: string;
+  costume_image_hash?: string; // 画像のハッシュ値
   costume_description?: string;
   discount_type: DiscountType;
   discount_value: number;
@@ -40,22 +41,22 @@ interface PhotoSessionSlotFormProps {
   photoSessionId: string;
   slots?: PhotoSessionSlot[];
   onSlotsChange: (slots: PhotoSessionSlot[]) => void;
-  baseStartTime?: string;
+  baseDate?: string; // YYYY-MM-DD format
   locale?: string;
 }
 
 export default function PhotoSessionSlotForm({
   photoSessionId,
   onSlotsChange,
-  baseStartTime,
+  baseDate,
   locale = 'ja',
 }: PhotoSessionSlotFormProps) {
   const [slotForms, setSlotForms] = useState<SlotFormData[]>([
     {
       slot_number: 1,
-      start_time: baseStartTime || '',
-      end_time: '',
-      break_duration_minutes: 15,
+      start_time: '10:00',
+      shooting_duration_minutes: 50,
+      break_duration_minutes: 10,
       price_per_person: 0,
       max_participants: 1,
       discount_type: 'none',
@@ -63,15 +64,17 @@ export default function PhotoSessionSlotForm({
     },
   ]);
   const [uploadingSlots, setUploadingSlots] = useState<Set<number>>(new Set());
+  const [imageCache, setImageCache] = useState<Map<string, string>>(new Map()); // hash -> url
 
   const texts = {
     ja: {
       title: 'スロット設定',
       addSlot: '枠を追加',
       slotNumber: 'スロット',
-      startTime: '開始時間',
-      endTime: '終了時間',
+      startTime: '開始時刻',
+      shootingDuration: '撮影時間（分）',
       breakDuration: '休憩時間（分）',
+      endTime: '終了時刻',
       pricePerPerson: '1人あたりの料金（円）',
       maxParticipants: '最大参加者数',
       costumeImage: '衣装画像',
@@ -82,6 +85,7 @@ export default function PhotoSessionSlotForm({
       notes: 'メモ',
       delete: '削除',
       autoFill: '自動入力',
+      copyFromAbove: '上の設定をコピー',
       uploadImage: '画像をアップロード',
       uploading: 'アップロード中...',
       originalPrice: '元の料金',
@@ -94,17 +98,21 @@ export default function PhotoSessionSlotForm({
       full: '満席',
       save: '保存',
       autoFillSuccess: '次のスロットに時間を自動入力しました',
+      copySuccess: '上のスロットの設定をコピーしました',
       deleteSuccess: 'スロットを削除しました',
       imageUploadSuccess: '画像をアップロードしました',
       imageUploadError: '画像のアップロードに失敗しました',
+      sameImageDetected: '同じ画像が検出されました（容量節約）',
+      calculated: '自動計算',
     },
     en: {
       title: 'Slot Settings',
       addSlot: 'Add Slot',
       slotNumber: 'Slot',
       startTime: 'Start Time',
-      endTime: 'End Time',
+      shootingDuration: 'Shooting Duration (minutes)',
       breakDuration: 'Break Duration (minutes)',
+      endTime: 'End Time',
       pricePerPerson: 'Price per Person (¥)',
       maxParticipants: 'Max Participants',
       costumeImage: 'Costume Image',
@@ -115,6 +123,7 @@ export default function PhotoSessionSlotForm({
       notes: 'Notes',
       delete: 'Delete',
       autoFill: 'Auto Fill',
+      copyFromAbove: 'Copy from Above',
       uploadImage: 'Upload Image',
       uploading: 'Uploading...',
       originalPrice: 'Original Price',
@@ -127,23 +136,74 @@ export default function PhotoSessionSlotForm({
       full: 'Full',
       save: 'Save',
       autoFillSuccess: 'Auto-filled time for next slot',
+      copySuccess: 'Copied settings from above slot',
       deleteSuccess: 'Slot deleted successfully',
       imageUploadSuccess: 'Image uploaded successfully',
       imageUploadError: 'Failed to upload image',
+      sameImageDetected: 'Same image detected (storage optimized)',
+      calculated: 'Auto-calculated',
     },
   };
 
   const t = texts[locale as keyof typeof texts];
 
+  // 終了時刻を計算
+  const calculateEndTime = (
+    startTime: string,
+    durationMinutes: number
+  ): string => {
+    try {
+      const start = parse(startTime, 'HH:mm', new Date());
+      const end = addMinutes(start, durationMinutes);
+      return format(end, 'HH:mm');
+    } catch {
+      return '';
+    }
+  };
+
+  // 次のスロットの開始時刻を計算
+  const calculateNextStartTime = (
+    startTime: string,
+    shootingDuration: number,
+    breakDuration: number
+  ): string => {
+    try {
+      const start = parse(startTime, 'HH:mm', new Date());
+      const nextStart = addMinutes(start, shootingDuration + breakDuration);
+      return format(nextStart, 'HH:mm');
+    } catch {
+      return '';
+    }
+  };
+
+  // 画像のハッシュ値を計算（簡易版）
+  const calculateImageHash = async (file: File): Promise<string> => {
+    const buffer = await file.arrayBuffer();
+    const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  };
+
   const addSlot = () => {
     const newSlotNumber = slotForms.length + 1;
+    const lastSlot = slotForms[slotForms.length - 1];
+
+    // 前のスロットから次の開始時刻を計算
+    const nextStartTime = lastSlot
+      ? calculateNextStartTime(
+          lastSlot.start_time,
+          lastSlot.shooting_duration_minutes,
+          lastSlot.break_duration_minutes
+        )
+      : '10:00';
+
     const newSlot: SlotFormData = {
       slot_number: newSlotNumber,
-      start_time: '',
-      end_time: '',
-      break_duration_minutes: 15,
-      price_per_person: 0,
-      max_participants: 1,
+      start_time: nextStartTime,
+      shooting_duration_minutes: lastSlot?.shooting_duration_minutes || 50,
+      break_duration_minutes: lastSlot?.break_duration_minutes || 10,
+      price_per_person: lastSlot?.price_per_person || 0,
+      max_participants: lastSlot?.max_participants || 1,
       discount_type: 'none',
       discount_value: 0,
     };
@@ -151,10 +211,9 @@ export default function PhotoSessionSlotForm({
   };
 
   const deleteSlot = (index: number) => {
-    if (slotForms.length <= 1) return; // 最低1つは残す
+    if (slotForms.length <= 1) return;
 
     const updatedForms = slotForms.filter((_, i) => i !== index);
-    // スロット番号を再採番
     const renumberedForms = updatedForms.map((slot, i) => ({
       ...slot,
       slot_number: i + 1,
@@ -174,23 +233,45 @@ export default function PhotoSessionSlotForm({
   };
 
   const autoFillNextSlot = (index: number) => {
-    if (index >= slotForms.length - 1) return; // 最後のスロットの場合は何もしない
+    if (index >= slotForms.length - 1) return;
 
     const currentSlot = slotForms[index];
-    if (!currentSlot.end_time) return; // 終了時間が設定されていない場合は何もしない
-
-    const endTime = new Date(currentSlot.end_time);
-    const nextStartTime = addMinutes(
-      endTime,
+    const nextStartTime = calculateNextStartTime(
+      currentSlot.start_time,
+      currentSlot.shooting_duration_minutes,
       currentSlot.break_duration_minutes
     );
 
-    updateSlot(
-      index + 1,
-      'start_time',
-      format(nextStartTime, "yyyy-MM-dd'T'HH:mm")
-    );
+    updateSlot(index + 1, 'start_time', nextStartTime);
     toast.success(t.autoFillSuccess);
+  };
+
+  const copyFromAbove = (index: number) => {
+    if (index === 0) return;
+
+    const aboveSlot = slotForms[index - 1];
+    const currentSlot = slotForms[index];
+
+    // 時間以外の設定をコピー
+    const updatedSlot = {
+      ...currentSlot,
+      shooting_duration_minutes: aboveSlot.shooting_duration_minutes,
+      break_duration_minutes: aboveSlot.break_duration_minutes,
+      price_per_person: aboveSlot.price_per_person,
+      max_participants: aboveSlot.max_participants,
+      costume_image_url: aboveSlot.costume_image_url,
+      costume_image_hash: aboveSlot.costume_image_hash,
+      costume_description: aboveSlot.costume_description,
+      discount_type: aboveSlot.discount_type,
+      discount_value: aboveSlot.discount_value,
+      discount_condition: aboveSlot.discount_condition,
+      notes: aboveSlot.notes,
+    };
+
+    const updatedForms = [...slotForms];
+    updatedForms[index] = updatedSlot;
+    setSlotForms(updatedForms);
+    toast.success(t.copySuccess);
   };
 
   const handleImageUpload = async (
@@ -201,10 +282,33 @@ export default function PhotoSessionSlotForm({
     if (!file) return;
 
     setUploadingSlots(prev => new Set(prev).add(index));
+
     try {
+      // 画像のハッシュ値を計算
+      const imageHash = await calculateImageHash(file);
+
+      // 既存の画像キャッシュをチェック
+      if (imageCache.has(imageHash)) {
+        const existingUrl = imageCache.get(imageHash);
+        if (existingUrl) {
+          updateSlot(index, 'costume_image_url', existingUrl);
+          updateSlot(index, 'costume_image_hash', imageHash);
+          toast.success(t.sameImageDetected);
+          return;
+        }
+      }
+
+      // 新しい画像をアップロード
       const result = await uploadPhotoSessionImage(file, photoSessionId);
       const imageUrl = typeof result === 'string' ? result : result.url;
-      updateSlot(index, 'costume_image_url', imageUrl);
+
+      if (imageUrl) {
+        // キャッシュに保存
+        setImageCache(prev => new Map(prev).set(imageHash, imageUrl));
+
+        updateSlot(index, 'costume_image_url', imageUrl);
+        updateSlot(index, 'costume_image_hash', imageHash);
+      }
       toast.success(t.imageUploadSuccess);
     } catch (error) {
       console.error('Error uploading image:', error);
@@ -222,28 +326,46 @@ export default function PhotoSessionSlotForm({
     // バリデーション
     for (let i = 0; i < slotForms.length; i++) {
       const slot = slotForms[i];
-      if (!slot.start_time || !slot.end_time) {
-        toast.error(`スロット${i + 1}の開始時間と終了時間を入力してください`);
+      if (!slot.start_time) {
+        toast.error(`スロット${i + 1}の開始時刻を入力してください`);
         return;
       }
-      if (new Date(slot.start_time) >= new Date(slot.end_time)) {
-        toast.error(
-          `スロット${i + 1}の終了時間は開始時間より後である必要があります`
-        );
+      if (slot.shooting_duration_minutes <= 0) {
+        toast.error(`スロット${i + 1}の撮影時間は1分以上である必要があります`);
         return;
       }
     }
 
     // PhotoSessionSlot形式に変換
-    const convertedSlots: PhotoSessionSlot[] = slotForms.map(slot => ({
-      id: `temp-${slot.slot_number}`,
-      photo_session_id: photoSessionId,
-      ...slot,
-      current_participants: 0,
-      is_active: true,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    }));
+    const convertedSlots: PhotoSessionSlot[] = slotForms.map(slot => {
+      const startDateTime = baseDate
+        ? `${baseDate}T${slot.start_time}:00`
+        : `2024-01-01T${slot.start_time}:00`;
+      const endDateTime = baseDate
+        ? `${baseDate}T${calculateEndTime(slot.start_time, slot.shooting_duration_minutes)}:00`
+        : `2024-01-01T${calculateEndTime(slot.start_time, slot.shooting_duration_minutes)}:00`;
+
+      return {
+        id: `temp-${slot.slot_number}`,
+        photo_session_id: photoSessionId,
+        slot_number: slot.slot_number,
+        start_time: startDateTime,
+        end_time: endDateTime,
+        break_duration_minutes: slot.break_duration_minutes,
+        price_per_person: slot.price_per_person,
+        max_participants: slot.max_participants,
+        current_participants: 0,
+        costume_image_url: slot.costume_image_url,
+        costume_description: slot.costume_description,
+        discount_type: slot.discount_type,
+        discount_value: slot.discount_value,
+        discount_condition: slot.discount_condition,
+        notes: slot.notes,
+        is_active: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+    });
 
     onSlotsChange(convertedSlots);
     toast.success('スロット設定を保存しました');
@@ -270,6 +392,18 @@ export default function PhotoSessionSlotForm({
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
+                  {index > 0 && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => copyFromAbove(index)}
+                      className="flex items-center gap-1"
+                    >
+                      <Copy className="h-4 w-4" />
+                      {t.copyFromAbove}
+                    </Button>
+                  )}
                   {index < slotForms.length - 1 && (
                     <Button
                       type="button"
@@ -297,11 +431,11 @@ export default function PhotoSessionSlotForm({
               </div>
 
               {/* 時間設定 */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
                   <Label>{t.startTime}</Label>
                   <Input
-                    type="datetime-local"
+                    type="time"
                     value={slot.start_time}
                     onChange={e =>
                       updateSlot(index, 'start_time', e.target.value)
@@ -309,12 +443,18 @@ export default function PhotoSessionSlotForm({
                   />
                 </div>
                 <div>
-                  <Label>{t.endTime}</Label>
+                  <Label>{t.shootingDuration}</Label>
                   <Input
-                    type="datetime-local"
-                    value={slot.end_time}
+                    type="number"
+                    min="1"
+                    max="480"
+                    value={slot.shooting_duration_minutes}
                     onChange={e =>
-                      updateSlot(index, 'end_time', e.target.value)
+                      updateSlot(
+                        index,
+                        'shooting_duration_minutes',
+                        parseInt(e.target.value) || 50
+                      )
                     }
                   />
                 </div>
@@ -323,6 +463,7 @@ export default function PhotoSessionSlotForm({
                   <Input
                     type="number"
                     min="0"
+                    max="120"
                     value={slot.break_duration_minutes}
                     onChange={e =>
                       updateSlot(
@@ -331,6 +472,23 @@ export default function PhotoSessionSlotForm({
                         parseInt(e.target.value) || 0
                       )
                     }
+                  />
+                </div>
+                <div>
+                  <Label>
+                    {t.endTime}{' '}
+                    <span className="text-xs text-muted-foreground">
+                      ({t.calculated})
+                    </span>
+                  </Label>
+                  <Input
+                    type="time"
+                    value={calculateEndTime(
+                      slot.start_time,
+                      slot.shooting_duration_minutes
+                    )}
+                    disabled
+                    className="bg-muted"
                   />
                 </div>
               </div>
@@ -372,7 +530,10 @@ export default function PhotoSessionSlotForm({
               {/* 衣装設定 */}
               <div className="space-y-4">
                 <div>
-                  <Label>{t.costumeImage}</Label>
+                  <Label className="flex items-center gap-2">
+                    <Image className="h-4 w-4" />
+                    {t.costumeImage}
+                  </Label>
                   <div className="flex items-center gap-4">
                     <Input
                       type="file"
@@ -387,12 +548,17 @@ export default function PhotoSessionSlotForm({
                     )}
                   </div>
                   {slot.costume_image_url && (
-                    <div className="mt-2">
+                    <div className="mt-2 flex items-center gap-4">
                       <img
                         src={slot.costume_image_url}
                         alt="Costume preview"
                         className="w-32 h-32 object-cover rounded-lg"
                       />
+                      {slot.costume_image_hash && (
+                        <div className="text-xs text-muted-foreground">
+                          Hash: {slot.costume_image_hash.substring(0, 8)}...
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

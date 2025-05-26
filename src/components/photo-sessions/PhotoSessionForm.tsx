@@ -415,7 +415,11 @@ export function PhotoSessionForm({
             <PhotoSessionSlotForm
               photoSessionId={initialData?.id || 'temp'}
               onSlotsChange={() => {}} // 一時的な空の関数
-              baseStartTime={formData.start_time}
+              baseDate={
+                formData.start_time
+                  ? formData.start_time.split('T')[0]
+                  : undefined
+              }
               locale="ja"
             />
           </div>

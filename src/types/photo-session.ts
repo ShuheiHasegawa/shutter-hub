@@ -21,6 +21,7 @@ export interface PhotoSessionSlot {
 
   // 衣装画像
   costume_image_url?: string;
+  costume_image_hash?: string; // 画像のハッシュ値（重複排除用）
   costume_description?: string;
 
   // 割引設定
@@ -44,6 +45,7 @@ export interface CreatePhotoSessionSlotData {
   price_per_person: number;
   max_participants: number;
   costume_image_url?: string;
+  costume_image_hash?: string;
   costume_description?: string;
   discount_type?: DiscountType;
   discount_value?: number;
@@ -94,4 +96,12 @@ export interface TimeSlotCalculation {
   duration_minutes: number;
   break_duration_minutes: number;
   next_slot_start_time?: string;
+}
+
+// 画像管理用の型
+export interface CostumeImage {
+  hash: string;
+  url: string;
+  usage_count: number;
+  created_at: string;
 }
