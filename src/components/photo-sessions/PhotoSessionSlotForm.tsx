@@ -1,22 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Clock, Trash2, Plus, ArrowDown, Copy, Image } from 'lucide-react';
 import { PhotoSessionSlot, DiscountType } from '@/types/photo-session';
-import { calculateDiscountedPrice } from '@/lib/photo-sessions/slots';
 import { uploadPhotoSessionImage } from '@/lib/storage/photo-session-images';
 import { toast } from 'sonner';
 import { addMinutes, format, parse } from 'date-fns';
@@ -104,6 +97,10 @@ export default function PhotoSessionSlotForm({
       imageUploadError: '画像のアップロードに失敗しました',
       sameImageDetected: '同じ画像が検出されました（容量節約）',
       calculated: '自動計算',
+      priceInputPlaceholder: '例: 5000',
+      participantsInputPlaceholder: '例: 2',
+      durationInputPlaceholder: '例: 50',
+      breakInputPlaceholder: '例: 10',
     },
     en: {
       title: 'Slot Settings',
@@ -142,6 +139,10 @@ export default function PhotoSessionSlotForm({
       imageUploadError: 'Failed to upload image',
       sameImageDetected: 'Same image detected (storage optimized)',
       calculated: 'Auto-calculated',
+      priceInputPlaceholder: 'e.g. 5000',
+      participantsInputPlaceholder: 'e.g. 2',
+      durationInputPlaceholder: 'e.g. 50',
+      breakInputPlaceholder: 'e.g. 10',
     },
   };
 
@@ -184,6 +185,42 @@ export default function PhotoSessionSlotForm({
     return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
   };
 
+  // 親コンポーネントにスロット変更を通知
+  const updateParentSlots = (forms: SlotFormData[]) => {
+    // PhotoSessionSlot形式に変換
+    const convertedSlots: PhotoSessionSlot[] = forms.map(slot => {
+      const startDateTime = baseDate
+        ? `${baseDate}T${slot.start_time}:00`
+        : `2024-01-01T${slot.start_time}:00`;
+      const endDateTime = baseDate
+        ? `${baseDate}T${calculateEndTime(slot.start_time, slot.shooting_duration_minutes)}:00`
+        : `2024-01-01T${calculateEndTime(slot.start_time, slot.shooting_duration_minutes)}:00`;
+
+      return {
+        id: `temp-${slot.slot_number}`,
+        photo_session_id: photoSessionId,
+        slot_number: slot.slot_number,
+        start_time: startDateTime,
+        end_time: endDateTime,
+        break_duration_minutes: slot.break_duration_minutes,
+        price_per_person: slot.price_per_person,
+        max_participants: slot.max_participants,
+        current_participants: 0,
+        costume_image_url: slot.costume_image_url,
+        costume_description: slot.costume_description,
+        discount_type: 'none' as DiscountType, // デフォルト値
+        discount_value: 0,
+        discount_condition: undefined,
+        notes: slot.notes,
+        is_active: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+    });
+
+    onSlotsChange(convertedSlots);
+  };
+
   const addSlot = () => {
     const newSlotNumber = slotForms.length + 1;
     const lastSlot = slotForms[slotForms.length - 1];
@@ -207,7 +244,9 @@ export default function PhotoSessionSlotForm({
       discount_type: 'none',
       discount_value: 0,
     };
-    setSlotForms([...slotForms, newSlot]);
+    const updatedForms = [...slotForms, newSlot];
+    setSlotForms(updatedForms);
+    updateParentSlots(updatedForms);
   };
 
   const deleteSlot = (index: number) => {
@@ -219,6 +258,7 @@ export default function PhotoSessionSlotForm({
       slot_number: i + 1,
     }));
     setSlotForms(renumberedForms);
+    updateParentSlots(renumberedForms);
     toast.success(t.deleteSuccess);
   };
 
@@ -230,6 +270,7 @@ export default function PhotoSessionSlotForm({
     const updatedForms = [...slotForms];
     updatedForms[index] = { ...updatedForms[index], [field]: value };
     setSlotForms(updatedForms);
+    updateParentSlots(updatedForms);
   };
 
   const autoFillNextSlot = (index: number) => {
@@ -271,6 +312,7 @@ export default function PhotoSessionSlotForm({
     const updatedForms = [...slotForms];
     updatedForms[index] = updatedSlot;
     setSlotForms(updatedForms);
+    updateParentSlots(updatedForms);
     toast.success(t.copySuccess);
   };
 
@@ -322,54 +364,10 @@ export default function PhotoSessionSlotForm({
     }
   };
 
-  const handleSave = () => {
-    // バリデーション
-    for (let i = 0; i < slotForms.length; i++) {
-      const slot = slotForms[i];
-      if (!slot.start_time) {
-        toast.error(`スロット${i + 1}の開始時刻を入力してください`);
-        return;
-      }
-      if (slot.shooting_duration_minutes <= 0) {
-        toast.error(`スロット${i + 1}の撮影時間は1分以上である必要があります`);
-        return;
-      }
-    }
-
-    // PhotoSessionSlot形式に変換
-    const convertedSlots: PhotoSessionSlot[] = slotForms.map(slot => {
-      const startDateTime = baseDate
-        ? `${baseDate}T${slot.start_time}:00`
-        : `2024-01-01T${slot.start_time}:00`;
-      const endDateTime = baseDate
-        ? `${baseDate}T${calculateEndTime(slot.start_time, slot.shooting_duration_minutes)}:00`
-        : `2024-01-01T${calculateEndTime(slot.start_time, slot.shooting_duration_minutes)}:00`;
-
-      return {
-        id: `temp-${slot.slot_number}`,
-        photo_session_id: photoSessionId,
-        slot_number: slot.slot_number,
-        start_time: startDateTime,
-        end_time: endDateTime,
-        break_duration_minutes: slot.break_duration_minutes,
-        price_per_person: slot.price_per_person,
-        max_participants: slot.max_participants,
-        current_participants: 0,
-        costume_image_url: slot.costume_image_url,
-        costume_description: slot.costume_description,
-        discount_type: slot.discount_type,
-        discount_value: slot.discount_value,
-        discount_condition: slot.discount_condition,
-        notes: slot.notes,
-        is_active: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
-    });
-
-    onSlotsChange(convertedSlots);
-    toast.success('スロット設定を保存しました');
-  };
+  // 初期化時に親に通知
+  useEffect(() => {
+    updateParentSlots(slotForms);
+  }, []); // 初回のみ実行
 
   return (
     <div className="space-y-6">
@@ -456,6 +454,8 @@ export default function PhotoSessionSlotForm({
                         parseInt(e.target.value) || 50
                       )
                     }
+                    placeholder={t.durationInputPlaceholder}
+                    inputMode="numeric"
                   />
                 </div>
                 <div>
@@ -472,6 +472,8 @@ export default function PhotoSessionSlotForm({
                         parseInt(e.target.value) || 0
                       )
                     }
+                    placeholder={t.breakInputPlaceholder}
+                    inputMode="numeric"
                   />
                 </div>
                 <div>
@@ -500,6 +502,8 @@ export default function PhotoSessionSlotForm({
                   <Input
                     type="number"
                     min="0"
+                    max="100000"
+                    step="100"
                     value={slot.price_per_person}
                     onChange={e =>
                       updateSlot(
@@ -508,6 +512,8 @@ export default function PhotoSessionSlotForm({
                         parseInt(e.target.value) || 0
                       )
                     }
+                    placeholder={t.priceInputPlaceholder}
+                    inputMode="numeric"
                   />
                 </div>
                 <div>
@@ -515,6 +521,8 @@ export default function PhotoSessionSlotForm({
                   <Input
                     type="number"
                     min="1"
+                    max="20"
+                    step="1"
                     value={slot.max_participants}
                     onChange={e =>
                       updateSlot(
@@ -523,6 +531,8 @@ export default function PhotoSessionSlotForm({
                         parseInt(e.target.value) || 1
                       )
                     }
+                    placeholder={t.participantsInputPlaceholder}
+                    inputMode="numeric"
                   />
                 </div>
               </div>
@@ -574,89 +584,6 @@ export default function PhotoSessionSlotForm({
                 </div>
               </div>
 
-              {/* 割引設定 */}
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label>{t.discountType}</Label>
-                    <Select
-                      value={slot.discount_type}
-                      onValueChange={(value: DiscountType) =>
-                        updateSlot(index, 'discount_type', value)
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">{t.none}</SelectItem>
-                        <SelectItem value="percentage">
-                          {t.percentage}
-                        </SelectItem>
-                        <SelectItem value="fixed_amount">
-                          {t.fixedAmount}
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  {slot.discount_type !== 'none' && (
-                    <div>
-                      <Label>{t.discountValue}</Label>
-                      <Input
-                        type="number"
-                        min="0"
-                        value={slot.discount_value}
-                        onChange={e =>
-                          updateSlot(
-                            index,
-                            'discount_value',
-                            parseInt(e.target.value) || 0
-                          )
-                        }
-                        placeholder={
-                          slot.discount_type === 'percentage' ? '10' : '1000'
-                        }
-                      />
-                    </div>
-                  )}
-                </div>
-
-                {slot.discount_type !== 'none' && (
-                  <>
-                    <div className="p-4 bg-muted rounded-lg">
-                      <div className="flex items-center justify-between">
-                        <span>
-                          {t.originalPrice}: ¥
-                          {slot.price_per_person.toLocaleString()}
-                        </span>
-                        <span className="font-medium text-green-600">
-                          {t.discountedPrice}: ¥
-                          {calculateDiscountedPrice(
-                            slot.price_per_person,
-                            slot.discount_type,
-                            slot.discount_value
-                          ).toLocaleString()}
-                        </span>
-                      </div>
-                    </div>
-                    <div>
-                      <Label>{t.discountCondition}</Label>
-                      <Textarea
-                        value={slot.discount_condition || ''}
-                        onChange={e =>
-                          updateSlot(
-                            index,
-                            'discount_condition',
-                            e.target.value
-                          )
-                        }
-                        placeholder="例: 学生割引、早期予約割引など"
-                      />
-                    </div>
-                  </>
-                )}
-              </div>
-
               {/* メモ */}
               <div>
                 <Label>{t.notes}</Label>
@@ -679,13 +606,6 @@ export default function PhotoSessionSlotForm({
             >
               <Plus className="h-4 w-4" />
               {t.addSlot}
-            </Button>
-          </div>
-
-          {/* 保存ボタン */}
-          <div className="flex justify-end">
-            <Button onClick={handleSave} className="flex items-center gap-2">
-              {t.save}
             </Button>
           </div>
         </CardContent>
