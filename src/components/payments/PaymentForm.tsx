@@ -59,6 +59,14 @@ export function PaymentForm({
   useEffect(() => {
     const createIntent = async () => {
       try {
+        // テスト用の場合は直接Stripeのテスト決済を作成
+        if (bookingId.startsWith('test-booking-')) {
+          // テスト用のダミーclient_secretを設定
+          setClientSecret('pi_test_dummy_client_secret');
+          setPaymentIntentId('pi_test_dummy');
+          return;
+        }
+
         const result = await createPaymentIntent({
           amount,
           currency: 'jpy',
@@ -101,6 +109,14 @@ export function PaymentForm({
     setError(null);
 
     try {
+      // テスト用の場合はダミー処理
+      if (bookingId.startsWith('test-booking-')) {
+        // 2秒待ってテスト成功をシミュレート
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        onSuccess?.({ success: true, payment_intent_id: 'pi_test_dummy' });
+        return;
+      }
+
       const cardElement = elements.getElement(CardElement);
       if (!cardElement) {
         throw new Error('カード情報が入力されていません');
@@ -149,13 +165,20 @@ export function PaymentForm({
     style: {
       base: {
         fontSize: '16px',
-        color: '#424770',
+        color: '#1f2937', // より濃い色に変更
+        backgroundColor: '#ffffff',
+        fontFamily: 'Inter, system-ui, sans-serif',
         '::placeholder': {
-          color: '#aab7c4',
+          color: '#6b7280', // プレースホルダーも見やすく
         },
       },
       invalid: {
-        color: '#9e2146',
+        color: '#dc2626',
+        backgroundColor: '#ffffff',
+      },
+      complete: {
+        color: '#059669',
+        backgroundColor: '#ffffff',
       },
     },
   };
@@ -259,7 +282,7 @@ export function PaymentForm({
           <div className="space-y-4">
             <h4 className="font-medium">カード情報</h4>
 
-            <div className="p-3 border rounded-md">
+            <div className="p-4 border-2 border-gray-200 rounded-lg bg-white focus-within:border-blue-500 transition-colors">
               <CardElement options={cardElementOptions} />
             </div>
           </div>

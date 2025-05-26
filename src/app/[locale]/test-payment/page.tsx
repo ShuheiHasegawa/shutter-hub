@@ -75,7 +75,7 @@ export default function TestPaymentPage() {
                 ⚠️ テスト環境
               </h4>
               <p className="text-sm text-yellow-700">
-                これはStripe決済システムのテストページです。実際の決済は発生しません。
+                これはStripe決済システムのテストページです。実際の決済は発生せず、UIとフローのテストのみ行われます。
               </p>
             </div>
 
@@ -87,6 +87,10 @@ export default function TestPaymentPage() {
                 <div>CVC: 123</div>
                 <div>郵便番号: 12345</div>
               </div>
+              <p className="text-xs text-gray-600">
+                ※
+                このテストでは実際のStripe決済は行われず、UIフローのみテストされます
+              </p>
             </div>
 
             {error && (
