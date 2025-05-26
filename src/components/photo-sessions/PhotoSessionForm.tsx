@@ -13,11 +13,17 @@ import {
   createPhotoSessionAction,
   updatePhotoSessionAction,
 } from '@/app/actions/photo-session';
+import {
+  createPhotoSessionWithSlotsAction,
+  updatePhotoSessionWithSlotsAction,
+  PhotoSessionWithSlotsData,
+} from '@/app/actions/photo-session-slots';
 import type {
   PhotoSessionWithOrganizer,
   BookingType,
   BookingSettings,
 } from '@/types/database';
+import type { PhotoSessionSlot } from '@/types/photo-session';
 import { useTranslations } from 'next-intl';
 import { ImageUpload } from '@/components/photo-sessions/ImageUpload';
 import { BookingTypeSelector } from '@/components/photo-sessions/BookingTypeSelector';
@@ -63,6 +69,9 @@ export function PhotoSessionForm({
   });
 
   const [bookingSettings, setBookingSettings] = useState<BookingSettings>({});
+  const [photoSessionSlots, setPhotoSessionSlots] = useState<
+    PhotoSessionSlot[]
+  >([]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -150,37 +159,96 @@ export function PhotoSessionForm({
 
     setIsLoading(true);
     try {
-      const sessionData = {
-        title: formData.title,
-        description: formData.description || undefined,
-        location: formData.location,
-        address: formData.address || undefined,
-        start_time: startTime.toISOString(),
-        end_time: endTime.toISOString(),
-        max_participants: formData.max_participants,
-        price_per_person: formData.price_per_person,
-        booking_type: formData.booking_type,
-        is_published: formData.is_published,
-        image_urls: formData.image_urls,
-        booking_settings: bookingSettings,
-      };
+      // スロットがある場合とない場合で使用するactionを切り替え
+      const hasSlots = photoSessionSlots && photoSessionSlots.length > 0;
 
-      let result;
+      if (hasSlots) {
+        // スロット制撮影会の場合
+        const sessionWithSlotsData: PhotoSessionWithSlotsData = {
+          title: formData.title,
+          description: formData.description || undefined,
+          location: formData.location,
+          address: formData.address || undefined,
+          start_time: startTime.toISOString(),
+          end_time: endTime.toISOString(),
+          max_participants: formData.max_participants,
+          price_per_person: formData.price_per_person,
+          booking_type: formData.booking_type,
+          booking_settings: bookingSettings as Record<string, unknown>,
+          is_published: formData.is_published,
+          image_urls: formData.image_urls,
+          slots: photoSessionSlots.map(slot => ({
+            slot_number: slot.slot_number,
+            start_time: slot.start_time,
+            end_time: slot.end_time,
+            break_duration_minutes: slot.break_duration_minutes,
+            price_per_person: slot.price_per_person,
+            max_participants: slot.max_participants,
+            costume_image_url: slot.costume_image_url,
+            costume_image_hash: slot.costume_image_hash,
+            costume_description: slot.costume_description,
+            discount_type: slot.discount_type,
+            discount_value: slot.discount_value,
+            discount_condition: slot.discount_condition,
+            notes: slot.notes,
+          })),
+        };
 
-      if (isEditing && initialData) {
-        result = await updatePhotoSessionAction(initialData.id, sessionData);
+        let result;
+
+        if (isEditing && initialData) {
+          result = await updatePhotoSessionWithSlotsAction(
+            initialData.id,
+            sessionWithSlotsData
+          );
+        } else {
+          result =
+            await createPhotoSessionWithSlotsAction(sessionWithSlotsData);
+        }
+
+        if (result.error) {
+          console.error('スロット制撮影会保存エラー:', result.error);
+          toast({
+            title: tErrors('title'),
+            description: t('form.error.saveFailed'),
+            variant: 'destructive',
+          });
+          return;
+        }
       } else {
-        result = await createPhotoSessionAction(sessionData);
-      }
+        // 通常の撮影会の場合
+        const sessionData = {
+          title: formData.title,
+          description: formData.description || undefined,
+          location: formData.location,
+          address: formData.address || undefined,
+          start_time: startTime.toISOString(),
+          end_time: endTime.toISOString(),
+          max_participants: formData.max_participants,
+          price_per_person: formData.price_per_person,
+          booking_type: formData.booking_type,
+          is_published: formData.is_published,
+          image_urls: formData.image_urls,
+          booking_settings: bookingSettings as Record<string, unknown>,
+        };
 
-      if (result.error) {
-        console.error('撮影会保存エラー:', result.error);
-        toast({
-          title: tErrors('title'),
-          description: t('form.error.saveFailed'),
-          variant: 'destructive',
-        });
-        return;
+        let result;
+
+        if (isEditing && initialData) {
+          result = await updatePhotoSessionAction(initialData.id, sessionData);
+        } else {
+          result = await createPhotoSessionAction(sessionData);
+        }
+
+        if (result.error) {
+          console.error('撮影会保存エラー:', result.error);
+          toast({
+            title: tErrors('title'),
+            description: t('form.error.saveFailed'),
+            variant: 'destructive',
+          });
+          return;
+        }
       }
 
       toast({
@@ -415,7 +483,7 @@ export function PhotoSessionForm({
 
             <PhotoSessionSlotForm
               photoSessionId={initialData?.id || 'temp'}
-              onSlotsChange={() => {}} // 一時的な空の関数
+              onSlotsChange={setPhotoSessionSlots}
               baseDate={
                 formData.start_time
                   ? formData.start_time.split('T')[0]
