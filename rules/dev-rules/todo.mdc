@@ -248,12 +248,12 @@ alwaysApply: true
 - [x] **t0-011**: スロット制予約システムの統合テスト
 
 ### 🔄 **進行中**
-- [ ] **t0-012**: 抽選予約システム実装
+- [ ] **t0-012**: 即座撮影リクエストシステム実装（基盤完了、データベース適用待ち）
 
 ### 📋 **次のタスク**
-- [ ] **t0-013**: 優先予約システム実装
-- [ ] **t0-014**: 管理抽選システム実装
-- [ ] **t0-015**: キャンセル待ちシステム実装
+- [ ] **t0-013**: 即座撮影リクエストフォーム完成（データベース適用→フォーム実装）
+- [ ] **t0-014**: 抽選予約システム実装
+- [ ] **t0-015**: 優先予約システム実装
 - [ ] **t0-016**: レビュー・評価システム実装
 - [ ] **t0-017**: 通知システム実装
 - [ ] **t0-018**: 決済システム統合
@@ -263,27 +263,27 @@ alwaysApply: true
 
 ## 📝 **最新の更新内容**
 
-### **t0-011: スロット制予約システムの統合テスト** ✅
+### **t0-012: 即座撮影リクエストシステム基盤実装** 🔄
 **実装内容:**
-- **撮影会詳細ページ作成**: スロット制撮影会の表示・予約機能統合
-- **PhotoSessionDetailコンポーネント**: スロット表示・通常予約の自動切り替え
-- **スロット付き撮影会Server Actions**: 作成・更新時のスロット同時保存
-- **PhotoSessionFormのスロット統合**: 自動判別・保存ロジック
-- **データベースマイグレーション適用**: Supabaseにスロット制システム構築
+- **即座撮影リクエスト型定義**: 包括的なTypeScript型システム（LocationData、InstantPhotoRequest等）
+- **位置情報取得カスタムフック**: useGeolocation（高精度GPS、逆ジオコーディング、観光地検索）
+- **Server Actions基盤**: 即座撮影リクエスト用の包括的なAPI（作成・マッチング・応答・管理）
+- **ランディングページ**: InstantPhotoLanding（位置許可・フォーム・説明セクション）
+- **プレースホルダーコンポーネント群**: LocationPermissionCheck、QuickRequestForm、HowItWorks等
 
 **技術的改善:**
-- createPhotoSessionWithSlotsAction/updatePhotoSessionWithSlotsAction
-- スロット制/通常撮影会の自動判別ロジック
-- ストアドプロシージャ（create_slot_booking/cancel_slot_booking）
-- RLSポリシー設定とセキュリティ対応
-- Next.js 15対応のparams型修正
+- 位置情報の高精度取得とエラーハンドリング
+- OpenStreetMap Nominatim API統合（逆ジオコーディング）
+- 距離計算（Haversine公式）とランドマーク検索
+- ゲスト利用制限システム（月3回）
+- リアルタイムマッチングアルゴリズム基盤
 
 **ファイル変更:**
-- `src/components/photo-sessions/PhotoSessionDetail.tsx`: 撮影会詳細統合コンポーネント
-- `src/app/actions/photo-session-slots.ts`: スロット付き撮影会Server Actions
-- `src/app/[locale]/photo-sessions/[id]/page.tsx`: 撮影会詳細ページ
-- `src/components/ui/loading-card.tsx`: ローディングコンポーネント
-- Supabaseマイグレーション適用: スロット制システム完全構築
+- `src/types/instant-photo.ts`: 即座撮影リクエスト型定義
+- `src/hooks/useGeolocation.ts`: 位置情報取得カスタムフック
+- `src/app/actions/instant-photo.ts`: Server Actions基盤
+- `src/components/instant/`: ランディングページコンポーネント群
+- `supabase/migrations/20241201000009_create_instant_photo_system.sql`: データベース設計
 
 ## 🎨 **UI/UX改善点**
 
@@ -330,4 +330,4 @@ alwaysApply: true
 ---
 
 **最終更新**: 2024年12月1日
-**次回作業**: 抽選予約システム実装
+**次回作業**: 即座撮影リクエストシステム完成（データベース適用→フォーム実装）
