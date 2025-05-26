@@ -17,6 +17,10 @@ export async function createPaymentIntent(
   data: CreatePaymentIntentData
 ): Promise<PaymentResult> {
   try {
+    if (!stripe) {
+      return { success: false, error: 'Stripe not initialized on server' };
+    }
+
     const supabase = await createClient();
 
     // 認証チェック
@@ -105,6 +109,10 @@ export async function confirmPayment(
   paymentIntentId: string
 ): Promise<PaymentResult> {
   try {
+    if (!stripe) {
+      return { success: false, error: 'Stripe not initialized on server' };
+    }
+
     const supabase = await createClient();
 
     // 認証チェック
@@ -168,6 +176,10 @@ export async function confirmPayment(
 // 返金処理
 export async function processRefund(data: RefundData): Promise<PaymentResult> {
   try {
+    if (!stripe) {
+      return { success: false, error: 'Stripe not initialized on server' };
+    }
+
     const supabase = await createClient();
 
     // 認証チェック
