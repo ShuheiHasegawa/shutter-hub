@@ -292,3 +292,187 @@ export interface InstantPhotoNotification {
   read: boolean;
   created_at: string;
 }
+
+// === エスクロー決済システム用型定義 ===
+
+// エスクロー決済ステータス
+export type EscrowStatus =
+  | 'pending' // 決済待ち
+  | 'escrowed' // エスクロー（預託済み）
+  | 'delivered' // 写真納品済み（カメラマン待機）
+  | 'confirmed' // ゲスト受取確認済み
+  | 'completed' // 決済完了（カメラマンに支払い済み）
+  | 'disputed' // 争議中
+  | 'cancelled' // キャンセル
+  | 'refunded'; // 返金済み
+
+// 配送・納品ステータス
+export type DeliveryStatus =
+  | 'waiting' // 撮影待ち
+  | 'in_progress' // 撮影中
+  | 'processing' // 編集・処理中
+  | 'delivered' // 納品完了
+  | 'confirmed'; // 受取確認済み
+
+// 配送方法
+export type DeliveryMethod =
+  | 'direct_upload' // 直接アップロード
+  | 'external_url' // 外部URL（ギガファイル便等）
+  | 'cloud_storage'; // クラウドストレージ
+
+// エスクロー決済情報
+export interface EscrowPayment {
+  id: string;
+  booking_id: string;
+  stripe_payment_intent_id: string;
+  total_amount: number;
+  platform_fee: number;
+  photographer_earnings: number;
+  escrow_status: EscrowStatus;
+  delivery_status: DeliveryStatus;
+
+  // タイムスタンプ
+  payment_created_at: string;
+  escrowed_at?: string;
+  delivered_at?: string;
+  confirmed_at?: string;
+  completed_at?: string;
+
+  // 自動確認設定（メルカリのような自動受取機能）
+  auto_confirm_enabled: boolean;
+  auto_confirm_hours: number; // デフォルト72時間
+  auto_confirm_at?: string;
+
+  // 争議・サポート
+  dispute_reason?: string;
+  dispute_created_at?: string;
+  admin_notes?: string;
+
+  created_at: string;
+  updated_at: string;
+}
+
+// 写真配信情報
+export interface PhotoDelivery {
+  id: string;
+  booking_id: string;
+  delivery_method: DeliveryMethod;
+
+  // 直接アップロード用
+  delivery_url?: string;
+  photo_count: number;
+  total_size_mb: number;
+  thumbnail_url?: string;
+
+  // 外部URL用
+  external_url?: string;
+  external_service?: string; // "gigafile", "firestorage", "wetransfer", "googledrive", "dropbox", "other"
+  external_password?: string;
+  external_expires_at?: string;
+
+  // ダウンロード情報
+  download_expires_at: string; // 配信URL有効期限
+  download_count: number;
+  max_downloads: number;
+
+  // 品質情報
+  resolution: string; // "high" | "medium" | "web"
+  formats: string[]; // ["jpg", "raw", "edited"]
+
+  // カメラマンからのメッセージ
+  photographer_message?: string;
+
+  delivered_at: string;
+  confirmed_at?: string;
+}
+
+// ゲスト受取確認データ（レビュー機能付き）
+export interface ConfirmDeliveryData {
+  booking_id: string;
+
+  // 受取確認
+  is_satisfied: boolean;
+  issues?: string[]; // ["quality", "quantity", "timing", "other"]
+  issue_description?: string;
+
+  // レビュー（カメラマン評価）
+  photographer_rating: number; // 1-5
+  photographer_review?: string;
+
+  // 写真品質評価
+  photo_quality_rating: number; // 1-5
+  photo_quality_comment?: string;
+
+  // サービス評価
+  service_rating: number; // 1-5
+  service_comment?: string;
+
+  // 推奨度
+  would_recommend: boolean;
+  recommend_reason?: string;
+}
+
+// カメラマン配信データ（配信方法選択付き）
+export interface DeliverPhotosData {
+  booking_id: string;
+  delivery_method: DeliveryMethod;
+  photo_count: number;
+
+  // 直接アップロード用
+  delivery_url?: string;
+  total_size_mb?: number;
+  thumbnail_url?: string;
+
+  // 外部URL用
+  external_url?: string;
+  external_service?: string;
+  external_password?: string;
+  external_expires_at?: string;
+
+  resolution: 'high' | 'medium' | 'web';
+  formats: string[];
+  photographer_message?: string;
+}
+
+// 争議申請データ
+export interface DisputeData {
+  booking_id: string;
+  reason:
+    | 'quality_issue'
+    | 'quantity_issue'
+    | 'no_delivery'
+    | 'late_delivery'
+    | 'service_issue'
+    | 'other';
+  description: string;
+  evidence_urls?: string[]; // 証拠画像のURL
+  requested_resolution: 'refund' | 'partial_refund' | 'redelivery' | 'other';
+  resolution_detail?: string;
+}
+
+// 外部配信サービス情報
+export interface ExternalDeliveryService {
+  id: string;
+  name: string;
+  url_pattern: string;
+  supports_password: boolean;
+  supports_expiry: boolean;
+  max_file_size_gb: number;
+  icon_url?: string;
+}
+
+// レビュー統計
+export interface ReviewStats {
+  average_rating: number;
+  total_reviews: number;
+  rating_distribution: {
+    5: number;
+    4: number;
+    3: number;
+    2: number;
+    1: number;
+  };
+  photo_quality_average: number;
+  service_average: number;
+  recommendation_rate: number; // %
+}
