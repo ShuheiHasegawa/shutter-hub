@@ -19,13 +19,10 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { confirmDeliveryWithReview } from '@/app/actions/instant-payment';
-import type { PhotoDelivery, ConfirmDeliveryData } from '@/types/instant-photo';
-
-interface DeliveryConfirmationFormProps {
-  delivery: PhotoDelivery;
-  onSuccess?: () => void;
-  onError?: (error: string) => void;
-}
+import type {
+  ConfirmDeliveryData,
+  SimpleDeliveryConfirmationFormProps,
+} from '@/types/instant-photo';
 
 // インタラクティブ星評価コンポーネント
 function StarRating({
@@ -104,7 +101,7 @@ export function DeliveryConfirmationForm({
   delivery,
   onSuccess,
   onError,
-}: DeliveryConfirmationFormProps) {
+}: SimpleDeliveryConfirmationFormProps) {
   const [formData, setFormData] = useState<ConfirmDeliveryData>({
     booking_id: delivery.booking_id,
     is_satisfied: true,

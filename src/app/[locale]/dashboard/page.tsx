@@ -2,13 +2,14 @@
 
 import { useAuth } from '@/hooks/useAuth';
 import { getProfile } from '@/lib/auth/profile';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { PhotographerInstantDashboard } from '@/components/instant/PhotographerInstantDashboard';
+import Image from 'next/image';
 
 interface Profile {
   id: string;
@@ -29,18 +30,7 @@ export default function DashboardPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [profileLoading, setProfileLoading] = useState(true);
 
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push(`/${locale}/auth/signin`);
-      return;
-    }
-
-    if (user) {
-      loadProfile();
-    }
-  }, [user, loading, router, locale]);
-
-  const loadProfile = async () => {
+  const loadProfile = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -61,7 +51,18 @@ export default function DashboardPage() {
     } finally {
       setProfileLoading(false);
     }
-  };
+  }, [user, router, locale]);
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push(`/${locale}/auth/signin`);
+      return;
+    }
+
+    if (user) {
+      loadProfile();
+    }
+  }, [user, loading, router, locale, loadProfile]);
 
   if (loading || profileLoading) {
     return (
@@ -106,10 +107,12 @@ export default function DashboardPage() {
           <CardContent>
             <div className="flex items-center space-x-4">
               {profile.avatar_url && (
-                <img
+                <Image
                   className="h-16 w-16 rounded-full object-cover"
                   src={profile.avatar_url}
                   alt={profile.display_name}
+                  width={64}
+                  height={64}
                 />
               )}
               <div>

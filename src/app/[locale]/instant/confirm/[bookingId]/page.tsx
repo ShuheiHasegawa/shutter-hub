@@ -4,21 +4,7 @@ import { DeliveryConfirmationForm } from '@/components/instant/DeliveryConfirmat
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Clock, Download, ExternalLink } from 'lucide-react';
-import type { InstantBooking } from '@/types/instant-photo';
-
-// 拡張型定義
-interface ExtendedBooking extends InstantBooking {
-  photo_deliveries?: Array<{
-    id: string;
-    delivery_method: string;
-    photo_count: number;
-    external_url?: string;
-    external_service?: string;
-    external_password?: string;
-    photographer_message?: string;
-    delivered_at: string;
-  }>;
-}
+import type { ExtendedBooking, PhotoDelivery } from '@/types/instant-photo';
 
 // 予約と配信情報を取得
 async function getDeliveryDetails(bookingId: string): Promise<{
@@ -81,7 +67,7 @@ export default async function DeliveryConfirmationPage({
     );
   }
 
-  const delivery = booking.photo_deliveries?.[0];
+  const delivery = booking.photo_deliveries?.[0] as PhotoDelivery;
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -177,16 +163,18 @@ export default async function DeliveryConfirmationPage({
       </Card>
 
       {/* 受取確認フォーム */}
-      <DeliveryConfirmationForm
-        booking={booking}
-        onSuccess={() => {
-          // 確認成功時の処理
-          window.location.href = `/instant?success=${encodeURIComponent('受取確認が完了しました！ありがとうございました。')}`;
-        }}
-        onError={(error: string) => {
-          console.error('確認エラー:', error);
-        }}
-      />
+      {delivery && (
+        <DeliveryConfirmationForm
+          delivery={delivery}
+          onSuccess={() => {
+            // 確認成功時の処理
+            window.location.href = `/instant?success=${encodeURIComponent('受取確認が完了しました！ありがとうございました。')}`;
+          }}
+          onError={(error: string) => {
+            console.error('確認エラー:', error);
+          }}
+        />
+      )}
     </div>
   );
 }

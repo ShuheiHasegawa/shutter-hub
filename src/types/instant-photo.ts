@@ -477,3 +477,43 @@ export interface ReviewStats {
   service_average: number;
   recommendation_rate: number; // %
 }
+
+// === 統合された型定義 ===
+
+// 拡張された予約型（UI用統合型）
+export interface ExtendedBooking extends InstantBooking {
+  request?: InstantPhotoRequest;
+  photographer?: {
+    id: string;
+    display_name?: string;
+    avatar_url?: string;
+    bio?: string;
+    average_rating?: number;
+    phone?: string;
+  };
+  escrow_payment?: EscrowPayment;
+  photo_delivery?: PhotoDelivery;
+  photo_deliveries?: PhotoDelivery[];
+}
+
+// コンポーネントプロパティ型定義
+export interface EscrowPaymentFormProps {
+  booking: ExtendedBooking;
+  guestPhone: string;
+  onSuccess?: (escrowPayment: EscrowPayment) => void;
+  onError?: (error: string) => void;
+}
+
+export interface DeliveryConfirmationFormProps {
+  booking: ExtendedBooking;
+  delivery: PhotoDelivery;
+  onSuccess?: () => void;
+  onError?: (error: string) => void;
+}
+
+// フォトデリバリー確認フォーム用の簡易プロパティ型
+export interface SimpleDeliveryConfirmationFormProps {
+  delivery: PhotoDelivery;
+  onSuccess?: () => void;
+  onError?: (error: string) => void;
+}

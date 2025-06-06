@@ -20,14 +20,7 @@ import {
   createEscrowPayment,
   confirmEscrowPayment,
 } from '@/app/actions/instant-payment';
-import type { InstantBooking, EscrowPayment } from '@/types/instant-photo';
-
-interface EscrowPaymentFormProps {
-  booking: InstantBooking;
-  guestPhone: string;
-  onSuccess?: (escrowPayment: EscrowPayment) => void;
-  onError?: (error: string) => void;
-}
+import type { EscrowPaymentFormProps } from '@/types/instant-photo';
 
 export function EscrowPaymentForm({
   booking,

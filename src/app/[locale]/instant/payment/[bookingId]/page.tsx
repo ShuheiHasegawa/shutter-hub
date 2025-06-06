@@ -15,32 +15,7 @@ import {
   CreditCard,
   Info,
 } from 'lucide-react';
-import type { InstantBooking } from '@/types/instant-photo';
-
-// 拡張された予約型定義
-interface ExtendedBooking extends InstantBooking {
-  instant_photo_requests?: {
-    id: string;
-    guest_name: string;
-    guest_phone: string;
-    guest_email?: string;
-    party_size: number;
-    location_address: string;
-    location_landmark?: string;
-    request_type: string;
-    urgency: string;
-    duration: number;
-    special_requests?: string;
-    status: string;
-    created_at: string;
-  };
-  profiles?: {
-    id: string;
-    display_name?: string;
-    avatar_url?: string;
-    bio?: string;
-  };
-}
+import type { ExtendedBooking } from '@/types/instant-photo';
 
 interface PageProps {
   params: {
@@ -293,6 +268,7 @@ export default async function PaymentPage({ params }: PageProps) {
               <CardContent>
                 <EscrowPaymentForm
                   booking={booking}
+                  guestPhone={guestPhone}
                   onSuccess={paymentId => {
                     // 決済成功後の処理
                     window.location.href = `/instant/payment/${params.bookingId}/success?payment=${paymentId}`;

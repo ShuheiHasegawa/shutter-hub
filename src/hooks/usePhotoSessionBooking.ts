@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import type { PhotoSessionWithOrganizer } from '@/types/database';
@@ -33,7 +33,7 @@ export function usePhotoSessionBooking(session: PhotoSessionWithOrganizer) {
   const supabase = createClient();
 
   // 予約状態をチェックする関数
-  const checkBookingState = async () => {
+  const checkBookingState = useCallback(async () => {
     if (!user) {
       setBookingState({
         isLoading: false,
@@ -115,7 +115,13 @@ export function usePhotoSessionBooking(session: PhotoSessionWithOrganizer) {
         availableSlots: 0,
       });
     }
-  };
+  }, [
+    user,
+    session.id,
+    session.max_participants,
+    session.current_participants,
+    supabase,
+  ]);
 
   // 初回チェック
   useEffect(() => {
