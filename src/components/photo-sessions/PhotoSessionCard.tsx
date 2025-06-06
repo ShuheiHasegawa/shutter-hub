@@ -104,7 +104,7 @@ export function PhotoSessionCard({
           )}
 
           {/* 情報グリッド（2×2）- 等しい横幅 */}
-          <div className="grid grid-cols-2 gap-2 mb-4">
+          <div className="grid grid-cols-2 gap-3 mb-4">
             {/* 日時 */}
             <div className="bg-blue-50 p-2.5 rounded-lg min-h-[70px] flex flex-col">
               <div className="flex items-center gap-1.5 mb-1">
@@ -244,6 +244,18 @@ export function PhotoSessionCard({
   }
 
   if (layoutMode === 'horizontal') {
+    // 参加者埋まり具合の計算（水平レイアウト用）
+    const participantFillPercentage =
+      (session.current_participants / session.max_participants) * 100;
+
+    // バッテリー風のカラーリング
+    const getBatteryColor = (percentage: number) => {
+      if (percentage >= 90) return 'bg-red-500'; // 満員間近
+      if (percentage >= 70) return 'bg-yellow-500'; // 多め
+      if (percentage >= 30) return 'bg-green-500'; // 適度
+      return 'bg-blue-500'; // 余裕あり
+    };
+
     return (
       <Card className="w-full hover:shadow-lg transition-all duration-300 group border-l-4 border-l-transparent hover:border-l-blue-500 bg-gradient-to-r from-white to-gray-50/30">
         <div className="flex items-stretch p-6">
@@ -253,7 +265,7 @@ export function PhotoSessionCard({
           </div>
 
           {/* 中央: コンテンツエリア */}
-          <div className="flex-1 min-w-0 space-y-3">
+          <div className="flex-1 min-w-0 space-y-4">
             {/* タイトルとステータス */}
             <div className="flex items-start justify-between gap-4">
               <div>
@@ -280,43 +292,83 @@ export function PhotoSessionCard({
               </p>
             )}
 
-            {/* 詳細情報 - 横並び */}
-            <div className="flex flex-wrap gap-6 text-sm">
-              <div className="flex items-center gap-2 bg-blue-50 px-3 py-1.5 rounded-full">
-                <CalendarIcon className="h-4 w-4 text-blue-600" />
-                <div className="font-medium">
-                  <div className="text-gray-900">
-                    {formatDateLocalized(startDate, locale, 'short')}
-                  </div>
-                  <div className="text-gray-600 text-xs">
-                    {formatTimeLocalized(startDate, locale)} -{' '}
-                    {formatTimeLocalized(endDate, locale)}
-                  </div>
+            {/* 詳細情報 - 四角いカードデザイン（2×2グリッド） */}
+            <div className="grid grid-cols-2 gap-3">
+              {/* 日時 */}
+              <div className="bg-blue-50 p-3 rounded-lg min-h-[80px] flex flex-col">
+                <div className="flex items-center gap-2 mb-2">
+                  <CalendarIcon className="h-4 w-4 text-blue-600 flex-shrink-0" />
+                  <span className="text-sm font-semibold text-blue-800">
+                    日時
+                  </span>
+                </div>
+                <div className="text-sm font-medium text-gray-900 leading-tight">
+                  {formatDateLocalized(startDate, locale, 'short')}
+                </div>
+                <div className="text-xs text-gray-600 mt-1 leading-tight">
+                  {formatTimeLocalized(startDate, locale)} -{' '}
+                  {formatTimeLocalized(endDate, locale)}
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 bg-green-50 px-3 py-1.5 rounded-full">
-                <MapPinIcon className="h-4 w-4 text-green-600" />
-                <span className="font-medium text-gray-900">
+              {/* 場所 */}
+              <div className="bg-green-50 p-3 rounded-lg min-h-[80px] flex flex-col">
+                <div className="flex items-center gap-2 mb-2">
+                  <MapPinIcon className="h-4 w-4 text-green-600 flex-shrink-0" />
+                  <span className="text-sm font-semibold text-green-800">
+                    場所
+                  </span>
+                </div>
+                <div className="text-sm font-medium text-gray-900 line-clamp-2 leading-tight">
                   {session.location}
-                </span>
+                </div>
               </div>
 
-              <div className="flex items-center gap-2 bg-purple-50 px-3 py-1.5 rounded-full">
-                <UsersIcon className="h-4 w-4 text-purple-600" />
-                <span className="font-medium text-gray-900">
+              {/* 参加者 - バッテリー風デザイン */}
+              <div className="bg-purple-50 p-3 rounded-lg min-h-[80px] flex flex-col">
+                <div className="flex items-center gap-2 mb-2">
+                  <UsersIcon className="h-4 w-4 text-purple-600 flex-shrink-0" />
+                  <span className="text-sm font-semibold text-purple-800">
+                    参加者
+                  </span>
+                </div>
+                <div className="text-sm font-medium text-gray-900 mb-2">
                   {session.current_participants}/{session.max_participants}人
-                </span>
-                <div className="ml-1">{getAvailabilityBadge()}</div>
+                </div>
+
+                {/* バッテリー風ビジュアル */}
+                <div className="flex items-center gap-2 mt-auto">
+                  <div className="flex-1 h-3 bg-gray-200 rounded-full overflow-hidden relative">
+                    <div
+                      className={`h-full ${getBatteryColor(participantFillPercentage)} transition-all duration-300 rounded-full relative`}
+                      style={{
+                        width: `${Math.min(participantFillPercentage, 100)}%`,
+                      }}
+                    >
+                      {participantFillPercentage >= 100 && (
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-30 animate-pulse"></div>
+                      )}
+                    </div>
+                  </div>
+                  <span className="text-xs font-medium text-gray-700 min-w-[32px] text-right">
+                    {Math.round(participantFillPercentage)}%
+                  </span>
+                </div>
               </div>
 
-              <div className="flex items-center gap-2 bg-orange-50 px-3 py-1.5 rounded-full">
-                <CircleDollarSignIcon className="h-4 w-4 text-orange-600" />
-                <span className="font-bold text-lg text-gray-900">
+              {/* 料金 */}
+              <div className="bg-orange-50 p-3 rounded-lg min-h-[80px] flex flex-col">
+                <div className="flex items-center gap-2 mb-2">
+                  <CircleDollarSignIcon className="h-4 w-4 text-orange-600 flex-shrink-0" />
+                  <span className="text-sm font-semibold text-orange-800">
+                    料金
+                  </span>
+                </div>
+                <div className="text-lg font-bold text-gray-900 mt-auto">
                   {session.price_per_person === 0
                     ? tBooking('free')
                     : `¥${session.price_per_person.toLocaleString()}`}
-                </span>
+                </div>
               </div>
             </div>
           </div>
@@ -407,7 +459,7 @@ export function PhotoSessionCard({
           </p>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+        <div className="grid grid-cols-2 gap-3">
           <div className="flex items-center gap-2">
             <CalendarIcon className="h-4 w-4 text-muted-foreground" />
             <div>
