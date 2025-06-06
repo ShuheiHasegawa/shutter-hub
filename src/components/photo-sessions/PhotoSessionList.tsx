@@ -56,6 +56,19 @@ export function PhotoSessionList({
     'start_time'
   );
 
+  // 画面サイズに応じたレイアウトモード判定
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768); // md breakpoint
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   useEffect(() => {
     loadSessions();
   }, [organizerId, searchQuery, locationFilter, sortBy, filters]);
@@ -189,20 +202,26 @@ export function PhotoSessionList({
         <div className="flex justify-between items-center">
           <h2 className="text-2xl font-bold">{title}</h2>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="space-y-4">
           {[...Array(6)].map((_, i) => (
             <Card key={i} className="animate-pulse">
-              <CardHeader>
-                <div className="h-6 bg-gray-200 rounded w-3/4"></div>
-                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="h-4 bg-gray-200 rounded"></div>
-                  <div className="h-4 bg-gray-200 rounded w-5/6"></div>
-                  <div className="h-4 bg-gray-200 rounded w-4/6"></div>
+              <div className="flex p-6">
+                <div className="w-48 h-32 bg-gray-200 rounded-lg mr-6"></div>
+                <div className="flex-1 space-y-3">
+                  <div className="h-6 bg-gray-200 rounded w-3/4"></div>
+                  <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                  <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+                  <div className="flex gap-4">
+                    <div className="h-4 bg-gray-200 rounded w-24"></div>
+                    <div className="h-4 bg-gray-200 rounded w-20"></div>
+                    <div className="h-4 bg-gray-200 rounded w-16"></div>
+                  </div>
                 </div>
-              </CardContent>
+                <div className="w-32 space-y-2">
+                  <div className="h-8 bg-gray-200 rounded"></div>
+                  <div className="h-8 bg-gray-200 rounded"></div>
+                </div>
+              </div>
             </Card>
           ))}
         </div>
@@ -300,16 +319,32 @@ export function PhotoSessionList({
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="space-y-3 md:space-y-4">
           {sessions.map(session => (
-            <PhotoSessionCard
-              key={session.id}
-              session={session}
-              onViewDetails={handleViewDetails}
-              onEdit={handleEdit}
-              isOwner={user?.id === session.organizer_id}
-              showActions={true}
-            />
+            <>
+              {/* モバイル版 */}
+              <div key={`mobile-${session.id}`} className="block md:hidden">
+                <PhotoSessionCard
+                  session={session}
+                  onViewDetails={handleViewDetails}
+                  onEdit={handleEdit}
+                  isOwner={user?.id === session.organizer_id}
+                  showActions={true}
+                  layoutMode="mobile"
+                />
+              </div>
+              {/* デスクトップ版 */}
+              <div key={`desktop-${session.id}`} className="hidden md:block">
+                <PhotoSessionCard
+                  session={session}
+                  onViewDetails={handleViewDetails}
+                  onEdit={handleEdit}
+                  isOwner={user?.id === session.organizer_id}
+                  showActions={true}
+                  layoutMode={isMobile ? 'mobile' : 'horizontal'}
+                />
+              </div>
+            </>
           ))}
         </div>
       )}
