@@ -27,7 +27,7 @@ export function DashboardTopbar() {
   };
 
   return (
-    <header className="sticky top-0 z-30 flex h-12 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
+    <header className="sticky top-0 z-30 flex h-12 items-center gap-4 border-b bg-background px-4 sm:static sm:h-12 sm:border-0 sm:bg-transparent sm:px-6">
       <MobileSidebarTrigger />
 
       <div className="relative ml-auto flex-1 md:grow-0">
