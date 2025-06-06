@@ -26,12 +26,12 @@ import { useRealtimeNotifications } from '@/hooks/useRealtimeNotifications';
 import type { InstantPhotoNotification } from '@/types/instant-photo';
 
 interface NotificationCenterProps {
-  userType?: 'photographer' | 'guest' | 'all';
+  userType?: 'photographer' | 'guest';
   enableSound?: boolean;
 }
 
 export function NotificationCenter({
-  userType = 'all',
+  userType = 'photographer',
   enableSound = false,
 }: NotificationCenterProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -101,7 +101,7 @@ export function NotificationCenter({
         <Button
           variant="ghost"
           size="sm"
-          className="relative"
+          className="relative p-2"
           aria-label={`通知 ${unreadCount > 0 ? `(${unreadCount}件の未読)` : ''}`}
         >
           {unreadCount > 0 ? (
@@ -113,9 +113,11 @@ export function NotificationCenter({
           {unreadCount > 0 && (
             <Badge
               variant="destructive"
-              className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs"
+              className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full p-0 text-xs flex items-center justify-center min-w-[16px] border-2 border-background shadow-lg"
             >
-              {unreadCount > 99 ? '99+' : unreadCount}
+              <span className="text-[10px] font-bold leading-none">
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
             </Badge>
           )}
         </Button>

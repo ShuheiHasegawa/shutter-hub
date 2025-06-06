@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { LanguageToggle } from '@/components/ui/language-toggle';
+import { NotificationCenter } from '@/components/instant/NotificationCenter';
 import {
   Sheet,
   SheetContent,
@@ -115,6 +116,7 @@ export function Header() {
         {/* 右側のアクション */}
         <div className="flex flex-1 items-center justify-end space-x-4">
           <nav className="flex items-center space-x-2">
+            {user && <NotificationCenter />}
             <LanguageToggle />
             <ThemeToggle />
 
