@@ -19,6 +19,7 @@ interface PhotoSessionCardProps {
   onEdit?: (sessionId: string) => void;
   showActions?: boolean;
   isOwner?: boolean;
+  layoutMode?: 'vertical' | 'horizontal' | 'mobile';
 }
 
 export function PhotoSessionCard({
@@ -27,6 +28,7 @@ export function PhotoSessionCard({
   onEdit,
   showActions = true,
   isOwner = false,
+  layoutMode = 'vertical',
 }: PhotoSessionCardProps) {
   const t = useTranslations('photoSessions');
   const tBooking = useTranslations('booking');
@@ -63,6 +65,319 @@ export function PhotoSessionCard({
     return <Badge variant="outline">{t('availability.available')}</Badge>;
   };
 
+  // モバイル専用レイアウト（iPhone12 Proなど）
+  if (layoutMode === 'mobile') {
+    // 参加者埋まり具合の計算
+    const participantFillPercentage =
+      (session.current_participants / session.max_participants) * 100;
+
+    // バッテリー風のカラーリング
+    const getBatteryColor = (percentage: number) => {
+      if (percentage >= 90) return 'bg-red-500'; // 満員間近
+      if (percentage >= 70) return 'bg-yellow-500'; // 多め
+      if (percentage >= 30) return 'bg-green-500'; // 適度
+      return 'bg-blue-500'; // 余裕あり
+    };
+
+    return (
+      <Card className="w-full hover:shadow-lg transition-all duration-300 bg-white border border-gray-200">
+        <div className="p-4">
+          {/* ヘッダー */}
+          <div className="flex justify-between items-start mb-3">
+            <h3 className="text-lg font-bold text-gray-900 line-clamp-2 flex-1 pr-2">
+              {session.title}
+            </h3>
+            <div className="flex gap-1 flex-shrink-0">{getStatusBadge()}</div>
+          </div>
+
+          {/* 主催者 */}
+          <p className="text-sm text-gray-600 mb-3">
+            {tBooking('organizer')}:{' '}
+            {session.organizer.display_name || session.organizer.email}
+          </p>
+
+          {/* 説明文 */}
+          {session.description && (
+            <p className="text-sm text-gray-700 line-clamp-2 mb-4 leading-relaxed">
+              {session.description}
+            </p>
+          )}
+
+          {/* 情報グリッド（2×2）- 等しい横幅 */}
+          <div className="grid grid-cols-2 gap-2 mb-4">
+            {/* 日時 */}
+            <div className="bg-blue-50 p-2.5 rounded-lg min-h-[70px] flex flex-col">
+              <div className="flex items-center gap-1.5 mb-1">
+                <CalendarIcon className="h-3.5 w-3.5 text-blue-600 flex-shrink-0" />
+                <span className="text-xs font-semibold text-blue-800 truncate">
+                  日時
+                </span>
+              </div>
+              <div className="text-xs font-medium text-gray-900 leading-tight">
+                {formatDateLocalized(startDate, locale, 'short')}
+              </div>
+              <div className="text-xs text-gray-600 mt-0.5 leading-tight">
+                {formatTimeLocalized(startDate, locale)}〜
+              </div>
+            </div>
+
+            {/* 場所 */}
+            <div className="bg-green-50 p-2.5 rounded-lg min-h-[70px] flex flex-col">
+              <div className="flex items-center gap-1.5 mb-1">
+                <MapPinIcon className="h-3.5 w-3.5 text-green-600 flex-shrink-0" />
+                <span className="text-xs font-semibold text-green-800 truncate">
+                  場所
+                </span>
+              </div>
+              <div className="text-xs font-medium text-gray-900 line-clamp-3 leading-tight">
+                {session.location}
+              </div>
+            </div>
+
+            {/* 参加者 - バッテリー風デザイン */}
+            <div className="bg-purple-50 p-2.5 rounded-lg min-h-[70px] flex flex-col">
+              <div className="flex items-center gap-1.5 mb-1">
+                <UsersIcon className="h-3.5 w-3.5 text-purple-600 flex-shrink-0" />
+                <span className="text-xs font-semibold text-purple-800 truncate">
+                  参加者
+                </span>
+              </div>
+              <div className="text-xs font-medium text-gray-900 mb-1.5">
+                {session.current_participants}/{session.max_participants}人
+              </div>
+
+              {/* バッテリー風ビジュアル */}
+              <div className="flex items-center gap-1">
+                <div className="flex-1 h-3 bg-gray-200 rounded-full overflow-hidden relative">
+                  <div
+                    className={`h-full ${getBatteryColor(participantFillPercentage)} transition-all duration-300 rounded-full relative`}
+                    style={{
+                      width: `${Math.min(participantFillPercentage, 100)}%`,
+                    }}
+                  >
+                    {participantFillPercentage >= 100 && (
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-30 animate-pulse"></div>
+                    )}
+                  </div>
+                </div>
+                <span className="text-xs font-medium text-gray-700 min-w-[24px] text-right">
+                  {Math.round(participantFillPercentage)}%
+                </span>
+              </div>
+            </div>
+
+            {/* 料金 */}
+            <div className="bg-orange-50 p-2.5 rounded-lg min-h-[70px] flex flex-col">
+              <div className="flex items-center gap-1.5 mb-1">
+                <CircleDollarSignIcon className="h-3.5 w-3.5 text-orange-600 flex-shrink-0" />
+                <span className="text-xs font-semibold text-orange-800 truncate">
+                  料金
+                </span>
+              </div>
+              <div className="text-sm font-bold text-gray-900 mt-auto">
+                {session.price_per_person === 0
+                  ? tBooking('free')
+                  : `¥${session.price_per_person.toLocaleString()}`}
+              </div>
+            </div>
+          </div>
+
+          {/* アクションボタン */}
+          {showActions && (
+            <div className="space-y-2">
+              {!isOwner && onViewDetails && (
+                <Button
+                  size="sm"
+                  onClick={() => onViewDetails(session.id)}
+                  disabled={
+                    session.current_participants >= session.max_participants
+                  }
+                  className="w-full h-11 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-md disabled:from-gray-400 disabled:to-gray-500 transition-all duration-200"
+                >
+                  {session.current_participants >= session.max_participants
+                    ? tBooking('sessionFull')
+                    : tBooking('reserve')}
+                </Button>
+              )}
+
+              <div className="flex gap-2">
+                {onViewDetails && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onViewDetails(session.id)}
+                    className="flex-1 h-11 border-gray-300 hover:border-blue-500 hover:text-blue-600 transition-all"
+                  >
+                    詳細を見る
+                  </Button>
+                )}
+
+                {!isOwner &&
+                  session.current_participants >= session.max_participants &&
+                  onViewDetails && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onViewDetails(session.id)}
+                      className="flex-1 h-11 border-yellow-400 text-yellow-700 hover:bg-yellow-50"
+                    >
+                      キャンセル待ち
+                    </Button>
+                  )}
+
+                {isOwner && onEdit && (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => onEdit(session.id)}
+                    className="flex-1 h-11 bg-gray-100 hover:bg-gray-200 text-gray-700"
+                  >
+                    編集
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </Card>
+    );
+  }
+
+  if (layoutMode === 'horizontal') {
+    return (
+      <Card className="w-full hover:shadow-lg transition-all duration-300 group border-l-4 border-l-transparent hover:border-l-blue-500 bg-gradient-to-r from-white to-gray-50/30">
+        <div className="flex items-stretch p-6">
+          {/* 左側: 画像エリア（将来の実装用） */}
+          <div className="w-48 h-32 bg-gradient-to-br from-blue-100 to-purple-100 rounded-xl mr-6 flex-shrink-0 flex items-center justify-center shadow-sm">
+            <CalendarIcon className="h-12 w-12 text-blue-400 opacity-60" />
+          </div>
+
+          {/* 中央: コンテンツエリア */}
+          <div className="flex-1 min-w-0 space-y-3">
+            {/* タイトルとステータス */}
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h3 className="text-xl font-bold text-gray-900 line-clamp-2 group-hover:text-blue-700 transition-colors">
+                  {session.title}
+                </h3>
+                <p className="text-sm text-gray-600 mt-1">
+                  {tBooking('organizer')}:{' '}
+                  {session.organizer.display_name || session.organizer.email}
+                </p>
+              </div>
+              <div className="flex gap-2 flex-shrink-0">
+                {getStatusBadge()}
+                {!session.is_published && (
+                  <Badge variant="outline">{t('status.unpublished')}</Badge>
+                )}
+              </div>
+            </div>
+
+            {/* 説明文 */}
+            {session.description && (
+              <p className="text-gray-700 line-clamp-2 leading-relaxed">
+                {session.description}
+              </p>
+            )}
+
+            {/* 詳細情報 - 横並び */}
+            <div className="flex flex-wrap gap-6 text-sm">
+              <div className="flex items-center gap-2 bg-blue-50 px-3 py-1.5 rounded-full">
+                <CalendarIcon className="h-4 w-4 text-blue-600" />
+                <div className="font-medium">
+                  <div className="text-gray-900">
+                    {formatDateLocalized(startDate, locale, 'short')}
+                  </div>
+                  <div className="text-gray-600 text-xs">
+                    {formatTimeLocalized(startDate, locale)} -{' '}
+                    {formatTimeLocalized(endDate, locale)}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 bg-green-50 px-3 py-1.5 rounded-full">
+                <MapPinIcon className="h-4 w-4 text-green-600" />
+                <span className="font-medium text-gray-900">
+                  {session.location}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2 bg-purple-50 px-3 py-1.5 rounded-full">
+                <UsersIcon className="h-4 w-4 text-purple-600" />
+                <span className="font-medium text-gray-900">
+                  {session.current_participants}/{session.max_participants}人
+                </span>
+                <div className="ml-1">{getAvailabilityBadge()}</div>
+              </div>
+
+              <div className="flex items-center gap-2 bg-orange-50 px-3 py-1.5 rounded-full">
+                <CircleDollarSignIcon className="h-4 w-4 text-orange-600" />
+                <span className="font-bold text-lg text-gray-900">
+                  {session.price_per_person === 0
+                    ? tBooking('free')
+                    : `¥${session.price_per_person.toLocaleString()}`}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* 右側: アクションボタン */}
+          {showActions && (
+            <div className="flex flex-col gap-2 ml-6 w-36 justify-center">
+              {onViewDetails && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onViewDetails(session.id)}
+                  className="border-gray-300 hover:border-blue-500 hover:text-blue-600 transition-all"
+                >
+                  詳細を見る
+                </Button>
+              )}
+              {!isOwner && onViewDetails && (
+                <>
+                  <Button
+                    size="sm"
+                    onClick={() => onViewDetails(session.id)}
+                    disabled={
+                      session.current_participants >= session.max_participants
+                    }
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-md disabled:from-gray-400 disabled:to-gray-500"
+                  >
+                    {session.current_participants >= session.max_participants
+                      ? tBooking('sessionFull')
+                      : tBooking('reserve')}
+                  </Button>
+                  {session.current_participants >= session.max_participants && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onViewDetails(session.id)}
+                      className="border-yellow-400 text-yellow-700 hover:bg-yellow-50"
+                    >
+                      キャンセル待ち
+                    </Button>
+                  )}
+                </>
+              )}
+              {isOwner && onEdit && (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => onEdit(session.id)}
+                  className="bg-gray-100 hover:bg-gray-200 text-gray-700"
+                >
+                  編集
+                </Button>
+              )}
+            </div>
+          )}
+        </div>
+      </Card>
+    );
+  }
+
+  // 縦型レイアウト（既存のデザイン）
   return (
     <Card className="w-full hover:shadow-md transition-shadow">
       <CardHeader className="pb-3">
