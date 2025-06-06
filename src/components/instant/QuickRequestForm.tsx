@@ -26,6 +26,8 @@ import {
   AlertTriangle,
   Map,
   List,
+  CreditCard,
+  ArrowRight,
 } from 'lucide-react';
 import {
   createInstantPhotoRequest,
@@ -35,6 +37,7 @@ import {
 import { checkLocationAccuracy } from '@/hooks/useGeolocation';
 import { useRealtimeNotifications } from '@/hooks/useRealtimeNotifications';
 import { InstantPhotoMap } from './InstantPhotoMap';
+import { useRouter } from 'next/navigation';
 import type {
   LocationData,
   RequestType,
@@ -49,22 +52,23 @@ interface QuickRequestFormProps {
 }
 
 export function QuickRequestForm({ location }: QuickRequestFormProps) {
+  const router = useRouter();
   const [formData, setFormData] = useState<QuickRequestFormData>({
     requestType: 'portrait',
-    urgency: 'within_30min',
+    urgency: 'within_1hour',
     duration: 30,
     budget: 5000,
+    partySize: 2,
     specialRequests: '',
     guestName: '',
     guestPhone: '',
     guestEmail: '',
-    partySize: 1,
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<
-    'idle' | 'success' | 'error'
+    'idle' | 'success' | 'error' | 'matched'
   >('idle');
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
@@ -75,6 +79,7 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
     useState<NearbyPhotographer | null>(null);
   const [usageLimit, setUsageLimit] = useState<GuestUsageLimit | null>(null);
   const [activeTab, setActiveTab] = useState<'form' | 'map'>('form');
+  const [matchedBookingId, setMatchedBookingId] = useState<string | null>(null);
 
   // リアルタイム通知を設定
   const { notifications, unreadCount, markAsRead } = useRealtimeNotifications({
@@ -169,18 +174,7 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
   // フォーム送信
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!formData.guestName || !formData.guestPhone) {
-      setErrorMessage('お名前と電話番号は必須です');
-      return;
-    }
-
-    if (usageLimit && !usageLimit.can_use) {
-      setErrorMessage(
-        `月の利用制限（3回）に達しています。現在 ${usageLimit.usage_count}/3 回`
-      );
-      return;
-    }
+    if (isSubmitting) return;
 
     setIsSubmitting(true);
     setSubmitStatus('idle');
@@ -205,7 +199,7 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
 
       const result = await createInstantPhotoRequest(requestData);
 
-      if (result.success) {
+      if (result.success && result.data) {
         setSubmitStatus('success');
         setSuccessMessage(
           '撮影リクエストを送信しました！近くのカメラマンに通知中です...'
@@ -213,6 +207,11 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
 
         // 地図タブに切り替えて進捗を確認
         setActiveTab('map');
+
+        // 5秒後に自動的にリフレッシュして最新状況を確認
+        setTimeout(() => {
+          window.location.reload();
+        }, 5000);
       } else {
         setSubmitStatus('error');
         setErrorMessage(result.error || 'リクエストの送信に失敗しました');
@@ -242,11 +241,21 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
   useEffect(() => {
     if (notifications.length > 0) {
       const latestNotification = notifications[0];
+
       if (latestNotification.type === 'match_found') {
+        setSubmitStatus('matched');
+        setMatchedBookingId(latestNotification.booking_id || null);
         setActiveTab('map'); // マッチング時は地図を表示
       }
     }
   }, [notifications]);
+
+  // マッチング完了時の決済ページ遷移
+  const handleProceedToPayment = () => {
+    if (matchedBookingId) {
+      router.push(`/instant/payment/${matchedBookingId}`);
+    }
+  };
 
   const requestTypes = [
     { value: 'portrait', label: 'ポートレート', icon: '👤', price: '¥3,000〜' },
@@ -311,7 +320,7 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
             </TabsTrigger>
             <TabsTrigger value="map" className="flex items-center gap-2">
               <Map className="h-4 w-4" />
-              地図・カメラマン
+              地図・進捗
               {nearbyPhotographers.length > 0 && (
                 <Badge variant="secondary" className="ml-1">
                   {nearbyPhotographers.length}
@@ -327,6 +336,39 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
                 <CheckCircle className="h-4 w-4 text-green-600" />
                 <AlertDescription className="text-green-800">
                   {successMessage}
+                  <div className="mt-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setActiveTab('map')}
+                      className="text-green-700 border-green-300 hover:bg-green-100"
+                    >
+                      <Map className="h-3 w-3 mr-1" />
+                      進捗を確認
+                    </Button>
+                  </div>
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {submitStatus === 'matched' && matchedBookingId && (
+              <Alert className="border-blue-200 bg-blue-50">
+                <CheckCircle className="h-4 w-4 text-blue-600" />
+                <AlertDescription className="text-blue-800">
+                  <div className="font-medium mb-2">
+                    🎉 カメラマンが見つかりました！
+                  </div>
+                  <p className="text-sm mb-3">
+                    撮影リクエストにカメラマンが応答しました。決済を完了して撮影を確定させましょう。
+                  </p>
+                  <Button
+                    onClick={handleProceedToPayment}
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    <CreditCard className="h-4 w-4 mr-2" />
+                    決済に進む
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </Button>
                 </AlertDescription>
               </Alert>
             )}
@@ -624,7 +666,7 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
                 type="submit"
                 className="w-full"
                 size="lg"
-                disabled={isSubmitting || (usageLimit && !usageLimit.can_use)}
+                disabled={isSubmitting || usageLimit?.can_use === false}
               >
                 {isSubmitting ? (
                   <>

@@ -289,6 +289,7 @@ export interface InstantPhotoNotification {
   title: string;
   message: string;
   data?: Record<string, unknown>;
+  booking_id?: string; // マッチング通知用のbooking ID
   read: boolean;
   created_at: string;
 }
