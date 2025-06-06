@@ -43,7 +43,7 @@ export function DashboardTopbar() {
         <LanguageToggle />
         <ThemeToggle />
 
-        <NotificationCenter />
+        <NotificationCenter userType="photographer" enableSound={false} />
 
         {user && (
           <DropdownMenu>

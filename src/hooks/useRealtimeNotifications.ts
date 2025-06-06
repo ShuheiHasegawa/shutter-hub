@@ -31,9 +31,7 @@ interface RealtimePayload {
   table: string;
 }
 
-interface SystemPayload {
-  type: 'connected' | 'disconnected';
-}
+// 削除: SystemPayloadは使用されていない
 
 export function useRealtimeNotifications({
   userType,
@@ -262,12 +260,46 @@ export function useRealtimeNotifications({
 
   // リアルタイム接続の設定
   useEffect(() => {
-    let channel: ReturnType<typeof supabase.channel>;
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    let reconnectTimeout: NodeJS.Timeout | null = null;
+    let isUnmounted = false;
 
     const setupRealtimeConnection = async () => {
       try {
-        // チャンネルを作成
-        channel = supabase.channel('instant_photo_notifications');
+        // Supabase設定の確認
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+        if (!supabaseUrl || !supabaseAnonKey) {
+          console.warn(
+            'Supabase configuration missing, skipping realtime notifications'
+          );
+          setState(prev => ({ ...prev, isConnected: false }));
+          return;
+        }
+
+        // 既存のチャンネルがあればクリーンアップ
+        if (channel) {
+          await supabase.removeChannel(channel);
+          channel = null;
+        }
+
+        // 接続に必要な条件をチェック
+        if (userType === 'guest' && !guestPhone) {
+          return;
+        }
+        if (userType === 'photographer' && !user) {
+          return;
+        }
+
+        // チャンネルを作成（一意な名前を生成）
+        const channelName = `instant_photo_notifications_${userType}_${
+          userType === 'guest'
+            ? guestPhone?.replace(/\D/g, '') || 'anonymous'
+            : user?.id || 'anonymous'
+        }_${Date.now()}`;
+
+        channel = supabase.channel(channelName);
 
         // ゲスト用の監視設定
         if (userType === 'guest' && guestPhone) {
@@ -315,25 +347,44 @@ export function useRealtimeNotifications({
             );
         }
 
-        // 接続状態の監視
-        channel.on('system', {}, (payload: SystemPayload) => {
-          if (payload.type === 'connected') {
+        // チャンネルを購読
+        await channel.subscribe((status: string) => {
+          if (isUnmounted) return;
+
+          if (status === 'SUBSCRIBED') {
             setState(prev => ({ ...prev, isConnected: true }));
-          } else if (payload.type === 'disconnected') {
+            // 再接続タイマーをクリア
+            if (reconnectTimeout) {
+              clearTimeout(reconnectTimeout);
+              reconnectTimeout = null;
+            }
+          } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+            setState(prev => ({ ...prev, isConnected: false }));
+
+            // 自動再接続を試行（開発環境では無効化可能）
+            if (process.env.NODE_ENV !== 'development' && !isUnmounted) {
+              reconnectTimeout = setTimeout(() => {
+                if (!isUnmounted) {
+                  setupRealtimeConnection();
+                }
+              }, 3000); // 3秒後に再接続
+            }
+          } else if (status === 'TIMED_OUT') {
             setState(prev => ({ ...prev, isConnected: false }));
           }
         });
-
-        // チャンネルを購読
-        await channel.subscribe((status: string) => {
-          if (status === 'SUBSCRIBED') {
-            setState(prev => ({ ...prev, isConnected: true }));
-          } else {
-            console.error('Realtime subscription failed:', status);
-          }
-        });
       } catch (error) {
-        console.error('Realtime setup error:', error);
+        console.warn('Realtime connection error (non-critical):', error);
+        setState(prev => ({ ...prev, isConnected: false }));
+
+        // エラー時の再接続（開発環境では無効化）
+        if (process.env.NODE_ENV !== 'development' && !isUnmounted) {
+          reconnectTimeout = setTimeout(() => {
+            if (!isUnmounted) {
+              setupRealtimeConnection();
+            }
+          }, 5000);
+        }
       }
     };
 
@@ -341,15 +392,22 @@ export function useRealtimeNotifications({
 
     // クリーンアップ
     return () => {
+      isUnmounted = true;
+
+      if (reconnectTimeout) {
+        clearTimeout(reconnectTimeout);
+      }
+
       if (channel) {
-        supabase.removeChannel(channel);
+        supabase.removeChannel(channel).catch(error => {
+          console.warn('Channel cleanup error:', error);
+        });
       }
     };
   }, [
     userType,
-    user,
+    user?.id, // user全体ではなくIDのみを監視
     guestPhone,
-    supabase,
     handleGuestNotifications,
     handlePhotographerNotifications,
   ]);
