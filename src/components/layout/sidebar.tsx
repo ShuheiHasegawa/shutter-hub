@@ -189,7 +189,7 @@ export function Sidebar({ className }: SidebarProps) {
 
   const SidebarContent = () => (
     <div className="flex h-full flex-col">
-      <div className="flex h-14 items-center border-b px-4">
+      <div className="flex h-12 items-center border-b px-4">
         <button
           onClick={() => navigate('/dashboard')}
           className="flex items-center space-x-2"
@@ -234,7 +234,7 @@ export function MobileSidebarTrigger() {
       </SheetTrigger>
       <SheetContent side="left" className="w-64 p-0">
         <div className="flex h-full flex-col">
-          <div className="flex h-14 items-center border-b px-4">
+          <div className="flex h-12 items-center border-b px-4">
             <button
               onClick={() => navigate('/dashboard')}
               className="flex items-center space-x-2"
