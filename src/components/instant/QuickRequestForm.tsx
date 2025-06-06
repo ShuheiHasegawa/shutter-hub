@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -127,7 +127,7 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
   const priceBreakdown = calculateTotalPrice();
 
   // 近くのカメラマンを検索
-  const searchNearbyPhotographers = async () => {
+  const searchNearbyPhotographers = useCallback(async () => {
     setIsSearching(true);
     try {
       const result = await findNearbyPhotographers(
@@ -155,7 +155,12 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
     } finally {
       setIsSearching(false);
     }
-  };
+  }, [
+    location.latitude,
+    location.longitude,
+    formData.requestType,
+    priceBreakdown.totalPrice,
+  ]);
 
   // ゲスト利用制限をチェック
   const checkUsageLimit = async (phone: string) => {
@@ -235,7 +240,7 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
   // 初回カメラマン検索
   useEffect(() => {
     searchNearbyPhotographers();
-  }, [location.latitude, location.longitude, formData.requestType]);
+  }, [searchNearbyPhotographers]);
 
   // 通知を受信した時の処理
   useEffect(() => {
