@@ -81,7 +81,7 @@ export default function TestPaymentPage() {
 
             <div className="space-y-2">
               <h4 className="font-medium">テスト用カード番号</h4>
-              <div className="bg-gray-50 rounded-lg p-3 text-sm font-mono">
+              <div className="rounded-lg p-3 text-sm font-mono bg-gray-100 text-gray-500">
                 <div>カード番号: 4242 4242 4242 4242</div>
                 <div>有効期限: 12/34</div>
                 <div>CVC: 123</div>

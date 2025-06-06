@@ -154,6 +154,11 @@ export interface NearbyPhotographer {
   instant_rate: number;
   response_time_avg: number;
   is_available: boolean;
+  latitude: number;
+  longitude: number;
+  display_name?: string;
+  avatar_url?: string;
+  specialties?: string[];
 }
 
 export interface AutoMatchResult {
