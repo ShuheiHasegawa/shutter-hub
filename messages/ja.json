@@ -280,7 +280,19 @@
       "participantsMin": "最少人数",
       "participantsMax": "最多人数",
       "options": "その他のオプション",
-      "onlyAvailable": "空きがある撮影会のみ"
+      "onlyAvailable": "空きがある撮影会のみ",
+      "filters": "フィルター",
+      "closeFilters": "フィルターを閉じる",
+      "openFilters": "フィルターを開く",
+      "filtersClosedMessage": "フィルターは閉じています。横幅を最大限活用して撮影会を表示しています。"
+    },
+    "card": {
+      "labels": {
+        "dateTime": "日時",
+        "location": "場所",
+        "participants": "参加者",
+        "price": "料金"
+      }
     },
     "imageUpload": {
       "selectImages": "画像を選択",

@@ -88,7 +88,7 @@ export default function PhotoSessionsPage() {
         <div className="space-y-6">
           <div className="flex justify-center items-center h-64">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <span className="ml-3 text-gray-600">読み込み中...</span>
+            <span className="ml-3 text-gray-600">{t('list.loading')}</span>
           </div>
         </div>
       </DashboardLayout>
@@ -115,12 +115,16 @@ export default function PhotoSessionsPage() {
               {sidebarOpen ? (
                 <>
                   <SidebarClose className="h-4 w-4" />
-                  <span className="hidden sm:inline">フィルターを閉じる</span>
+                  <span className="hidden sm:inline">
+                    {t('sidebar.closeFilters')}
+                  </span>
                 </>
               ) : (
                 <>
                   <SidebarOpen className="h-4 w-4" />
-                  <span className="hidden sm:inline">フィルターを開く</span>
+                  <span className="hidden sm:inline">
+                    {t('sidebar.openFilters')}
+                  </span>
                 </>
               )}
             </Button>
@@ -137,7 +141,7 @@ export default function PhotoSessionsPage() {
         {!sidebarOpen && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
             <p className="text-blue-700 text-sm">
-              フィルターは閉じています。横幅を最大限活用して撮影会を表示しています。
+              {t('sidebar.filtersClosedMessage')}
             </p>
           </div>
         )}
@@ -182,7 +186,9 @@ export default function PhotoSessionsPage() {
               >
                 <div className="p-6">
                   <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-lg font-semibold">フィルター</h2>
+                    <h2 className="text-lg font-semibold">
+                      {t('sidebar.filters')}
+                    </h2>
                     <Button
                       variant="ghost"
                       size="sm"

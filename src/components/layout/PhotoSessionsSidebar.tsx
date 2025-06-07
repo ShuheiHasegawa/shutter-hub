@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -50,7 +49,6 @@ export function PhotoSessionsSidebar({
 }: PhotoSessionsSidebarProps) {
   const t = useTranslations('photoSessions');
   const tCommon = useTranslations('common');
-  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const updateFilter = (key: keyof FilterState, value: unknown) => {
     onFiltersChange({
@@ -107,8 +105,8 @@ export function PhotoSessionsSidebar({
     filters.onlyAvailable;
 
   return (
-    <div className={`space-y-6 ${className}`}>
-      {/* ヘッダー */}
+    <div className={`${className}`}>
+      {/* フィルター */}
       <Card>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
@@ -116,91 +114,59 @@ export function PhotoSessionsSidebar({
               <Filter className="h-5 w-5" />
               <CardTitle className="text-lg">{tCommon('filter')}</CardTitle>
             </div>
-            <div className="flex items-center gap-2">
-              {hasActiveFilters && (
-                <Badge variant="secondary" className="text-xs">
-                  {t('list.activeFilters')}
-                </Badge>
-              )}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsCollapsed(!isCollapsed)}
-                className="h-8 w-8 p-0"
-              >
-                {isCollapsed ? (
-                  <Filter className="h-4 w-4" />
-                ) : (
-                  <X className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
+            {hasActiveFilters && (
+              <Badge variant="secondary" className="text-xs">
+                {t('list.activeFilters')}
+              </Badge>
+            )}
           </div>
         </CardHeader>
 
-        {!isCollapsed && (
-          <CardContent className="space-y-4">
-            {hasActiveFilters && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onClearFilters}
-                className="w-full"
-              >
-                <X className="h-4 w-4 mr-2" />
-                {t('list.clearFilters')}
-              </Button>
-            )}
-          </CardContent>
-        )}
-      </Card>
+        <CardContent className="space-y-6">
+          {hasActiveFilters && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onClearFilters}
+              className="w-full"
+            >
+              <X className="h-4 w-4 mr-2" />
+              {t('list.clearFilters')}
+            </Button>
+          )}
 
-      {!isCollapsed && (
-        <>
           {/* キーワード検索 */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">{tCommon('search')}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Input
-                placeholder={t('list.keywordPlaceholder')}
-                value={filters.keyword}
-                onChange={e => updateFilter('keyword', e.target.value)}
-              />
-            </CardContent>
-          </Card>
+          <div>
+            <Label className="text-base font-semibold mb-3 block">
+              {tCommon('search')}
+            </Label>
+            <Input
+              placeholder={t('list.keywordPlaceholder')}
+              value={filters.keyword}
+              onChange={e => updateFilter('keyword', e.target.value)}
+            />
+          </div>
 
           {/* 場所フィルター */}
-          <Card>
-            <CardHeader className="pb-3">
-              <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4" />
-                <CardTitle className="text-base">
-                  {t('form.locationLabel')}
-                </CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <Input
-                placeholder={t('list.locationPlaceholder')}
-                value={filters.location}
-                onChange={e => updateFilter('location', e.target.value)}
-              />
-            </CardContent>
-          </Card>
+          <div>
+            <Label className="text-base font-semibold mb-3 flex items-center gap-2">
+              <MapPin className="h-4 w-4" />
+              {t('form.locationLabel')}
+            </Label>
+            <Input
+              placeholder={t('list.locationPlaceholder')}
+              value={filters.location}
+              onChange={e => updateFilter('location', e.target.value)}
+            />
+          </div>
 
           {/* 日時フィルター */}
-          <Card>
-            <CardHeader className="pb-3">
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4" />
-                <CardTitle className="text-base">
-                  {t('sidebar.dateRange')}
-                </CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
+          <div>
+            <Label className="text-base font-semibold mb-3 flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              {t('sidebar.dateRange')}
+            </Label>
+            <div className="space-y-3">
               <div>
                 <Label className="text-sm">{t('sidebar.dateFrom')}</Label>
                 <Input
@@ -217,20 +183,16 @@ export function PhotoSessionsSidebar({
                   onChange={e => updateFilter('dateTo', e.target.value)}
                 />
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* 料金フィルター */}
-          <Card>
-            <CardHeader className="pb-3">
-              <div className="flex items-center gap-2">
-                <DollarSign className="h-4 w-4" />
-                <CardTitle className="text-base">
-                  {t('sidebar.priceRange')}
-                </CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
+          <div>
+            <Label className="text-base font-semibold mb-3 flex items-center gap-2">
+              <DollarSign className="h-4 w-4" />
+              {t('sidebar.priceRange')}
+            </Label>
+            <div className="space-y-3">
               <div>
                 <Label className="text-sm">{t('sidebar.priceMin')}</Label>
                 <Input
@@ -251,20 +213,16 @@ export function PhotoSessionsSidebar({
                   onChange={e => updateFilter('priceMax', e.target.value)}
                 />
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* 参加者数フィルター */}
-          <Card>
-            <CardHeader className="pb-3">
-              <div className="flex items-center gap-2">
-                <Users className="h-4 w-4" />
-                <CardTitle className="text-base">
-                  {t('sidebar.participantsRange')}
-                </CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
+          <div>
+            <Label className="text-base font-semibold mb-3 flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              {t('sidebar.participantsRange')}
+            </Label>
+            <div className="space-y-3">
               <div>
                 <Label className="text-sm">
                   {t('sidebar.participantsMin')}
@@ -293,17 +251,15 @@ export function PhotoSessionsSidebar({
                   }
                 />
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* 予約方式フィルター */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">
-                {t('bookingType.title')}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
+          <div>
+            <Label className="text-base font-semibold mb-3 block">
+              {t('bookingType.title')}
+            </Label>
+            <div className="space-y-3">
               {bookingTypeOptions.map(option => {
                 const Icon = option.icon;
                 const isChecked = filters.bookingTypes.includes(option.value);
@@ -336,36 +292,32 @@ export function PhotoSessionsSidebar({
                   </div>
                 );
               })}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* その他のオプション */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">
-                {t('sidebar.options')}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="only-available"
-                  checked={filters.onlyAvailable}
-                  onCheckedChange={checked =>
-                    updateFilter('onlyAvailable', checked)
-                  }
-                />
-                <Label
-                  htmlFor="only-available"
-                  className="text-sm font-normal cursor-pointer"
-                >
-                  {t('sidebar.onlyAvailable')}
-                </Label>
-              </div>
-            </CardContent>
-          </Card>
-        </>
-      )}
+          <div>
+            <Label className="text-base font-semibold mb-3 block">
+              {t('sidebar.options')}
+            </Label>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="only-available"
+                checked={filters.onlyAvailable}
+                onCheckedChange={checked =>
+                  updateFilter('onlyAvailable', checked)
+                }
+              />
+              <Label
+                htmlFor="only-available"
+                className="text-sm font-normal cursor-pointer"
+              >
+                {t('sidebar.onlyAvailable')}
+              </Label>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

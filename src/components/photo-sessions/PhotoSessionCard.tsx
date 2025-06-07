@@ -110,7 +110,7 @@ export function PhotoSessionCard({
               <div className="flex items-center gap-1.5 mb-1">
                 <CalendarIcon className="h-3.5 w-3.5 text-blue-600 flex-shrink-0" />
                 <span className="text-xs font-semibold text-blue-800 truncate">
-                  日時
+                  {t('card.labels.dateTime')}
                 </span>
               </div>
               <div className="text-xs font-medium text-gray-900 leading-tight">
@@ -126,7 +126,7 @@ export function PhotoSessionCard({
               <div className="flex items-center gap-1.5 mb-1">
                 <MapPinIcon className="h-3.5 w-3.5 text-green-600 flex-shrink-0" />
                 <span className="text-xs font-semibold text-green-800 truncate">
-                  場所
+                  {t('card.labels.location')}
                 </span>
               </div>
               <div className="text-xs font-medium text-gray-900 line-clamp-3 leading-tight">
@@ -139,11 +139,12 @@ export function PhotoSessionCard({
               <div className="flex items-center gap-1.5 mb-1">
                 <UsersIcon className="h-3.5 w-3.5 text-purple-600 flex-shrink-0" />
                 <span className="text-xs font-semibold text-purple-800 truncate">
-                  参加者
+                  {t('card.labels.participants')}
                 </span>
               </div>
               <div className="text-xs font-medium text-gray-900 mb-1.5">
-                {session.current_participants}/{session.max_participants}人
+                {session.current_participants}/{session.max_participants}
+                {tBooking('people')}
               </div>
 
               {/* バッテリー風ビジュアル */}
@@ -171,7 +172,7 @@ export function PhotoSessionCard({
               <div className="flex items-center gap-1.5 mb-1">
                 <CircleDollarSignIcon className="h-3.5 w-3.5 text-orange-600 flex-shrink-0" />
                 <span className="text-xs font-semibold text-orange-800 truncate">
-                  料金
+                  {t('card.labels.price')}
                 </span>
               </div>
               <div className="text-sm font-bold text-gray-900 mt-auto">
@@ -208,7 +209,7 @@ export function PhotoSessionCard({
                     onClick={() => onViewDetails(session.id)}
                     className="flex-1 h-11 border-gray-300 hover:border-blue-500 hover:text-blue-600 transition-all"
                   >
-                    詳細を見る
+                    {t('viewDetails')}
                   </Button>
                 )}
 
@@ -221,7 +222,7 @@ export function PhotoSessionCard({
                       onClick={() => onViewDetails(session.id)}
                       className="flex-1 h-11 border-yellow-400 text-yellow-700 hover:bg-yellow-50"
                     >
-                      キャンセル待ち
+                      {t('waitlist.button.join_waitlist')}
                     </Button>
                   )}
 
@@ -232,7 +233,7 @@ export function PhotoSessionCard({
                     onClick={() => onEdit(session.id)}
                     className="flex-1 h-11 bg-gray-100 hover:bg-gray-200 text-gray-700"
                   >
-                    編集
+                    {t('edit')}
                   </Button>
                 )}
               </div>
@@ -299,7 +300,7 @@ export function PhotoSessionCard({
                 <div className="flex items-center gap-2 mb-2">
                   <CalendarIcon className="h-4 w-4 text-blue-600 flex-shrink-0" />
                   <span className="text-sm font-semibold text-blue-800">
-                    日時
+                    {t('card.labels.dateTime')}
                   </span>
                 </div>
                 <div className="text-sm font-medium text-gray-900 leading-tight">
@@ -316,7 +317,7 @@ export function PhotoSessionCard({
                 <div className="flex items-center gap-2 mb-2">
                   <MapPinIcon className="h-4 w-4 text-green-600 flex-shrink-0" />
                   <span className="text-sm font-semibold text-green-800">
-                    場所
+                    {t('card.labels.location')}
                   </span>
                 </div>
                 <div className="text-sm font-medium text-gray-900 line-clamp-2 leading-tight">
@@ -329,11 +330,12 @@ export function PhotoSessionCard({
                 <div className="flex items-center gap-2 mb-2">
                   <UsersIcon className="h-4 w-4 text-purple-600 flex-shrink-0" />
                   <span className="text-sm font-semibold text-purple-800">
-                    参加者
+                    {t('card.labels.participants')}
                   </span>
                 </div>
                 <div className="text-sm font-medium text-gray-900 mb-2">
-                  {session.current_participants}/{session.max_participants}人
+                  {session.current_participants}/{session.max_participants}
+                  {tBooking('people')}
                 </div>
 
                 {/* バッテリー風ビジュアル */}
@@ -361,7 +363,7 @@ export function PhotoSessionCard({
                 <div className="flex items-center gap-2 mb-2">
                   <CircleDollarSignIcon className="h-4 w-4 text-orange-600 flex-shrink-0" />
                   <span className="text-sm font-semibold text-orange-800">
-                    料金
+                    {t('card.labels.price')}
                   </span>
                 </div>
                 <div className="text-lg font-bold text-gray-900 mt-auto">
@@ -383,7 +385,7 @@ export function PhotoSessionCard({
                   onClick={() => onViewDetails(session.id)}
                   className="border-gray-300 hover:border-blue-500 hover:text-blue-600 transition-all"
                 >
-                  詳細を見る
+                  {t('viewDetails')}
                 </Button>
               )}
               {!isOwner && onViewDetails && (
@@ -407,7 +409,7 @@ export function PhotoSessionCard({
                       onClick={() => onViewDetails(session.id)}
                       className="border-yellow-400 text-yellow-700 hover:bg-yellow-50"
                     >
-                      キャンセル待ち
+                      {t('waitlist.button.join_waitlist')}
                     </Button>
                   )}
                 </>
@@ -419,7 +421,7 @@ export function PhotoSessionCard({
                   onClick={() => onEdit(session.id)}
                   className="bg-gray-100 hover:bg-gray-200 text-gray-700"
                 >
-                  編集
+                  {t('edit')}
                 </Button>
               )}
             </div>
@@ -459,7 +461,7 @@ export function PhotoSessionCard({
           </p>
         )}
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
           <div className="flex items-center gap-2">
             <CalendarIcon className="h-4 w-4 text-muted-foreground" />
             <div>
@@ -529,7 +531,7 @@ export function PhotoSessionCard({
                     onClick={() => onViewDetails(session.id)}
                     className="flex-1"
                   >
-                    キャンセル待ち
+                    {t('waitlist.button.join_waitlist')}
                   </Button>
                 )}
               </>
