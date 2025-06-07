@@ -3,8 +3,8 @@ import { loadStripe } from '@stripe/stripe-js';
 
 // サーバーサイド用Stripe設定（サーバーサイドでのみ実行）
 export const stripe =
-  typeof window === 'undefined'
-    ? new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  typeof window === 'undefined' && process.env.STRIPE_SECRET_KEY
+    ? new Stripe(process.env.STRIPE_SECRET_KEY, {
         apiVersion: '2025-04-30.basil',
         typescript: true,
       })
