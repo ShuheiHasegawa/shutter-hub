@@ -6,16 +6,16 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Shield, AlertTriangle } from 'lucide-react';
 
 interface AdminInvitePageProps {
-  params: {
+  params: Promise<{
     token: string;
     locale: string;
-  };
+  }>;
 }
 
 export default async function AdminInvitePage({
   params,
 }: AdminInvitePageProps) {
-  const { token } = params;
+  const { token } = await params;
   const supabase = await createClient();
 
   // 認証チェック

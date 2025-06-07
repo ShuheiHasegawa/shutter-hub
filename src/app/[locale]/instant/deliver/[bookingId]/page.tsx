@@ -7,10 +7,10 @@ import { Clock, Camera, Users } from 'lucide-react';
 import type { InstantBooking } from '@/types/instant-photo';
 
 interface PageProps {
-  params: {
+  params: Promise<{
     locale: string;
     bookingId: string;
-  };
+  }>;
 }
 
 // 予約情報を取得（カメラマン認証付き）
@@ -50,7 +50,8 @@ async function getBookingForPhotographer(bookingId: string): Promise<{
 }
 
 export default async function PhotoDeliveryPage({ params }: PageProps) {
-  const { booking, error } = await getBookingForPhotographer(params.bookingId);
+  const { bookingId } = await params;
+  const { booking, error } = await getBookingForPhotographer(bookingId);
 
   if (error || !booking) {
     redirect(

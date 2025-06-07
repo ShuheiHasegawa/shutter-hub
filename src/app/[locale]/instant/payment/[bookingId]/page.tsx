@@ -18,10 +18,10 @@ import {
 import type { ExtendedBooking } from '@/types/instant-photo';
 
 interface PageProps {
-  params: {
+  params: Promise<{
     locale: string;
     bookingId: string;
-  };
+  }>;
 }
 
 // ステップインジケーターコンポーネント
@@ -74,6 +74,7 @@ function PaymentStepIndicator({ currentStep }: { currentStep: number }) {
 }
 
 export default async function PaymentPage({ params }: PageProps) {
+  const { bookingId } = await params;
   const supabase = await createClient();
 
   // 予約情報とカメラマン情報を取得
@@ -86,7 +87,7 @@ export default async function PaymentPage({ params }: PageProps) {
       photographer:profiles!instant_bookings_photographer_id_fkey(*)
     `
     )
-    .eq('id', params.bookingId)
+    .eq('id', bookingId)
     .single();
 
   if (bookingError || !bookingData) {
@@ -271,7 +272,7 @@ export default async function PaymentPage({ params }: PageProps) {
                   guestPhone={guestPhone}
                   onSuccess={paymentId => {
                     // 決済成功後の処理
-                    window.location.href = `/instant/payment/${params.bookingId}/success?payment=${paymentId}`;
+                    window.location.href = `/instant/payment/${bookingId}/success?payment=${paymentId}`;
                   }}
                   onError={error => {
                     console.error('決済エラー:', error);

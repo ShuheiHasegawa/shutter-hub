@@ -54,12 +54,13 @@ async function getDeliveryDetails(bookingId: string): Promise<{
 export default async function DeliveryConfirmationPage({
   params,
 }: {
-  params: {
+  params: Promise<{
     locale: string;
     bookingId: string;
-  };
+  }>;
 }) {
-  const { booking, error } = await getDeliveryDetails(params.bookingId);
+  const { bookingId } = await params;
+  const { booking, error } = await getDeliveryDetails(bookingId);
 
   if (error || !booking) {
     redirect(
