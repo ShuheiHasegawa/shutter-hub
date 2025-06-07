@@ -4,9 +4,13 @@ import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-04-30.basil',
-});
+// Stripe初期化を条件付きにする
+const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+const stripe = stripeSecretKey
+  ? new Stripe(stripeSecretKey, {
+      apiVersion: '2025-04-30.basil',
+    })
+  : null;
 
 interface ActionResult<T> {
   success: boolean;
@@ -270,18 +274,27 @@ export async function resolveDispute(
     // Stripe処理
     if (data.resolution === 'full_refund') {
       // 全額返金
+      if (!stripe) {
+        return { success: false, error: 'Stripe APIが設定されていません' };
+      }
       await stripe.refunds.create({
         payment_intent: escrowPayment.stripe_payment_intent_id,
         amount: data.refund_amount ? data.refund_amount * 100 : undefined, // 全額の場合はamount省略
       });
     } else if (data.resolution === 'partial_refund' && data.refund_amount) {
       // 部分返金
+      if (!stripe) {
+        return { success: false, error: 'Stripe APIが設定されていません' };
+      }
       await stripe.refunds.create({
         payment_intent: escrowPayment.stripe_payment_intent_id,
         amount: data.refund_amount * 100, // cent単位
       });
     } else if (data.resolution === 'photographer_favor') {
       // カメラマン有利 - PaymentIntentをキャプチャ
+      if (!stripe) {
+        return { success: false, error: 'Stripe APIが設定されていません' };
+      }
       await stripe.paymentIntents.capture(
         escrowPayment.stripe_payment_intent_id
       );

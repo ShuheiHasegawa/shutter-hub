@@ -31,6 +31,7 @@ import {
   Search,
   RefreshCw,
 } from 'lucide-react';
+import { resolveDispute } from '@/app/actions/admin-dispute';
 
 // 争議データの型定義
 interface AdminDispute {
@@ -139,8 +140,6 @@ export function AdminDisputeManagement({
 
     setIsLoading(true);
     try {
-      const { resolveDispute } = await import('@/app/actions/admin-dispute');
-
       const result = await resolveDispute({
         dispute_id: selectedDispute.id,
         resolution: resolutionForm.resolution as
