@@ -410,6 +410,7 @@ components={{
 4. **インラインスタイルの過度な使用**
 5. **適切なローディング表示なしの非同期処理**
 6. **依存関係の無計画な更新**（上記ルール参照）
+7. **ハードコードされた日本語・英語テキスト**（多言語化必須）
 
 ## 推奨事項
 
@@ -488,6 +489,317 @@ messages/
   "errors": { "エラーメッセージ" },
   "success": { "成功メッセージ" },
   "validation": { "バリデーションメッセージ" }
+}
+```
+
+### 新規コンポーネント作成時の多言語化チェックリスト
+
+#### 1. コンポーネント作成前の準備
+```tsx
+// 1. 必要な翻訳キーを messages/ja.json に追加
+{
+  "newFeature": {
+    "title": "新機能タイトル",
+    "description": "新機能の説明",
+    "button": {
+      "submit": "送信",
+      "cancel": "キャンセル"
+    },
+    "labels": {
+      "name": "名前",
+      "email": "メールアドレス"
+    }
+  }
+}
+
+// 2. 対応する英語翻訳を messages/en.json に追加
+{
+  "newFeature": {
+    "title": "New Feature Title",
+    "description": "Description of new feature",
+    "button": {
+      "submit": "Submit",
+      "cancel": "Cancel"
+    },
+    "labels": {
+      "name": "Name",
+      "email": "Email"
+    }
+  }
+}
+```
+
+#### 2. コンポーネントでの実装
+```tsx
+// ✅ 良い例: 新規コンポーネント
+'use client';
+
+import { useTranslations } from 'next-intl';
+import { Button } from '@/components/ui/button';
+
+export function NewFeatureComponent() {
+  const t = useTranslations('newFeature');
+  
+  return (
+    <div>
+      <h1>{t('title')}</h1>
+      <p>{t('description')}</p>
+      <Button>{t('button.submit')}</Button>
+    </div>
+  );
+}
+```
+
+#### 3. 多言語化必須項目
+- [ ] すべてのボタンテキスト
+- [ ] すべてのラベル
+- [ ] プレースホルダーテキスト
+- [ ] エラーメッセージ
+- [ ] 成功メッセージ
+- [ ] ツールチップ
+- [ ] アラートメッセージ
+- [ ] 確認ダイアログのテキスト
+- [ ] フォームのバリデーションメッセージ
+
+#### 4. 動的テキストの多言語化
+```tsx
+// ❌ 悪い例
+const message = `${count}件の結果が見つかりました`;
+
+// ✅ 良い例
+const t = useTranslations('search');
+const message = t('results.count', { count });
+
+// messages/ja.json
+{
+  "search": {
+    "results": {
+      "count": "{count}件の結果が見つかりました"
+    }
+  }
+}
+```
+
+#### 5. 条件付きテキストの多言語化
+```tsx
+// ❌ 悪い例
+const status = isActive ? '有効' : '無効';
+
+// ✅ 良い例
+const t = useTranslations('status');
+const status = isActive ? t('active') : t('inactive');
+```
+
+### 多言語化レビューチェックリスト
+- [ ] ハードコードされた日本語・英語がないか確認
+- [ ] すべてのユーザー向けテキストが翻訳されているか
+- [ ] 動的な値を含むテキストが適切に処理されているか
+- [ ] 日付・時刻が多言語化対応されているか
+- [ ] 数値フォーマットがロケールに対応しているか
+
+## メッセージファイル開発ルール
+
+### 概要
+`messages/ja.json`などの多言語対応ファイルを編集する際の開発ルールです。
+
+### 1. キーの重複禁止
+
+#### ルール
+- 同じキーを複数回定義してはいけません
+- 新しいキーを追加する前に、既存のキーを検索して重複がないか確認してください
+
+#### 確認方法
+```bash
+# キーの重複を確認
+grep -n '"keyName"' messages/ja.json
+```
+
+#### 悪い例
+```json
+{
+  "bookingType": { ... },
+  "otherKeys": { ... },
+  "bookingType": { ... }  // ❌ 重複
+}
+```
+
+### 2. キーの並び順
+
+#### ルール
+同一階層のキーは以下の順序で並べてください：
+
+1. **数字で始まるキー**（0-9）
+2. **大文字で始まるキー**（A-Z）
+3. **小文字で始まるキー**（a-z）
+4. **各グループ内ではアルファベット順**
+
+#### 良い例
+```json
+{
+  "404": "ページが見つかりません",
+  "FAQ": "よくある質問",
+  "actions": { ... },
+  "booking": { ... },
+  "common": { ... },
+  "navigation": { ... }
+}
+```
+
+### 3. 階層構造
+
+#### ルール
+- 最大5階層までに制限
+- 関連する項目は適切にグループ化
+- 深すぎる階層は避ける
+
+#### 良い例
+```json
+{
+  "photoSessions": {
+    "form": {
+      "validation": {
+        "titleRequired": "タイトルは必須です"
+      }
+    }
+  }
+}
+```
+
+### 4. 命名規則
+
+#### 基本ルール
+- **camelCase**を使用（例：`bookingType`）
+- 動詞は**現在形**を使用（例：`save`、`cancel`）
+- 複数形は適切に使用（例：`bookings`、`sessions`）
+
+#### カテゴリ別命名規則
+
+##### アクション系
+```json
+{
+  "save": "保存",
+  "cancel": "キャンセル",
+  "confirm": "確認",
+  "delete": "削除"
+}
+```
+
+##### 状態系
+```json
+{
+  "loading": "読み込み中...",
+  "saving": "保存中...",
+  "error": "エラーが発生しました",
+  "success": "成功しました"
+}
+```
+
+##### バリデーション系
+```json
+{
+  "validation": {
+    "required": "必須項目です",
+    "invalid": "無効な値です",
+    "tooLong": "文字数が多すぎます"
+  }
+}
+```
+
+### 5. 値の記述ルール
+
+#### 日本語テキスト
+- 敬語は「です・ます」調で統一
+- 句読点は「、」「。」を使用
+- 半角英数字を使用
+
+#### プレースホルダー
+- 変数は`{variableName}`形式
+- 複数形は`{count}件`のように使用
+
+#### 例
+```json
+{
+  "welcome": "ようこそ、{userName}さん",
+  "itemCount": "{count}件のアイテム",
+  "confirmDelete": "本当に削除しますか？"
+}
+```
+
+### 6. コメント
+
+JSONファイルにはコメントを記述できないため、以下の方法で対応：
+
+1. 複雑な構造には隣接するキーで説明を追加
+2. 別途ドキュメントファイルで詳細を記載
+
+### 7. 編集時のチェックリスト
+
+編集前後に以下を確認してください：
+
+- [ ] キーの重複がないか
+- [ ] アルファベット順になっているか
+- [ ] 命名規則に従っているか
+- [ ] JSONの構文エラーがないか
+- [ ] 不要な末尾カンマがないか
+
+### 8. バージョン管理
+
+#### コミットメッセージ
+```
+feat(i18n): 予約機能の翻訳を追加
+fix(i18n): 重複キーを修正
+refactor(i18n): メッセージをアルファベット順に整理
+```
+
+#### プルリクエスト
+- 変更内容を明確に記載
+- 大きな変更は事前にissueで議論
+
+### 9. ツール
+
+#### 推奨ツール
+- JSONフォーマッター
+- JSONバリデーター
+- 重複キー検出ツール
+
+#### VSCode拡張機能
+- Sort JSON objects
+- JSON Tools
+- Prettier
+
+### 10. よくある間違い
+
+#### 1. 末尾カンマ
+```json
+{
+  "key1": "value1",
+  "key2": "value2", // ❌ 最後の要素にカンマ
+}
+```
+
+#### 2. 不適切な階層
+```json
+{
+  "user": {
+    "profile": {
+      "settings": {
+        "privacy": {
+          "visibility": {
+            "public": "公開" // ❌ 深すぎる
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+#### 3. 一貫性のない命名
+```json
+{
+  "user_name": "ユーザー名",     // ❌ snake_case
+  "UserEmail": "メールアドレス",  // ❌ PascalCase
+  "phoneNumber": "電話番号"       // ✅ camelCase
 }
 ```
 
