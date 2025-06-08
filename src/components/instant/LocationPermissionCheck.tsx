@@ -70,7 +70,7 @@ export function LocationPermissionCheck({
           <h3 className="text-lg font-semibold mb-2">
             位置情報を許可してください
           </h3>
-          <p className="text-gray-600 text-sm">
+          <p className="text-gray-600 dark:text-gray-300 text-sm">
             近くのカメラマンを見つけるために、現在地の情報が必要です。
           </p>
         </div>
@@ -92,7 +92,7 @@ export function LocationPermissionCheck({
           </div>
         )}
 
-        <p className="text-xs text-gray-500 mt-4">
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-4">
           位置情報は撮影マッチングにのみ使用され、保存されません。
         </p>
       </CardContent>

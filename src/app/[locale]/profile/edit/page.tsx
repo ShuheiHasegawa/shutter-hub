@@ -48,9 +48,7 @@ export default async function ProfileEditPage() {
           </div>
         </div>
 
-        <div className="max-w-2xl">
-          <ProfileEditForm profile={profile} />
-        </div>
+        <ProfileEditForm profile={profile} />
       </div>
     </DashboardLayout>
   );

@@ -30,10 +30,10 @@ export function HowItWorks() {
   return (
     <div className="container mx-auto px-4">
       <div className="text-center mb-12">
-        <h2 className="text-3xl font-bold text-gray-900 mb-4">
+        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
           使い方はとても簡単
         </h2>
-        <p className="text-gray-600 max-w-2xl mx-auto">
+        <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
           たった4ステップで、プロの撮影サービスをご利用いただけます。
           アカウント登録は不要で、今すぐ始められます。
         </p>
@@ -43,21 +43,25 @@ export function HowItWorks() {
         {steps.map((step, index) => (
           <Card
             key={index}
-            className="text-center hover:shadow-lg transition-shadow"
+            className="text-center hover:shadow-lg transition-shadow bg-white dark:bg-gray-800"
           >
             <CardContent className="p-6">
               <div className="flex justify-center mb-4">{step.icon}</div>
-              <h3 className="text-lg font-semibold mb-2">{step.title}</h3>
-              <p className="text-gray-600 text-sm">{step.description}</p>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                {step.title}
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300 text-sm">
+                {step.description}
+              </p>
             </CardContent>
           </Card>
         ))}
       </div>
 
       <div className="mt-12 text-center">
-        <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-full">
+        <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-900/20 rounded-full">
           <div className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></div>
-          <span className="text-sm text-blue-700 font-medium">
+          <span className="text-sm text-blue-700 dark:text-blue-300 font-medium">
             平均マッチング時間: 5分以内
           </span>
         </div>

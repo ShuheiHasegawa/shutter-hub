@@ -151,7 +151,7 @@ export function ProfileForm({
   };
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
+    <Card className="w-full mx-auto">
       <CardHeader>
         <CardTitle className="text-center">
           {isEditing ? 'プロフィール編集' : 'プロフィール設定'}

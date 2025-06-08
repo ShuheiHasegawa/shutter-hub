@@ -10,8 +10,8 @@ import { QuickRequestForm } from './QuickRequestForm';
 import { HowItWorks } from './HowItWorks';
 import { PricingDisplay } from './PricingDisplay';
 import { TestimonialCarousel } from './TestimonialCarousel';
+import { InstantPhotoHeader } from './InstantPhotoHeader';
 import { useGeolocation } from '@/hooks/useGeolocation';
-import { NotificationCenter } from '@/components/instant/NotificationCenter';
 import { Camera, MapPin, Clock, Shield, Star, Users } from 'lucide-react';
 
 export function InstantPhotoLanding() {
@@ -42,15 +42,13 @@ export function InstantPhotoLanding() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 via-white to-indigo-50">
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      {/* Header */}
+      <InstantPhotoHeader />
+
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-indigo-600/10" />
-
-        {/* 通知センター（右上固定） */}
-        <div className="absolute top-4 right-4 z-10">
-          <NotificationCenter userType="guest" enableSound={false} />
-        </div>
 
         <div className="relative container mx-auto px-4 py-16 lg:py-24">
           <div className="text-center max-w-4xl mx-auto">
@@ -64,13 +62,13 @@ export function InstantPhotoLanding() {
               </Badge>
             </div>
 
-            <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6">
+            <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-6">
               今いる場所で
               <br />
               <span className="text-blue-600">即座に撮影</span>
             </h1>
 
-            <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+            <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
               旅行先や外出先で、プロのカメラマンに撮影を依頼。
               <br />
               たった数分で素敵な思い出を残しませんか？
@@ -78,22 +76,28 @@ export function InstantPhotoLanding() {
 
             {/* Key Features */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-              <div className="flex items-center justify-center gap-3 p-4 bg-white/50 rounded-lg">
+              <div className="flex items-center justify-center gap-3 p-4 bg-white rounded-lg">
                 <MapPin className="h-6 w-6 text-blue-600" />
-                <span className="font-medium">位置ベースマッチング</span>
+                <span className="font-medium text-gray-800">
+                  位置ベースマッチング
+                </span>
               </div>
-              <div className="flex items-center justify-center gap-3 p-4 bg-white/50 rounded-lg">
+              <div className="flex items-center justify-center gap-3 p-4 bg-white rounded-lg">
                 <Clock className="h-6 w-6 text-green-600" />
-                <span className="font-medium">平均応答時間5分</span>
+                <span className="font-medium text-gray-800">
+                  平均応答時間5分
+                </span>
               </div>
-              <div className="flex items-center justify-center gap-3 p-4 bg-white/50 rounded-lg">
+              <div className="flex items-center justify-center gap-3 p-4 bg-white rounded-lg">
                 <Shield className="h-6 w-6 text-purple-600" />
-                <span className="font-medium">認証不要で簡単</span>
+                <span className="font-medium text-gray-800">
+                  認証不要で簡単
+                </span>
               </div>
             </div>
 
             {/* Location Permission / Form */}
-            <div className="max-w-md mx-auto">
+            <div className="mx-auto">
               {step === 'permission' && (
                 <LocationPermissionCheck
                   isSupported={isSupported}
@@ -134,13 +138,13 @@ export function InstantPhotoLanding() {
       </section>
 
       {/* Stats Section */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-white dark:bg-gray-800">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
               多くの方にご利用いただいています
             </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
+            <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
               旅行者、カップル、家族、インスタグラマーなど、
               様々な方々が即座撮影サービスを活用しています。
             </p>
@@ -149,49 +153,55 @@ export function InstantPhotoLanding() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div className="text-center">
               <div className="text-3xl font-bold text-blue-600 mb-2">500+</div>
-              <div className="text-gray-600">登録カメラマン</div>
+              <div className="text-gray-600 dark:text-gray-300">
+                登録カメラマン
+              </div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-green-600 mb-2">98%</div>
-              <div className="text-gray-600">満足度</div>
+              <div className="text-gray-600 dark:text-gray-300">満足度</div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-purple-600 mb-2">5分</div>
-              <div className="text-gray-600">平均応答時間</div>
+              <div className="text-gray-600 dark:text-gray-300">
+                平均応答時間
+              </div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-orange-600 mb-2">
                 24/7
               </div>
-              <div className="text-gray-600">サポート対応</div>
+              <div className="text-gray-600 dark:text-gray-300">
+                サポート対応
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* How It Works */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 bg-gray-50 dark:bg-gray-900">
         <HowItWorks />
       </section>
 
       {/* Pricing */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-white dark:bg-gray-800">
         <PricingDisplay />
       </section>
 
       {/* Testimonials */}
-      <section className="py-16 bg-gradient-to-r from-blue-50 to-indigo-50">
+      <section className="py-16 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800">
         <TestimonialCarousel />
       </section>
 
       {/* Popular Areas */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-white dark:bg-gray-800">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
               人気の撮影エリア
             </h2>
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-300">
               これらのエリアでは特にカメラマンが豊富にいます
             </p>
           </div>
@@ -209,12 +219,14 @@ export function InstantPhotoLanding() {
             ].map(area => (
               <Card
                 key={area.name}
-                className="hover:shadow-lg transition-shadow"
+                className="hover:shadow-lg transition-shadow bg-white dark:bg-gray-700"
               >
                 <CardContent className="p-4 text-center">
                   <div className="text-2xl mb-2">{area.image}</div>
-                  <div className="font-medium text-sm mb-1">{area.name}</div>
-                  <div className="text-xs text-gray-500">
+                  <div className="font-medium text-sm text-gray-900 dark:text-white mb-1">
+                    {area.name}
+                  </div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
                     {area.count} カメラマン
                   </div>
                 </CardContent>
@@ -225,12 +237,12 @@ export function InstantPhotoLanding() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+      <section className="py-16 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900 dark:to-indigo-900">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-4">
             今すぐ撮影を依頼してみませんか？
           </h2>
-          <p className="text-blue-100 mb-8 max-w-2xl mx-auto">
+          <p className="text-gray-900 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
             ゲストとして月3回まで無料でご利用いただけます。
             アカウント登録は不要です。
           </p>
@@ -238,7 +250,7 @@ export function InstantPhotoLanding() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button
               size="lg"
-              variant="secondary"
+              variant="default"
               onClick={() => {
                 document.getElementById('quick-request')?.scrollIntoView({
                   behavior: 'smooth',
@@ -249,8 +261,9 @@ export function InstantPhotoLanding() {
               <Camera className="h-5 w-5 mr-2" />
               今すぐ撮影依頼
             </Button>
-
-            <div className="flex items-center gap-2 text-blue-100">
+          </div>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-4">
+            <div className="flex items-center gap-2 text-gray-900 dark:text-gray-300">
               <Star className="h-4 w-4 fill-current" />
               <span className="text-sm">
                 月3回まで無料 • 認証不要 • 2分で完了
@@ -261,87 +274,99 @@ export function InstantPhotoLanding() {
       </section>
 
       {/* Features Grid */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 bg-gray-50 dark:bg-gray-900">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
               ShutterHubの特徴
             </h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <Card>
+            <Card className="bg-white dark:bg-gray-800">
               <CardHeader>
                 <MapPin className="h-8 w-8 text-blue-600 mb-2" />
-                <CardTitle className="text-xl">位置ベースマッチング</CardTitle>
+                <CardTitle className="text-xl text-gray-900 dark:text-white">
+                  位置ベースマッチング
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-600">
+                <p className="text-gray-600 dark:text-gray-300">
                   現在地から半径1km以内のプロカメラマンを即座に検索。
                   観光地でも街中でも、どこでもマッチング可能。
                 </p>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-white dark:bg-gray-800">
               <CardHeader>
                 <Clock className="h-8 w-8 text-green-600 mb-2" />
-                <CardTitle className="text-xl">高速レスポンス</CardTitle>
+                <CardTitle className="text-xl text-gray-900 dark:text-white">
+                  高速レスポンス
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-600">
+                <p className="text-gray-600 dark:text-gray-300">
                   平均5分以内でカメラマンから返答。
                   「今すぐ」「30分以内」「1時間以内」から緊急度を選択可能。
                 </p>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-white dark:bg-gray-800">
               <CardHeader>
                 <Shield className="h-8 w-8 text-purple-600 mb-2" />
-                <CardTitle className="text-xl">安心・安全</CardTitle>
+                <CardTitle className="text-xl text-gray-900 dark:text-white">
+                  安心・安全
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-600">
+                <p className="text-gray-600 dark:text-gray-300">
                   全カメラマンは身元確認済み。
                   撮影前の事前確認、明確な料金体系で安心してご利用いただけます。
                 </p>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-white dark:bg-gray-800">
               <CardHeader>
                 <Users className="h-8 w-8 text-orange-600 mb-2" />
-                <CardTitle className="text-xl">多様な撮影タイプ</CardTitle>
+                <CardTitle className="text-xl text-gray-900 dark:text-white">
+                  多様な撮影タイプ
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-600">
+                <p className="text-gray-600 dark:text-gray-300">
                   ポートレート、カップル、家族、グループ、風景撮影など、
                   様々なニーズに対応したプロが在籍。
                 </p>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-white dark:bg-gray-800">
               <CardHeader>
                 <Camera className="h-8 w-8 text-red-600 mb-2" />
-                <CardTitle className="text-xl">プロ品質</CardTitle>
+                <CardTitle className="text-xl text-gray-900 dark:text-white">
+                  プロ品質
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-600">
+                <p className="text-gray-600 dark:text-gray-300">
                   プロ仕様の機材を使用し、編集済みの高品質な写真を配信。
                   撮影後2時間以内にオンラインで受け取り可能。
                 </p>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-white dark:bg-gray-800">
               <CardHeader>
                 <Star className="h-8 w-8 text-yellow-600 mb-2" />
-                <CardTitle className="text-xl">評価システム</CardTitle>
+                <CardTitle className="text-xl text-gray-900 dark:text-white">
+                  評価システム
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-600">
+                <p className="text-gray-600 dark:text-gray-300">
                   相互評価システムにより品質を保証。
                   過去の評価やレビューを参考に安心してカメラマンを選択できます。
                 </p>

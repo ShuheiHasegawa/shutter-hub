@@ -114,6 +114,92 @@ import { cn } from "@/lib/utils/cn";
 </Button>
 ```
 
+## デザインシステム・カラーパレット
+
+### 基本原則
+- **定義済みカラーパレットの使用**: `src/constants/colors.ts`に定義されたカラーを使用
+- **シンプルで一貫性のある配色**: 過度なグラデーションや複雑な配色は避ける
+- **ダークモード対応必須**: すべてのコンポーネントでライト/ダークモード対応
+
+### カラーパレット使用ガイド
+
+#### ブランドカラー
+```typescript
+// src/constants/colors.ts より
+primary: '#6F5091'      // プライマリー（紫）
+secondary: '#101820'    // セカンダリー（ダークグレー）
+```
+
+#### テキストカラー
+```tsx
+// ライトモード
+text-gray-900           // 見出し・重要なテキスト
+text-gray-700           // 本文・説明文
+text-gray-600           // 補助テキスト（避ける）
+text-gray-500           // プレースホルダー・非活性
+
+// ダークモード対応
+text-gray-900 dark:text-white      // 見出し
+text-gray-700 dark:text-gray-300   // 本文
+text-gray-600 dark:text-gray-400   // 補助（使用を避ける）
+```
+
+#### 背景色
+```tsx
+// カード・コンテナ
+bg-white dark:bg-gray-800          // 標準的なカード
+bg-gray-50 dark:bg-gray-900        // セクション背景
+bg-blue-50 dark:bg-blue-900/20     // アクセント背景
+
+// グラデーション（控えめに使用）
+bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20
+```
+
+### 実装ルール
+
+#### 1. コントラストの確保
+```tsx
+// ❌ 悪い例: 薄い背景に薄いテキスト
+<div className="bg-gray-100">
+  <p className="text-gray-400">見えにくいテキスト</p>
+</div>
+
+// ✅ 良い例: 適切なコントラスト
+<div className="bg-gray-100 dark:bg-gray-800">
+  <p className="text-gray-900 dark:text-white">読みやすいテキスト</p>
+</div>
+```
+
+#### 2. アイコンカラー
+```tsx
+// セマンティックカラー
+<MapPin className="h-6 w-6 text-blue-600" />      // 位置情報
+<Clock className="h-6 w-6 text-green-600" />      // 時間
+<Shield className="h-6 w-6 text-purple-600" />    // セキュリティ
+<Camera className="h-6 w-6 text-orange-600" />    // 撮影
+```
+
+#### 3. ステータスカラー
+```tsx
+// 成功・エラー・警告
+text-green-600 dark:text-green-400   // 成功
+text-red-600 dark:text-red-400       // エラー
+text-yellow-600 dark:text-yellow-400 // 警告
+text-blue-600 dark:text-blue-400     // 情報
+```
+
+### 禁止事項
+1. **text-gray-600の単独使用**: 必ずダークモード対応を追加
+2. **複雑なグラデーション**: 3色以上のグラデーションは避ける
+3. **インラインでの色指定**: Tailwindクラスを使用
+4. **不透明度の過度な使用**: 読みやすさを優先
+
+### チェックリスト
+- [ ] すべてのテキストにダークモード対応クラスがあるか
+- [ ] カードやコンテナに背景色のダークモード対応があるか
+- [ ] コントラスト比は十分か（WCAG AA基準）
+- [ ] アイコンの色は意味と一致しているか
+
 ## データ操作
 
 ### Server Actions
