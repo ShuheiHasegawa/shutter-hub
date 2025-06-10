@@ -37,6 +37,9 @@ import { formatDistanceToNow } from 'date-fns';
 import { ja, enUS } from 'date-fns/locale';
 import { useLocale } from 'next-intl';
 import { toast } from 'sonner';
+// Note: FileUpload and MessageAttachment are prepared for future file attachment feature
+// import { FileUpload } from './FileUpload';
+// import { MessageAttachment } from './MessageAttachment';
 
 interface ChatWindowProps {
   conversation: ConversationWithUsers;

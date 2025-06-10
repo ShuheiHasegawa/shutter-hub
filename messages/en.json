@@ -973,7 +973,49 @@
       "updateSettingsError": "Failed to update settings",
       "addMembersError": "Failed to add members",
       "removeMemberError": "Failed to remove member",
-      "leaveGroupError": "Failed to leave group"
+      "leaveGroupError": "Failed to leave group",
+      "fileUpload": {
+        "title": "Upload Files",
+        "description": "Select files or drag & drop here",
+        "selectFiles": "Select Files",
+        "orDragAndDrop": "or drag & drop",
+        "maxFiles": "Max Files",
+        "maxSize": "Max Size",
+        "acceptedTypes": "Accepted Types",
+        "allTypes": "Images, Videos, Audio, Documents",
+        "selectedFiles": "Selected Files",
+        "uploading": "Uploading",
+        "maxFilesReached": "Maximum file limit reached",
+        "error": {
+          "fileTooLarge": "File size exceeds {size}MB",
+          "invalidFileType": "Unsupported file type",
+          "tooManyFiles": "You can select up to {max} files",
+          "someFilesInvalid": "Some files are invalid:"
+        },
+        "success": {
+          "filesSelected": "{count} files selected"
+        },
+        "tips": {
+          "title": "Tips",
+          "dragAndDrop": "Drag & drop multiple files for bulk selection",
+          "multipleFiles": "Attach up to 5 files at once",
+          "supportedFormats": "Supports images, videos, audio, PDF, Word, etc."
+        }
+      },
+      "attachment": {
+        "download": "Download",
+        "viewFullScreen": "View Full Screen",
+        "unsupportedFile": "Preview not available",
+        "imagePreview": "Image Preview",
+        "videoPreview": "Video Preview",
+        "audioPreview": "Audio Preview",
+        "documentPreview": "Document",
+        "fileSize": "File Size",
+        "fileName": "File Name",
+        "fileType": "File Type",
+        "openExternal": "Open with external app",
+        "remove": "Remove"
+      }
     }
   }
 }
