@@ -336,13 +336,18 @@ alwaysApply: true
     - [ ] フォロワー一覧・フォロー中一覧表示UI
     - [ ] ユーザー検索機能
     - [ ] プライバシー設定画面UI
-  - [ ] **Phase 2: 1対1メッセージシステム**
-    - [ ] データベース設計（conversations、messages、message_read_status）
-    - [ ] チャット風UI実装（WhatsApp/LINE風デザイン）
+  - [x] **Phase 2: 1対1メッセージシステム**
+    - [x] データベース設計（conversations、messages、message_read_status）
+    - [x] チャット風UI実装（WhatsApp/LINE風デザイン）
+    - [x] ConversationList・ChatWindow コンポーネント
+    - [x] 既読・未読管理（設定で非表示可能）
+    - [x] メッセージ履歴管理・検索・フィルタリング
+    - [x] フォロー・フォロワーでタブ分け表示
+    - [x] Server Actions（メッセージCRUD・会話管理）
+    - [x] 多言語化対応（日本語・英語）
+    - [x] RLSポリシー・セキュリティ実装
+    - [x] PostgreSQL関数（会話作成・未読管理・既読処理）
     - [ ] リアルタイムメッセージ送受信（Supabase Realtime）
-    - [ ] 既読・未読管理（設定で非表示可能）
-    - [ ] メッセージ履歴管理
-    - [ ] フォロー・フォロワーでタブ分け表示
     - [ ] 絵文字・リアクション機能
   - [ ] **Phase 3: グループメッセージシステム**
     - [ ] データベース設計（group_conversations、group_members）
