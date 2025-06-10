@@ -474,6 +474,51 @@
       "noRefund": "エントリー後のキャンセルはできません"
     }
   },
+  "social": {
+    "follow": {
+      "follow": "フォロー",
+      "unfollow": "フォロー解除",
+      "pending": "承認待ち",
+      "mutualFollow": "相互フォロー",
+      "processing": "処理中...",
+      "error": "エラーが発生しました",
+      "followers": "フォロワー",
+      "following": "フォロー中",
+      "mutualFollows": "相互フォロー",
+      "block": "ブロック",
+      "unblock": "ブロック解除",
+      "blocked": "ブロック中",
+      "followRequests": "フォローリクエスト",
+      "approve": "承認",
+      "reject": "拒否",
+      "searchUsers": "ユーザーを検索",
+      "noUsersFound": "ユーザーが見つかりません",
+      "stats": {
+        "followers": "{count} フォロワー",
+        "following": "{count} フォロー中",
+        "mutualFollows": "{count} 相互フォロー"
+      },
+      "settings": {
+        "privacy": "プライバシー設定",
+        "followApproval": "フォロー承認制",
+        "followApprovalDescription": "他のユーザーがあなたをフォローする際に承認が必要になります",
+        "messagePermissions": "メッセージ許可設定",
+        "allowFromFollowers": "フォロワーからのメッセージを許可",
+        "allowFromFollowing": "フォロー中のユーザーからのメッセージを許可",
+        "allowFromStrangers": "未フォローユーザーからのメッセージを許可",
+        "readStatus": "既読表示設定",
+        "showReadStatus": "メッセージの既読状態を表示",
+        "showOnlineStatus": "オンライン状態を表示",
+        "notifications": "通知設定",
+        "notifyNewFollower": "新しいフォロワーの通知",
+        "notifyFollowRequest": "フォローリクエストの通知",
+        "profileVisibility": "プロフィール表示設定",
+        "public": "公開",
+        "followersOnly": "フォロワーのみ",
+        "private": "非公開"
+      }
+    }
+  },
   "adminLottery": {
     "title": "管理抽選撮影会",
     "organizer": "主催者",

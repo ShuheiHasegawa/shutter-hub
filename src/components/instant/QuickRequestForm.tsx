@@ -430,12 +430,8 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
                       }
                     >
                       <div className="text-lg mb-1">{type.icon}</div>
-                      <div className="text-sm font-medium text-gray-900">
-                        {type.label}
-                      </div>
-                      <div className="text-xs text-gray-700 font-medium">
-                        {type.price}
-                      </div>
+                      <div className="text-sm font-medium">{type.label}</div>
+                      <div className="text-xs font-medium">{type.price}</div>
                     </button>
                   ))}
                 </div>
@@ -465,9 +461,7 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <span className="text-lg">{option.icon}</span>
-                            <span className="font-medium text-gray-900">
-                              {option.label}
-                            </span>
+                            <span className="font-medium">{option.label}</span>
                           </div>
                           <Badge
                             variant={

@@ -869,5 +869,50 @@
         "helpful": "Most Helpful"
       }
     }
+  },
+  "social": {
+    "follow": {
+      "follow": "Follow",
+      "unfollow": "Unfollow",
+      "pending": "Pending",
+      "mutualFollow": "Mutual Follow",
+      "processing": "Processing...",
+      "error": "An error occurred",
+      "followers": "Followers",
+      "following": "Following",
+      "mutualFollows": "Mutual Follows",
+      "block": "Block",
+      "unblock": "Unblock",
+      "blocked": "Blocked",
+      "followRequests": "Follow Requests",
+      "approve": "Approve",
+      "reject": "Reject",
+      "searchUsers": "Search Users",
+      "noUsersFound": "No users found",
+      "stats": {
+        "followers": "{count} Followers",
+        "following": "{count} Following",
+        "mutualFollows": "{count} Mutual Follows"
+      },
+      "settings": {
+        "privacy": "Privacy Settings",
+        "followApproval": "Require Follow Approval",
+        "followApprovalDescription": "Other users will need your approval to follow you",
+        "messagePermissions": "Message Permissions",
+        "allowFromFollowers": "Allow messages from followers",
+        "allowFromFollowing": "Allow messages from following",
+        "allowFromStrangers": "Allow messages from non-followers",
+        "readStatus": "Read Status Settings",
+        "showReadStatus": "Show message read status",
+        "showOnlineStatus": "Show online status",
+        "notifications": "Notification Settings",
+        "notifyNewFollower": "Notify new followers",
+        "notifyFollowRequest": "Notify follow requests",
+        "profileVisibility": "Profile Visibility",
+        "public": "Public",
+        "followersOnly": "Followers Only",
+        "private": "Private"
+      }
+    }
   }
 }

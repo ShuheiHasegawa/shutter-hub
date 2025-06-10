@@ -68,7 +68,7 @@ function StarRating({
             />
           </button>
         ))}
-        <span className="ml-2 text-sm text-gray-600">
+        <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
           {value > 0 ? `${value}/5` : '評価してください'}
         </span>
       </div>
@@ -196,7 +196,7 @@ export function DeliveryConfirmationForm({
           <CheckCircle className="h-5 w-5 text-green-600" />
           写真受取確認 & レビュー
         </CardTitle>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-gray-600 dark:text-gray-400">
           写真を確認して、カメラマンとサービスの評価をお願いします。
         </p>
       </CardHeader>
@@ -224,17 +224,21 @@ export function DeliveryConfirmationForm({
             <h4 className="font-medium text-gray-900">配信された写真</h4>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <span className="text-gray-600">写真枚数:</span>
+                <span className="text-gray-600 dark:text-gray-400">
+                  写真枚数:
+                </span>
                 <span className="ml-2 font-medium">
                   {delivery.photo_count}枚
                 </span>
               </div>
               <div>
-                <span className="text-gray-600">画質:</span>
+                <span className="text-gray-600 dark:text-gray-400">画質:</span>
                 <span className="ml-2 font-medium">{delivery.resolution}</span>
               </div>
               <div>
-                <span className="text-gray-600">配信方法:</span>
+                <span className="text-gray-600 dark:text-gray-400">
+                  配信方法:
+                </span>
                 <span className="ml-2 font-medium">
                   {delivery.delivery_method === 'external_url'
                     ? '外部URL'
@@ -242,7 +246,9 @@ export function DeliveryConfirmationForm({
                 </span>
               </div>
               <div>
-                <span className="text-gray-600">配信日時:</span>
+                <span className="text-gray-600 dark:text-gray-400">
+                  配信日時:
+                </span>
                 <span className="ml-2 font-medium">
                   {new Date(delivery.delivered_at).toLocaleString('ja-JP')}
                 </span>
@@ -518,19 +524,21 @@ export function DeliveryConfirmationForm({
                 <div className="text-2xl font-bold text-blue-600">
                   {formData.photographer_rating || '-'}
                 </div>
-                <div className="text-gray-600">カメラマン</div>
+                <div className="text-gray-600 dark:text-gray-400">
+                  カメラマン
+                </div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-green-600">
                   {formData.photo_quality_rating || '-'}
                 </div>
-                <div className="text-gray-600">写真品質</div>
+                <div className="text-gray-600 dark:text-gray-400">写真品質</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-purple-600">
                   {formData.service_rating || '-'}
                 </div>
-                <div className="text-gray-600">サービス</div>
+                <div className="text-gray-600 dark:text-gray-400">サービス</div>
               </div>
             </div>
             <div className="text-center">

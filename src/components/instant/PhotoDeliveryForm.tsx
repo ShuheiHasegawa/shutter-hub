@@ -276,7 +276,7 @@ export function PhotoDeliveryForm({
           <Upload className="h-5 w-5" />
           写真配信
         </CardTitle>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-gray-600 dark:text-gray-400">
           撮影した写真をゲストに配信してください。配信完了後、エスクロー決済が処理されます。
         </p>
       </CardHeader>

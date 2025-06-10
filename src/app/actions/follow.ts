@@ -1,0 +1,629 @@
+'use server';
+
+import { createClient } from '@/lib/supabase/server';
+import { revalidatePath } from 'next/cache';
+import {
+  UserPreferences,
+  UserFollowStats,
+  FollowActionResult,
+  BlockActionResult,
+  FollowListFilter,
+  UserSearchResult,
+  UserWithFollowInfo,
+  UpdatePrivacySettings,
+  UpdateNotificationSettings,
+  BlockReason,
+} from '@/types/social';
+
+// フォロー・アンフォロー機能
+export async function followUser(
+  targetUserId: string
+): Promise<FollowActionResult> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return { success: false, message: 'ログインが必要です' };
+    }
+
+    if (user.id === targetUserId) {
+      return { success: false, message: '自分をフォローすることはできません' };
+    }
+
+    // ブロック状態をチェック
+    const { data: isBlocked } = await supabase.rpc('is_user_blocked', {
+      user1_id: user.id,
+      user2_id: targetUserId,
+    });
+
+    if (isBlocked) {
+      return { success: false, message: 'この操作は実行できません' };
+    }
+
+    // 対象ユーザーの設定を取得
+    const { data: targetPreferences } = await supabase
+      .from('user_preferences')
+      .select('follow_approval_required')
+      .eq('user_id', targetUserId)
+      .single();
+
+    const requiresApproval =
+      targetPreferences?.follow_approval_required || false;
+    const status = requiresApproval ? 'pending' : 'accepted';
+
+    // フォロー関係を作成または更新
+    const { error: followError } = await supabase.from('follows').upsert(
+      {
+        follower_id: user.id,
+        following_id: targetUserId,
+        status,
+        updated_at: new Date().toISOString(),
+      },
+      {
+        onConflict: 'follower_id,following_id',
+      }
+    );
+
+    if (followError) {
+      console.error('Follow error:', followError);
+      return { success: false, message: 'フォローに失敗しました' };
+    }
+
+    // パス再検証
+    revalidatePath('/profile/[id]', 'page');
+    revalidatePath('/social/followers');
+    revalidatePath('/social/following');
+
+    return {
+      success: true,
+      follow_status: status,
+      requires_approval: requiresApproval,
+      message: requiresApproval
+        ? 'フォローリクエストを送信しました'
+        : 'フォローしました',
+    };
+  } catch (error) {
+    console.error('Follow user error:', error);
+    return { success: false, message: 'フォローに失敗しました' };
+  }
+}
+
+export async function unfollowUser(
+  targetUserId: string
+): Promise<FollowActionResult> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return { success: false, message: 'ログインが必要です' };
+    }
+
+    const { error } = await supabase
+      .from('follows')
+      .delete()
+      .eq('follower_id', user.id)
+      .eq('following_id', targetUserId);
+
+    if (error) {
+      console.error('Unfollow error:', error);
+      return { success: false, message: 'アンフォローに失敗しました' };
+    }
+
+    // パス再検証
+    revalidatePath('/profile/[id]', 'page');
+    revalidatePath('/social/followers');
+    revalidatePath('/social/following');
+
+    return { success: true, message: 'アンフォローしました' };
+  } catch (error) {
+    console.error('Unfollow user error:', error);
+    return { success: false, message: 'アンフォローに失敗しました' };
+  }
+}
+
+// フォローリクエスト承認・拒否
+export async function approveFollowRequest(
+  followerId: string
+): Promise<FollowActionResult> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return { success: false, message: 'ログインが必要です' };
+    }
+
+    const { error } = await supabase
+      .from('follows')
+      .update({ status: 'accepted', updated_at: new Date().toISOString() })
+      .eq('follower_id', followerId)
+      .eq('following_id', user.id)
+      .eq('status', 'pending');
+
+    if (error) {
+      console.error('Approve follow request error:', error);
+      return { success: false, message: 'リクエストの承認に失敗しました' };
+    }
+
+    revalidatePath('/social/follow-requests');
+    revalidatePath('/social/followers');
+
+    return { success: true, message: 'フォローリクエストを承認しました' };
+  } catch (error) {
+    console.error('Approve follow request error:', error);
+    return { success: false, message: 'リクエストの承認に失敗しました' };
+  }
+}
+
+export async function rejectFollowRequest(
+  followerId: string
+): Promise<FollowActionResult> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return { success: false, message: 'ログインが必要です' };
+    }
+
+    const { error } = await supabase
+      .from('follows')
+      .delete()
+      .eq('follower_id', followerId)
+      .eq('following_id', user.id)
+      .eq('status', 'pending');
+
+    if (error) {
+      console.error('Reject follow request error:', error);
+      return { success: false, message: 'リクエストの拒否に失敗しました' };
+    }
+
+    revalidatePath('/social/follow-requests');
+
+    return { success: true, message: 'フォローリクエストを拒否しました' };
+  } catch (error) {
+    console.error('Reject follow request error:', error);
+    return { success: false, message: 'リクエストの拒否に失敗しました' };
+  }
+}
+
+// ブロック・アンブロック機能
+export async function blockUser(
+  targetUserId: string,
+  reason?: BlockReason,
+  description?: string
+): Promise<BlockActionResult> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return { success: false, message: 'ログインが必要です' };
+    }
+
+    if (user.id === targetUserId) {
+      return { success: false, message: '自分をブロックすることはできません' };
+    }
+
+    // フォロー関係を削除
+    await supabase
+      .from('follows')
+      .delete()
+      .or(
+        `and(follower_id.eq.${user.id},following_id.eq.${targetUserId}),and(follower_id.eq.${targetUserId},following_id.eq.${user.id})`
+      );
+
+    // ブロック関係を作成
+    const { error: blockError } = await supabase.from('user_blocks').upsert(
+      {
+        blocker_id: user.id,
+        blocked_id: targetUserId,
+        reason,
+        description,
+      },
+      {
+        onConflict: 'blocker_id,blocked_id',
+      }
+    );
+
+    if (blockError) {
+      console.error('Block user error:', blockError);
+      return { success: false, message: 'ブロックに失敗しました' };
+    }
+
+    revalidatePath('/profile/[id]', 'page');
+    revalidatePath('/social/blocked-users');
+
+    return {
+      success: true,
+      is_blocked: true,
+      message: 'ユーザーをブロックしました',
+    };
+  } catch (error) {
+    console.error('Block user error:', error);
+    return { success: false, message: 'ブロックに失敗しました' };
+  }
+}
+
+export async function unblockUser(
+  targetUserId: string
+): Promise<BlockActionResult> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return { success: false, message: 'ログインが必要です' };
+    }
+
+    const { error } = await supabase
+      .from('user_blocks')
+      .delete()
+      .eq('blocker_id', user.id)
+      .eq('blocked_id', targetUserId);
+
+    if (error) {
+      console.error('Unblock user error:', error);
+      return { success: false, message: 'ブロック解除に失敗しました' };
+    }
+
+    revalidatePath('/profile/[id]', 'page');
+    revalidatePath('/social/blocked-users');
+
+    return {
+      success: true,
+      is_blocked: false,
+      message: 'ブロックを解除しました',
+    };
+  } catch (error) {
+    console.error('Unblock user error:', error);
+    return { success: false, message: 'ブロック解除に失敗しました' };
+  }
+}
+
+// フォローリスト取得
+export async function getFollowList(
+  filter: FollowListFilter
+): Promise<UserSearchResult> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      throw new Error('認証が必要です');
+    }
+
+    const limit = filter.limit || 20;
+    const offset = filter.offset || 0;
+
+    let query = supabase.from('user_follow_relationships').select(`
+      *,
+      follow_stats:user_follow_stats(*)
+    `);
+
+    // フィルタリング条件
+    if (filter.type === 'followers') {
+      query = query.eq('following_id', filter.user_id);
+    } else if (filter.type === 'following') {
+      query = query.eq('follower_id', filter.user_id);
+    } else if (filter.type === 'mutual') {
+      query = query.eq('follower_id', filter.user_id).eq('is_mutual', true);
+    }
+
+    if (filter.status) {
+      query = query.eq('status', filter.status);
+    } else {
+      query = query.eq('status', 'accepted');
+    }
+
+    if (filter.search) {
+      const searchTerm = `%${filter.search}%`;
+      if (filter.type === 'followers') {
+        query = query.ilike('follower_name', searchTerm);
+      } else {
+        query = query.ilike('following_name', searchTerm);
+      }
+    }
+
+    const { data, error, count } = await query
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    if (error) {
+      console.error('Get follow list error:', error);
+      return { users: [], total_count: 0, has_more: false };
+    }
+
+    const users: UserWithFollowInfo[] = (data || []).map(item => {
+      const isFollowerView = filter.type === 'followers';
+      return {
+        id: isFollowerView ? item.follower_id : item.following_id,
+        display_name: isFollowerView ? item.follower_name : item.following_name,
+        avatar_url: isFollowerView
+          ? item.follower_avatar
+          : item.following_avatar,
+        user_type: isFollowerView ? item.follower_type : item.following_type,
+        bio: null,
+        location: null,
+        website: null,
+        instagram_handle: null,
+        twitter_handle: null,
+        is_verified: false,
+        created_at: item.created_at,
+        is_mutual_follow: item.is_mutual,
+        follow_stats: item.follow_stats,
+      };
+    });
+
+    return {
+      users,
+      total_count: count || 0,
+      has_more: (count || 0) > offset + limit,
+    };
+  } catch (error) {
+    console.error('Get follow list error:', error);
+    return { users: [], total_count: 0, has_more: false };
+  }
+}
+
+// フォロー統計取得
+export async function getUserFollowStats(
+  userId: string
+): Promise<UserFollowStats | null> {
+  try {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase
+      .from('user_follow_stats')
+      .select('*')
+      .eq('user_id', userId)
+      .single();
+
+    if (error && error.code !== 'PGRST116') {
+      console.error('Get follow stats error:', error);
+      return null;
+    }
+
+    return (
+      data || {
+        user_id: userId,
+        followers_count: 0,
+        following_count: 0,
+        mutual_follows_count: 0,
+        updated_at: new Date().toISOString(),
+      }
+    );
+  } catch (error) {
+    console.error('Get follow stats error:', error);
+    return null;
+  }
+}
+
+// ユーザー設定取得・更新
+export async function getUserPreferences(
+  userId?: string
+): Promise<UserPreferences | null> {
+  try {
+    const supabase = await createClient();
+    let targetUserId = userId;
+
+    if (!targetUserId) {
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+      if (userError || !user) return null;
+      targetUserId = user.id;
+    }
+
+    const { data, error } = await supabase
+      .from('user_preferences')
+      .select('*')
+      .eq('user_id', targetUserId)
+      .single();
+
+    if (error && error.code !== 'PGRST116') {
+      console.error('Get user preferences error:', error);
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Get user preferences error:', error);
+    return null;
+  }
+}
+
+export async function updatePrivacySettings(
+  settings: UpdatePrivacySettings
+): Promise<{ success: boolean; message?: string }> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return { success: false, message: 'ログインが必要です' };
+    }
+
+    const { error } = await supabase.from('user_preferences').upsert(
+      {
+        user_id: user.id,
+        ...settings,
+        updated_at: new Date().toISOString(),
+      },
+      {
+        onConflict: 'user_id',
+      }
+    );
+
+    if (error) {
+      console.error('Update privacy settings error:', error);
+      return { success: false, message: '設定の更新に失敗しました' };
+    }
+
+    revalidatePath('/settings/privacy');
+    return { success: true, message: 'プライバシー設定を更新しました' };
+  } catch (error) {
+    console.error('Update privacy settings error:', error);
+    return { success: false, message: '設定の更新に失敗しました' };
+  }
+}
+
+export async function updateNotificationSettings(
+  settings: UpdateNotificationSettings
+): Promise<{ success: boolean; message?: string }> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return { success: false, message: 'ログインが必要です' };
+    }
+
+    const { error } = await supabase.from('user_preferences').upsert(
+      {
+        user_id: user.id,
+        ...settings,
+        updated_at: new Date().toISOString(),
+      },
+      {
+        onConflict: 'user_id',
+      }
+    );
+
+    if (error) {
+      console.error('Update notification settings error:', error);
+      return { success: false, message: '設定の更新に失敗しました' };
+    }
+
+    revalidatePath('/settings/notifications');
+    return { success: true, message: '通知設定を更新しました' };
+  } catch (error) {
+    console.error('Update notification settings error:', error);
+    return { success: false, message: '設定の更新に失敗しました' };
+  }
+}
+
+// ユーザー検索
+export async function searchUsers(
+  query: string,
+  limit = 20,
+  offset = 0
+): Promise<UserSearchResult> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return { users: [], total_count: 0, has_more: false };
+    }
+
+    const searchTerm = `%${query}%`;
+
+    const { data, error, count } = await supabase
+      .from('profiles')
+      .select(
+        `
+        *,
+        follow_stats:user_follow_stats(*)
+      `
+      )
+      .or(`display_name.ilike.${searchTerm},bio.ilike.${searchTerm}`)
+      .neq('id', user.id) // 自分を除外
+      .range(offset, offset + limit - 1);
+
+    if (error) {
+      console.error('Search users error:', error);
+      return { users: [], total_count: 0, has_more: false };
+    }
+
+    // フォロー関係を並列で取得
+    const userIds = (data || []).map(profile => profile.id);
+    const [followingData, followersData, blockedData] = await Promise.all([
+      supabase
+        .from('follows')
+        .select('following_id')
+        .eq('follower_id', user.id)
+        .in('following_id', userIds),
+      supabase
+        .from('follows')
+        .select('follower_id')
+        .eq('following_id', user.id)
+        .in('follower_id', userIds),
+      supabase
+        .from('user_blocks')
+        .select('blocked_id')
+        .eq('blocker_id', user.id)
+        .in('blocked_id', userIds),
+    ]);
+
+    const followingIds = new Set(
+      followingData.data?.map(f => f.following_id) || []
+    );
+    const followerIds = new Set(
+      followersData.data?.map(f => f.follower_id) || []
+    );
+    const blockedIds = new Set(blockedData.data?.map(b => b.blocked_id) || []);
+
+    const users: UserWithFollowInfo[] = (data || []).map(profile => ({
+      id: profile.id,
+      display_name: profile.display_name,
+      avatar_url: profile.avatar_url,
+      bio: profile.bio,
+      user_type: profile.user_type,
+      location: profile.location,
+      website: profile.website,
+      instagram_handle: profile.instagram_handle,
+      twitter_handle: profile.twitter_handle,
+      is_verified: profile.is_verified,
+      created_at: profile.created_at,
+      follow_stats: profile.follow_stats,
+      is_following: followingIds.has(profile.id),
+      is_followed_by: followerIds.has(profile.id),
+      is_mutual_follow:
+        followingIds.has(profile.id) && followerIds.has(profile.id),
+      is_blocked: blockedIds.has(profile.id),
+    }));
+
+    return {
+      users,
+      total_count: count || 0,
+      has_more: (count || 0) > offset + limit,
+    };
+  } catch (error) {
+    console.error('Search users error:', error);
+    return { users: [], total_count: 0, has_more: false };
+  }
+}

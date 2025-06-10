@@ -32,6 +32,7 @@ export function PhotoSessionCard({
 }: PhotoSessionCardProps) {
   const t = useTranslations('photoSessions');
   const tBooking = useTranslations('booking');
+  const tWaitlist = useTranslations('waitlist');
   const locale = useLocale();
 
   const startDate = new Date(session.start_time);
@@ -222,7 +223,7 @@ export function PhotoSessionCard({
                       onClick={() => onViewDetails(session.id)}
                       className="flex-1 h-11 border-yellow-400 text-yellow-700 hover:bg-yellow-50"
                     >
-                      {t('waitlist.button.join_waitlist')}
+                      {tWaitlist('button.join_waitlist')}
                     </Button>
                   )}
 
@@ -409,7 +410,7 @@ export function PhotoSessionCard({
                       onClick={() => onViewDetails(session.id)}
                       className="border-yellow-400 text-yellow-700 hover:bg-yellow-50"
                     >
-                      {t('waitlist.button.join_waitlist')}
+                      {tWaitlist('button.join_waitlist')}
                     </Button>
                   )}
                 </>
@@ -531,7 +532,7 @@ export function PhotoSessionCard({
                     onClick={() => onViewDetails(session.id)}
                     className="flex-1"
                   >
-                    {t('waitlist.button.join_waitlist')}
+                    {tWaitlist('button.join_waitlist')}
                   </Button>
                 )}
               </>
