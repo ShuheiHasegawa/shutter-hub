@@ -169,3 +169,129 @@ export interface UpdateNotificationSettings {
   notify_group_message?: boolean;
   notify_system_message?: boolean;
 }
+
+// メッセージシステム関連型定義
+
+export type MessageType = 'text' | 'image' | 'file' | 'system';
+
+export type ConversationRole = 'admin' | 'moderator' | 'member';
+
+// 会話
+export interface Conversation {
+  id: string;
+  participant1_id: string;
+  participant2_id?: string;
+  is_group: boolean;
+  group_name?: string;
+  group_description?: string;
+  group_image_url?: string;
+  created_by?: string;
+  last_message_id?: string;
+  last_message_at: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// メッセージ
+export interface Message {
+  id: string;
+  conversation_id: string;
+  sender_id: string;
+  content: string;
+  message_type: MessageType;
+  file_url?: string;
+  file_name?: string;
+  file_size?: number;
+  file_type?: string;
+  reply_to_id?: string;
+  is_edited: boolean;
+  edited_at?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// メッセージ既読状態
+export interface MessageReadStatus {
+  id: string;
+  message_id: string;
+  user_id: string;
+  read_at: string;
+}
+
+// 会話メンバー
+export interface ConversationMember {
+  id: string;
+  conversation_id: string;
+  user_id: string;
+  role: ConversationRole;
+  joined_at: string;
+  left_at?: string;
+  is_active: boolean;
+}
+
+// 会話統計
+export interface ConversationStats {
+  conversation_id: string;
+  participant1_id: string;
+  participant2_id?: string;
+  is_group: boolean;
+  group_name?: string;
+  last_message_at: string;
+  total_messages: number;
+  unread_count: number;
+  last_message_content?: string;
+  last_message_type?: MessageType;
+  last_message_sender_id?: string;
+}
+
+// ユーザー情報付きの会話
+export interface ConversationWithUsers extends Conversation {
+  participant1?: UserWithFollowInfo;
+  participant2?: UserWithFollowInfo;
+  members?: (ConversationMember & { user: UserWithFollowInfo })[];
+  last_message?: Message;
+  unread_count?: number;
+  is_online?: boolean;
+}
+
+// ユーザー情報付きのメッセージ
+export interface MessageWithUser extends Message {
+  sender: UserWithFollowInfo;
+  reply_to?: MessageWithUser;
+  read_by?: MessageReadStatus[];
+  is_read_by_current_user?: boolean;
+}
+
+// メッセージ送信リクエスト
+export interface SendMessageRequest {
+  conversation_id?: string;
+  recipient_id?: string;
+  content: string;
+  message_type?: MessageType;
+  file?: File;
+  reply_to_id?: string;
+}
+
+// メッセージアクション結果
+export interface MessageActionResult {
+  success: boolean;
+  message?: string;
+  data?: Message | Conversation;
+  error?: string;
+}
+
+// 会話フィルター
+export interface ConversationFilter {
+  type?: 'all' | 'direct' | 'group';
+  unread_only?: boolean;
+  search_query?: string;
+}
+
+// リアルタイムメッセージイベント
+export interface RealtimeMessageEvent {
+  event_type: 'new_message' | 'message_read' | 'typing_start' | 'typing_stop';
+  conversation_id: string;
+  user_id: string;
+  message?: Message;
+  typing_users?: string[];
+}

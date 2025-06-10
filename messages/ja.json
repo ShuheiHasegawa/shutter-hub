@@ -517,6 +517,32 @@
         "followersOnly": "フォロワーのみ",
         "private": "非公開"
       }
+    },
+    "messaging": {
+      "title": "メッセージ",
+      "searchPlaceholder": "メッセージを検索...",
+      "loading": "読み込み中...",
+      "noConversations": "メッセージがありません",
+      "noSearchResults": "検索結果が見つかりません",
+      "startNewConversation": "新しい会話を開始",
+      "tabs": {
+        "all": "すべて",
+        "followers": "フォロワー",
+        "following": "フォロー中"
+      },
+      "unknownUser": "不明なユーザー",
+      "noMessages": "メッセージがありません",
+      "lastSeen": "最終接続時刻",
+      "yesterday": "昨日",
+      "edited": "編集済み",
+      "typeMessage": "メッセージを入力...",
+      "loadingMessages": "メッセージを読み込み中...",
+      "startConversation": "最初のメッセージを送信しましょう",
+      "viewProfile": "プロフィールを表示",
+      "clearHistory": "履歴を削除",
+      "blockUser": "ユーザーをブロック",
+      "errorLoadingMessages": "メッセージの読み込みに失敗しました",
+      "errorSendingMessage": "メッセージの送信に失敗しました"
     }
   },
   "adminLottery": {

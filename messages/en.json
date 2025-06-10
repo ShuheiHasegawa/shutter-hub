@@ -913,6 +913,32 @@
         "followersOnly": "Followers Only",
         "private": "Private"
       }
+    },
+    "messaging": {
+      "title": "Messages",
+      "searchPlaceholder": "Search messages...",
+      "loading": "Loading...",
+      "noConversations": "No conversations",
+      "noSearchResults": "No search results found",
+      "startNewConversation": "Start new conversation",
+      "tabs": {
+        "all": "All",
+        "followers": "Followers",
+        "following": "Following"
+      },
+      "unknownUser": "Unknown user",
+      "noMessages": "No messages",
+      "lastSeen": "Last seen",
+      "yesterday": "Yesterday",
+      "edited": "Edited",
+      "typeMessage": "Type a message...",
+      "loadingMessages": "Loading messages...",
+      "startConversation": "Send your first message",
+      "viewProfile": "View profile",
+      "clearHistory": "Clear history",
+      "blockUser": "Block user",
+      "errorLoadingMessages": "Failed to load messages",
+      "errorSendingMessage": "Failed to send message"
     }
   }
 }
