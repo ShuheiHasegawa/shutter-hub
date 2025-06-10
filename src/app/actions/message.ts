@@ -437,6 +437,369 @@ export async function deleteMessage(
   }
 }
 
+// グループ会話作成
+export async function createGroupConversation(
+  name: string,
+  description?: string,
+  memberIds: string[] = [],
+  imageUrl?: string
+): Promise<MessageActionResult> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return { success: false, message: 'ログインが必要です' };
+    }
+
+    if (!name.trim()) {
+      return { success: false, message: 'グループ名を入力してください' };
+    }
+
+    if (memberIds.length === 0) {
+      return { success: false, message: 'メンバーを選択してください' };
+    }
+
+    // 重複を除去し、作成者を含める
+    const uniqueMemberIds = Array.from(new Set([user.id, ...memberIds]));
+
+    // グループ会話を作成
+    const { data: conversation, error: conversationError } = await supabase
+      .from('conversations')
+      .insert({
+        is_group: true,
+        group_name: name.trim(),
+        group_description: description?.trim(),
+        group_image_url: imageUrl,
+        created_by: user.id,
+      })
+      .select()
+      .single();
+
+    if (conversationError) {
+      console.error('Group conversation creation error:', conversationError);
+      return { success: false, message: 'グループの作成に失敗しました' };
+    }
+
+    // メンバーを追加
+    const memberInserts = uniqueMemberIds.map(memberId => ({
+      conversation_id: conversation.id,
+      user_id: memberId,
+      role: memberId === user.id ? 'admin' : 'member',
+    }));
+
+    const { error: membersError } = await supabase
+      .from('conversation_members')
+      .insert(memberInserts);
+
+    if (membersError) {
+      console.error('Group members creation error:', membersError);
+      // グループを削除して巻き戻し
+      await supabase.from('conversations').delete().eq('id', conversation.id);
+      return { success: false, message: 'メンバーの追加に失敗しました' };
+    }
+
+    // システムメッセージを送信
+    await sendMessage({
+      conversation_id: conversation.id,
+      content: 'グループが作成されました',
+      message_type: 'system',
+    });
+
+    revalidatePath('/messages');
+    return {
+      success: true,
+      message: 'グループが作成されました',
+      data: conversation,
+    };
+  } catch (error) {
+    console.error('Create group conversation error:', error);
+    return { success: false, message: 'グループの作成に失敗しました' };
+  }
+}
+
+// グループメンバー追加
+export async function addGroupMembers(
+  conversationId: string,
+  memberIds: string[]
+): Promise<MessageActionResult> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return { success: false, message: 'ログインが必要です' };
+    }
+
+    // グループの管理権限をチェック
+    const { data: member } = await supabase
+      .from('conversation_members')
+      .select('role')
+      .eq('conversation_id', conversationId)
+      .eq('user_id', user.id)
+      .eq('is_active', true)
+      .single();
+
+    if (!member || !['admin', 'moderator'].includes(member.role)) {
+      return { success: false, message: '権限がありません' };
+    }
+
+    // 既存メンバーを除外
+    const { data: existingMembers } = await supabase
+      .from('conversation_members')
+      .select('user_id')
+      .eq('conversation_id', conversationId)
+      .eq('is_active', true);
+
+    const existingMemberIds = existingMembers?.map(m => m.user_id) || [];
+    const newMemberIds = memberIds.filter(
+      id => !existingMemberIds.includes(id)
+    );
+
+    if (newMemberIds.length === 0) {
+      return {
+        success: false,
+        message: '追加できる新しいメンバーがありません',
+      };
+    }
+
+    // 新メンバーを追加
+    const memberInserts = newMemberIds.map(memberId => ({
+      conversation_id: conversationId,
+      user_id: memberId,
+      role: 'member',
+    }));
+
+    const { error: insertError } = await supabase
+      .from('conversation_members')
+      .insert(memberInserts);
+
+    if (insertError) {
+      console.error('Add group members error:', insertError);
+      return { success: false, message: 'メンバーの追加に失敗しました' };
+    }
+
+    // システムメッセージを送信
+    await sendMessage({
+      conversation_id: conversationId,
+      content: `${newMemberIds.length}人のメンバーが追加されました`,
+      message_type: 'system',
+    });
+
+    revalidatePath('/messages');
+    return {
+      success: true,
+      message: `${newMemberIds.length}人のメンバーを追加しました`,
+    };
+  } catch (error) {
+    console.error('Add group members error:', error);
+    return { success: false, message: 'メンバーの追加に失敗しました' };
+  }
+}
+
+// グループメンバー削除/退出
+export async function removeGroupMember(
+  conversationId: string,
+  memberId: string,
+  isLeaving: boolean = false
+): Promise<MessageActionResult> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return { success: false, message: 'ログインが必要です' };
+    }
+
+    // 自分の退出の場合は権限チェック不要
+    if (!isLeaving || memberId !== user.id) {
+      // 管理権限をチェック
+      const { data: member } = await supabase
+        .from('conversation_members')
+        .select('role')
+        .eq('conversation_id', conversationId)
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .single();
+
+      if (!member || !['admin', 'moderator'].includes(member.role)) {
+        return { success: false, message: '権限がありません' };
+      }
+    }
+
+    // メンバーを非アクティブに設定
+    const { error: updateError } = await supabase
+      .from('conversation_members')
+      .update({
+        is_active: false,
+        left_at: new Date().toISOString(),
+      })
+      .eq('conversation_id', conversationId)
+      .eq('user_id', memberId);
+
+    if (updateError) {
+      console.error('Remove group member error:', updateError);
+      return { success: false, message: 'メンバーの削除に失敗しました' };
+    }
+
+    // システムメッセージを送信
+    const action = isLeaving && memberId === user.id ? '退出' : '削除';
+    await sendMessage({
+      conversation_id: conversationId,
+      content: `メンバーがグループから${action}しました`,
+      message_type: 'system',
+    });
+
+    revalidatePath('/messages');
+    return {
+      success: true,
+      message: isLeaving
+        ? 'グループから退出しました'
+        : 'メンバーを削除しました',
+    };
+  } catch (error) {
+    console.error('Remove group member error:', error);
+    return { success: false, message: 'メンバーの削除に失敗しました' };
+  }
+}
+
+// グループ設定更新
+export async function updateGroupSettings(
+  conversationId: string,
+  updates: {
+    name?: string;
+    description?: string;
+    imageUrl?: string;
+  }
+): Promise<MessageActionResult> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return { success: false, message: 'ログインが必要です' };
+    }
+
+    // 管理権限をチェック
+    const { data: member } = await supabase
+      .from('conversation_members')
+      .select('role')
+      .eq('conversation_id', conversationId)
+      .eq('user_id', user.id)
+      .eq('is_active', true)
+      .single();
+
+    if (!member || !['admin', 'moderator'].includes(member.role)) {
+      return { success: false, message: '権限がありません' };
+    }
+
+    const updateData: Record<string, unknown> = {};
+    if (updates.name !== undefined) updateData.group_name = updates.name.trim();
+    if (updates.description !== undefined)
+      updateData.group_description = updates.description?.trim();
+    if (updates.imageUrl !== undefined)
+      updateData.group_image_url = updates.imageUrl;
+
+    if (Object.keys(updateData).length === 0) {
+      return { success: false, message: '更新する内容がありません' };
+    }
+
+    const { error: updateError } = await supabase
+      .from('conversations')
+      .update(updateData)
+      .eq('id', conversationId);
+
+    if (updateError) {
+      console.error('Update group settings error:', updateError);
+      return { success: false, message: 'グループ設定の更新に失敗しました' };
+    }
+
+    // システムメッセージを送信
+    const changes = [];
+    if (updates.name) changes.push('名前');
+    if (updates.description) changes.push('説明');
+    if (updates.imageUrl) changes.push('画像');
+
+    await sendMessage({
+      conversation_id: conversationId,
+      content: `グループの${changes.join('・')}が更新されました`,
+      message_type: 'system',
+    });
+
+    revalidatePath('/messages');
+    return {
+      success: true,
+      message: 'グループ設定を更新しました',
+    };
+  } catch (error) {
+    console.error('Update group settings error:', error);
+    return { success: false, message: 'グループ設定の更新に失敗しました' };
+  }
+}
+
+// グループメンバー一覧取得
+export async function getGroupMembers(conversationId: string) {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return [];
+    }
+
+    // アクセス権限をチェック
+    const { data: member } = await supabase
+      .from('conversation_members')
+      .select('role')
+      .eq('conversation_id', conversationId)
+      .eq('user_id', user.id)
+      .eq('is_active', true)
+      .single();
+
+    if (!member) {
+      return [];
+    }
+
+    // メンバー一覧を取得
+    const { data: members, error: membersError } = await supabase
+      .from('conversation_members')
+      .select(
+        `
+        *,
+        user:user_id(id, display_name, avatar_url, user_type)
+      `
+      )
+      .eq('conversation_id', conversationId)
+      .eq('is_active', true)
+      .order('joined_at', { ascending: true });
+
+    if (membersError) {
+      console.error('Get group members error:', membersError);
+      return [];
+    }
+
+    return members || [];
+  } catch (error) {
+    console.error('Get group members error:', error);
+    return [];
+  }
+}
+
 // 総未読メッセージ数取得
 export async function getTotalUnreadCount(): Promise<number> {
   try {
