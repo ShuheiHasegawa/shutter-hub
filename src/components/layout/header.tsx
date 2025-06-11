@@ -1,6 +1,6 @@
 'use client';
 
-import { Camera, Menu, User, LogOut } from 'lucide-react';
+import { Camera, Menu, User, LogOut, MessageCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
@@ -117,6 +117,13 @@ export function Header() {
         <div className="flex flex-1 items-center justify-end space-x-4">
           <nav className="flex items-center space-x-2">
             {user && <NotificationCenter />}
+            {user && (
+              <Link href="/messages">
+                <Button variant="ghost" size="sm">
+                  <MessageCircle className="h-4 w-4" />
+                </Button>
+              </Link>
+            )}
             <LanguageToggle />
             <ThemeToggle />
 
