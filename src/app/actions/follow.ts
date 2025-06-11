@@ -15,6 +15,182 @@ import {
   BlockReason,
 } from '@/types/social';
 
+// フォロー中のユーザー一覧を取得
+export async function getFollowingUsers(
+  userId: string
+): Promise<{
+  success: boolean;
+  data?: UserWithFollowInfo[];
+  message?: string;
+}> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return { success: false, message: 'ログインが必要です' };
+    }
+
+    // まずフォロー中のユーザーIDを取得
+    const { data: followData, error: followError } = await supabase
+      .from('follows')
+      .select('following_id')
+      .eq('follower_id', userId)
+      .eq('status', 'accepted');
+
+    if (followError) {
+      console.error('Get following IDs error:', followError);
+      return {
+        success: false,
+        message: 'フォロー中のユーザー取得に失敗しました',
+      };
+    }
+
+    const followingIds = followData?.map(f => f.following_id) || [];
+
+    if (followingIds.length === 0) {
+      return { success: true, data: [] };
+    }
+
+    // ユーザーの詳細情報を取得
+    const { data: profiles, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .in('id', followingIds);
+
+    if (profileError) {
+      console.error('Get profiles error:', profileError);
+      return { success: false, message: 'プロフィール取得に失敗しました' };
+    }
+
+    // 相互フォロー関係を確認
+    const { data: mutualFollows } = await supabase
+      .from('follows')
+      .select('follower_id')
+      .eq('following_id', userId)
+      .eq('status', 'accepted')
+      .in('follower_id', followingIds);
+
+    const mutualFollowIds = new Set(
+      mutualFollows?.map(f => f.follower_id) || []
+    );
+
+    const users: UserWithFollowInfo[] = (profiles || []).map(profile => ({
+      id: profile.id,
+      display_name: profile.display_name,
+      avatar_url: profile.avatar_url,
+      bio: profile.bio,
+      user_type: profile.user_type,
+      location: profile.location,
+      website: profile.website,
+      instagram_handle: profile.instagram_handle,
+      twitter_handle: profile.twitter_handle,
+      is_verified: profile.is_verified,
+      created_at: profile.created_at,
+      is_following: true,
+      is_followed_by: mutualFollowIds.has(profile.id),
+      is_mutual_follow: mutualFollowIds.has(profile.id),
+      follow_status: 'accepted' as const,
+    }));
+
+    return { success: true, data: users };
+  } catch (error) {
+    console.error('Get following users error:', error);
+    return {
+      success: false,
+      message: 'フォロー中のユーザー取得に失敗しました',
+    };
+  }
+}
+
+// フォロワーユーザー一覧を取得
+export async function getFollowerUsers(
+  userId: string
+): Promise<{
+  success: boolean;
+  data?: UserWithFollowInfo[];
+  message?: string;
+}> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return { success: false, message: 'ログインが必要です' };
+    }
+
+    // まずフォロワーのユーザーIDを取得
+    const { data: followData, error: followError } = await supabase
+      .from('follows')
+      .select('follower_id')
+      .eq('following_id', userId)
+      .eq('status', 'accepted');
+
+    if (followError) {
+      console.error('Get follower IDs error:', followError);
+      return { success: false, message: 'フォロワー取得に失敗しました' };
+    }
+
+    const followerIds = followData?.map(f => f.follower_id) || [];
+
+    if (followerIds.length === 0) {
+      return { success: true, data: [] };
+    }
+
+    // ユーザーの詳細情報を取得
+    const { data: profiles, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .in('id', followerIds);
+
+    if (profileError) {
+      console.error('Get profiles error:', profileError);
+      return { success: false, message: 'プロフィール取得に失敗しました' };
+    }
+
+    // 相互フォロー関係を確認
+    const { data: mutualFollows } = await supabase
+      .from('follows')
+      .select('following_id')
+      .eq('follower_id', userId)
+      .eq('status', 'accepted')
+      .in('following_id', followerIds);
+
+    const mutualFollowIds = new Set(
+      mutualFollows?.map(f => f.following_id) || []
+    );
+
+    const users: UserWithFollowInfo[] = (profiles || []).map(profile => ({
+      id: profile.id,
+      display_name: profile.display_name,
+      avatar_url: profile.avatar_url,
+      bio: profile.bio,
+      user_type: profile.user_type,
+      location: profile.location,
+      website: profile.website,
+      instagram_handle: profile.instagram_handle,
+      twitter_handle: profile.twitter_handle,
+      is_verified: profile.is_verified,
+      created_at: profile.created_at,
+      is_following: mutualFollowIds.has(profile.id),
+      is_followed_by: true,
+      is_mutual_follow: mutualFollowIds.has(profile.id),
+      follow_status: 'accepted' as const,
+    }));
+
+    return { success: true, data: users };
+  } catch (error) {
+    console.error('Get follower users error:', error);
+    return { success: false, message: 'フォロワー取得に失敗しました' };
+  }
+}
+
 // フォロー・アンフォロー機能
 export async function followUser(
   targetUserId: string

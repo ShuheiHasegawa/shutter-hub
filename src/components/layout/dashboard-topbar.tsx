@@ -1,9 +1,8 @@
 'use client';
 
-import { Search, User, LogOut } from 'lucide-react';
+import { User, LogOut, MessageCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { LanguageToggle } from '@/components/ui/language-toggle';
 import { NotificationCenter } from '@/components/instant/NotificationCenter';
@@ -30,20 +29,20 @@ export function DashboardTopbar() {
     <header className="sticky top-0 z-30 flex h-12 items-center gap-4 border-b bg-background px-4 sm:static sm:h-12 sm:border-0 sm:bg-transparent sm:px-6">
       <MobileSidebarTrigger />
 
-      <div className="relative ml-auto flex-1 md:grow-0">
-        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-        <Input
-          type="search"
-          placeholder="検索..."
-          className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[320px]"
-        />
-      </div>
-
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 ml-auto">
         <LanguageToggle />
         <ThemeToggle />
 
         <NotificationCenter userType="photographer" enableSound={false} />
+
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => (window.location.href = '/messages')}
+          className="relative"
+        >
+          <MessageCircle className="h-4 w-4" />
+        </Button>
 
         {user && (
           <DropdownMenu>

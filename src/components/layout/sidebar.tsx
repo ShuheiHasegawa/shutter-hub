@@ -20,6 +20,7 @@ import {
   Menu,
   ChevronDown,
   ChevronRight,
+  MessageCircle,
 } from 'lucide-react';
 import {
   Collapsible,
@@ -106,6 +107,11 @@ export function Sidebar({ className }: SidebarProps) {
       title: t('profile'),
       href: '/profile',
       icon: User,
+    },
+    {
+      title: 'メッセージ',
+      href: '/messages',
+      icon: MessageCircle,
     },
     {
       title: '統計',

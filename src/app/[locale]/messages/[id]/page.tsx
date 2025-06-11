@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { ChatWindow } from '@/components/social/ChatWindow';
 import { ConversationList } from '@/components/social/ConversationList';
-import { MainLayout } from '@/components/layout/main-layout';
+import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { getConversations } from '@/app/actions/message';
@@ -50,49 +50,54 @@ export default function ChatPage() {
 
   if (!user) {
     return (
-      <MainLayout>
-        <div className="container mx-auto px-4 py-8 text-center">
+      <DashboardLayout>
+        <div className="text-center">
           <p>ログインが必要です</p>
         </div>
-      </MainLayout>
+      </DashboardLayout>
     );
   }
 
   if (loading) {
     return (
-      <MainLayout>
-        <div className="container mx-auto px-4 py-8 text-center">
+      <DashboardLayout>
+        <div className="text-center">
           <p>読み込み中...</p>
         </div>
-      </MainLayout>
+      </DashboardLayout>
     );
   }
 
   if (!conversation) {
     return (
-      <MainLayout>
-        <div className="container mx-auto px-4 py-8 text-center">
+      <DashboardLayout>
+        <div className="text-center">
           <p>会話が見つかりません</p>
           <Button onClick={handleBack} className="mt-4">
             <ArrowLeft className="h-4 w-4 mr-2" />
             メッセージ一覧に戻る
           </Button>
         </div>
-      </MainLayout>
+      </DashboardLayout>
     );
   }
 
   return (
-    <MainLayout>
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-12rem)] max-h-[800px]">
+    <DashboardLayout>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold">チャット</h1>
+          <p className="text-muted-foreground">メッセージを送受信します</p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-16rem)]">
           {/* デスクトップ用：左側に会話一覧 */}
-          <div className="hidden lg:block border rounded-lg">
+          <div className="hidden lg:block border rounded-lg bg-card">
             <ConversationList showFollowTabs={false} />
           </div>
 
           {/* チャットウィンドウ */}
-          <div className="lg:col-span-2 border rounded-lg">
+          <div className="lg:col-span-2 border rounded-lg bg-card">
             <ChatWindow
               conversation={conversation}
               currentUserId={user.id}
@@ -102,6 +107,6 @@ export default function ChatPage() {
           </div>
         </div>
       </div>
-    </MainLayout>
+    </DashboardLayout>
   );
 }
