@@ -295,3 +295,225 @@ export interface RealtimeMessageEvent {
   message?: Message;
   typing_users?: string[];
 }
+
+// Phase 6: SNS拡張機能の型定義
+
+// 投稿タイプ（sns_post_type ENUMに対応）
+export type PostType = 'text' | 'image' | 'multiple_images' | 'photo_session' | 'repost';
+
+// 投稿の可視性（sns_post_visibility ENUMに対応）
+export type PostVisibility = 'public' | 'followers' | 'mutual_follows' | 'private';
+
+// 投稿（つぶやき・写真投稿）
+export interface Post {
+  id: string;
+  user_id: string;
+  content: string;
+  post_type: PostType;
+  visibility: PostVisibility;
+  
+  // 画像関連
+  image_urls?: string[];
+  image_count?: number;
+  
+  // 撮影会関連投稿の場合
+  photo_session_id?: string;
+  
+  // リポスト関連
+  original_post_id?: string;
+  repost_comment?: string;
+  
+  // 統計
+  likes_count: number;
+  comments_count: number;
+  reposts_count: number;
+  views_count: number;
+  
+  // ハッシュタグ・メンション
+  hashtags?: string[];
+  mentions?: string[];
+  
+  // 位置情報
+  location?: string;
+  
+  is_pinned: boolean;
+  is_edited: boolean;
+  edited_at?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// いいね
+export interface PostLike {
+  id: string;
+  post_id: string;
+  user_id: string;
+  created_at: string;
+}
+
+// コメント
+export interface PostComment {
+  id: string;
+  post_id: string;
+  user_id: string;
+  content: string;
+  parent_comment_id?: string; // 返信機能
+  likes_count: number;
+  replies_count: number;
+  is_edited: boolean;
+  edited_at?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// コメントへのいいね
+export interface CommentLike {
+  id: string;
+  comment_id: string;
+  user_id: string;
+  created_at: string;
+}
+
+// ハッシュタグ
+export interface Hashtag {
+  id: string;
+  name: string; // #を除いた名前
+  usage_count: number;
+  trending_score: number;
+  created_at: string;
+  updated_at: string;
+}
+
+// 投稿とハッシュタグの関連
+export interface PostHashtag {
+  id: string;
+  post_id: string;
+  hashtag_id: string;
+  created_at: string;
+}
+
+// メンション
+export interface PostMention {
+  id: string;
+  post_id: string;
+  mentioned_user_id: string;
+  created_at: string;
+}
+
+// ユーザー情報付きの投稿
+export interface PostWithUser extends Post {
+  user: UserWithFollowInfo;
+  is_liked_by_current_user?: boolean;
+  is_reposted_by_current_user?: boolean;
+  original_post?: PostWithUser; // リポストの場合の元投稿
+  recent_likes?: UserWithFollowInfo[]; // 最近のいいねユーザー（最大3件）
+  photo_session?: {
+    id: string;
+    title: string;
+    date: string;
+    location?: string;
+  };
+}
+
+// コメント（ユーザー情報付き）
+export interface CommentWithUser extends PostComment {
+  user: UserWithFollowInfo;
+  is_liked_by_current_user?: boolean;
+  replies?: CommentWithUser[]; // 返信（最大3件表示）
+}
+
+// タイムライン投稿
+export interface TimelinePost extends PostWithUser {
+  interaction_type?: 'liked' | 'commented' | 'reposted' | 'followed'; // フォローしているユーザーのアクション
+  interaction_user?: UserWithFollowInfo; // アクションを行ったユーザー
+  interaction_timestamp?: string;
+}
+
+// 投稿作成用
+export interface CreatePostData {
+  content: string;
+  post_type: PostType;
+  visibility: PostVisibility;
+  image_files?: File[];
+  photo_session_id?: string;
+  original_post_id?: string; // リポストの場合
+  repost_comment?: string;
+  location?: string;
+  hashtags?: string[];
+  mentions?: string[];
+}
+
+// 投稿更新用
+export interface UpdatePostData {
+  content?: string;
+  visibility?: PostVisibility;
+  location?: string;
+  hashtags?: string[];
+  mentions?: string[];
+}
+
+// 投稿統計
+export interface PostStats {
+  total_posts: number;
+  total_likes: number;
+  total_comments: number;
+  total_reposts: number;
+  average_engagement: number;
+  top_hashtags: { hashtag: string; count: number }[];
+  most_liked_post?: PostWithUser;
+}
+
+// タイムライン設定
+export interface TimelinePreferences {
+  user_id: string;
+  show_reposts: boolean;
+  show_likes_from_following: boolean;
+  show_comments_from_following: boolean;
+  show_suggested_posts: boolean;
+  chronological_order: boolean; // true: 時系列順, false: アルゴリズム順
+  content_filters: string[]; // フィルタリングするハッシュタグ
+  muted_users: string[]; // ミュートするユーザー
+  created_at: string;
+  updated_at: string;
+}
+
+// トレンド情報
+export interface TrendingTopic {
+  hashtag: string;
+  posts_count: number;
+  engagement_score: number;
+  growth_rate: number; // 24時間での増加率
+  category?: 'photography' | 'model' | 'studio' | 'general';
+}
+
+// 投稿検索フィルター
+export interface PostSearchFilters {
+  query?: string;
+  hashtags?: string[];
+  user_ids?: string[];
+  post_type?: PostType;
+  date_from?: string;
+  date_to?: string;
+  has_images?: boolean;
+  visibility?: PostVisibility;
+  sort_by?: 'newest' | 'oldest' | 'most_liked' | 'most_commented';
+}
+
+// フィード設定
+export interface FeedType {
+  type: 'timeline' | 'trending' | 'following_activity' | 'hashtag' | 'user_posts';
+  hashtag?: string; // ハッシュタグフィードの場合
+  user_id?: string; // ユーザーの投稿フィードの場合
+}
+
+// 通知タイプ（投稿関連）
+export interface PostNotification {
+  id: string;
+  user_id: string;
+  type: 'post_like' | 'post_comment' | 'post_repost' | 'comment_like' | 'comment_reply' | 'mention' | 'hashtag_trending';
+  post_id?: string;
+  comment_id?: string;
+  from_user_id: string;
+  is_read: boolean;
+  created_at: string;
+}

@@ -21,6 +21,7 @@ import {
   ChevronDown,
   ChevronRight,
   MessageCircle,
+  Hash,
 } from 'lucide-react';
 import {
   Collapsible,
@@ -112,6 +113,11 @@ export function Sidebar({ className }: SidebarProps) {
       title: 'メッセージ',
       href: '/messages',
       icon: MessageCircle,
+    },
+    {
+      title: 'タイムライン',
+      href: '/timeline',
+      icon: Hash,
     },
     {
       title: '統計',

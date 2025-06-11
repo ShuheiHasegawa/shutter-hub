@@ -1,6 +1,6 @@
 'use client';
 
-import { User, LogOut, MessageCircle } from 'lucide-react';
+import { User, LogOut, MessageCircle, Hash } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
@@ -34,6 +34,15 @@ export function DashboardTopbar() {
         <ThemeToggle />
 
         <NotificationCenter userType="photographer" enableSound={false} />
+
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => (window.location.href = '/timeline')}
+          className="relative"
+        >
+          <Hash className="h-4 w-4" />
+        </Button>
 
         <Button
           variant="ghost"

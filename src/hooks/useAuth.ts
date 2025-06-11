@@ -7,9 +7,12 @@ import { useEffect, useState } from 'react';
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [initialized, setInitialized] = useState(false);
   const supabase = createClient();
 
   useEffect(() => {
+    if (initialized) return;
+
     // 初期セッション取得
     const getInitialSession = async () => {
       const {
@@ -17,6 +20,7 @@ export function useAuth() {
       } = await supabase.auth.getSession();
       setUser(session?.user ?? null);
       setLoading(false);
+      setInitialized(true);
     };
 
     getInitialSession();
@@ -30,7 +34,7 @@ export function useAuth() {
     });
 
     return () => subscription.unsubscribe();
-  }, [supabase.auth]);
+  }, [supabase.auth, initialized]);
 
   const signOut = async () => {
     await supabase.auth.signOut();
