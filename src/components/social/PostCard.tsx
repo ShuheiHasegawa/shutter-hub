@@ -41,13 +41,9 @@ import {
   Verified,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import {
-  likePost,
-  repostPost,
-  commentOnPost,
-  deletePost,
-} from '@/app/actions/posts';
+import { likePost, repostPost, deletePost } from '@/app/actions/posts';
 import { PostWithUser } from '@/types/social';
+import Link from 'next/link';
 
 interface PostCardProps {
   post: PostWithUser;
@@ -95,7 +91,7 @@ export function PostCard({
       } else {
         toast.error(result.message || 'いいねに失敗しました');
       }
-    } catch (error) {
+    } catch {
       toast.error('いいねに失敗しました');
     } finally {
       setIsLiking(false);
@@ -116,7 +112,7 @@ export function PostCard({
       } else {
         toast.error(result.message || 'リポストに失敗しました');
       }
-    } catch (error) {
+    } catch {
       toast.error('リポストに失敗しました');
     } finally {
       setIsReposting(false);
@@ -137,7 +133,7 @@ export function PostCard({
       } else {
         toast.error(result.message || '投稿の削除に失敗しました');
       }
-    } catch (error) {
+    } catch {
       toast.error('投稿の削除に失敗しました');
     } finally {
       setIsDeleting(false);
@@ -152,7 +148,7 @@ export function PostCard({
           text: displayPost.content,
           url: `${window.location.origin}/posts/${displayPost.id}`,
         });
-      } catch (error) {
+      } catch {
         // ユーザーがキャンセルした場合など
       }
     } else {
@@ -162,7 +158,7 @@ export function PostCard({
           `${window.location.origin}/posts/${displayPost.id}`
         );
         toast.success('URLをコピーしました');
-      } catch (error) {
+      } catch {
         toast.error('URLのコピーに失敗しました');
       }
     }
@@ -239,9 +235,11 @@ export function PostCard({
             </Avatar>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <h3 className="font-semibold truncate">
-                  {displayPost.user.display_name || 'Unknown User'}
-                </h3>
+                <Link href={`/profile/${displayPost.user.id}`}>
+                  <h3 className="font-semibold truncate hover:text-primary transition-colors cursor-pointer">
+                    {displayPost.user.display_name || 'Unknown User'}
+                  </h3>
+                </Link>
                 {renderUserBadge(
                   displayPost.user.user_type,
                   displayPost.user.is_verified
@@ -501,7 +499,7 @@ export function PostCard({
         {displayPost.recent_likes && displayPost.recent_likes.length > 0 && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <div className="flex -space-x-2">
-              {displayPost.recent_likes.slice(0, 3).map((user, index) => (
+              {displayPost.recent_likes.slice(0, 3).map(user => (
                 <Avatar
                   key={user.id}
                   className="h-6 w-6 border-2 border-background"

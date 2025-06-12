@@ -83,7 +83,7 @@ export default function TimelinePage() {
       } else {
         toast.error(result.message || 'タイムラインの読み込みに失敗しました');
       }
-    } catch (error) {
+    } catch {
       toast.error('タイムラインの読み込みに失敗しました');
     } finally {
       setIsLoading(false);
@@ -96,7 +96,7 @@ export default function TimelinePage() {
       if (result.success && result.data) {
         setTrendingHashtags(result.data);
       }
-    } catch (error) {
+    } catch {
       // トレンドの読み込みエラーは無視
     }
   };
@@ -121,7 +121,7 @@ export default function TimelinePage() {
         setCurrentPage(nextPage);
         setHasNextPage(result.data.length === 20);
       }
-    } catch (error) {
+    } catch {
       toast.error('追加の投稿読み込みに失敗しました');
     } finally {
       setIsLoading(false);
@@ -145,7 +145,7 @@ export default function TimelinePage() {
       } else {
         toast.error(result.message || '検索に失敗しました');
       }
-    } catch (error) {
+    } catch {
       toast.error('検索に失敗しました');
     } finally {
       setIsLoading(false);
@@ -226,7 +226,9 @@ export default function TimelinePage() {
             {/* タブナビゲーション */}
             <Tabs
               value={currentTab}
-              onValueChange={value => handleTabChange(value as any)}
+              onValueChange={value =>
+                handleTabChange(value as 'timeline' | 'trending' | 'search')
+              }
             >
               <div className="flex items-center justify-between">
                 <TabsList>
@@ -364,7 +366,12 @@ export default function TimelinePage() {
                             setSearchFilters(prev => ({
                               ...prev,
                               post_type:
-                                value === 'all' ? undefined : (value as any),
+                                value === 'all'
+                                  ? undefined
+                                  : (value as
+                                      | 'text'
+                                      | 'image'
+                                      | 'photo_session'),
                             }))
                           }
                         >
@@ -389,7 +396,11 @@ export default function TimelinePage() {
                           onValueChange={value =>
                             setSearchFilters(prev => ({
                               ...prev,
-                              sort_by: value as any,
+                              sort_by: value as
+                                | 'newest'
+                                | 'oldest'
+                                | 'most_liked'
+                                | 'most_commented',
                             }))
                           }
                         >
