@@ -84,7 +84,7 @@ export function PhotoSessionCard({
             {/* Image Section */}
             <div className="w-80 flex-shrink-0 relative overflow-hidden">
               {/* プレースホルダー画像 - 将来的に実際の画像に置き換え */}
-              <div className="w-full h-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
+              <div className="w-full h-full bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 flex items-center justify-center">
                 <CalendarIcon className="h-16 w-16 text-blue-400 opacity-60" />
               </div>
               <div className="absolute top-4 right-4">
@@ -111,37 +111,37 @@ export function PhotoSessionCard({
             <div className="flex-1 p-6 flex flex-col justify-between">
               <div className="space-y-4">
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
                     {session.title}
                   </h3>
-                  <div className="flex items-center text-sm text-gray-600 mb-3">
+                  <div className="flex items-center text-sm text-gray-600 dark:text-gray-300 mb-3">
                     <User className="w-4 h-4 mr-1" />
                     <span>
                       {session.organizer.display_name ||
                         session.organizer.email}
                     </span>
                   </div>
-                  <p className="text-gray-700 text-sm leading-relaxed line-clamp-2">
+                  <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed line-clamp-2">
                     {session.description}
                   </p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div className="flex items-center text-gray-600">
+                  <div className="flex items-center text-gray-600 dark:text-gray-300">
                     <CalendarIcon className="w-4 h-4 mr-2 text-blue-500" />
                     <span>
                       {formatDateLocalized(startDate, locale, 'short')}
                     </span>
                   </div>
-                  <div className="flex items-center text-gray-600">
+                  <div className="flex items-center text-gray-600 dark:text-gray-300">
                     <Clock className="w-4 h-4 mr-2 text-blue-500" />
                     <span>{formatTimeLocalized(startDate, locale)}〜</span>
                   </div>
-                  <div className="flex items-center text-gray-600">
+                  <div className="flex items-center text-gray-600 dark:text-gray-300">
                     <MapPinIcon className="w-4 h-4 mr-2 text-green-500" />
                     <span>{session.location}</span>
                   </div>
-                  <div className="flex items-center text-gray-600">
+                  <div className="flex items-center text-gray-600 dark:text-gray-300">
                     <UsersIcon className="w-4 h-4 mr-2 text-purple-500" />
                     <span>
                       {session.current_participants}/{session.max_participants}
@@ -154,7 +154,7 @@ export function PhotoSessionCard({
               <div className="flex items-center justify-between mt-4">
                 <div className="flex items-center">
                   <CircleDollarSignIcon className="w-5 h-5 mr-1 text-orange-500" />
-                  <span className="text-2xl font-bold text-gray-900">
+                  <span className="text-2xl font-bold text-gray-900 dark:text-white">
                     {session.price_per_person === 0
                       ? tBooking('free')
                       : `¥${session.price_per_person.toLocaleString()}`}
@@ -167,7 +167,7 @@ export function PhotoSessionCard({
                       <Button
                         variant="outline"
                         size="sm"
-                        className="hover:bg-blue-50"
+                        className="hover:bg-blue-50 dark:hover:bg-blue-900/20"
                       >
                         <Eye className="w-4 h-4 mr-1" />
                         {t('viewDetails')}
@@ -177,7 +177,7 @@ export function PhotoSessionCard({
                       <Button
                         variant="outline"
                         size="sm"
-                        className="hover:bg-gray-50"
+                        className="hover:bg-gray-50 dark:hover:bg-gray-800"
                       >
                         <Edit className="w-4 h-4 mr-1" />
                         {t('edit')}
@@ -205,7 +205,7 @@ export function PhotoSessionCard({
           <div className="md:hidden">
             {/* Image Section */}
             <div className="relative h-48 overflow-hidden">
-              <div className="w-full h-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
+              <div className="w-full h-full bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 flex items-center justify-center">
                 <CalendarIcon className="h-12 w-12 text-blue-400 opacity-60" />
               </div>
               <div className="absolute top-4 right-4">
@@ -231,34 +231,34 @@ export function PhotoSessionCard({
             {/* Content Section */}
             <div className="p-4 space-y-4">
               <div>
-                <h3 className="text-lg font-bold text-gray-900 mb-2">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
                   {session.title}
                 </h3>
-                <div className="flex items-center text-sm text-gray-600 mb-3">
+                <div className="flex items-center text-sm text-gray-600 dark:text-gray-300 mb-3">
                   <User className="w-4 h-4 mr-1" />
                   <span>
                     {session.organizer.display_name || session.organizer.email}
                   </span>
                 </div>
-                <p className="text-gray-700 text-sm leading-relaxed">
+                <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
                   {session.description}
                 </p>
               </div>
 
               <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className="flex items-center text-gray-600">
+                <div className="flex items-center text-gray-600 dark:text-gray-300">
                   <CalendarIcon className="w-4 h-4 mr-2 text-blue-500" />
                   <span>{formatDateLocalized(startDate, locale, 'short')}</span>
                 </div>
-                <div className="flex items-center text-gray-600">
+                <div className="flex items-center text-gray-600 dark:text-gray-300">
                   <Clock className="w-4 h-4 mr-2 text-blue-500" />
                   <span>{formatTimeLocalized(startDate, locale)}〜</span>
                 </div>
-                <div className="flex items-center text-gray-600">
+                <div className="flex items-center text-gray-600 dark:text-gray-300">
                   <MapPinIcon className="w-4 h-4 mr-2 text-green-500" />
                   <span>{session.location}</span>
                 </div>
-                <div className="flex items-center text-gray-600">
+                <div className="flex items-center text-gray-600 dark:text-gray-300">
                   <UsersIcon className="w-4 h-4 mr-2 text-purple-500" />
                   <span>
                     {session.current_participants}/{session.max_participants}名
@@ -269,7 +269,7 @@ export function PhotoSessionCard({
               <div className="flex items-center justify-between pt-2">
                 <div className="flex items-center">
                   <CircleDollarSignIcon className="w-5 h-5 mr-1 text-orange-500" />
-                  <span className="text-xl font-bold text-gray-900">
+                  <span className="text-xl font-bold text-gray-900 dark:text-white">
                     {session.price_per_person === 0
                       ? tBooking('free')
                       : `¥${session.price_per_person.toLocaleString()}`}
@@ -331,21 +331,21 @@ export function PhotoSessionCard({
         <div className="p-4">
           {/* ヘッダー */}
           <div className="flex justify-between items-start mb-3">
-            <h3 className="text-lg font-bold text-gray-900 line-clamp-2 flex-1 pr-2">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white line-clamp-2 flex-1 pr-2">
               {session.title}
             </h3>
             <div className="flex gap-1 flex-shrink-0">{getStatusBadge()}</div>
           </div>
 
           {/* 主催者 */}
-          <p className="text-sm text-gray-600 mb-3">
+          <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
             {tBooking('organizer')}:{' '}
             {session.organizer.display_name || session.organizer.email}
           </p>
 
           {/* 説明文 */}
           {session.description && (
-            <p className="text-sm text-gray-700 line-clamp-2 mb-4 leading-relaxed">
+            <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2 mb-4 leading-relaxed">
               {session.description}
             </p>
           )}
@@ -517,10 +517,10 @@ export function PhotoSessionCard({
             {/* タイトルとステータス */}
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h3 className="text-xl font-bold text-gray-900 line-clamp-2 group-hover:text-blue-700 transition-colors">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white line-clamp-2 group-hover:text-blue-700 transition-colors">
                   {session.title}
                 </h3>
-                <p className="text-sm text-gray-600 mt-1">
+                <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
                   {tBooking('organizer')}:{' '}
                   {session.organizer.display_name || session.organizer.email}
                 </p>
@@ -535,7 +535,7 @@ export function PhotoSessionCard({
 
             {/* 説明文 */}
             {session.description && (
-              <p className="text-gray-700 line-clamp-2 leading-relaxed">
+              <p className="text-gray-700 dark:text-gray-300 line-clamp-2 leading-relaxed">
                 {session.description}
               </p>
             )}
