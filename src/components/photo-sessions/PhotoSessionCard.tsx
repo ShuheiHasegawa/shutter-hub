@@ -168,6 +168,7 @@ export function PhotoSessionCard({
                         variant="outline"
                         size="sm"
                         className="hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                        onClick={() => onViewDetails(session.id)}
                       >
                         <Eye className="w-4 h-4 mr-1" />
                         {t('viewDetails')}
@@ -178,6 +179,7 @@ export function PhotoSessionCard({
                         variant="outline"
                         size="sm"
                         className="hover:bg-gray-50 dark:hover:bg-gray-800"
+                        onClick={() => onEdit(session.id)}
                       >
                         <Edit className="w-4 h-4 mr-1" />
                         {t('edit')}
@@ -280,13 +282,23 @@ export function PhotoSessionCard({
               {showActions && (
                 <div className="flex space-x-2">
                   {onViewDetails && (
-                    <Button variant="outline" size="sm" className="flex-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => onViewDetails(session.id)}
+                    >
                       <Eye className="w-4 h-4 mr-1" />
                       {t('viewDetails')}
                     </Button>
                   )}
                   {isOwner && onEdit && (
-                    <Button variant="outline" size="sm" className="flex-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => onEdit(session.id)}
+                    >
                       <Edit className="w-4 h-4 mr-1" />
                       {t('edit')}
                     </Button>
