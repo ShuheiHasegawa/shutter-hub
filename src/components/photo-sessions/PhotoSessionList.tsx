@@ -56,19 +56,6 @@ export function PhotoSessionList({
     'start_time'
   );
 
-  // 画面サイズに応じたレイアウトモード判定
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768); // md breakpoint
-    };
-
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
   useEffect(() => {
     loadSessions();
   }, [organizerId, searchQuery, locationFilter, sortBy, filters]);
@@ -321,30 +308,15 @@ export function PhotoSessionList({
       ) : (
         <div className="space-y-3 md:space-y-4">
           {sessions.map(session => (
-            <>
-              {/* モバイル版 */}
-              <div key={`mobile-${session.id}`} className="block md:hidden">
-                <PhotoSessionCard
-                  session={session}
-                  onViewDetails={handleViewDetails}
-                  onEdit={handleEdit}
-                  isOwner={user?.id === session.organizer_id}
-                  showActions={true}
-                  layoutMode="mobile"
-                />
-              </div>
-              {/* デスクトップ版 */}
-              <div key={`desktop-${session.id}`} className="hidden md:block">
-                <PhotoSessionCard
-                  session={session}
-                  onViewDetails={handleViewDetails}
-                  onEdit={handleEdit}
-                  isOwner={user?.id === session.organizer_id}
-                  showActions={true}
-                  layoutMode={isMobile ? 'mobile' : 'horizontal'}
-                />
-              </div>
-            </>
+            <PhotoSessionCard
+              key={session.id}
+              session={session}
+              onViewDetails={handleViewDetails}
+              onEdit={handleEdit}
+              isOwner={user?.id === session.organizer_id}
+              showActions={true}
+              layoutMode="card"
+            />
           ))}
         </div>
       )}

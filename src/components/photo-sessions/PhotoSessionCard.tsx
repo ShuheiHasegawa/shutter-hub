@@ -6,6 +6,10 @@ import {
   MapPinIcon,
   UsersIcon,
   CircleDollarSignIcon,
+  Clock,
+  Eye,
+  Edit,
+  User,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -19,7 +23,7 @@ interface PhotoSessionCardProps {
   onEdit?: (sessionId: string) => void;
   showActions?: boolean;
   isOwner?: boolean;
-  layoutMode?: 'vertical' | 'horizontal' | 'mobile';
+  layoutMode?: 'vertical' | 'horizontal' | 'mobile' | 'card';
 }
 
 export function PhotoSessionCard({
@@ -65,6 +69,248 @@ export function PhotoSessionCard({
     }
     return <Badge variant="outline">{t('availability.available')}</Badge>;
   };
+
+  // Layout1: カード型（画像左配置）
+  if (layoutMode === 'card') {
+    const available = session.max_participants - session.current_participants;
+    const status =
+      available <= 0 ? 'full' : available <= 2 ? 'fewLeft' : 'available';
+
+    return (
+      <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 group">
+        <CardContent className="p-0">
+          {/* Desktop Layout */}
+          <div className="hidden md:flex h-64">
+            {/* Image Section */}
+            <div className="w-80 flex-shrink-0 relative overflow-hidden">
+              {/* プレースホルダー画像 - 将来的に実際の画像に置き換え */}
+              <div className="w-full h-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
+                <CalendarIcon className="h-16 w-16 text-blue-400 opacity-60" />
+              </div>
+              <div className="absolute top-4 right-4">
+                <Badge
+                  variant={
+                    status === 'available'
+                      ? 'default'
+                      : status === 'full'
+                        ? 'destructive'
+                        : 'secondary'
+                  }
+                  className="font-semibold"
+                >
+                  {status === 'available'
+                    ? t('availability.available')
+                    : status === 'full'
+                      ? t('availability.full')
+                      : t('availability.fewLeft')}
+                </Badge>
+              </div>
+            </div>
+
+            {/* Content Section */}
+            <div className="flex-1 p-6 flex flex-col justify-between">
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">
+                    {session.title}
+                  </h3>
+                  <div className="flex items-center text-sm text-gray-600 mb-3">
+                    <User className="w-4 h-4 mr-1" />
+                    <span>
+                      {session.organizer.display_name ||
+                        session.organizer.email}
+                    </span>
+                  </div>
+                  <p className="text-gray-700 text-sm leading-relaxed line-clamp-2">
+                    {session.description}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div className="flex items-center text-gray-600">
+                    <CalendarIcon className="w-4 h-4 mr-2 text-blue-500" />
+                    <span>
+                      {formatDateLocalized(startDate, locale, 'short')}
+                    </span>
+                  </div>
+                  <div className="flex items-center text-gray-600">
+                    <Clock className="w-4 h-4 mr-2 text-blue-500" />
+                    <span>{formatTimeLocalized(startDate, locale)}〜</span>
+                  </div>
+                  <div className="flex items-center text-gray-600">
+                    <MapPinIcon className="w-4 h-4 mr-2 text-green-500" />
+                    <span>{session.location}</span>
+                  </div>
+                  <div className="flex items-center text-gray-600">
+                    <UsersIcon className="w-4 h-4 mr-2 text-purple-500" />
+                    <span>
+                      {session.current_participants}/{session.max_participants}
+                      名
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between mt-4">
+                <div className="flex items-center">
+                  <CircleDollarSignIcon className="w-5 h-5 mr-1 text-orange-500" />
+                  <span className="text-2xl font-bold text-gray-900">
+                    {session.price_per_person === 0
+                      ? tBooking('free')
+                      : `¥${session.price_per_person.toLocaleString()}`}
+                  </span>
+                </div>
+
+                {showActions && (
+                  <div className="flex space-x-2">
+                    {onViewDetails && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="hover:bg-blue-50"
+                      >
+                        <Eye className="w-4 h-4 mr-1" />
+                        {t('viewDetails')}
+                      </Button>
+                    )}
+                    {isOwner && onEdit && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="hover:bg-gray-50"
+                      >
+                        <Edit className="w-4 h-4 mr-1" />
+                        {t('edit')}
+                      </Button>
+                    )}
+                    {!isOwner && onViewDetails && (
+                      <Button
+                        size="sm"
+                        className="bg-orange-500 hover:bg-orange-600"
+                        disabled={status === 'full'}
+                        onClick={() => onViewDetails(session.id)}
+                      >
+                        {status === 'full'
+                          ? tWaitlist('button.join_waitlist')
+                          : tBooking('reserve')}
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile Layout */}
+          <div className="md:hidden">
+            {/* Image Section */}
+            <div className="relative h-48 overflow-hidden">
+              <div className="w-full h-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
+                <CalendarIcon className="h-12 w-12 text-blue-400 opacity-60" />
+              </div>
+              <div className="absolute top-4 right-4">
+                <Badge
+                  variant={
+                    status === 'available'
+                      ? 'default'
+                      : status === 'full'
+                        ? 'destructive'
+                        : 'secondary'
+                  }
+                  className="font-semibold text-xs"
+                >
+                  {status === 'available'
+                    ? t('availability.available')
+                    : status === 'full'
+                      ? t('availability.full')
+                      : t('availability.fewLeft')}
+                </Badge>
+              </div>
+            </div>
+
+            {/* Content Section */}
+            <div className="p-4 space-y-4">
+              <div>
+                <h3 className="text-lg font-bold text-gray-900 mb-2">
+                  {session.title}
+                </h3>
+                <div className="flex items-center text-sm text-gray-600 mb-3">
+                  <User className="w-4 h-4 mr-1" />
+                  <span>
+                    {session.organizer.display_name || session.organizer.email}
+                  </span>
+                </div>
+                <p className="text-gray-700 text-sm leading-relaxed">
+                  {session.description}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="flex items-center text-gray-600">
+                  <CalendarIcon className="w-4 h-4 mr-2 text-blue-500" />
+                  <span>{formatDateLocalized(startDate, locale, 'short')}</span>
+                </div>
+                <div className="flex items-center text-gray-600">
+                  <Clock className="w-4 h-4 mr-2 text-blue-500" />
+                  <span>{formatTimeLocalized(startDate, locale)}〜</span>
+                </div>
+                <div className="flex items-center text-gray-600">
+                  <MapPinIcon className="w-4 h-4 mr-2 text-green-500" />
+                  <span>{session.location}</span>
+                </div>
+                <div className="flex items-center text-gray-600">
+                  <UsersIcon className="w-4 h-4 mr-2 text-purple-500" />
+                  <span>
+                    {session.current_participants}/{session.max_participants}名
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-2">
+                <div className="flex items-center">
+                  <CircleDollarSignIcon className="w-5 h-5 mr-1 text-orange-500" />
+                  <span className="text-xl font-bold text-gray-900">
+                    {session.price_per_person === 0
+                      ? tBooking('free')
+                      : `¥${session.price_per_person.toLocaleString()}`}
+                  </span>
+                </div>
+              </div>
+
+              {showActions && (
+                <div className="flex space-x-2">
+                  {onViewDetails && (
+                    <Button variant="outline" size="sm" className="flex-1">
+                      <Eye className="w-4 h-4 mr-1" />
+                      {t('viewDetails')}
+                    </Button>
+                  )}
+                  {isOwner && onEdit && (
+                    <Button variant="outline" size="sm" className="flex-1">
+                      <Edit className="w-4 h-4 mr-1" />
+                      {t('edit')}
+                    </Button>
+                  )}
+                  {!isOwner && onViewDetails && (
+                    <Button
+                      size="sm"
+                      className="flex-1 bg-orange-500 hover:bg-orange-600"
+                      disabled={status === 'full'}
+                      onClick={() => onViewDetails(session.id)}
+                    >
+                      {status === 'full'
+                        ? tWaitlist('button.join_waitlist')
+                        : tBooking('reserve')}
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   // モバイル専用レイアウト（iPhone12 Proなど）
   if (layoutMode === 'mobile') {
