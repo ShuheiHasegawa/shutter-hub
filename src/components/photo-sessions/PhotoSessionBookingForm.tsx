@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -44,19 +44,20 @@ export function PhotoSessionBookingForm({
   } | null>(null);
 
   // 参加可能性をチェック
-  const checkCanJoin = async () => {
-    if (!user) return;
+  const checkCanJoin = useCallback(async () => {
+    if (!user) {
+      setCanJoin({ canJoin: false, reason: t('loginRequired') });
+      return;
+    }
 
     const result = await canJoinPhotoSessionAction(session.id, user.id);
     setCanJoin(result);
-  };
+  }, [user, session.id, t]);
 
   // 初回チェック
-  useState(() => {
-    if (user) {
-      checkCanJoin();
-    }
-  });
+  useEffect(() => {
+    checkCanJoin();
+  }, [checkCanJoin]);
 
   const handleBooking = async () => {
     if (!user) {

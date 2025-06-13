@@ -176,7 +176,17 @@ export function PhotoSessionList({
   };
 
   const handleEdit = (sessionId: string) => {
-    router.push(`/photo-sessions/${sessionId}/edit`);
+    // 権限チェック
+    const session = sessions.find(s => s.id === sessionId);
+    if (!session || !user || user.id !== session.organizer_id) {
+      console.error('編集権限がありません');
+      // TODO: トースト通知で権限エラーを表示
+      return;
+    }
+
+    // 編集ページに遷移（現在は未実装）
+    console.log('編集機能は開発中です');
+    // router.push(`/photo-sessions/${sessionId}/edit`);
   };
 
   const handleCreate = () => {
@@ -306,7 +316,7 @@ export function PhotoSessionList({
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-3 md:space-y-4">
+        <div className="space-y-3 md:space-y-4 pb-8">
           {sessions.map(session => (
             <PhotoSessionCard
               key={session.id}

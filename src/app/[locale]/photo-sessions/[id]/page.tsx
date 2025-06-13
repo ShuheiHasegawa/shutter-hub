@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { PhotoSessionDetail } from '@/components/photo-sessions/PhotoSessionDetail';
 import { LoadingCard } from '@/components/ui/loading-card';
+import { DashboardLayout } from '@/components/layout/dashboard-layout';
 
 export default async function PhotoSessionPage({
   params,
@@ -43,10 +44,12 @@ export default async function PhotoSessionPage({
     .order('slot_number');
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      <Suspense fallback={<LoadingCard />}>
-        <PhotoSessionDetail session={session} slots={slots || []} />
-      </Suspense>
-    </div>
+    <DashboardLayout>
+      <div className="container mx-auto py-8 px-4">
+        <Suspense fallback={<LoadingCard />}>
+          <PhotoSessionDetail session={session} slots={slots || []} />
+        </Suspense>
+      </div>
+    </DashboardLayout>
   );
 }
