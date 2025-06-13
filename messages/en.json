@@ -193,6 +193,52 @@
       "confirmCancel": "Cancel Booking"
     }
   },
+  "bookings": {
+    "title": "My Bookings",
+    "refresh": "Refresh",
+    "participants": "people",
+    "perPerson": "/ person",
+    "organizer": "Organizer",
+    "bookedAt": "Booked at",
+    "viewDetails": "View Details",
+    "cancel": "Cancel",
+    "cancelling": "Cancelling...",
+    "cancelSuccess": "Cancellation Complete",
+    "cancelSuccessDescription": "Your booking has been cancelled",
+    "cancelError": "Cancellation Failed",
+    "cancelErrorDescription": "Failed to cancel your booking",
+    "cancelNote": "Processed according to cancellation policy",
+    "loadError": "Loading Error",
+    "loadErrorDescription": "Failed to load booking list",
+    "status": {
+      "confirmed": "Confirmed",
+      "cancelled": "Cancelled",
+      "completed": "Completed",
+      "ongoing": "Ongoing",
+      "upcoming": "Upcoming"
+    },
+    "stats": {
+      "total": "Total Bookings",
+      "upcoming": "Upcoming",
+      "confirmed": "Confirmed",
+      "past": "Past",
+      "cancelled": "Cancelled"
+    },
+    "filter": {
+      "title": "Filter",
+      "all": "All",
+      "upcoming": "Upcoming",
+      "confirmed": "Confirmed",
+      "past": "Past",
+      "cancelled": "Cancelled",
+      "results": "results"
+    },
+    "empty": {
+      "title": "No Bookings",
+      "description": "You haven't booked any photo sessions yet. Let's find some sessions!",
+      "browseButton": "Browse Sessions"
+    }
+  },
   "photoSessions": {
     "title": "Photo Sessions",
     "createSession": "Create Photo Session",

@@ -189,6 +189,52 @@
       "confirmCancel": "キャンセルする"
     }
   },
+  "bookings": {
+    "title": "予約一覧",
+    "refresh": "更新",
+    "participants": "名",
+    "perPerson": "/ 人",
+    "organizer": "主催者",
+    "bookedAt": "予約日時",
+    "viewDetails": "詳細を見る",
+    "cancel": "キャンセル",
+    "cancelling": "キャンセル中...",
+    "cancelSuccess": "キャンセル完了",
+    "cancelSuccessDescription": "予約をキャンセルしました",
+    "cancelError": "キャンセル失敗",
+    "cancelErrorDescription": "予約のキャンセルに失敗しました",
+    "cancelNote": "キャンセルポリシーに従って処理されます",
+    "loadError": "読み込みエラー",
+    "loadErrorDescription": "予約一覧の読み込みに失敗しました",
+    "status": {
+      "confirmed": "確定",
+      "cancelled": "キャンセル済み",
+      "completed": "完了",
+      "ongoing": "開催中",
+      "upcoming": "予定"
+    },
+    "stats": {
+      "total": "総予約数",
+      "upcoming": "予定",
+      "confirmed": "確定",
+      "past": "過去",
+      "cancelled": "キャンセル"
+    },
+    "filter": {
+      "title": "フィルター",
+      "all": "すべて",
+      "upcoming": "予定",
+      "confirmed": "確定",
+      "past": "過去",
+      "cancelled": "キャンセル",
+      "results": "件"
+    },
+    "empty": {
+      "title": "予約がありません",
+      "description": "まだ予約した撮影会がありません。撮影会を探してみましょう。",
+      "browseButton": "撮影会を探す"
+    }
+  },
   "photoSessions": {
     "title": "撮影会",
     "createSession": "撮影会を作成",
