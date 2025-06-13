@@ -17,6 +17,13 @@
     "sort": "Sort",
     "more": "More"
   },
+  "dashboard": {
+    "loading": "Loading...",
+    "mySessions": {
+      "title": "My Photo Sessions",
+      "description": "Manage your hosted photo sessions"
+    }
+  },
   "navigation": {
     "home": "Home",
     "dashboard": "Dashboard",

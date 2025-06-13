@@ -1,9 +1,12 @@
-import { redirect } from 'next/navigation';
-import { createClient } from '@/lib/supabase/server';
-import { getTranslations } from 'next-intl/server';
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useRequireAuth } from '@/hooks/useAuth';
+import { createClient } from '@/lib/supabase/client';
+import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { UserProfileCard } from '@/components/profile/UserProfileCard';
-import { UserRatingStats } from '@/components/profile/UserRatingStats';
+// import { UserRatingStats } from '@/components/profile/UserRatingStats';
 import { UserReviewList } from '@/components/profile/UserReviewList';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -17,72 +20,134 @@ import {
   TrendingUp,
   MessageSquare,
 } from 'lucide-react';
+import type { Profile } from '@/types/database';
 
-export default async function ProfilePage() {
-  const t = await getTranslations('pages.profile');
-  const supabase = await createClient();
+interface UserStats {
+  organizedSessions: number;
+  participatedSessions: number;
+  receivedReviews: number;
+  sessionReviews: number;
+}
 
-  // 認証チェック
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
+export default function ProfilePage() {
+  const t = useTranslations('pages.profile');
+  const { user, loading: authLoading } = useRequireAuth();
+  const [profile, setProfile] = useState<Profile | null>(null);
+  // const [ratingStats, setRatingStats] = useState<unknown>(null);
+  const [userStats, setUserStats] = useState<UserStats>({
+    organizedSessions: 0,
+    participatedSessions: 0,
+    receivedReviews: 0,
+    sessionReviews: 0,
+  });
+  const [loading, setLoading] = useState(true);
 
-  if (authError || !user) {
-    redirect('/auth/signin');
+  useEffect(() => {
+    if (!user) return;
+
+    const loadProfileData = async () => {
+      setLoading(true);
+      try {
+        const supabase = createClient();
+
+        // ユーザープロフィール情報を取得
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+
+        if (profileError) {
+          console.error('プロフィール取得エラー:', profileError);
+          return;
+        }
+
+        setProfile(profileData);
+
+        // ユーザーの評価統計を取得
+        // TODO: 型定義修正後に有効化
+        // const { data: ratingStatsData } = await supabase
+        //   .from('user_rating_stats')
+        //   .select('*')
+        //   .eq('user_id', user.id)
+        //   .single();
+
+        // setRatingStats(ratingStatsData);
+
+        // 各種統計を並行取得
+        const [
+          { count: organizedSessionsCount },
+          { count: participatedSessionsCount },
+          { count: receivedReviewsCount },
+          { count: sessionReviewsCount },
+        ] = await Promise.all([
+          // ユーザーが主催した撮影会の数
+          supabase
+            .from('photo_sessions')
+            .select('*', { count: 'exact', head: true })
+            .eq('organizer_id', user.id),
+          // ユーザーが参加した撮影会の数
+          supabase
+            .from('bookings')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', user.id)
+            .eq('status', 'confirmed'),
+          // ユーザーが受け取ったレビューの数
+          supabase
+            .from('user_reviews')
+            .select('*', { count: 'exact', head: true })
+            .eq('reviewee_id', user.id)
+            .eq('status', 'published'),
+          // 撮影会レビューの数（主催者として）
+          supabase
+            .from('photo_session_reviews')
+            .select('photo_sessions!inner(*)', { count: 'exact', head: true })
+            .eq('photo_sessions.organizer_id', user.id)
+            .eq('status', 'published'),
+        ]);
+
+        setUserStats({
+          organizedSessions: organizedSessionsCount || 0,
+          participatedSessions: participatedSessionsCount || 0,
+          receivedReviews: receivedReviewsCount || 0,
+          sessionReviews: sessionReviewsCount || 0,
+        });
+      } catch (error) {
+        console.error('プロフィールデータ取得エラー:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProfileData();
+  }, [user]);
+
+  if (authLoading || loading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">プロフィールを読み込み中...</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
   }
 
-  // ユーザープロフィール情報を取得
-  const { data: profile, error: profileError } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single();
-
-  if (profileError || !profile) {
-    redirect('/auth/setup-profile');
+  if (!profile) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <p className="text-muted-foreground">
+              プロフィールが見つかりません
+            </p>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
   }
-
-  // ユーザーの評価統計を取得
-  const { data: ratingStats } = await supabase
-    .from('user_rating_stats')
-    .select('*')
-    .eq('user_id', user.id)
-    .single();
-
-  // ユーザーが主催した撮影会の数を取得
-  const { count: organizedSessionsCount } = await supabase
-    .from('photo_sessions')
-    .select('*', { count: 'exact', head: true })
-    .eq('organizer_id', user.id);
-
-  // ユーザーが参加した撮影会の数を取得
-  const { count: participatedSessionsCount } = await supabase
-    .from('bookings')
-    .select('*', { count: 'exact', head: true })
-    .eq('user_id', user.id)
-    .eq('status', 'confirmed');
-
-  // ユーザーが受け取ったレビューの数を取得
-  const { count: receivedReviewsCount } = await supabase
-    .from('user_reviews')
-    .select('*', { count: 'exact', head: true })
-    .eq('reviewee_id', user.id)
-    .eq('status', 'published');
-
-  // 撮影会レビューの数を取得（主催者として）
-  const { count: sessionReviewsCount } = await supabase
-    .from('photo_session_reviews')
-    .select('photo_sessions!inner(*)', { count: 'exact', head: true })
-    .eq('photo_sessions.organizer_id', user.id)
-    .eq('status', 'published');
-
-  const userStats = {
-    organizedSessions: organizedSessionsCount || 0,
-    participatedSessions: participatedSessionsCount || 0,
-    receivedReviews: receivedReviewsCount || 0,
-    sessionReviews: sessionReviewsCount || 0,
-  };
 
   return (
     <DashboardLayout>
@@ -153,7 +218,8 @@ export default async function ProfilePage() {
             </Card>
 
             {/* 評価統計 */}
-            {ratingStats && <UserRatingStats stats={ratingStats} />}
+            {/* TODO: 評価統計の型定義を修正後に有効化 */}
+            {/* {ratingStats && <UserRatingStats stats={ratingStats} />} */}
           </div>
 
           {/* メインコンテンツ */}
@@ -184,7 +250,7 @@ export default async function ProfilePage() {
               </TabsList>
 
               <TabsContent value="reviews" className="space-y-6">
-                <UserReviewList userId={user.id} />
+                <UserReviewList userId={user?.id || ''} />
               </TabsContent>
 
               <TabsContent value="sessions" className="space-y-6">
