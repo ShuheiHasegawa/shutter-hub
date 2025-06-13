@@ -31,12 +31,12 @@ export function BottomNavigation() {
     {
       icon: Hash,
       label: 'Timeline',
-      href: '/timeline',
+      href: '/photo-sessions' as const,
     },
     {
       icon: MessageCircle,
       label: 'Messages',
-      href: '/messages' as const,
+      href: '/profile' as const,
     },
     {
       icon: Calendar,

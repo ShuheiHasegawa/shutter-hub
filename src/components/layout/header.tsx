@@ -118,7 +118,7 @@ export function Header() {
           <nav className="flex items-center space-x-2">
             {user && <NotificationCenter />}
             {user && (
-              <Link href="/messages">
+              <Link href="/profile">
                 <Button variant="ghost" size="sm">
                   <MessageCircle className="h-4 w-4" />
                 </Button>

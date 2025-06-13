@@ -18,6 +18,7 @@ import { PhotoSessionWithOrganizer } from '@/types/database';
 import { PhotoSessionSlot } from '@/types/photo-session';
 import { PhotoSessionBookingForm } from './PhotoSessionBookingForm';
 import PhotoSessionSlotCard from './PhotoSessionSlotCard';
+import { OrganizerManagementPanel } from './OrganizerManagementPanel';
 import { formatDateLocalized, formatTimeLocalized } from '@/lib/utils/date';
 import { format } from 'date-fns';
 
@@ -39,6 +40,9 @@ export function PhotoSessionDetail({
   const isUpcoming = startDate > now;
   const isOngoing = startDate <= now && endDate > now;
   const isPast = endDate <= now;
+
+  // 開催者判定
+  const isOrganizer = user?.id === session.organizer_id;
 
   const getStatusBadge = () => {
     if (isPast) {
@@ -194,8 +198,10 @@ export function PhotoSessionDetail({
         </CardContent>
       </Card>
 
-      {/* スロット表示または通常予約 */}
-      {hasSlots ? (
+      {/* 開催者の場合は管理パネル、参加者の場合は予約フォーム */}
+      {isOrganizer ? (
+        <OrganizerManagementPanel session={session} slots={slots} />
+      ) : hasSlots ? (
         <div className="space-y-6" key={`slots-${refreshKey}`}>
           <Card>
             <CardHeader>

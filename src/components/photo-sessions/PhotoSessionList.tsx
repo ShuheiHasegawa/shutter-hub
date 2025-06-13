@@ -79,6 +79,10 @@ export function PhotoSessionList({
         query = query.eq('organizer_id', organizerId);
       } else {
         query = query.eq('is_published', true);
+        // 自分が開催者の撮影会は除外（ログイン時のみ）
+        if (user?.id) {
+          query = query.neq('organizer_id', user.id);
+        }
       }
 
       // サイドバーフィルターを優先、なければ従来のフィルターを使用
