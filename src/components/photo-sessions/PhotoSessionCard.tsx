@@ -80,7 +80,7 @@ export function PhotoSessionCard({
       <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 group">
         <CardContent className="p-0">
           {/* Desktop Layout */}
-          <div className="hidden md:flex h-64">
+          <div className="hidden md:flex ">
             {/* Image Section */}
             <div className="w-80 flex-shrink-0 relative overflow-hidden">
               {/* プレースホルダー画像 - 将来的に実際の画像に置き換え */}
