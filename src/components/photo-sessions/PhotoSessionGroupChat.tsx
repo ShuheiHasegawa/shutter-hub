@@ -140,7 +140,11 @@ export function PhotoSessionGroupChat({
           setLoading(false);
           return;
         }
-        console.error('Conversation search error:', conversationError);
+        // 500 Internal Server Errorやその他のエラー
+        console.warn(
+          'グループチャット機能でエラーが発生しました:',
+          conversationError
+        );
         setLoading(false);
         return;
       }
@@ -157,7 +161,13 @@ export function PhotoSessionGroupChat({
           .eq('is_active', true)
           .single();
 
-        if (!memberError && membership) {
+        if (memberError) {
+          // メンバーシップチェックでエラーが発生した場合は警告のみ
+          console.warn(
+            'メンバーシップチェックでエラーが発生しました:',
+            memberError
+          );
+        } else if (membership) {
           // 既存のグループチャットが見つかった場合
           const conversationWithUsers: ConversationWithUsers = {
             ...conversation,
