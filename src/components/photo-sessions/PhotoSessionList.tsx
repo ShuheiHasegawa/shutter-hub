@@ -14,10 +14,10 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PlusIcon, SearchIcon } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
 import { createClient } from '@/lib/supabase/client';
 import type { PhotoSessionWithOrganizer, BookingType } from '@/types/database';
 import { useTranslations } from 'next-intl';
+import type { User } from '@supabase/supabase-js';
 
 interface FilterState {
   keyword: string;
@@ -45,7 +45,6 @@ export function PhotoSessionList({
   title,
   filters,
 }: PhotoSessionListProps) {
-  const { user } = useAuth();
   const router = useRouter();
   const t = useTranslations('photoSessions');
   const [sessions, setSessions] = useState<PhotoSessionWithOrganizer[]>([]);
@@ -55,6 +54,7 @@ export function PhotoSessionList({
   const [sortBy, setSortBy] = useState<'start_time' | 'price' | 'created_at'>(
     'start_time'
   );
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   useEffect(() => {
     loadSessions();
@@ -64,6 +64,14 @@ export function PhotoSessionList({
     setLoading(true);
     try {
       const supabase = createClient();
+
+      // 直接認証状態を取得
+      const {
+        data: { user: authUser },
+      } = await supabase.auth.getUser();
+
+      setCurrentUser(authUser);
+
       let query = supabase.from('photo_sessions').select(`
           *,
           organizer:profiles!photo_sessions_organizer_id_fkey(
@@ -76,12 +84,15 @@ export function PhotoSessionList({
 
       // フィルター条件を適用
       if (organizerId) {
+        // 特定の主催者の撮影会を表示（プロフィールページなど）
         query = query.eq('organizer_id', organizerId);
       } else {
+        // 一般的な撮影会一覧では公開済みのもののみ表示
         query = query.eq('is_published', true);
+
         // 自分が開催者の撮影会は除外（ログイン時のみ）
-        if (user?.id) {
-          query = query.neq('organizer_id', user.id);
+        if (authUser?.id) {
+          query = query.neq('organizer_id', authUser.id);
         }
       }
 
@@ -138,9 +149,11 @@ export function PhotoSessionList({
 
         // 空きありフィルター
         if (filters.onlyAvailable) {
-          query = query.lt(
+          // 現在の参加者数が最大参加者数未満のもののみ
+          query = query.filter(
             'current_participants',
-            query.select('max_participants')
+            'lt',
+            'max_participants'
           );
         }
       }
@@ -182,7 +195,7 @@ export function PhotoSessionList({
   const handleEdit = (sessionId: string) => {
     // 権限チェック
     const session = sessions.find(s => s.id === sessionId);
-    if (!session || !user || user.id !== session.organizer_id) {
+    if (!session || !currentUser || currentUser.id !== session.organizer_id) {
       console.error('編集権限がありません');
       // TODO: トースト通知で権限エラーを表示
       return;
@@ -327,7 +340,7 @@ export function PhotoSessionList({
               session={session}
               onViewDetails={handleViewDetails}
               onEdit={handleEdit}
-              isOwner={user?.id === session.organizer_id}
+              isOwner={currentUser?.id === session.organizer_id}
               showActions={true}
               layoutMode="card"
             />

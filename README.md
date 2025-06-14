@@ -65,6 +65,37 @@ cp .env.example .env.local
 npm run dev
 ```
 
+### Supabase MCP連携のトラブルシューティング
+
+(https://supabase.com/docs/guides/getting-started/mcp?queryGroups=os&os=mac)
+Cursor内でSupabase MCP連携が動作しない場合は、以下の手順でアクセストークンを更新してください：
+
+1. **パーソナルアクセストークンの生成**
+   - [Supabase Dashboard - Access Tokens](https://supabase.com/dashboard/account/tokens)にアクセス
+   - 「Generate new token」をクリック
+   - 適切な権限を設定してトークンを生成
+
+2. **MCP設定ファイルの更新**
+   ```json
+   // ~/.cursor/mcp.json
+   {
+     "mcpServers": {
+       "supabase": {
+         "command": "npx",
+         "args": ["-y", "@supabase/mcp-server-supabase@latest"],
+         "env": {
+           "SUPABASE_ACCESS_TOKEN": "新しく生成したトークンをここに設定"
+         }
+       }
+     }
+   }
+   ```
+
+3. **Cursorの再起動**
+   - MCP設定の変更を反映させるため、Cursorを完全に再起動
+
+> **注意**: service_roleキーではなく、パーソナルアクセストークン（`sbp_v0_`で始まる）を使用してください。
+
 ### 利用可能なスクリプト
 
 ```bash

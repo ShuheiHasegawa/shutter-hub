@@ -1,7 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -13,6 +15,7 @@ import {
   CircleDollarSignIcon,
   UserIcon,
   ImageIcon,
+  EditIcon,
 } from 'lucide-react';
 import { PhotoSessionWithOrganizer } from '@/types/database';
 import { PhotoSessionSlot } from '@/types/photo-session';
@@ -32,6 +35,7 @@ export function PhotoSessionDetail({
   slots,
 }: PhotoSessionDetailProps) {
   const { user } = useAuth();
+  const router = useRouter();
   const [refreshKey, setRefreshKey] = useState(0);
 
   const startDate = new Date(session.start_time);
@@ -93,6 +97,19 @@ export function PhotoSessionDetail({
             <div className="flex gap-2">
               {getStatusBadge()}
               {!hasSlots && getAvailabilityBadge()}
+              {isOrganizer && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    router.push(`/photo-sessions/${session.id}/edit`)
+                  }
+                  className="flex items-center gap-2"
+                >
+                  <EditIcon className="h-4 w-4" />
+                  編集
+                </Button>
+              )}
             </div>
           </div>
         </CardHeader>
