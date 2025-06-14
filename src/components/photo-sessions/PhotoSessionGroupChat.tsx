@@ -159,14 +159,18 @@ export function PhotoSessionGroupChat({
           .eq('conversation_id', conversation.id)
           .eq('user_id', currentUserId)
           .eq('is_active', true)
-          .single();
+          .maybeSingle();
 
         if (memberError) {
           // メンバーシップチェックでエラーが発生した場合は警告のみ
-          console.warn(
-            'メンバーシップチェックでエラーが発生しました:',
-            memberError
-          );
+          if (memberError.code === '406') {
+            console.warn('メンバーシップデータが見つかりませんでした');
+          } else {
+            console.warn(
+              'メンバーシップチェックでエラーが発生しました:',
+              memberError
+            );
+          }
         } else if (membership) {
           // 既存のグループチャットが見つかった場合
           const conversationWithUsers: ConversationWithUsers = {
