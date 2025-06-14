@@ -276,17 +276,19 @@ export function PhotoSessionDetail({
         />
       )}
 
-      {/* グループチャット機能 */}
+      {/* グループチャット機能（メッセージシステムが利用可能な場合のみ） */}
       {user && !loading && (isOrganizer || isParticipant) && (
-        <PhotoSessionGroupChat
-          sessionId={session.id}
-          sessionTitle={session.title}
-          sessionDate={formatDateLocalized(startDate, 'ja', 'long')}
-          sessionLocation={session.location}
-          organizerId={session.organizer_id}
-          currentUserId={user.id}
-          participants={participants}
-        />
+        <div className="space-y-4">
+          <PhotoSessionGroupChat
+            sessionId={session.id}
+            sessionTitle={session.title}
+            sessionDate={formatDateLocalized(startDate, 'ja', 'long')}
+            sessionLocation={session.location}
+            organizerId={session.organizer_id}
+            currentUserId={user.id}
+            participants={participants}
+          />
+        </div>
       )}
 
       {/* ドキュメント管理機能 */}

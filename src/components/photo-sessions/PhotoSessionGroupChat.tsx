@@ -89,7 +89,7 @@ export function PhotoSessionGroupChat({
         .select(
           `
           title,
-          start_date,
+          start_time,
           location,
           organizer:organizer_id(display_name)
         `
@@ -101,7 +101,7 @@ export function PhotoSessionGroupChat({
 
       setSessionInfo({
         title: data.title,
-        date: data.start_date,
+        date: data.start_time,
         location: data.location,
         organizer_name:
           (data.organizer as { display_name?: string })?.display_name || '不明',
@@ -124,6 +124,13 @@ export function PhotoSessionGroupChat({
         .eq('group_name', `${sessionTitle} - 撮影会チャット`);
 
       if (conversationError) {
+        // テーブルが存在しない場合は警告のみ表示
+        if (conversationError.code === '42P01') {
+          console.warn(
+            'メッセージシステムのテーブルが存在しません。マイグレーションが必要です。'
+          );
+          return;
+        }
         console.error('Conversation search error:', conversationError);
         return;
       }
