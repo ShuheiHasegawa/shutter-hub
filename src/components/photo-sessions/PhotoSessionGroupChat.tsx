@@ -129,9 +129,19 @@ export function PhotoSessionGroupChat({
           console.warn(
             'メッセージシステムのテーブルが存在しません。マイグレーションが必要です。'
           );
+          setLoading(false);
+          return;
+        }
+        // RLSポリシーエラーの場合
+        if (conversationError.code === '42P17') {
+          console.warn(
+            'RLSポリシーエラーが発生しました。ポリシーの修正が必要です。'
+          );
+          setLoading(false);
           return;
         }
         console.error('Conversation search error:', conversationError);
+        setLoading(false);
         return;
       }
 
