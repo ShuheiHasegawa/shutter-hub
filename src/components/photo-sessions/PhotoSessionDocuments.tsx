@@ -97,10 +97,21 @@ export function PhotoSessionDocuments({
         .eq('photo_session_id', sessionId)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        // テーブルが存在しない場合は空配列を設定
+        if (error.code === '42P01') {
+          console.warn(
+            'Document system not yet available - migration required'
+          );
+          setDocuments([]);
+          return;
+        }
+        throw error;
+      }
       setDocuments(data || []);
     } catch (error) {
       console.error('Load documents error:', error);
+      setDocuments([]);
       toast.error(t('errorLoadingDocuments'));
     }
   };
@@ -117,10 +128,21 @@ export function PhotoSessionDocuments({
         )
         .order('signed_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        // テーブルが存在しない場合は空配列を設定
+        if (error.code === '42P01') {
+          console.warn(
+            'Signature system not yet available - migration required'
+          );
+          setSignatures([]);
+          return;
+        }
+        throw error;
+      }
       setSignatures(data || []);
     } catch (error) {
       console.error('Load signatures error:', error);
+      setSignatures([]);
     } finally {
       setLoading(false);
     }

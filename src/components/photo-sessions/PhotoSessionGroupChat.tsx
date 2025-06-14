@@ -89,7 +89,7 @@ export function PhotoSessionGroupChat({
         .select(
           `
           title,
-          date,
+          start_date,
           location,
           organizer:organizer_id(display_name)
         `
@@ -101,7 +101,7 @@ export function PhotoSessionGroupChat({
 
       setSessionInfo({
         title: data.title,
-        date: data.date,
+        date: data.start_date,
         location: data.location,
         organizer_name:
           (data.organizer as { display_name?: string })?.display_name || '不明',
@@ -116,28 +116,38 @@ export function PhotoSessionGroupChat({
     try {
       const supabase = createClient();
 
-      // 撮影会専用グループチャットを検索
-      const { data: existingConversation, error } = await supabase
+      // まず撮影会専用グループチャットを検索
+      const { data: conversations, error: conversationError } = await supabase
         .from('conversations')
-        .select(
-          `
-          *,
-          conversation_members!inner(user_id, role, is_active)
-        `
-        )
+        .select('*')
         .eq('is_group', true)
-        .eq('group_name', `${sessionTitle} - 撮影会チャット`)
-        .eq('conversation_members.user_id', currentUserId)
-        .eq('conversation_members.is_active', true)
-        .single();
+        .eq('group_name', `${sessionTitle} - 撮影会チャット`);
 
-      if (!error && existingConversation) {
-        // 既存のグループチャットが見つかった場合
-        const conversationWithUsers: ConversationWithUsers = {
-          ...existingConversation,
-          members: [],
-        };
-        setConversation(conversationWithUsers);
+      if (conversationError) {
+        console.error('Conversation search error:', conversationError);
+        return;
+      }
+
+      if (conversations && conversations.length > 0) {
+        const conversation = conversations[0];
+
+        // 現在のユーザーがメンバーかチェック
+        const { data: membership, error: memberError } = await supabase
+          .from('conversation_members')
+          .select('*')
+          .eq('conversation_id', conversation.id)
+          .eq('user_id', currentUserId)
+          .eq('is_active', true)
+          .single();
+
+        if (!memberError && membership) {
+          // 既存のグループチャットが見つかった場合
+          const conversationWithUsers: ConversationWithUsers = {
+            ...conversation,
+            members: [],
+          };
+          setConversation(conversationWithUsers);
+        }
       }
     } catch (error) {
       console.error('Check existing group chat error:', error);
