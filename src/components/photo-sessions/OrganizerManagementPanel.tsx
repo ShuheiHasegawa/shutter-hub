@@ -9,9 +9,11 @@ import {
   BarChart3Icon,
   MessageSquareIcon,
   CalendarIcon,
+  CopyIcon,
 } from 'lucide-react';
 import { PhotoSessionWithOrganizer } from '@/types/database';
 import { PhotoSessionSlot } from '@/types/photo-session';
+import { useRouter } from 'next/navigation';
 
 interface OrganizerManagementPanelProps {
   session: PhotoSessionWithOrganizer;
@@ -22,6 +24,7 @@ export function OrganizerManagementPanel({
   session,
   slots,
 }: OrganizerManagementPanelProps) {
+  const router = useRouter();
   const hasSlots = slots && slots.length > 0;
   const totalBookings = hasSlots
     ? slots.reduce((sum, slot) => sum + slot.current_participants, 0)
@@ -131,14 +134,23 @@ export function OrganizerManagementPanel({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             <Button
               variant="outline"
               className="h-auto p-4 flex-col gap-2"
-              onClick={() => console.log('編集機能は開発中です')}
+              onClick={() => router.push(`/photo-sessions/${session.id}/edit`)}
             >
               <EditIcon className="h-5 w-5" />
               <span className="text-sm">撮影会を編集</span>
+            </Button>
+
+            <Button
+              variant="outline"
+              className="h-auto p-4 flex-col gap-2"
+              onClick={() => console.log('複製機能は開発中です')}
+            >
+              <CopyIcon className="h-5 w-5" />
+              <span className="text-sm">撮影会を複製</span>
             </Button>
 
             <Button
