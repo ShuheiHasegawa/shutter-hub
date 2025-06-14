@@ -367,6 +367,9 @@ alwaysApply: true
     - [x] マイグレーション適用完了
     - [x] データベースエラー修正（start_time カラム対応）
     - [x] メッセージシステムマイグレーション適用
+    - [x] RLSポリシー無限再帰エラー修正（conversation_members）
+    - [x] Hydrationエラー対応（suppressHydrationWarning追加）
+    - [x] エラーハンドリング強化（42P17エラー対応）
       - **実装優先度**: ✅ **完了**
     - **実装時間**: 3日（Phase 5-6統合作業完了）
     - **技術成果**:
