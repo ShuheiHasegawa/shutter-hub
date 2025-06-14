@@ -34,12 +34,14 @@ import { Label } from '@/components/ui/label';
 interface PhotoSessionFormProps {
   initialData?: PhotoSessionWithOrganizer;
   isEditing?: boolean;
+  isDuplicating?: boolean;
   onSuccess?: () => void;
 }
 
 export function PhotoSessionForm({
   initialData,
   isEditing = false,
+  isDuplicating = false,
   onSuccess,
 }: PhotoSessionFormProps) {
   const { user } = useAuth();
@@ -51,7 +53,9 @@ export function PhotoSessionForm({
   const [isLoading, setIsLoading] = useState(false);
 
   const [formData, setFormData] = useState({
-    title: initialData?.title || '',
+    title: isDuplicating
+      ? `${initialData?.title || ''} (複製)`
+      : initialData?.title || '',
     description: initialData?.description || '',
     location: initialData?.location || '',
     address: initialData?.address || '',
@@ -64,8 +68,8 @@ export function PhotoSessionForm({
     max_participants: initialData?.max_participants || 1,
     price_per_person: initialData?.price_per_person || 0,
     booking_type: (initialData?.booking_type as BookingType) || 'first_come',
-    is_published: initialData?.is_published || false,
-    image_urls: initialData?.image_urls || [],
+    is_published: isDuplicating ? false : initialData?.is_published || false,
+    image_urls: isDuplicating ? [] : initialData?.image_urls || [],
   });
 
   const [bookingSettings, setBookingSettings] = useState<BookingSettings>({});
@@ -279,10 +283,18 @@ export function PhotoSessionForm({
     <Card className="w-full max-w-4xl mx-auto">
       <CardHeader>
         <CardTitle className="text-center">
-          {isEditing ? t('form.editTitle') : t('form.createTitle')}
+          {isDuplicating
+            ? t('form.duplicateTitle')
+            : isEditing
+              ? t('form.editTitle')
+              : t('form.createTitle')}
         </CardTitle>
         <p className="text-center text-muted-foreground">
-          {isEditing ? t('form.editDescription') : t('form.createDescription')}
+          {isDuplicating
+            ? t('form.duplicateDescription')
+            : isEditing
+              ? t('form.editDescription')
+              : t('form.createDescription')}
         </p>
       </CardHeader>
       <CardContent>
