@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -19,8 +19,16 @@ import { PhotoSessionSlot } from '@/types/photo-session';
 import { PhotoSessionBookingForm } from './PhotoSessionBookingForm';
 import PhotoSessionSlotCard from './PhotoSessionSlotCard';
 import { OrganizerManagementPanel } from './OrganizerManagementPanel';
+import { PhotoSessionGroupChat } from './PhotoSessionGroupChat';
+import { PhotoSessionDocuments } from './PhotoSessionDocuments';
 import { formatDateLocalized, formatTimeLocalized } from '@/lib/utils/date';
 import { format } from 'date-fns';
+import Image from 'next/image';
+import {
+  getPhotoSessionParticipants,
+  checkUserParticipation,
+  type PhotoSessionParticipant,
+} from '@/app/actions/photo-session-participants';
 
 interface PhotoSessionDetailProps {
   session: PhotoSessionWithOrganizer;
@@ -33,6 +41,11 @@ export function PhotoSessionDetail({
 }: PhotoSessionDetailProps) {
   const { user } = useAuth();
   const [refreshKey, setRefreshKey] = useState(0);
+  const [participants, setParticipants] = useState<PhotoSessionParticipant[]>(
+    []
+  );
+  const [isParticipant, setIsParticipant] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const startDate = new Date(session.start_time);
   const endDate = new Date(session.end_time);
@@ -43,6 +56,32 @@ export function PhotoSessionDetail({
 
   // 開催者判定
   const isOrganizer = user?.id === session.organizer_id;
+
+  // 参加者データを取得
+  useEffect(() => {
+    const loadParticipantsData = async () => {
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const [participantsData, userParticipation] = await Promise.all([
+          getPhotoSessionParticipants(session.id),
+          checkUserParticipation(session.id, user.id),
+        ]);
+
+        setParticipants(participantsData);
+        setIsParticipant(userParticipation);
+      } catch (error) {
+        console.error('Error loading participants data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadParticipantsData();
+  }, [session.id, user]);
 
   const getStatusBadge = () => {
     if (isPast) {
@@ -112,12 +151,14 @@ export function PhotoSessionDetail({
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {session.image_urls.map((url, index) => (
-                  <img
-                    key={index}
-                    src={url}
-                    alt={`${session.title} - ${index + 1}`}
-                    className="w-full h-48 object-cover rounded-lg"
-                  />
+                  <div key={index} className="relative w-full h-48">
+                    <Image
+                      src={url}
+                      alt={`${session.title} - ${index + 1}`}
+                      fill
+                      className="object-cover rounded-lg"
+                    />
+                  </div>
                 ))}
               </div>
             </div>
@@ -232,6 +273,29 @@ export function PhotoSessionDetail({
           key={`booking-${refreshKey}`}
           session={session}
           onBookingSuccess={handleBookingSuccess}
+        />
+      )}
+
+      {/* グループチャット機能 */}
+      {user && !loading && (isOrganizer || isParticipant) && (
+        <PhotoSessionGroupChat
+          sessionId={session.id}
+          sessionTitle={session.title}
+          sessionDate={formatDateLocalized(startDate, 'ja', 'long')}
+          sessionLocation={session.location}
+          organizerId={session.organizer_id}
+          currentUserId={user.id}
+          participants={participants}
+        />
+      )}
+
+      {/* ドキュメント管理機能 */}
+      {user && !loading && (isOrganizer || isParticipant) && (
+        <PhotoSessionDocuments
+          sessionId={session.id}
+          currentUserId={user.id}
+          isOrganizer={isOrganizer}
+          participants={participants}
         />
       )}
 
