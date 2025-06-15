@@ -16,7 +16,16 @@
     "migrate": "node scripts/migrate.js",
     "migrate:init": "node scripts/migrate.js 001_initial_schema",
     "migrate:auto": "node scripts/migrate-auto.js",
-    "migrate:auto:init": "node scripts/migrate-auto.js 001_initial_schema"
+    "migrate:auto:init": "node scripts/migrate-auto.js 001_initial_schema",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:report": "playwright show-report",
+    "test:e2e:install": "playwright install",
+    "test:booking": "playwright test tests/e2e/booking-systems.spec.ts",
+    "test:escrow": "playwright test tests/e2e/escrow-payment.spec.ts",
+    "test:ci": "playwright test --reporter=junit"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
@@ -75,6 +84,7 @@
     "@commitlint/cli": "^19.8.1",
     "@commitlint/config-conventional": "^19.8.1",
     "@eslint/eslintrc": "^3",
+    "@playwright/test": "^1.53.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

@@ -107,6 +107,13 @@ npm run lint:fix     # ESLint自動修正
 npm run format       # Prettier実行
 npm run format:check # Prettierチェック
 npm run type-check   # TypeScriptタイプチェック
+
+# E2Eテスト
+npm run test:e2e           # 全E2Eテスト実行
+npm run test:e2e:ui        # UIモード（デバッグ用）
+npm run test:e2e:booking   # 予約システムテストのみ
+npm run test:e2e:escrow    # エスクロー決済テストのみ
+npm run test:e2e:report    # テストレポート表示
 ```
 
 ## 📁 プロジェクト構成
@@ -174,8 +181,14 @@ chore: その他の変更
 - `implementation-plan.mdc` - 実装計画書
 - `system-requirements.mdc` - システム要件
 
-### 管理者向けドキュメント
+### 技術者向けドキュメント
+- [`docs/e2e-testing.md`](./docs/e2e-testing.md) - E2Eテスト環境ガイド
 - [`docs/admin-setup.md`](./docs/admin-setup.md) - 管理者アカウント作成・セットアップ手順
+- [`docs/migration-guide.md`](./docs/migration-guide.md) - データベースマイグレーションガイド
+- [`docs/i18n-implementation.md`](./docs/i18n-implementation.md) - 多言語化実装ガイド
+- [`docs/ui-implementation.md`](./docs/ui-implementation.md) - UI実装ガイド
+
+### 管理者向けドキュメント
 - `/admin/disputes` - 争議解決管理画面
 - `/admin/invite/[token]` - 管理者招待受諾画面
 
