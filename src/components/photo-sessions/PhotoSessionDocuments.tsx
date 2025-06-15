@@ -80,13 +80,26 @@ export function PhotoSessionDocuments({
 
   useEffect(() => {
     loadDocuments();
+
+    // フォールバック: 10秒後にローディングを強制終了
+    const timeout = setTimeout(() => {
+      if (loading) {
+        console.warn('Document loading timeout - forcing completion');
+        setLoading(false);
+      }
+    }, 10000);
+
+    return () => clearTimeout(timeout);
   }, [sessionId]);
 
   useEffect(() => {
     if (documents.length > 0) {
       loadSignatures();
+    } else if (documents.length === 0 && !loading) {
+      // documentsが空でローディングが終了している場合
+      setLoading(false);
     }
-  }, [documents]);
+  }, [documents, loading]);
 
   const loadDocuments = async () => {
     try {
@@ -104,14 +117,21 @@ export function PhotoSessionDocuments({
             'Document system not yet available - migration required'
           );
           setDocuments([]);
+          setLoading(false);
           return;
         }
         throw error;
       }
       setDocuments(data || []);
+
+      // documentsが空の場合はここでローディングを終了
+      if (!data || data.length === 0) {
+        setLoading(false);
+      }
     } catch (error) {
       console.error('Load documents error:', error);
       setDocuments([]);
+      setLoading(false);
       toast.error(t('errorLoadingDocuments'));
     }
   };
@@ -119,13 +139,18 @@ export function PhotoSessionDocuments({
   const loadSignatures = async () => {
     try {
       const supabase = createClient();
+      const documentIds = documents.map(d => d.id);
+
+      if (documentIds.length === 0) {
+        setSignatures([]);
+        setLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('document_signatures')
         .select('*')
-        .in(
-          'document_id',
-          documents.map(d => d.id)
-        )
+        .in('document_id', documentIds)
         .order('signed_at', { ascending: false });
 
       if (error) {
@@ -135,8 +160,10 @@ export function PhotoSessionDocuments({
             'Signature system not yet available - migration required'
           );
           setSignatures([]);
+          setLoading(false);
           return;
         }
+        console.error('Signature query error:', error);
         throw error;
       }
       setSignatures(data || []);
