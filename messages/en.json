@@ -32,6 +32,7 @@
     "instant": "Instant Photo",
     "profile": "Profile",
     "photoSessions": "Photo Sessions",
+    "photobook": "Photobook",
     "studios": "Studios",
     "settings": "Settings",
     "signin": "Sign In",
@@ -498,6 +499,44 @@
       "organizer": "Organizer",
       "quickActions": "Quick Actions",
       "shareLocation": "Share Location",
+      "photobook": {
+        "title": "Photobook",
+        "spreadView": "Spread View",
+        "pageView": "Page View",
+        "loading": "Loading...",
+        "error": "An error occurred",
+        "noPhotos": "No photos",
+        "fullscreen": "Fullscreen",
+        "exitFullscreen": "Exit Fullscreen",
+        "zoomIn": "Zoom In",
+        "zoomOut": "Zoom Out",
+        "previousPage": "Previous Page",
+        "nextPage": "Next Page",
+        "pageCounter": "{current} / {total}",
+        "layoutSelector": {
+          "title": "Select Layout",
+          "description": "Please select a layout for your photos",
+          "categories": {
+            "single": "Single",
+            "collage": "Collage",
+            "magazine": "Magazine",
+            "artistic": "Artistic"
+          },
+          "templates": {
+            "single": "Single Photo",
+            "twoVertical": "Two Vertical",
+            "twoHorizontal": "Two Horizontal",
+            "threeGrid": "Three Grid",
+            "fourGrid": "Four Grid",
+            "magazine": "Magazine Style",
+            "artistic": "Artistic"
+          },
+          "premium": "Premium",
+          "premiumRequired": "This layout requires premium features",
+          "select": "Select",
+          "cancel": "Cancel"
+        }
+      },
       "setReminder": "Set Reminder",
       "sharePhotos": "Share Photos",
       "photoSharing": "Photo Sharing",

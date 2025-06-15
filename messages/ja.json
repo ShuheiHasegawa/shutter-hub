@@ -32,6 +32,7 @@
     "instant": "即座撮影",
     "profile": "プロフィール",
     "photoSessions": "撮影会",
+    "photobook": "フォトブック",
     "studios": "スタジオ",
     "settings": "設定",
     "signin": "ログイン",
@@ -495,6 +496,44 @@
         "invalidFileTypeDescription": "JPEG、PNG、WebP、GIFファイルのみ対応しています",
         "uploadFailed": "アップロードに失敗しました",
         "uploadFailedDescription": "画像のアップロードに失敗しました。再度お試しください。"
+      }
+    },
+    "photobook": {
+      "title": "フォトブック",
+      "spreadView": "見開き表示",
+      "pageView": "ページ表示",
+      "loading": "読み込み中...",
+      "error": "エラーが発生しました",
+      "noPhotos": "写真がありません",
+      "fullscreen": "フルスクリーン",
+      "exitFullscreen": "フルスクリーン終了",
+      "zoomIn": "拡大",
+      "zoomOut": "縮小",
+      "previousPage": "前のページ",
+      "nextPage": "次のページ",
+      "pageCounter": "{current} / {total}",
+      "layoutSelector": {
+        "title": "レイアウトを選択",
+        "description": "写真のレイアウトを選択してください",
+        "categories": {
+          "single": "シングル",
+          "collage": "コラージュ",
+          "magazine": "マガジン",
+          "artistic": "アーティスティック"
+        },
+        "templates": {
+          "single": "1枚レイアウト",
+          "twoVertical": "2枚縦並び",
+          "twoHorizontal": "2枚横並び",
+          "threeGrid": "3枚グリッド",
+          "fourGrid": "4枚グリッド",
+          "magazine": "マガジン風",
+          "artistic": "アーティスティック"
+        },
+        "premium": "プレミアム",
+        "premiumRequired": "このレイアウトはプレミアム機能です",
+        "select": "選択",
+        "cancel": "キャンセル"
       }
     },
     "groupChat": {

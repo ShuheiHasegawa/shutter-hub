@@ -114,7 +114,12 @@ export function ParticipantManagement({
         })
       );
 
-      setParticipants(participantsWithRating as Participant[]);
+      // userが配列として返される場合があるため、最初の要素を取得
+      const processedParticipants = participantsWithRating.map(item => ({
+        ...item,
+        user: Array.isArray(item.user) ? item.user[0] : item.user,
+      }));
+      setParticipants(processedParticipants as Participant[]);
     } catch (error) {
       console.error('参加者取得エラー:', error);
       toast.error('参加者情報の取得に失敗しました');

@@ -91,7 +91,12 @@ export function EditHistory({
 
       if (error) throw error;
 
-      setHistory((data || []) as EditHistoryEntry[]);
+      // editorが配列として返される場合があるため、最初の要素を取得
+      const processedData = (data || []).map(item => ({
+        ...item,
+        editor: Array.isArray(item.editor) ? item.editor[0] : item.editor,
+      }));
+      setHistory(processedData as EditHistoryEntry[]);
     } catch (error) {
       console.error('編集履歴取得エラー:', error);
       toast.error('編集履歴の取得に失敗しました');
@@ -187,7 +192,9 @@ export function EditHistory({
     switch (fieldName) {
       case 'start_time':
       case 'end_time':
-        return format(new Date(value), 'yyyy年MM月dd日 HH:mm', { locale: ja });
+        return format(new Date(value as string), 'yyyy年MM月dd日 HH:mm', {
+          locale: ja,
+        });
       case 'is_published':
         return value ? '公開' : '非公開';
       case 'booking_type':
@@ -198,9 +205,9 @@ export function EditHistory({
           priority: '優先予約',
           waitlist: 'キャンセル待ち',
         };
-        return bookingTypes[value] || value;
+        return bookingTypes[value as string] || String(value);
       case 'price_per_person':
-        return `¥${value.toLocaleString()}`;
+        return `¥${(value as number).toLocaleString()}`;
       case 'image_urls':
         return Array.isArray(value) ? `${value.length}枚の画像` : '画像なし';
       default:
@@ -208,7 +215,9 @@ export function EditHistory({
     }
   };
 
-  const renderChanges = (changes: Record<string, { old: any; new: any }>) => {
+  const renderChanges = (
+    changes: Record<string, { old: unknown; new: unknown }>
+  ) => {
     return Object.entries(changes).map(([fieldName, change]) => (
       <div key={fieldName} className="border-l-2 border-muted pl-4 py-2">
         <div className="font-medium text-sm">{formatFieldName(fieldName)}</div>
