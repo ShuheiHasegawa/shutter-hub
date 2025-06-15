@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -19,6 +19,7 @@ interface FollowButtonProps {
   variant?: 'default' | 'outline' | 'ghost';
   showIcon?: boolean;
   disabled?: boolean;
+  onFollowChange?: () => void | Promise<void>;
 }
 
 export function FollowButton({
@@ -31,11 +32,18 @@ export function FollowButton({
   variant = 'default',
   showIcon = true,
   disabled = false,
+  onFollowChange,
 }: FollowButtonProps) {
   const t = useTranslations('social.follow');
   const [isPending, startTransition] = useTransition();
   const [localIsFollowing, setLocalIsFollowing] = useState(isFollowing);
   const [localFollowStatus, setLocalFollowStatus] = useState(followStatus);
+
+  // 親コンポーネントからのpropsが変更された時にローカル状態を更新
+  useEffect(() => {
+    setLocalIsFollowing(isFollowing);
+    setLocalFollowStatus(followStatus);
+  }, [isFollowing, followStatus]);
 
   const handleFollowAction = async () => {
     if (disabled || isPending) return;
@@ -49,6 +57,10 @@ export function FollowButton({
             setLocalIsFollowing(false);
             setLocalFollowStatus(undefined);
             toast.success(result.message);
+            // 親コンポーネントに状態変更を通知
+            if (onFollowChange) {
+              await onFollowChange();
+            }
           } else {
             toast.error(result.message);
           }
@@ -59,6 +71,10 @@ export function FollowButton({
             setLocalIsFollowing(true);
             setLocalFollowStatus(result.follow_status);
             toast.success(result.message);
+            // 親コンポーネントに状態変更を通知
+            if (onFollowChange) {
+              await onFollowChange();
+            }
           } else {
             toast.error(result.message);
           }

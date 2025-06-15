@@ -210,13 +210,19 @@ export function PostCard({
         <div className="px-4 pt-3 pb-2">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Repeat2 className="h-4 w-4" />
-            <Avatar className="h-6 w-6">
-              <AvatarImage src={post.user.avatar_url || undefined} />
-              <AvatarFallback className="text-xs">
-                {post.user.display_name?.[0] || 'U'}
-              </AvatarFallback>
-            </Avatar>
-            <span>{post.user.display_name}さんがリポストしました</span>
+            <Link href={`/profile/${post.user.id}`}>
+              <Avatar className="h-6 w-6 cursor-pointer hover:opacity-80 transition-opacity">
+                <AvatarImage src={post.user.avatar_url || undefined} />
+                <AvatarFallback className="text-xs">
+                  {post.user.display_name?.[0] || 'U'}
+                </AvatarFallback>
+              </Avatar>
+            </Link>
+            <Link href={`/profile/${post.user.id}`}>
+              <span className="hover:text-primary transition-colors cursor-pointer">
+                {post.user.display_name}さんがリポストしました
+              </span>
+            </Link>
           </div>
           {post.repost_comment && (
             <p className="mt-2 text-sm pl-6">{post.repost_comment}</p>
@@ -227,12 +233,14 @@ export function PostCard({
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <Avatar className="h-12 w-12">
-              <AvatarImage src={displayPost.user.avatar_url || undefined} />
-              <AvatarFallback>
-                {displayPost.user.display_name?.[0] || 'U'}
-              </AvatarFallback>
-            </Avatar>
+            <Link href={`/profile/${displayPost.user.id}`}>
+              <Avatar className="h-12 w-12 cursor-pointer hover:opacity-80 transition-opacity">
+                <AvatarImage src={displayPost.user.avatar_url || undefined} />
+                <AvatarFallback>
+                  {displayPost.user.display_name?.[0] || 'U'}
+                </AvatarFallback>
+              </Avatar>
+            </Link>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <Link href={`/profile/${displayPost.user.id}`}>
@@ -500,19 +508,22 @@ export function PostCard({
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <div className="flex -space-x-2">
               {displayPost.recent_likes.slice(0, 3).map(user => (
-                <Avatar
-                  key={user.id}
-                  className="h-6 w-6 border-2 border-background"
-                >
-                  <AvatarImage src={user.avatar_url || undefined} />
-                  <AvatarFallback className="text-xs">
-                    {user.display_name?.[0] || 'U'}
-                  </AvatarFallback>
-                </Avatar>
+                <Link key={user.id} href={`/profile/${user.id}`}>
+                  <Avatar className="h-6 w-6 border-2 border-background cursor-pointer hover:opacity-80 transition-opacity">
+                    <AvatarImage src={user.avatar_url || undefined} />
+                    <AvatarFallback className="text-xs">
+                      {user.display_name?.[0] || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                </Link>
               ))}
             </div>
             <span>
-              {displayPost.recent_likes[0].display_name}
+              <Link href={`/profile/${displayPost.recent_likes[0].id}`}>
+                <span className="hover:text-primary transition-colors cursor-pointer">
+                  {displayPost.recent_likes[0].display_name}
+                </span>
+              </Link>
               {displayPost.recent_likes.length > 1 &&
                 ` 他${displayPost.recent_likes.length - 1}人`}
               がいいねしました

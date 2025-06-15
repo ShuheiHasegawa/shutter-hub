@@ -65,6 +65,58 @@ export default function UserProfilePage() {
   const userId = params.userId as string;
   const isOwnProfile = user?.id === userId;
 
+  // フォロー状態を更新する関数
+  const updateFollowStats = async () => {
+    if (!user || isOwnProfile) return;
+
+    try {
+      const supabase = createClient();
+
+      // フォロー数を取得
+      const { data: followersData } = await supabase
+        .from('follows')
+        .select('id')
+        .eq('following_id', userId)
+        .eq('status', 'accepted');
+
+      const { data: followingData } = await supabase
+        .from('follows')
+        .select('id')
+        .eq('follower_id', userId)
+        .eq('status', 'accepted');
+
+      // 現在のフォロー関係を確認
+      const { data: followRelation } = await supabase
+        .from('follows')
+        .select('status')
+        .eq('follower_id', user.id)
+        .eq('following_id', userId)
+        .single();
+
+      const { data: mutualFollow } = await supabase
+        .from('follows')
+        .select('status')
+        .eq('follower_id', userId)
+        .eq('following_id', user.id)
+        .single();
+
+      setFollowStats({
+        followers_count: followersData?.length || 0,
+        following_count: followingData?.length || 0,
+        is_following: followRelation?.status === 'accepted',
+        follow_status: followRelation?.status as
+          | 'accepted'
+          | 'pending'
+          | undefined,
+        is_mutual_follow:
+          followRelation?.status === 'accepted' &&
+          mutualFollow?.status === 'accepted',
+      });
+    } catch (error) {
+      console.error('Follow stats update error:', error);
+    }
+  };
+
   useEffect(() => {
     const loadProfileData = async () => {
       if (!userId) return;
@@ -103,46 +155,7 @@ export default function UserProfilePage() {
 
         // フォロー統計情報を取得（自分以外のプロフィールの場合）
         if (!isOwnProfile && user) {
-          // フォロー数を取得
-          const { data: followersData } = await supabase
-            .from('follows')
-            .select('id')
-            .eq('following_id', userId)
-            .eq('status', 'accepted');
-
-          const { data: followingData } = await supabase
-            .from('follows')
-            .select('id')
-            .eq('follower_id', userId)
-            .eq('status', 'accepted');
-
-          // 現在のフォロー関係を確認
-          const { data: followRelation } = await supabase
-            .from('follows')
-            .select('status')
-            .eq('follower_id', user.id)
-            .eq('following_id', userId)
-            .single();
-
-          const { data: mutualFollow } = await supabase
-            .from('follows')
-            .select('status')
-            .eq('follower_id', userId)
-            .eq('following_id', user.id)
-            .single();
-
-          setFollowStats({
-            followers_count: followersData?.length || 0,
-            following_count: followingData?.length || 0,
-            is_following: followRelation?.status === 'accepted',
-            follow_status: followRelation?.status as
-              | 'accepted'
-              | 'pending'
-              | undefined,
-            is_mutual_follow:
-              followRelation?.status === 'accepted' &&
-              mutualFollow?.status === 'accepted',
-          });
+          await updateFollowStats();
         }
       } catch (error) {
         console.error('Profile load error:', error);
@@ -261,6 +274,7 @@ export default function UserProfilePage() {
                   followStatus={followStats?.follow_status}
                   isMutualFollow={followStats?.is_mutual_follow}
                   size="md"
+                  onFollowChange={updateFollowStats}
                 />
               )
             )}
