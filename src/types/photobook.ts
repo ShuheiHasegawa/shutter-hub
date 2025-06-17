@@ -52,6 +52,33 @@ export interface Photobook {
   themeId?: string;
 }
 
+// データベースから取得するフォトブックデータ
+export interface PhotobookData {
+  id: string;
+  user_id: string;
+  title: string;
+  description?: string;
+  cover_image_url?: string;
+  is_published: boolean;
+  is_public: boolean;
+  subscription_plan: string;
+  created_at: string;
+  updated_at: string;
+  photobook_statistics?: Array<{
+    view_count: number;
+    likes_count: number;
+    comments_count: number;
+  }>;
+}
+
+// フォトブック統計データ
+export interface PhotobookStats {
+  view_count: number;
+  likes_count: number;
+  comments_count: number;
+  shares_count?: number;
+}
+
 // レイアウトテンプレートカテゴリ
 export interface LayoutCategory {
   id: string;

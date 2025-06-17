@@ -23,6 +23,7 @@ import {
   Star,
   Heart,
   Users,
+  BookOpen,
 } from 'lucide-react';
 import Link from 'next/link';
 import { format } from 'date-fns';
@@ -30,6 +31,7 @@ import { ja } from 'date-fns/locale';
 import { useLocale } from 'next-intl';
 import { toast } from 'sonner';
 import { createClient } from '@/lib/supabase/client';
+import { PhotobookGallery } from '@/components/profile/PhotobookGallery';
 
 interface ProfileData {
   id: string;
@@ -166,7 +168,7 @@ export default function UserProfilePage() {
     };
 
     loadProfileData();
-  }, [userId, user, isOwnProfile]);
+  }, [userId, user, isOwnProfile, updateFollowStats]);
 
   const getInitials = (name: string) => {
     return name
@@ -395,6 +397,13 @@ export default function UserProfilePage() {
                   概要
                 </TabsTrigger>
                 <TabsTrigger
+                  value="photobooks"
+                  className="flex items-center gap-2"
+                >
+                  <BookOpen className="h-4 w-4" />
+                  フォトブック
+                </TabsTrigger>
+                <TabsTrigger
                   value="reviews"
                   className="flex items-center gap-2"
                 >
@@ -455,6 +464,20 @@ export default function UserProfilePage() {
                         最近の活動データはありません
                       </p>
                     </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="photobooks">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>フォトブック</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <PhotobookGallery
+                      userId={userId}
+                      isOwnProfile={isOwnProfile}
+                    />
                   </CardContent>
                 </Card>
               </TabsContent>
