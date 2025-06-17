@@ -23,6 +23,7 @@ import {
   MessageCircle,
   Hash,
   Book,
+  Edit3,
 } from 'lucide-react';
 import {
   Collapsible,
@@ -112,8 +113,19 @@ export function Sidebar({ className }: SidebarProps) {
     },
     {
       title: t('photobook'),
-      href: '/photobook',
       icon: Book,
+      children: [
+        {
+          title: t('photobookView'),
+          href: '/photobook',
+          icon: Book,
+        },
+        {
+          title: t('photobookEdit'),
+          href: '/photobook/edit',
+          icon: Edit3,
+        },
+      ],
     },
     {
       title: 'メッセージ',
@@ -306,8 +318,19 @@ export function MobileSidebarTrigger() {
     },
     {
       title: t('photobook'),
-      href: '/photobook',
       icon: Book,
+      children: [
+        {
+          title: t('photobookView'),
+          href: '/photobook',
+          icon: Book,
+        },
+        {
+          title: t('photobookEdit'),
+          href: '/photobook/edit',
+          icon: Edit3,
+        },
+      ],
     },
     {
       title: 'メッセージ',
