@@ -7,21 +7,22 @@ import { samplePhotobook } from '@/constants/samplePhotobookData';
 import { Photobook as PhotobookType } from '@/types/photobook';
 
 interface PhotobookEditPageProps {
-  params: {
+  params: Promise<{
     id: string;
     locale: string;
-  };
+  }>;
 }
 
 export async function generateMetadata({
   params,
 }: PhotobookEditPageProps): Promise<Metadata> {
   const supabase = await createClient();
+  const resolvedParams = await params;
 
   const { data: photobook, error } = await supabase
     .from('photobooks')
     .select('title')
-    .eq('id', params.id)
+    .eq('id', resolvedParams.id)
     .single();
 
   if (error || !photobook) {
@@ -101,7 +102,8 @@ async function getEditablePhotobookData(id: string) {
 export default async function PhotobookEditPage({
   params,
 }: PhotobookEditPageProps) {
-  const data = await getEditablePhotobookData(params.id);
+  const resolvedParams = await params;
+  const data = await getEditablePhotobookData(resolvedParams.id);
 
   if (!data) {
     redirect('/auth/signin');
@@ -125,7 +127,7 @@ export default async function PhotobookEditPage({
             <div className="flex items-center space-x-4">
               <button
                 onClick={() =>
-                  (window.location.href = `/photobooks/${params.id}`)
+                  (window.location.href = `/photobooks/${resolvedParams.id}`)
                 }
                 className="text-gray-600 hover:text-gray-900 transition-colors"
               >

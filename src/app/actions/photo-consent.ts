@@ -11,13 +11,15 @@ export async function updateConsentStatus(
 ) {
   try {
     const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
     if (!user) {
       throw new Error('認証が必要です');
     }
 
-    const updateData: Record<string, any> = {
+    const updateData: Record<string, unknown> = {
       consent_status: status,
       response_message: message,
       updated_at: new Date().toISOString(),
@@ -36,7 +38,7 @@ export async function updateConsentStatus(
     if (error) throw error;
 
     // TODO: 通知送信、監査ログ作成
-    
+
     revalidatePath('/photo-consent');
     return { success: true };
   } catch (error) {
@@ -52,7 +54,9 @@ export async function batchUpdateConsent(
 ) {
   try {
     const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
     if (!user) {
       throw new Error('認証が必要です');
@@ -63,11 +67,11 @@ export async function batchUpdateConsent(
     );
 
     const successCount = results.filter(r => r.success).length;
-    
+
     revalidatePath('/photo-consent');
-    return { 
-      success: true, 
-      message: `${successCount}/${consentIds.length}件の更新が完了しました` 
+    return {
+      success: true,
+      message: `${successCount}/${consentIds.length}件の更新が完了しました`,
     };
   } catch (error) {
     console.error('Error batch updating consents:', error);
@@ -83,4 +87,4 @@ export async function refreshConsentRequests() {
     console.error('Error refreshing consents:', error);
     return { success: false, error: 'リフレッシュに失敗しました' };
   }
-} 
+}

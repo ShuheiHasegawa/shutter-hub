@@ -3,11 +3,47 @@ import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { ConsentSwipeContainer } from '@/components/photo-consent/ConsentSwipeContainer';
-import { SwipeablePhotoConsent } from '@/types/photo-consent';
+import {
+  SwipeablePhotoConsent,
+  ConsentStatus,
+  UsageScope,
+} from '@/types/photo-consent';
 import {
   updateConsentStatus,
   refreshConsentRequests,
 } from '@/app/actions/photo-consent';
+
+// データベースレスポンス型定義
+interface DatabaseConsentRequest {
+  id: string;
+  photographer_id: string;
+  model_id: string;
+  photo_session_id?: string;
+  photo_url: string;
+  photo_filename: string;
+  photo_hash: string;
+  photo_metadata?: Record<string, unknown>;
+  consent_status: string;
+  usage_scope?: string[];
+  usage_notes?: string;
+  request_message?: string;
+  response_message?: string;
+  consent_given_at?: string;
+  expires_at?: string;
+  created_at: string;
+  updated_at: string;
+  gdpr_consent?: boolean;
+  data_retention_agreed?: boolean;
+  photographer?: {
+    display_name: string;
+    avatar_url?: string;
+  };
+  photo_session?: {
+    title: string;
+    location: string;
+    start_date: string;
+  };
+}
 
 export const metadata: Metadata = {
   title: '写真公開合意管理 | ShutterHub',
@@ -15,7 +51,7 @@ export const metadata: Metadata = {
 };
 
 interface PhotoConsentPageProps {
-  searchParams: { view?: string };
+  searchParams: Promise<{ view?: string }>;
 }
 
 async function getConsentRequests(): Promise<SwipeablePhotoConsent[]> {
@@ -53,7 +89,7 @@ async function getConsentRequests(): Promise<SwipeablePhotoConsent[]> {
   }
 
   return (
-    requests?.map((request: Record<string, any>) => ({
+    (requests as DatabaseConsentRequest[])?.map(request => ({
       id: request.id,
       photographerId: request.photographer_id,
       modelId: request.model_id,
@@ -62,8 +98,8 @@ async function getConsentRequests(): Promise<SwipeablePhotoConsent[]> {
       photoFilename: request.photo_filename,
       photoHash: request.photo_hash,
       photoMetadata: request.photo_metadata,
-      consentStatus: request.consent_status,
-      usageScope: request.usage_scope || [],
+      consentStatus: request.consent_status as ConsentStatus,
+      usageScope: (request.usage_scope || []) as UsageScope[],
       usageNotes: request.usage_notes,
       requestMessage: request.request_message,
       responseMessage: request.response_message,
@@ -86,7 +122,7 @@ async function getConsentRequests(): Promise<SwipeablePhotoConsent[]> {
       },
       photoSession: request.photo_session
         ? {
-            id: request.photo_session_id,
+            id: request.photo_session_id || '',
             title: request.photo_session.title,
             location: request.photo_session.location,
             date: new Date(request.photo_session.start_date),
@@ -109,7 +145,8 @@ export default async function PhotoConsentPage({
   }
 
   const consents = await getConsentRequests();
-  const showBatchMode = searchParams.view === 'batch';
+  const resolvedSearchParams = await searchParams;
+  const showBatchMode = resolvedSearchParams.view === 'batch';
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -141,8 +178,22 @@ export default async function PhotoConsentPage({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <ConsentSwipeContainer
           consents={consents}
-          onConsentUpdate={updateConsentStatus}
-          onRefresh={refreshConsentRequests}
+          onConsentUpdate={async (consentId, status, message) => {
+            const result = await updateConsentStatus(
+              consentId,
+              status,
+              message
+            );
+            if (!result.success) {
+              console.error('Failed to update consent:', result.error);
+            }
+          }}
+          onRefresh={async () => {
+            const result = await refreshConsentRequests();
+            if (!result.success) {
+              console.error('Failed to refresh:', result.error);
+            }
+          }}
           showBatchMode={showBatchMode}
         />
       </div>

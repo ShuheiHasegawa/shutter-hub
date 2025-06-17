@@ -7,21 +7,22 @@ import { samplePhotobook } from '@/constants/samplePhotobookData';
 import { Photo, Photobook as PhotobookType } from '@/types/photobook';
 
 interface PhotobookPageProps {
-  params: {
+  params: Promise<{
     id: string;
     locale: string;
-  };
+  }>;
 }
 
 export async function generateMetadata({
   params,
 }: PhotobookPageProps): Promise<Metadata> {
   const supabase = await createClient();
+  const resolvedParams = await params;
 
   const { data: photobook, error } = await supabase
     .from('photobooks')
     .select('title, description')
-    .eq('id', params.id)
+    .eq('id', resolvedParams.id)
     .single();
 
   if (error || !photobook) {
@@ -114,7 +115,8 @@ async function getPhotobookData(id: string) {
 }
 
 export default async function PhotobookPage({ params }: PhotobookPageProps) {
-  const data = await getPhotobookData(params.id);
+  const resolvedParams = await params;
+  const data = await getPhotobookData(resolvedParams.id);
 
   if (!data) {
     notFound();
@@ -131,7 +133,7 @@ export default async function PhotobookPage({ params }: PhotobookPageProps) {
         view_count: statistics.view_count + 1,
         last_viewed_at: new Date().toISOString(),
       })
-      .eq('photobook_id', params.id);
+      .eq('photobook_id', resolvedParams.id);
   }
 
   const handlePhotoClick = (photo: Photo) => {
@@ -196,7 +198,7 @@ export default async function PhotobookPage({ params }: PhotobookPageProps) {
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={() =>
-                      (window.location.href = `/photobooks/${params.id}/edit`)
+                      (window.location.href = `/photobooks/${resolvedParams.id}/edit`)
                     }
                     className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
                   >

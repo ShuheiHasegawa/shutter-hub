@@ -206,7 +206,7 @@ export const ConsentSwipeCard: React.FC<ConsentSwipeCardProps> = ({
               </h3>
               <div className="flex items-center text-sm text-gray-600 mb-2">
                 <User size={14} className="mr-1" />
-                <span>{consent.model.displayName}</span>
+                <span>モデル: {consent.modelId}</span>
               </div>
             </div>
 

@@ -158,7 +158,9 @@ export function OrganizerManagementPanel({
             <Button
               variant="outline"
               className="h-auto p-4 flex-col gap-2"
-              onClick={() => console.log('参加者管理機能は開発中です')}
+              onClick={() =>
+                router.push(`/photo-sessions/${session.id}/participants`)
+              }
             >
               <UsersIcon className="h-5 w-5" />
               <span className="text-sm">参加者管理</span>
@@ -167,7 +169,9 @@ export function OrganizerManagementPanel({
             <Button
               variant="outline"
               className="h-auto p-4 flex-col gap-2"
-              onClick={() => console.log('メッセージ機能は開発中です')}
+              onClick={() =>
+                router.push(`/photo-sessions/${session.id}/messages`)
+              }
             >
               <MessageSquareIcon className="h-5 w-5" />
               <span className="text-sm">メッセージ</span>
@@ -176,7 +180,9 @@ export function OrganizerManagementPanel({
             <Button
               variant="outline"
               className="h-auto p-4 flex-col gap-2"
-              onClick={() => console.log('分析機能は開発中です')}
+              onClick={() =>
+                router.push(`/photo-sessions/${session.id}/analytics`)
+              }
             >
               <BarChart3Icon className="h-5 w-5" />
               <span className="text-sm">分析・統計</span>
