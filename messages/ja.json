@@ -1204,5 +1204,78 @@
         "helpful": "参考になった順"
       }
     }
+  },
+  "photoConsent": {
+    "title": "写真公開合意管理",
+    "description": "Tinder風スワイプで効率的に合意管理",
+    "swipeInstructions": {
+      "approve": "右スワイプ: 承認",
+      "reject": "左スワイプ: 拒否",
+      "discuss": "上スワイプ: 要相談"
+    },
+    "status": {
+      "pending": "確認待ち",
+      "approved": "承認済み",
+      "rejected": "拒否済み",
+      "requiresDiscussion": "要相談"
+    },
+    "buttons": {
+      "approve": "承認",
+      "reject": "拒否",
+      "discuss": "要相談",
+      "preview": "プレビュー",
+      "batchMode": "一括操作",
+      "swipeMode": "スワイプモード"
+    },
+    "photographer": "カメラマン",
+    "model": "モデル",
+    "session": "撮影会",
+    "requestMessage": "リクエストメッセージ",
+    "responseMessage": "返信メッセージ",
+    "usageScope": "使用用途",
+    "usageScopes": {
+      "web": "Web",
+      "sns": "SNS",
+      "print": "印刷",
+      "commercial": "商用"
+    },
+    "batchActions": {
+      "selectAll": "全て選択",
+      "deselectAll": "選択解除",
+      "selectedCount": "{count}件選択中",
+      "approveSelected": "選択項目を承認",
+      "rejectSelected": "選択項目を拒否"
+    },
+    "preview": {
+      "zoomIn": "拡大",
+      "zoomOut": "縮小",
+      "metadata": "撮影情報",
+      "location": "撮影場所",
+      "date": "撮影日",
+      "close": "閉じる"
+    },
+    "messages": {
+      "noRequests": "新しい合意リクエストはありません",
+      "requestsCount": "{count}件の確認待ち",
+      "updateSuccess": "更新が完了しました",
+      "updateError": "更新に失敗しました",
+      "batchUpdateSuccess": "{count}件の更新が完了しました"
+    },
+    "legal": {
+      "gdprNotice": "※ すべての合意は法的証跡として記録され、GDPR準拠の下で管理されます",
+      "dataRetention": "データ保持期間: 7年間（法的要件）",
+      "rightsInfo": "お客様には、データの削除・修正・エクスポートの権利があります"
+    }
+  },
+  "modelTag": {
+    "placeholder": "@ユーザー名を入力してモデルをタグ付け...",
+    "noResults": "に一致するユーザーが見つかりません",
+    "add": "追加",
+    "remove": "削除",
+    "following": "フォロー中",
+    "follower": "フォロワー",
+    "maxTagsReached": "タグ付け上限に達しました",
+    "tagAdded": "モデルをタグ付けしました",
+    "tagRemoved": "タグを削除しました"
   }
 }

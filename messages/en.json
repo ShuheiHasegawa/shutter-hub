@@ -1208,5 +1208,78 @@
         "remove": "Remove"
       }
     }
+  },
+  "photoConsent": {
+    "title": "Photo Publication Consent Management",
+    "description": "Efficient consent management with Tinder-style swipe",
+    "swipeInstructions": {
+      "approve": "Swipe right: Approve",
+      "reject": "Swipe left: Reject",
+      "discuss": "Swipe up: Requires discussion"
+    },
+    "status": {
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "requiresDiscussion": "Requires Discussion"
+    },
+    "buttons": {
+      "approve": "Approve",
+      "reject": "Reject",
+      "discuss": "Discuss",
+      "preview": "Preview",
+      "batchMode": "Batch Mode",
+      "swipeMode": "Swipe Mode"
+    },
+    "photographer": "Photographer",
+    "model": "Model",
+    "session": "Photo Session",
+    "requestMessage": "Request Message",
+    "responseMessage": "Response Message",
+    "usageScope": "Usage Scope",
+    "usageScopes": {
+      "web": "Web",
+      "sns": "SNS",
+      "print": "Print",
+      "commercial": "Commercial"
+    },
+    "batchActions": {
+      "selectAll": "Select All",
+      "deselectAll": "Deselect All",
+      "selectedCount": "{count} selected",
+      "approveSelected": "Approve Selected",
+      "rejectSelected": "Reject Selected"
+    },
+    "preview": {
+      "zoomIn": "Zoom In",
+      "zoomOut": "Zoom Out",
+      "metadata": "Photo Info",
+      "location": "Location",
+      "date": "Date",
+      "close": "Close"
+    },
+    "messages": {
+      "noRequests": "No new consent requests",
+      "requestsCount": "{count} pending",
+      "updateSuccess": "Update completed successfully",
+      "updateError": "Failed to update",
+      "batchUpdateSuccess": "{count} items updated successfully"
+    },
+    "legal": {
+      "gdprNotice": "* All consents are recorded as legal evidence and managed under GDPR compliance",
+      "dataRetention": "Data retention period: 7 years (legal requirement)",
+      "rightsInfo": "You have the right to delete, modify, and export your data"
+    }
+  },
+  "modelTag": {
+    "placeholder": "Type @username to tag models...",
+    "noResults": "No users found matching",
+    "add": "Add",
+    "remove": "Remove",
+    "following": "Following",
+    "follower": "Follower",
+    "maxTagsReached": "Maximum tags reached",
+    "tagAdded": "Model tagged successfully",
+    "tagRemoved": "Tag removed successfully"
   }
 }

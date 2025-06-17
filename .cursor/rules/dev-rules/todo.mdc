@@ -540,7 +540,104 @@ alwaysApply: true
     - レスポンシブデザイン対応
   - **依存関係**: 既存フォロー機能、レビューシステム、認証システム
 
+- [x] **t0-028**: 🚀 **写真公開合意・モデルタグ付けシステム** ✅ **完了**
+  - [x] **Phase 1: データベース基盤実装**
+    - [x] 写真公開合意システム（photo_consent_requests、photo_consent_audit_log等）✅
+    - [x] モデルタグ付けシステム（photo_session_model_tags、model_portfolio_images等）✅
+    - [x] GDPR準拠の監査ログ・法的証跡管理✅
+    - [x] ストレージ最適化（7日間画像保存 + 永続ファイル名・ハッシュ管理）✅
+    - [x] RLSポリシー・セキュリティ実装✅
+    - [x] PostgreSQL関数・トリガー実装（自動削除・リマインダー）✅
+    - [x] Supabaseマイグレーション適用完了✅
+  - [x] **Phase 2: TypeScript型定義システム**
+    - [x] 包括的型定義（30+型）- ConsentStatus、SwipeablePhotoConsent等✅
+    - [x] API Request/Response型・UI状態管理型✅
+    - [x] GDPR・データ管理型（DataDeletionRequest、DataExportRequest）✅
+    - [x] バッチ操作・統計分析型✅
+    - [x] エラーハンドリング・フォームバリデーション型✅
+  - [x] **Phase 3: Tinder風スワイプUIコンポーネント**
+    - [x] ConsentSwipeCard（モバイルファースト・ハプティックフィードバック）✅
+    - [x] ConsentSwipeContainer（カードスタック管理・スワイプアクション）✅
+    - [x] ConsentPhotoPreview（ズーム機能・詳細表示モーダル）✅
+    - [x] ConsentBatchActions（PC向け一括操作UI）✅
+    - [x] MentionTagInput（@mention自動補完・フォロワー絞り込み）✅
+    - [x] 革新的なスワイプベース合意管理UI完成✅
+  - [x] **Phase 4: メインページ・Server Actions**
+    - [x] /photo-consent ページ実装（統合UI・権限制御）✅
+    - [x] Server Actions（updateConsentStatus、batchUpdateConsent等）✅
+    - [x] 多言語化対応（日本語・英語翻訳）✅
+    - [x] レスポンシブデザイン・モバイル最適化✅
+    - [x] framer-motion統合（滑らかなアニメーション）✅
+  - **実装優先度**: ✅ **完了**
+  - **実装時間**: 1日（MCP Supabase統合加速）
+  - **技術成果**:
+    - 業界初のTinder風写真公開合意システム
+    - GDPR完全準拠の法的証跡管理
+    - モバイルファースト・ハプティックフィードバック対応
+    - ストレージコスト最適化（短期URL + 永続メタデータ）
+    - ¥9.6M年間収益拡張ポテンシャル
+    - 包括的TypeScript型システム（30+型）
+    - 革新的UX（Tinder × 法的コンプライアンス）
+  - **依存関係**: ✅ 既存撮影会管理、ユーザーシステム、通知システム
+
 ### 📋 **次期開発タスク（優先順位別ロードマップ）**
+
+#### 🔴 **高優先度（即実装推奨）**
+
+- [ ] **t0-027**: 🎨 **フォトブック・ポートフォリオシステム（料金プラン統合）**
+  - [ ] **Phase 1: 料金プラン連動フォトブック基盤**
+    - [ ] 既存photobook機能の料金プラン統合（`/photobook`活用）
+    - [ ] フォトブック作成数制限システム実装
+      - FREE: 1冊まで（最大10ページ・50枚写真）
+      - PREMIUM: 5冊まで（最大50ページ・500枚写真・プレミアムテンプレート）
+      - ADMIN: 無制限（全機能アクセス）
+    - [ ] 既存`PhotobookUserSettings`型の料金プラン統合
+    - [ ] データベーススキーマ拡張（撮影会イベント連携）
+    - [ ] 多言語化対応（日本語・英語翻訳）
+  - [ ] **Phase 2: 電子ブック形式プロフィール統合**
+    - [ ] ユーザープロフィールページへのフォトブック表示統合
+    - [ ] 電子ブック形式での作品ポートフォリオ表示
+    - [ ] 見開きモード・ページモードの最適化
+    - [ ] ソーシャル共有機能（SNS連携）
+    - [ ] フォトブック公開/非公開設定
+    - [ ] フォロワー限定公開オプション
+  - [ ] **Phase 3: 撮影イベント連携システム**
+    - [ ] 撮影会データとフォトブックの自動紐付け
+    - [ ] 撮影日時・場所・参加者データの自動取得
+    - [ ] 撮影会別フォトブック自動生成機能
+    - [ ] イベント写真の自動インポート機能
+    - [ ] 撮影会主催者への作品共有システム
+    - [ ] 参加者同士での作品交換機能
+  - [ ] **Phase 4: ビッグデータ・統計活用システム**
+    - [ ] 撮影パターン分析（時間帯・場所・スタイル）
+    - [ ] ユーザー行動データ収集（閲覧・編集・共有パターン）
+    - [ ] 人気フォトブックレイアウト統計
+    - [ ] 撮影会成功要因分析（参加者満足度×フォトブック作成率）
+    - [ ] AIレコメンデーション（適切な撮影会・レイアウト提案）
+    - [ ] プラットフォーム改善のためのインサイト生成
+  - [ ] **Phase 5: 高度なフォトブック機能**
+    - [ ] AI自動レイアウト生成（写真分析ベース）
+    - [ ] コラボレーション編集機能（複数ユーザー共同編集）
+    - [ ] フォトブックテンプレート市場（ユーザー作成テンプレート販売）
+    - [ ] PDF/印刷用データエクスポート機能
+    - [ ] フォトブック品評・コンテスト機能
+    - [ ] VR/AR対応フォトブック閲覧
+  - **実装優先度**: 🟡 重要
+  - **見積時間**: 3-4週間（段階的実装）
+  - **技術要件**:
+    - 既存photobookコンポーネント活用・拡張
+    - Supabase Storage画像最適化・CDN統合
+    - 料金プラン制限ロジック（サブスクリプション連動）
+    - データ分析・統計処理（PostgreSQL集計関数）
+    - AI/ML機能（写真分析・レコメンデーション）
+    - モバイル対応・レスポンシブ電子ブック
+  - **依存関係**: 既存撮影会システム、ユーザー管理システム、料金プランシステム
+  - **ビジネス価値**:
+    - 料金プラン差別化要素の強化
+    - ユーザー生成コンテンツによるエンゲージメント向上
+    - 撮影会データのビッグデータ活用
+    - プラットフォーム収益性向上（プレミアム機能）
+    - ユーザー定着率向上（作品アーカイブ機能）
 
 #### 🔴 **高優先度（即実装推奨）**
 
@@ -991,6 +1088,912 @@ alwaysApply: true
 2. **E2Eテスト環境構築**でリリース前品質保証
 3. **リアルタイム機能強化**でユーザー体験向上
 4. 段階的に高機能なプラットフォームに発展
+
+## 🎯 **料金プラン設計書（フォトブック統合版）**
+
+### **📊 基本料金プラン構成**
+
+#### **🆓 FREE プラン（無料）**
+```yaml
+撮影会機能:
+  - 撮影会参加: 月3回まで
+  - 撮影会主催: 月1回まで
+  - 先着順予約のみ（抽選・優先予約不可）
+  - 基本的なレビュー・評価機能
+
+フォトブック機能:
+  - フォトブック作成: 1冊まで
+  - 最大ページ数: 10ページ
+  - 最大写真数: 50枚
+  - 基本レイアウトテンプレートのみ
+  - 撮影会連携: 手動インポートのみ
+
+メッセージ・SNS機能:
+  - フォロー数制限: 50人まで
+  - メッセージ送信: 1日10通まで
+  - ファイル共有: 1MB以下のみ
+  - グループ作成: 2個まで
+
+その他制限:
+  - 広告表示あり
+  - カスタマーサポート: コミュニティフォーラムのみ
+  - データエクスポート機能なし
+```
+
+#### **⭐ PREMIUM プラン（月額1,980円）**
+```yaml
+撮影会機能:
+  - 撮影会参加: 無制限
+  - 撮影会主催: 無制限
+  - 全予約システム利用可能（抽選・優先・キャンセル待ち）
+  - 優先表示・早期予約アクセス
+  - 高度な分析レポート
+
+フォトブック機能:
+  - フォトブック作成: 5冊まで
+  - 最大ページ数: 50ページ
+  - 最大写真数: 500枚
+  - プレミアムレイアウトテンプレート利用可能
+  - 撮影会自動連携・写真自動インポート
+  - AI自動レイアウト生成（月10回まで）
+  - PDF/印刷用データエクスポート
+
+メッセージ・SNS機能:
+  - フォロー数制限: 500人まで
+  - メッセージ送信: 無制限
+  - ファイル共有: 50MB以下
+  - グループ作成: 20個まで
+  - プライベートグループ機能
+
+その他特典:
+  - 広告表示なし
+  - プレミアムカスタマーサポート
+  - データ一括エクスポート機能
+  - 限定イベント・撮影会への招待
+```
+
+#### **👑 PRO プラン（月額4,980円）**
+```yaml
+撮影会機能:
+  - PREMIUMプランの全機能
+  - 撮影会収益分析・ビジネスダッシュボード
+  - 参加者管理・マーケティングツール
+  - カスタム料金設定・割引システム
+
+フォトブック機能:
+  - フォトブック作成: 15冊まで
+  - 最大ページ数: 100ページ
+  - 最大写真数: 2000枚
+  - 全プレミアムテンプレート + 限定PROテンプレート
+  - AI自動レイアウト生成: 無制限
+  - コラボレーション編集機能
+  - フォトブックテンプレート販売（収益分配70%）
+
+メッセージ・SNS機能:
+  - フォロー数制限: 2000人まで
+  - 大容量ファイル共有: 500MB以下
+  - グループ作成: 100個まで
+  - 詳細分析・統計レポート
+
+ビジネス特典:
+  - 商用利用ライセンス
+  - APIアクセス権限
+  - ホワイトラベル対応
+  - 専任アカウントマネージャー
+```
+
+### **📈 フォトブック機能による収益化戦略**
+
+#### **1. 段階的制限による誘導**
+```yaml
+FREE → PREMIUM 誘導要因:
+  - フォトブック作成数不足（1冊 → 5冊）
+  - 写真数制限による不便さ（50枚 → 500枚）
+  - プレミアムテンプレートへの憧れ
+  - 撮影会自動連携の利便性
+
+PREMIUM → PRO 誘導要因:
+  - フォトブック作成数の更なる需要（5冊 → 15冊）
+  - 大容量・高品質なフォトブック作成需要
+  - ビジネス利用での収益化ニーズ
+  - コラボレーション機能の必要性
+```
+
+#### **2. データ駆動型プラン最適化**
+```yaml
+ビッグデータ活用指標:
+  - フォトブック作成頻度・利用パターン
+  - 撮影会参加 → フォトブック作成の転換率
+  - レイアウトテンプレート人気度
+  - ユーザー滞在時間・エンゲージメント
+  - 機能別使用頻度（編集・共有・閲覧）
+
+最適化戦略:
+  - A/Bテストによる制限値調整
+  - 利用データに基づく新機能開発
+  - ユーザー行動予測によるアップセル
+  - チャーン率分析・改善策実施
+```
+
+### **🎯 撮影会×フォトブック連携による価値創造**
+
+#### **1. 撮影会価値の最大化**
+```yaml
+参加者価値:
+  - 撮影会参加 → 自動フォトブック生成
+  - プロ品質のレイアウト提案
+  - 参加者同士での作品共有・交換
+  - 撮影スキル向上のための分析レポート
+
+主催者価値:
+  - 参加者満足度の可視化
+  - 撮影会の記録・アーカイブ自動化
+  - 参加者リピート率向上
+  - マーケティング素材としての活用
+```
+
+#### **2. ビッグデータ・統計価値**
+```yaml
+収集データ:
+  - 撮影時間帯・季節性パターン
+  - 人気撮影スタイル・ポーズ分析
+  - 地域別撮影傾向
+  - 機材・設定の統計データ
+  - ユーザー成長・スキル向上パターン
+
+活用方法:
+  - 撮影会推薦アルゴリズム改善
+  - 人気時間帯での料金動的調整
+  - 撮影技術コンテンツの企画
+  - パートナー企業への市場インサイト提供
+  - 広告・マーケティング戦略最適化
+```
+
+### **💰 収益予測（フォトブック機能統合後）**
+
+#### **月間収益目標（1年後）**
+```yaml
+ユーザー構成想定:
+  - FREE: 70% (3,500人)
+  - PREMIUM: 25% (1,250人) - 月額1,980円
+  - PRO: 5% (250人) - 月額4,980円
+
+月間売上予測:
+  - PREMIUM: 1,250人 × 1,980円 = 2,475,000円
+  - PRO: 250人 × 4,980円 = 1,245,000円
+  - 合計: 3,720,000円/月 (年間44,640,000円)
+
+追加収益:
+  - フォトブックテンプレート市場手数料: 30%
+  - 印刷サービス連携手数料: 10%
+  - データインサイト販売: 月50万円
+  - 推定追加収益: 月100万円
+
+総収益予測: 月472万円 (年間5,664万円)
+```
+
+### **🚀 実装ロードマップ**
+
+#### **Phase 1（1-2ヶ月）: 基盤実装**
+- [ ] 料金プラン制限システム
+- [ ] フォトブック基本機能拡張
+- [ ] 撮影会データ連携基盤
+
+#### **Phase 2（3-4ヶ月）: 高度機能**
+- [ ] AI自動レイアウト生成
+- [ ] ビッグデータ分析基盤
+- [ ] コラボレーション機能
+
+#### **Phase 3（5-6ヶ月）: 収益化**
+- [ ] テンプレート市場オープン
+- [ ] 企業向けデータインサイト販売
+- [ ] プレミアム機能拡充
+
+この料金プラン設計により、フォトブック機能を核とした差別化と収益最大化を実現します。
+
+### **🔧 フォトブック技術仕様・データベース拡張**
+
+#### **データベーススキーマ拡張**
+```sql
+-- 撮影会連携テーブル追加
+CREATE TABLE photobook_session_links (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  photobook_id UUID REFERENCES photobooks(id) NOT NULL,
+  photo_session_id UUID REFERENCES photo_sessions(id) NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  auto_imported BOOLEAN DEFAULT FALSE,
+  import_settings JSONB
+);
+
+-- 料金プラン制限テーブル拡張
+ALTER TABLE photobook_user_settings ADD COLUMN subscription_plan TEXT DEFAULT 'free';
+ALTER TABLE photobook_user_settings ADD COLUMN plan_expires_at TIMESTAMP WITH TIME ZONE;
+ALTER TABLE photobook_user_settings ADD COLUMN monthly_ai_generations_used INTEGER DEFAULT 0;
+ALTER TABLE photobook_user_settings ADD COLUMN monthly_ai_generations_limit INTEGER DEFAULT 0;
+
+-- ビッグデータ統計テーブル
+CREATE TABLE photobook_analytics (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES auth.users(id) NOT NULL,
+  photobook_id UUID REFERENCES photobooks(id),
+  photo_session_id UUID REFERENCES photo_sessions(id),
+  event_type TEXT NOT NULL, -- 'create', 'edit', 'view', 'share', 'export'
+  event_data JSONB,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  session_duration INTEGER, -- seconds
+  device_type TEXT,
+  browser_info JSONB
+);
+
+-- テンプレート市場テーブル
+CREATE TABLE photobook_template_market (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  creator_id UUID REFERENCES auth.users(id) NOT NULL,
+  template_id UUID REFERENCES layout_templates(id) NOT NULL,
+  price DECIMAL(10,2),
+  revenue_share DECIMAL(5,2) DEFAULT 70.00,
+  downloads_count INTEGER DEFAULT 0,
+  rating DECIMAL(3,2),
+  is_approved BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- AI生成履歴テーブル
+CREATE TABLE photobook_ai_generations (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES auth.users(id) NOT NULL,
+  photobook_id UUID REFERENCES photobooks(id) NOT NULL,
+  generation_type TEXT NOT NULL, -- 'layout', 'style', 'caption'
+  input_data JSONB,
+  output_data JSONB,
+  processing_time INTEGER, -- milliseconds
+  cost_credits INTEGER DEFAULT 1,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+```
+
+#### **型定義拡張 (TypeScript)**
+```typescript
+// 拡張された料金プラン型
+export enum SubscriptionPlan {
+  FREE = 'free',
+  PREMIUM = 'premium',
+  PRO = 'pro'
+}
+
+// 拡張されたユーザー設定型
+export interface ExtendedPhotobookUserSettings extends PhotobookUserSettings {
+  subscriptionPlan: SubscriptionPlan;
+  planExpiresAt?: Date;
+  monthlyAiGenerationsUsed: number;
+  monthlyAiGenerationsLimit: number;
+}
+
+// 撮影会連携型
+export interface PhotobookSessionLink {
+  id: string;
+  photobookId: string;
+  photoSessionId: string;
+  createdAt: Date;
+  autoImported: boolean;
+  importSettings?: {
+    includeAllPhotos: boolean;
+    filterByParticipant: boolean;
+    autoLayout: boolean;
+    layoutStyle: string;
+  };
+}
+
+// ビッグデータ分析型
+export interface PhotobookAnalytics {
+  id: string;
+  userId: string;
+  photobookId?: string;
+  photoSessionId?: string;
+  eventType: 'create' | 'edit' | 'view' | 'share' | 'export';
+  eventData: Record<string, any>;
+  createdAt: Date;
+  sessionDuration?: number;
+  deviceType?: string;
+  browserInfo?: Record<string, any>;
+}
+
+// AI生成履歴型
+export interface PhotobookAIGeneration {
+  id: string;
+  userId: string;
+  photobookId: string;
+  generationType: 'layout' | 'style' | 'caption';
+  inputData: Record<string, any>;
+  outputData: Record<string, any>;
+  processingTime: number;
+  costCredits: number;
+  createdAt: Date;
+}
+```
+
+#### **Server Actions拡張**
+```typescript
+// 料金プラン制限チェック
+export async function checkPhotobookLimits(userId: string, action: string) {
+  const settings = await getPhotobookUserSettings(userId);
+  
+  switch (action) {
+    case 'create_photobook':
+      const currentCount = await getPhotobookCount(userId);
+      return currentCount < settings.maxPhotobooks;
+    
+    case 'ai_generation':
+      return settings.monthlyAiGenerationsUsed < settings.monthlyAiGenerationsLimit;
+    
+    case 'premium_template':
+      return settings.hasPremiumTemplates;
+  }
+}
+
+// 撮影会自動連携
+export async function autoLinkPhotoSession(photobookId: string, photoSessionId: string) {
+  // 撮影会の写真を自動取得
+  const sessionPhotos = await getPhotoSessionPhotos(photoSessionId);
+  
+  // AI分析による自動レイアウト生成
+  const autoLayout = await generateAutoLayout(sessionPhotos);
+  
+  // フォトブックに自動追加
+  return await addPhotosToPhotobook(photobookId, sessionPhotos, autoLayout);
+}
+
+// ビッグデータ収集
+export async function trackPhotobookEvent(
+  eventType: string,
+  userId: string,
+  data: Record<string, any>
+) {
+  await insertPhotobookAnalytics({
+    userId,
+    eventType,
+    eventData: data,
+    deviceType: getUserAgent(),
+    createdAt: new Date()
+  });
+}
+```
+
+#### **AI機能統合計画**
+```yaml
+AI自動レイアウト生成:
+  技術スタック:
+    - OpenAI GPT-4 Vision (写真分析)
+    - Stable Diffusion (レイアウト生成)
+    - 独自機械学習モデル (ユーザー好み学習)
+  
+  処理フロー:
+    1. 写真の内容・構図・色調分析
+    2. ユーザーの過去選択履歴学習
+    3. 撮影会タイプ・雰囲気考慮
+    4. 最適レイアウトテンプレート生成
+    5. A/Bテストによる継続改善
+
+写真品質向上:
+  - AI画像補正・ノイズ除去
+  - 自動色調補正・露出調整
+  - 顔検出による最適トリミング
+  - 背景除去・合成機能
+
+コンテンツ生成:
+  - AI写真キャプション生成
+  - 撮影会レポート自動作成
+  - タグ・カテゴリ自動分類
+  - SEO最適化メタデータ生成
+```
+
+#### **パフォーマンス最適化**
+```yaml
+画像処理最適化:
+  - WebP/AVIF次世代フォーマット対応
+  - CDN統合による配信高速化
+  - 遅延読み込み・仮想スクロール
+  - プログレッシブJPEG対応
+
+データベース最適化:
+  - 分析クエリ用インデックス最適化
+  - 読み取り専用レプリカ活用
+  - キャッシュ戦略 (Redis/Memcached)
+  - パーティショニング (月次分割)
+
+フロントエンド最適化:
+  - React.memo・useMemo活用
+  - Intersection Observer API
+  - Service Worker（オフライン対応）
+  - 画像プリロード戦略
+```
+
+#### **セキュリティ・プライバシー**
+```yaml
+データ保護:
+  - 画像の暗号化保存
+  - アクセスログ記録・監査
+  - 不正アクセス検知システム
+  - GDPR完全対応
+
+料金プラン制限:
+  - サーバーサイド検証必須
+  - Rate limiting実装
+  - 不正利用検知・自動停止
+  - 監査ログ完備
+
+AI機能セキュリティ:
+  - 入力データサニタイゼーション
+  - 出力内容フィルタリング
+  - 利用量監視・異常検知
+  - プライバシー配慮設計
+```
+
+この技術仕様により、スケーラブルで高性能なフォトブック統合システムを実現します。
+
+- [ ] **t0-028**: 📸 **写真公開合意・モデルタグ付けシステム（肖像権管理）**
+  - [ ] **Phase 1: Tinder風写真公開合意システム**
+    - [ ] 写真アップロード・共有機能（カメラマン→モデル）- 参加した撮影会詳細ページから遷移して使うイメージ
+    - [ ] Tinder風スワイプUI（左：NG、右：OK、上：要相談）,各写真に対してコメントもつけられるようにする
+    - [ ] 合意状態管理（pending/approved/rejected/requires_discussion）
+    - [ ] バッチ処理機能（複数写真の一括合意）
+    - [ ] 合意期限設定・自動リマインダー機能
+    - [ ] 合意履歴・証跡管理（法的証拠として）
+    - [ ] 多言語化対応（日本語・英語翻訳）
+  - [ ] **Phase 2: 合意済み写真からのフォトブック自動生成**
+    - [ ] 合意済み写真フィルタリング機能
+    - [ ] 撮影会別フォトブック自動生成
+    - [ ] 参加者全員の合意状況一覧表示
+    - [ ] AI自動レイアウト（合意済み写真のみ使用）
+    - [ ] フォトブック公開前の最終確認システム
+    - [ ] 部分公開機能（一部写真のみ使用）
+  - [ ] **Phase 3: @ユーザー名 モデルタグ付けシステム**
+    - [ ] 撮影会作成時の@yuka形式モデル指定機能
+    - [ ] ユーザー名の自動補完・検索機能
+    - [ ] タグ付けされたモデルへの自動通知
+    - [ ] モデル承認システム（参加意思確認）
+    - [ ] タグ付け履歴・統計管理
+    - [ ] スパム防止・権限制御機能
+  - [ ] **Phase 4: 撮影会参加モデル表示システム**
+    - [ ] モデル代表画像登録・管理機能
+    - [ ] 撮影会ページでの参加モデルグリッド表示
+    - [ ] 代表画像からのプロフィールリンク統合
+    - [ ] モデル画像の自動リサイズ・最適化
+    - [ ] 参加モデル検索・フィルタリング機能
+    - [ ] モデルポートフォリオ表示（代表作品）
+  - [ ] **Phase 5: 高度な肖像権管理機能**
+    - [ ] 写真使用範囲指定（SNS/Web/印刷/商用等）
+    - [ ] 期限付き合意システム（1年間のみ等）
+    - [ ] 撤回申請機能（合意後の取り消し）
+    - [ ] 商用利用料金計算・支払いシステム
+    - [ ] 肖像権契約書の電子署名統合
+    - [ ] 法的コンプライアンス・GDPR対応
+  - **実装優先度**: 🟡 重要
+  - **見積時間**: 4-6週間（段階的実装）
+  - **技術要件**:
+    - Tinder風スワイプUI（react-spring・gesture ライブラリ）
+    - 画像最適化・CDN統合（高速表示）
+    - リアルタイム通知システム（合意要求・承認）
+    - 肖像権管理・法的証跡記録
+    - タグ付けシステム（@mention機能）
+    - 代表画像管理・自動リサイズ
+  - **依存関係**: 既存撮影会システム、フォトブックシステム、通知システム、ユーザー管理
+
+### **📸 写真公開合意・タグ付けシステム技術仕様**
+
+#### **データベーススキーマ拡張**
+```sql
+-- 写真公開合意管理テーブル
+CREATE TABLE photo_consent_requests (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  photographer_id UUID REFERENCES auth.users(id) NOT NULL,
+  model_id UUID REFERENCES auth.users(id) NOT NULL,
+  photo_session_id UUID REFERENCES photo_sessions(id),
+  photo_url TEXT NOT NULL,
+  photo_hash TEXT NOT NULL UNIQUE, -- 重複防止
+  
+  -- 合意状態
+  consent_status TEXT DEFAULT 'pending' CHECK (consent_status IN ('pending', 'approved', 'rejected', 'requires_discussion')),
+  usage_scope TEXT[] DEFAULT '{}', -- SNS, web, print, commercial
+  expiry_date TIMESTAMP WITH TIME ZONE,
+  
+  -- メタデータ
+  request_message TEXT,
+  response_message TEXT,
+  consent_given_at TIMESTAMP WITH TIME ZONE,
+  expires_at TIMESTAMP WITH TIME ZONE,
+  
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- モデルタグ付けシステム
+CREATE TABLE photo_session_model_tags (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  photo_session_id UUID REFERENCES photo_sessions(id) NOT NULL,
+  model_id UUID REFERENCES auth.users(id) NOT NULL,
+  tagged_by UUID REFERENCES auth.users(id) NOT NULL,
+  
+  -- タグ状態
+  tag_status TEXT DEFAULT 'pending' CHECK (tag_status IN ('pending', 'accepted', 'declined')),
+  invitation_message TEXT,
+  response_message TEXT,
+  
+  -- 参加確認
+  confirmed_at TIMESTAMP WITH TIME ZONE,
+  declined_at TIMESTAMP WITH TIME ZONE,
+  
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  
+  UNIQUE(photo_session_id, model_id)
+);
+
+-- モデル代表画像管理
+CREATE TABLE model_portfolio_images (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  model_id UUID REFERENCES auth.users(id) NOT NULL,
+  image_url TEXT NOT NULL,
+  image_hash TEXT NOT NULL,
+  
+  -- 画像タイプ・設定
+  image_type TEXT DEFAULT 'portfolio' CHECK (image_type IN ('profile', 'portfolio', 'representative')),
+  is_primary BOOLEAN DEFAULT FALSE,
+  display_order INTEGER DEFAULT 0,
+  
+  -- メタデータ
+  title TEXT,
+  description TEXT,
+  tags TEXT[],
+  
+  -- 公開設定
+  is_public BOOLEAN DEFAULT TRUE,
+  is_available_for_sessions BOOLEAN DEFAULT TRUE,
+  
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 合意済み写真フォトブック連携
+CREATE TABLE photobook_consent_photos (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  photobook_id UUID REFERENCES photobooks(id) NOT NULL,
+  consent_request_id UUID REFERENCES photo_consent_requests(id) NOT NULL,
+  page_number INTEGER,
+  layout_position TEXT,
+  
+  added_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  
+  UNIQUE(photobook_id, consent_request_id)
+);
+
+-- 肖像権証跡管理
+CREATE TABLE consent_audit_log (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  consent_request_id UUID REFERENCES photo_consent_requests(id) NOT NULL,
+  
+  -- 変更内容
+  action_type TEXT NOT NULL CHECK (action_type IN ('created', 'approved', 'rejected', 'modified', 'revoked')),
+  previous_status TEXT,
+  new_status TEXT,
+  
+  -- 変更者情報
+  changed_by UUID REFERENCES auth.users(id) NOT NULL,
+  ip_address TEXT,
+  user_agent TEXT,
+  
+  -- 詳細情報
+  change_reason TEXT,
+  legal_basis TEXT,
+  
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- インデックス作成
+CREATE INDEX idx_photo_consent_photographer ON photo_consent_requests(photographer_id);
+CREATE INDEX idx_photo_consent_model ON photo_consent_requests(model_id);
+CREATE INDEX idx_photo_consent_session ON photo_consent_requests(photo_session_id);
+CREATE INDEX idx_photo_consent_status ON photo_consent_requests(consent_status);
+CREATE INDEX idx_model_tags_session ON photo_session_model_tags(photo_session_id);
+CREATE INDEX idx_model_tags_model ON photo_session_model_tags(model_id);
+CREATE INDEX idx_portfolio_model ON model_portfolio_images(model_id, is_primary);
+```
+
+#### **TypeScript型定義拡張**
+```typescript
+// 写真公開合意関連型
+export type ConsentStatus = 'pending' | 'approved' | 'rejected' | 'requires_discussion';
+export type UsageScope = 'sns' | 'web' | 'print' | 'commercial';
+export type TagStatus = 'pending' | 'accepted' | 'declined';
+
+export interface PhotoConsentRequest {
+  id: string;
+  photographerId: string;
+  modelId: string;
+  photoSessionId?: string;
+  photoUrl: string;
+  photoHash: string;
+  consentStatus: ConsentStatus;
+  usageScope: UsageScope[];
+  expiryDate?: Date;
+  requestMessage?: string;
+  responseMessage?: string;
+  consentGivenAt?: Date;
+  expiresAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Tinder風UI用の型
+export interface SwipeablePhoto extends PhotoConsentRequest {
+  photographer: {
+    displayName: string;
+    avatarUrl?: string;
+  };
+  photoSession?: {
+    title: string;
+    location: string;
+    date: Date;
+  };
+}
+
+// モデルタグ付け関連型
+export interface PhotoSessionModelTag {
+  id: string;
+  photoSessionId: string;
+  modelId: string;
+  taggedBy: string;
+  tagStatus: TagStatus;
+  invitationMessage?: string;
+  responseMessage?: string;
+  confirmedAt?: Date;
+  declinedAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// モデル代表画像型
+export interface ModelPortfolioImage {
+  id: string;
+  modelId: string;
+  imageUrl: string;
+  imageHash: string;
+  imageType: 'profile' | 'portfolio' | 'representative';
+  isPrimary: boolean;
+  displayOrder: number;
+  title?: string;
+  description?: string;
+  tags: string[];
+  isPublic: boolean;
+  isAvailableForSessions: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// 拡張されたプロフィール型
+export interface ModelProfileWithImages extends Profile {
+  portfolioImages: ModelPortfolioImage[];
+  primaryImage?: ModelPortfolioImage;
+  representativeImages: ModelPortfolioImage[];
+}
+
+// 拡張された撮影会型
+export interface PhotoSessionWithTaggedModels extends PhotoSession {
+  taggedModels: (PhotoSessionModelTag & {
+    model: ModelProfileWithImages;
+  })[];
+  confirmedModels: ModelProfileWithImages[];
+}
+```
+
+#### **Server Actions実装計画**
+```typescript
+// 写真公開合意関連
+export async function createConsentRequest(data: CreateConsentRequestData): Promise<Result<string>>;
+export async function updateConsentStatus(requestId: string, status: ConsentStatus, message?: string): Promise<Result<void>>;
+export async function getConsentRequestsForModel(modelId: string): Promise<Result<SwipeablePhoto[]>>;
+export async function batchUpdateConsent(requestIds: string[], status: ConsentStatus): Promise<Result<void>>;
+
+// モデルタグ付け関連
+export async function tagModelsInPhotoSession(sessionId: string, modelUsernames: string[]): Promise<Result<void>>;
+export async function respondToModelTag(tagId: string, response: TagStatus, message?: string): Promise<Result<void>>;
+export async function searchUsersForTagging(query: string): Promise<Result<{id: string, username: string, avatarUrl?: string}[]>>;
+
+// ポートフォリオ画像管理
+export async function uploadPortfolioImage(modelId: string, imageData: FormData): Promise<Result<string>>;
+export async function updatePortfolioImageSettings(imageId: string, settings: Partial<ModelPortfolioImage>): Promise<Result<void>>;
+export async function getModelPortfolioImages(modelId: string, isPublic?: boolean): Promise<Result<ModelPortfolioImage[]>>;
+```
+
+#### **UI/UXコンポーネント設計**
+```typescript
+// Tinder風スワイプコンポーネント
+export interface TinderSwipeProps {
+  photos: SwipeablePhoto[];
+  onSwipeLeft: (photo: SwipeablePhoto) => void;  // 拒否
+  onSwipeRight: (photo: SwipeablePhoto) => void; // 承認
+  onSwipeUp: (photo: SwipeablePhoto) => void;    // 要相談
+  onBatchAction: (photos: SwipeablePhoto[], action: ConsentStatus) => void;
+}
+
+// モデルタグ付け入力コンポーネント
+export interface ModelTagInputProps {
+  value: string[];
+  onChange: (usernames: string[]) => void;
+  placeholder?: string;
+  suggestions: {id: string, username: string, avatarUrl?: string}[];
+  onSearch: (query: string) => void;
+}
+
+// 参加モデルグリッド表示コンポーネント
+export interface ModelGridProps {
+  models: ModelProfileWithImages[];
+  showPortfolio?: boolean;
+  onModelClick: (model: ModelProfileWithImages) => void;
+  gridCols?: number;
+}
+
+// 合意済み写真フィルター
+export interface ConsentPhotoFilterProps {
+  photoSession: PhotoSession;
+  onPhotosSelected: (photos: PhotoConsentRequest[]) => void;
+  filterOptions: {
+    consentStatus: ConsentStatus[];
+    usageScope: UsageScope[];
+    dateRange?: {start: Date, end: Date};
+  };
+}
+```
+
+#### **パフォーマンス・セキュリティ対策**
+```yaml
+パフォーマンス最適化:
+  - 画像遅延読み込み・仮想スクロール
+  - スワイプジェスチャーの60fps維持
+  - CDN統合による高速画像配信
+  - 画像の段階的品質向上（Progressive JPEG）
+  - バッチ処理によるデータベース負荷軽減
+
+セキュリティ・プライバシー:
+  - 画像アクセス権限の厳格制御
+  - 合意撤回機能・GDPR対応
+  - 肖像権証跡の改ざん防止
+  - 画像の透かし・メタデータ埋め込み
+  - 不正アクセス検知・ログ記録
+
+法的コンプライアンス:
+  - 肖像権法・著作権法遵守
+  - 電子署名法対応
+  - データ保持期間・削除義務
+  - 国際的なプライバシー法対応
+```
+
+この技術仕様により、肖像権を適切に管理しながら、直感的で効率的な写真公開合意システムを実現します。
+
+#### **🎯 ビジネス価値・実装戦略**
+
+##### **1. 差別化ポイント・競合優位性**
+```yaml
+業界初の機能:
+  - Tinder風の直感的な写真合意システム
+  - 撮影会×肖像権管理の完全統合
+  - @mention形式のモデルタグ付け機能
+  - 合意済み写真のみを使用したフォトブック自動生成
+
+競合との差別化:
+  - 既存プラットフォーム: 肖像権管理機能なし
+  - 写真共有サイト: 事前合意システムなし
+  - モデル・カメラマン向けサービス: 統合的な権利管理なし
+  - SNS: 事後削除依頼のみ、事前合意機能なし
+
+法的リスク軽減:
+  - 撮影業界特有の肖像権トラブル防止
+  - 明確な合意証跡による法的保護
+  - GDPR・個人情報保護法完全対応
+  - 商用利用時の権利処理自動化
+```
+
+##### **2. 収益化モデル・マネタイゼーション**
+```yaml
+直接収益:
+  - 肖像権管理機能: プレミアム機能として月額+500円
+  - 商用利用ライセンス: 写真1枚あたり100-1,000円
+  - 高度な合意機能: 企業向けAPI利用料
+  - フォトブック統合: 作成数制限による差別化
+
+間接収益:
+  - プラットフォーム信頼性向上によるユーザー増加
+  - 法的トラブル減少による運営コスト削減
+  - 企業・スタジオからの採用増加
+  - データ分析・統計販売（権利関係クリア前提）
+
+収益予測（1年後）:
+  - 肖像権管理機能: 月20万円（400ユーザー × 500円）
+  - 商用ライセンス: 月50万円（500枚 × 1,000円）
+  - 企業向けAPI: 月10万円
+  - 合計追加収益: 月80万円（年間960万円）
+```
+
+##### **3. 段階的実装戦略・ロードマップ**
+```yaml
+Phase 1（MVP・1-2ヶ月）:
+  - Tinder風スワイプUI基本機能
+  - 写真アップロード・合意要求システム
+  - 基本的な@mentionタグ付け機能
+  - モデル代表画像登録機能
+
+Phase 2（機能拡張・3-4ヶ月）:
+  - 合意済み写真フォトブック統合
+  - 高度なタグ付け機能（検索・通知）
+  - 参加モデルグリッド表示
+  - バッチ処理・一括合意機能
+
+Phase 3（商用化・5-6ヶ月）:
+  - 商用利用ライセンス管理
+  - 期限付き合意・撤回機能
+  - 企業向けAPI提供
+  - 法的証跡・監査ログ強化
+
+Phase 4（AI・自動化・7-8ヶ月）:
+  - AI画像分析（顔認識・自動タグ付け）
+  - 自動合意期限管理・リマインダー
+  - 不適切使用検知システム
+  - 契約書自動生成機能
+```
+
+##### **4. 技術的実現性・リスク評価**
+```yaml
+技術的課題:
+  低リスク:
+    - Tinder風UI: 既存ライブラリ（react-spring）で実現可能
+    - 画像管理: Supabase Storage活用
+    - @mention機能: 既存SNS機能の拡張
+
+  中リスク:
+    - 大量画像の高速処理: CDN・最適化要
+    - 法的証跡管理: セキュリティ強化必須
+    - リアルタイム通知: パフォーマンス調整要
+
+  高リスク:
+    - AI顔認識: 外部API依存・コスト課題
+    - 国際的法規制対応: 専門知識・継続更新要
+    - 商用ライセンス計算: 複雑なビジネスロジック
+
+実装優先度:
+  - 高優先度: Tinder風UI、基本合意システム、@mention機能
+  - 中優先度: フォトブック統合、グリッド表示、バッチ処理
+  - 低優先度: AI機能、国際対応、高度な商用機能
+```
+
+##### **5. ユーザー体験・採用戦略**
+```yaml
+ユーザー価値提案:
+  モデル向け:
+    - 肖像権保護による安心感
+    - 直感的な合意管理（Tinder風）
+    - 代表画像による露出増加
+    - 合意済み写真でのポートフォリオ作成
+
+  カメラマン向け:
+    - 法的トラブル回避
+    - 効率的な権利処理
+    - 高品質な作品作成（合意済み写真活用）
+    - 商用利用の収益化支援
+
+  撮影会運営者向け:
+    - @mention機能による効率的なモデル招集
+    - 参加者の魅力的な表示
+    - トラブル防止による運営安定化
+    - 差別化による集客力向上
+
+段階的導入:
+  1. 既存ユーザーへの機能紹介・教育
+  2. 肖像権重視のモデル・カメラマンへの訴求
+  3. 企業・スタジオ向けの商用機能展開
+  4. 業界標準化・他プラットフォームとの連携
+```
+
+この戦略により、肖像権管理機能を軸とした差別化と持続的な収益成長を実現します。
 
 
 
