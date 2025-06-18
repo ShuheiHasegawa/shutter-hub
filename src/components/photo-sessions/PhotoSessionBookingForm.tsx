@@ -268,10 +268,6 @@ export function PhotoSessionBookingForm({
             </div>
           ) : canBookNow ? (
             <div className="text-center">
-              <p className="text-sm text-muted-foreground mb-4">
-                {t('participateQuestion')}
-              </p>
-
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button disabled={isLoading} className="w-full" size="lg">
