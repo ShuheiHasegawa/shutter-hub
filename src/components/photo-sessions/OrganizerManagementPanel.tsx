@@ -6,7 +6,6 @@ import {
   UsersIcon,
   EditIcon,
   BarChart3Icon,
-  MessageSquareIcon,
   CalendarIcon,
   CopyIcon,
 } from 'lucide-react';
@@ -147,7 +146,7 @@ export function OrganizerManagementPanel({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Button
               variant="outline"
               className="h-auto p-4 flex-col gap-2"
@@ -177,15 +176,6 @@ export function OrganizerManagementPanel({
             >
               <UsersIcon className="h-5 w-5" />
               <span className="text-sm">参加者管理</span>
-            </Button>
-
-            <Button
-              variant="outline"
-              className="h-auto p-4 flex-col gap-2"
-              onClick={() => router.push('/messages')}
-            >
-              <MessageSquareIcon className="h-5 w-5" />
-              <span className="text-sm">メッセージ</span>
             </Button>
 
             <Button
