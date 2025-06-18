@@ -61,6 +61,7 @@ export function PhotoSessionList({
   const [sortBy, setSortBy] = useState<
     'start_time' | 'price' | 'created_at' | 'popularity' | 'end_time'
   >('start_time');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   // 無限スクロール用のrefs
@@ -185,15 +186,25 @@ export function PhotoSessionList({
         }
 
         // ソート条件を適用
+        const ascending = sortOrder === 'asc';
         switch (sortBy) {
           case 'start_time':
-            query = query.order('start_time', { ascending: true });
+            query = query.order('start_time', { ascending });
+            break;
+          case 'end_time':
+            query = query.order('end_time', { ascending });
             break;
           case 'price':
-            query = query.order('price_per_person', { ascending: true });
+            query = query.order('price_per_person', { ascending });
+            break;
+          case 'popularity':
+            // 人気順は参加者数で判定（降順がデフォルト）
+            query = query.order('current_participants', {
+              ascending: !ascending,
+            });
             break;
           case 'created_at':
-            query = query.order('created_at', { ascending: false });
+            query = query.order('created_at', { ascending: !ascending });
             break;
         }
 
@@ -239,7 +250,7 @@ export function PhotoSessionList({
         isLoadingRef.current = false;
       }
     },
-    [organizerId, searchQuery, locationFilter, sortBy, filters, page]
+    [organizerId, searchQuery, locationFilter, sortBy, sortOrder, filters, page]
   );
 
   // 明示的な検索実行関数
@@ -255,6 +266,7 @@ export function PhotoSessionList({
     const currentFilters = JSON.stringify({
       organizerId,
       sortBy,
+      sortOrder,
       // filtersは除外 - サイドバーフィルターも手動検索のみ
     });
 
@@ -268,7 +280,7 @@ export function PhotoSessionList({
       setHasMore(true);
       loadSessions(true);
     }
-  }, [organizerId, sortBy, loadSessions]);
+  }, [organizerId, sortBy, sortOrder, loadSessions]);
 
   // 初回ロード（依存関係を最小限に）
   useEffect(() => {
@@ -405,25 +417,48 @@ export function PhotoSessionList({
               並び順:
             </span>
             <Select
-              value={sortBy}
-              onValueChange={(
-                value:
-                  | 'start_time'
-                  | 'price'
-                  | 'created_at'
-                  | 'popularity'
-                  | 'end_time'
-              ) => setSortBy(value)}
+              value={`${sortBy}_${sortOrder}`}
+              onValueChange={value => {
+                const [newSortBy, newSortOrder] = value.split('_') as [
+                  (
+                    | 'start_time'
+                    | 'price'
+                    | 'created_at'
+                    | 'popularity'
+                    | 'end_time'
+                  ),
+                  'asc' | 'desc',
+                ];
+                setSortBy(newSortBy);
+                setSortOrder(newSortOrder);
+              }}
             >
-              <SelectTrigger className="w-[120px] sm:w-[140px]">
+              <SelectTrigger className="w-[140px] sm:w-[160px]">
                 <SelectValue placeholder="並び順" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="start_time">開始日時順</SelectItem>
-                <SelectItem value="end_time">終了日時順</SelectItem>
-                <SelectItem value="price">価格順</SelectItem>
-                <SelectItem value="popularity">人気順</SelectItem>
-                <SelectItem value="created_at">新着順</SelectItem>
+                <SelectItem value="start_time_asc">
+                  開催日時順（早い順）
+                </SelectItem>
+                <SelectItem value="start_time_desc">
+                  開催日時順（遅い順）
+                </SelectItem>
+                <SelectItem value="end_time_asc">
+                  終了日時順（早い順）
+                </SelectItem>
+                <SelectItem value="end_time_desc">
+                  終了日時順（遅い順）
+                </SelectItem>
+                <SelectItem value="price_asc">価格順（安い順）</SelectItem>
+                <SelectItem value="price_desc">価格順（高い順）</SelectItem>
+                <SelectItem value="popularity_desc">
+                  人気順（高い順）
+                </SelectItem>
+                <SelectItem value="popularity_asc">人気順（低い順）</SelectItem>
+                <SelectItem value="created_at_desc">
+                  新着順（新しい順）
+                </SelectItem>
+                <SelectItem value="created_at_asc">新着順（古い順）</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -499,6 +534,7 @@ export function PhotoSessionList({
                     setSearchQuery('');
                     setLocationFilter('');
                     setSortBy('start_time');
+                    setSortOrder('asc');
                   }}
                   disabled={loading}
                 >
