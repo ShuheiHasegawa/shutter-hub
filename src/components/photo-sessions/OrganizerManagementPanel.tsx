@@ -1,7 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import {
   SettingsIcon,
   UsersIcon,
@@ -239,24 +238,6 @@ export function OrganizerManagementPanel({
           </CardContent>
         </Card>
       )}
-
-      <Separator />
-
-      {/* 注意事項 */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">開催者向け注意事項</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3 text-sm text-muted-foreground">
-          <ul className="space-y-2 list-disc list-inside">
-            <li>参加者との連絡は必ずプラットフォーム内で行ってください</li>
-            <li>撮影会の変更・キャンセルは早めに参加者に通知してください</li>
-            <li>参加者の安全と快適な撮影環境の提供を心がけてください</li>
-            <li>撮影した写真の取り扱いについて事前に説明してください</li>
-            <li>トラブルが発生した場合は運営チームにご連絡ください</li>
-          </ul>
-        </CardContent>
-      </Card>
     </div>
   );
 }
