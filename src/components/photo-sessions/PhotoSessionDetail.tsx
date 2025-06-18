@@ -111,6 +111,18 @@ export function PhotoSessionDetail({
     setRefreshKey(prev => prev + 1);
   };
 
+  // 予約方式の日本語化
+  const getBookingTypeLabel = (bookingType: string) => {
+    const bookingTypes: Record<string, string> = {
+      first_come: '先着順',
+      lottery: '抽選',
+      admin_lottery: '管理抽選',
+      priority: '優先予約',
+      waitlist: 'キャンセル待ち',
+    };
+    return bookingTypes[bookingType] || bookingType;
+  };
+
   const hasSlots = slots && slots.length > 0;
 
   return (
@@ -219,6 +231,15 @@ export function PhotoSessionDetail({
                     </div>
                   </>
                 )}
+
+                {/* 予約方式表示 */}
+                <div className="flex items-center gap-3">
+                  <CalendarIcon className="h-5 w-5 text-muted-foreground" />
+                  <span>
+                    予約方式:{' '}
+                    {getBookingTypeLabel(session.booking_type || 'first_come')}
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -304,27 +325,60 @@ export function PhotoSessionDetail({
         />
       )}
 
-      <Separator />
+      {/* 注意事項（主催者以外のみ表示） */}
+      {!isOrganizer && (
+        <>
+          <Separator />
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">ご注意事項</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm text-muted-foreground">
+              <ul className="space-y-2 list-disc list-inside">
+                <li>キャンセルは撮影会開始の24時間前まで可能です</li>
+                <li>遅刻される場合は必ず主催者にご連絡ください</li>
+                <li>
+                  撮影した写真の使用については主催者の指示に従ってください
+                </li>
+                <li>体調不良の場合は無理をせず参加をお控えください</li>
+                {hasSlots && (
+                  <li>
+                    スロット制撮影会では、予約した時間枠以外の参加はできません
+                  </li>
+                )}
+              </ul>
+            </CardContent>
+          </Card>
+        </>
+      )}
 
-      {/* 注意事項 */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">ご注意事項</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3 text-sm text-muted-foreground">
-          <ul className="space-y-2 list-disc list-inside">
-            <li>キャンセルは撮影会開始の24時間前まで可能です</li>
-            <li>遅刻される場合は必ず主催者にご連絡ください</li>
-            <li>撮影した写真の使用については主催者の指示に従ってください</li>
-            <li>体調不良の場合は無理をせず参加をお控えください</li>
-            {hasSlots && (
-              <li>
-                スロット制撮影会では、予約した時間枠以外の参加はできません
-              </li>
-            )}
-          </ul>
-        </CardContent>
-      </Card>
+      {/* 開催者向け注意事項（主催者のみ表示、最下部） */}
+      {isOrganizer && (
+        <>
+          <Separator />
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">開催者向け注意事項</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm text-muted-foreground">
+              <ul className="space-y-2 list-disc list-inside">
+                <li>参加者への適切な連絡・指示を心がけてください</li>
+                <li>撮影時は参加者の安全と快適性を最優先してください</li>
+                <li>時間管理を徹底し、予定通りの進行を心がけてください</li>
+                <li>トラブル発生時は運営チームにご連絡ください</li>
+                <li>
+                  撮影した写真の取り扱いについて事前に参加者と合意を取ってください
+                </li>
+                {hasSlots && (
+                  <li>
+                    スロット制の場合、各時間枠の参加者管理を適切に行ってください
+                  </li>
+                )}
+              </ul>
+            </CardContent>
+          </Card>
+        </>
+      )}
     </div>
   );
 }
