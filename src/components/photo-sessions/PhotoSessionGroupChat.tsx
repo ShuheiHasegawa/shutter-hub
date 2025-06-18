@@ -190,13 +190,21 @@ export function PhotoSessionGroupChat({
   const createPhotoSessionGroupChat = async () => {
     if (!hasAccess) return;
 
+    // 確定参加者のユーザーIDを取得
+    const confirmedParticipants = participants
+      .filter(p => p.status === 'confirmed')
+      .map(p => p.user_id);
+
+    // 参加者がいない場合の処理
+    if (confirmedParticipants.length === 0) {
+      toast.error(
+        'まだ参加者がいません。参加者が確定してからグループチャットを作成してください。'
+      );
+      return;
+    }
+
     setCreating(true);
     try {
-      // 確定参加者のユーザーIDを取得
-      const confirmedParticipants = participants
-        .filter(p => p.status === 'confirmed')
-        .map(p => p.user_id);
-
       // 主催者も含める
       const allMemberIds = Array.from(
         new Set([organizerId, ...confirmedParticipants])
@@ -357,23 +365,35 @@ export function PhotoSessionGroupChat({
               </div>
 
               {isOrganizer && (
-                <Button
-                  onClick={createPhotoSessionGroupChat}
-                  disabled={creating}
-                  className="w-full max-w-sm"
-                >
-                  {creating ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      {t('creating')}
-                    </>
-                  ) : (
-                    <>
-                      <Users className="h-4 w-4 mr-2" />
-                      {t('createGroupChat')}
-                    </>
+                <>
+                  <Button
+                    onClick={createPhotoSessionGroupChat}
+                    disabled={
+                      creating ||
+                      participants.filter(p => p.status === 'confirmed')
+                        .length === 0
+                    }
+                    className="w-full max-w-sm"
+                  >
+                    {creating ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        {t('creating')}
+                      </>
+                    ) : (
+                      <>
+                        <Users className="h-4 w-4 mr-2" />
+                        {t('createGroupChat')}
+                      </>
+                    )}
+                  </Button>
+                  {participants.filter(p => p.status === 'confirmed').length ===
+                    0 && (
+                    <p className="text-sm text-orange-600 mt-2">
+                      ※ 参加者が確定してからグループチャットを作成できます
+                    </p>
                   )}
-                </Button>
+                </>
               )}
 
               {!isOrganizer && (
