@@ -40,7 +40,7 @@ interface PhotoSessionListProps {
 }
 
 const ITEMS_PER_PAGE = 20;
-const DEBOUNCE_DELAY = 500; // 500ms デバウンス
+const DEBOUNCE_DELAY = 1000; // 1000ms デバウンス（延長）
 
 export function PhotoSessionList({
   showCreateButton = false,
@@ -65,11 +65,18 @@ export function PhotoSessionList({
   // デバウンス用のref
   const debounceRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const prevFiltersRef = useRef<string>('');
+  const isLoadingRef = useRef(false); // API呼び出し制御用
 
   const loadSessions = useCallback(
     async (reset = false) => {
+      // 既にローディング中の場合は重複呼び出しを防ぐ
+      if (isLoadingRef.current) return;
+
+      isLoadingRef.current = true;
+
       if (reset) {
         setLoading(true);
+        setPage(0);
       } else {
         setLoadingMore(true);
       }
@@ -204,20 +211,28 @@ export function PhotoSessionList({
         if (reset) {
           setSessions(newSessions);
         } else {
-          setSessions(prev => [...prev, ...newSessions]);
+          // 重複防止：既存のIDと重複しないもののみ追加
+          setSessions(prev => {
+            const existingIds = new Set(prev.map(s => s.id));
+            const uniqueNewSessions = newSessions.filter(
+              s => !existingIds.has(s.id)
+            );
+            return [...prev, ...uniqueNewSessions];
+          });
         }
 
         // 次のページがあるかチェック
         setHasMore(newSessions.length === ITEMS_PER_PAGE);
 
         if (!reset) {
-          setPage(currentPage + 1);
+          setPage(prev => prev + 1);
         }
       } catch (error) {
         console.error('撮影会一覧取得エラー:', error);
       } finally {
         setLoading(false);
         setLoadingMore(false);
+        isLoadingRef.current = false;
       }
     },
     [organizerId, searchQuery, locationFilter, sortBy, filters, page]
@@ -234,12 +249,12 @@ export function PhotoSessionList({
     }, DEBOUNCE_DELAY);
   }, [loadSessions]);
 
-  // フィルター変更時の処理
+  // フィルター変更時の処理（デバウンス制御改善）
   useEffect(() => {
     const currentFilters = JSON.stringify({
       organizerId,
-      searchQuery,
-      locationFilter,
+      searchQuery: searchQuery.trim(), // 余分な空白を除去
+      locationFilter: locationFilter.trim(),
       sortBy,
       filters,
     });
@@ -247,10 +262,17 @@ export function PhotoSessionList({
     // フィルターが変更された場合のみリセット
     if (currentFilters !== prevFiltersRef.current) {
       prevFiltersRef.current = currentFilters;
-      setPage(0);
-      setSessions([]);
-      setHasMore(true);
-      debouncedLoadSessions();
+
+      // 検索クエリまたは場所フィルターが変更された場合はデバウンス
+      if (searchQuery.trim() || locationFilter.trim()) {
+        debouncedLoadSessions();
+      } else {
+        // その他のフィルター変更は即座に実行
+        setSessions([]);
+        setPage(0);
+        setHasMore(true);
+        loadSessions(true);
+      }
     }
   }, [
     organizerId,
@@ -259,12 +281,24 @@ export function PhotoSessionList({
     sortBy,
     filters,
     debouncedLoadSessions,
+    loadSessions,
   ]);
 
-  // 初回ロード
+  // 初回ロード（依存関係を最小限に）
   useEffect(() => {
-    loadSessions(true);
-  }, [loadSessions]);
+    if (prevFiltersRef.current === '') {
+      loadSessions(true);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // クリーンアップ処理
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    };
+  }, []);
 
   const handleViewDetails = (sessionId: string) => {
     router.push(`/photo-sessions/${sessionId}`);
