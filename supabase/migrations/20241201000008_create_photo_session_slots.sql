@@ -255,4 +255,8 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER photo_session_slots_updated_at
   BEFORE UPDATE ON photo_session_slots
   FOR EACH ROW
-  EXECUTE FUNCTION update_photo_session_slots_updated_at(); 
+  EXECUTE FUNCTION update_photo_session_slots_updated_at();
+
+-- RPC関数にSECURITY DEFINERを設定（RLS権限問題修正）
+ALTER FUNCTION create_photo_session_booking(uuid, uuid) SECURITY DEFINER;
+ALTER FUNCTION cancel_photo_session_booking(uuid, uuid) SECURITY DEFINER; 
