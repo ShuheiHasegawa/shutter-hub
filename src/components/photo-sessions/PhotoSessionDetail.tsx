@@ -115,6 +115,11 @@ export function PhotoSessionDetail({
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
+      {/* 開催者管理パネル（主催者の場合、最上部に表示） */}
+      {isOrganizer && (
+        <OrganizerManagementPanel session={session} slots={slots} />
+      )}
+
       {/* ヘッダー */}
       <Card>
         <CardHeader>
@@ -239,10 +244,8 @@ export function PhotoSessionDetail({
         </CardContent>
       </Card>
 
-      {/* 開催者の場合は管理パネル、参加者の場合は予約フォーム */}
-      {isOrganizer ? (
-        <OrganizerManagementPanel session={session} slots={slots} />
-      ) : hasSlots ? (
+      {/* 参加者の場合は予約フォーム */}
+      {!isOrganizer && hasSlots ? (
         <div className="space-y-6" key={`slots-${refreshKey}`}>
           <Card>
             <CardHeader>
@@ -268,13 +271,13 @@ export function PhotoSessionDetail({
             </CardContent>
           </Card>
         </div>
-      ) : (
+      ) : !isOrganizer ? (
         <PhotoSessionBookingForm
           key={`booking-${refreshKey}`}
           session={session}
           onBookingSuccess={handleBookingSuccess}
         />
-      )}
+      ) : null}
 
       {/* グループチャット機能（メッセージシステムが利用可能な場合のみ） */}
       {user && !loading && (isOrganizer || isParticipant) && (
