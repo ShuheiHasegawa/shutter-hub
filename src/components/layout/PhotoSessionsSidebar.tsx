@@ -38,6 +38,8 @@ interface PhotoSessionsSidebarProps {
   filters: FilterState;
   onFiltersChange: (filters: FilterState) => void;
   onClearFilters: () => void;
+  onSearch?: () => void;
+  isSearchLoading?: boolean;
   className?: string;
 }
 
@@ -45,6 +47,8 @@ export function PhotoSessionsSidebar({
   filters,
   onFiltersChange,
   onClearFilters,
+  onSearch,
+  isSearchLoading = false,
   className = '',
 }: PhotoSessionsSidebarProps) {
   const t = useTranslations('photoSessions');
@@ -316,6 +320,30 @@ export function PhotoSessionsSidebar({
               </Label>
             </div>
           </div>
+
+          {/* 検索実行ボタン */}
+          {onSearch && (
+            <div className="pt-4 border-t">
+              <Button
+                onClick={onSearch}
+                disabled={isSearchLoading}
+                className="w-full"
+                size="lg"
+              >
+                {isSearchLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    検索中...
+                  </>
+                ) : (
+                  <>
+                    <Filter className="h-4 w-4 mr-2" />
+                    検索
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

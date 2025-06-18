@@ -46,6 +46,8 @@ interface CompactFilterBarProps {
   filters: FilterState;
   onFiltersChange: (filters: FilterState) => void;
   onClearFilters: () => void;
+  onSearch?: () => void;
+  isSearchLoading?: boolean;
   className?: string;
 }
 
@@ -53,6 +55,8 @@ export function CompactFilterBar({
   filters,
   onFiltersChange,
   onClearFilters,
+  onSearch,
+  isSearchLoading = false,
   className = '',
 }: CompactFilterBarProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -455,22 +459,46 @@ export function CompactFilterBar({
 
               {/* その他オプション */}
               <div className="mt-4 sm:mt-6 pt-4 border-t border-blue-200">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="only-available"
-                    checked={filters.onlyAvailable}
-                    onCheckedChange={checked =>
-                      updateFilter('onlyAvailable', checked)
-                    }
-                    className="w-4 h-4"
-                  />
-                  <Label
-                    htmlFor="only-available"
-                    className="text-sm cursor-pointer flex items-center gap-2"
-                  >
-                    <Users className="h-4 w-4 text-emerald-600" />
-                    空きがある撮影会のみ表示
-                  </Label>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="only-available"
+                      checked={filters.onlyAvailable}
+                      onCheckedChange={checked =>
+                        updateFilter('onlyAvailable', checked)
+                      }
+                      className="w-4 h-4"
+                    />
+                    <Label
+                      htmlFor="only-available"
+                      className="text-sm cursor-pointer flex items-center gap-2"
+                    >
+                      <Users className="h-4 w-4 text-emerald-600" />
+                      空きがある撮影会のみ表示
+                    </Label>
+                  </div>
+
+                  {/* 検索実行ボタン */}
+                  {onSearch && (
+                    <Button
+                      onClick={onSearch}
+                      disabled={isSearchLoading}
+                      className="ml-4"
+                      size="sm"
+                    >
+                      {isSearchLoading ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          検索中...
+                        </>
+                      ) : (
+                        <>
+                          <Search className="h-4 w-4 mr-2" />
+                          検索
+                        </>
+                      )}
+                    </Button>
+                  )}
                 </div>
               </div>
             </CardContent>

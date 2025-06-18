@@ -37,16 +37,17 @@ interface PhotoSessionListProps {
   organizerId?: string;
   title?: string;
   filters?: FilterState;
+  searchTrigger?: number; // 検索トリガー用の数値
 }
 
 const ITEMS_PER_PAGE = 20;
-const DEBOUNCE_DELAY = 1000; // 1000ms デバウンス（延長）
 
 export function PhotoSessionList({
   showCreateButton = false,
   organizerId,
   title,
   filters,
+  searchTrigger = 0,
 }: PhotoSessionListProps) {
   const router = useRouter();
   const t = useTranslations('photoSessions');
@@ -62,8 +63,7 @@ export function PhotoSessionList({
   );
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
-  // デバウンス用のref
-  const debounceRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  // フィルター変更検知用のref
   const prevFiltersRef = useRef<string>('');
   const isLoadingRef = useRef(false); // API呼び出し制御用
 
@@ -238,51 +238,33 @@ export function PhotoSessionList({
     [organizerId, searchQuery, locationFilter, sortBy, filters, page]
   );
 
-  // デバウンス機能付きloadSessions
-  const debouncedLoadSessions = useCallback(() => {
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
-    }
-
-    debounceRef.current = setTimeout(() => {
-      loadSessions(true); // リセット
-    }, DEBOUNCE_DELAY);
+  // 明示的な検索実行関数
+  const handleSearch = useCallback(() => {
+    setSessions([]);
+    setPage(0);
+    setHasMore(true);
+    loadSessions(true);
   }, [loadSessions]);
 
-  // フィルター変更時の処理（デバウンス制御改善）
+  // フィルター変更時の処理（完全に検索ボタン押下式）
   useEffect(() => {
     const currentFilters = JSON.stringify({
       organizerId,
-      searchQuery: searchQuery.trim(), // 余分な空白を除去
-      locationFilter: locationFilter.trim(),
       sortBy,
-      filters,
+      // filtersは除外 - サイドバーフィルターも手動検索のみ
     });
 
-    // フィルターが変更された場合のみリセット
+    // organizerIdまたはソート条件変更時のみ即座に実行
     if (currentFilters !== prevFiltersRef.current) {
       prevFiltersRef.current = currentFilters;
 
-      // 検索クエリまたは場所フィルターが変更された場合はデバウンス
-      if (searchQuery.trim() || locationFilter.trim()) {
-        debouncedLoadSessions();
-      } else {
-        // その他のフィルター変更は即座に実行
-        setSessions([]);
-        setPage(0);
-        setHasMore(true);
-        loadSessions(true);
-      }
+      // organizerIdやソート条件変更時のみ即座に実行
+      setSessions([]);
+      setPage(0);
+      setHasMore(true);
+      loadSessions(true);
     }
-  }, [
-    organizerId,
-    searchQuery,
-    locationFilter,
-    sortBy,
-    filters,
-    debouncedLoadSessions,
-    loadSessions,
-  ]);
+  }, [organizerId, sortBy, loadSessions]);
 
   // 初回ロード（依存関係を最小限に）
   useEffect(() => {
@@ -291,14 +273,19 @@ export function PhotoSessionList({
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // クリーンアップ処理
+  // 検索トリガー変更時の処理
   useEffect(() => {
-    return () => {
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current);
-      }
-    };
-  }, []);
+    if (searchTrigger > 0) {
+      handleSearch();
+    }
+  }, [searchTrigger, handleSearch]);
+
+  // クリーンアップ処理（現在は不要）
+  // useEffect(() => {
+  //   return () => {
+  //     // デバウンス機能削除により不要
+  //   };
+  // }, []);
 
   const handleViewDetails = (sessionId: string) => {
     router.push(`/photo-sessions/${sessionId}`);
@@ -382,53 +369,90 @@ export function PhotoSessionList({
             <CardTitle className="text-lg">{t('list.searchFilter')}</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="relative">
-                <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <div className="space-y-4">
+              {/* 検索入力フィールド */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="relative">
+                  <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder={t('list.keywordPlaceholder')}
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') {
+                        handleSearch();
+                      }
+                    }}
+                    className="pl-10"
+                  />
+                </div>
+
                 <Input
-                  placeholder={t('list.keywordPlaceholder')}
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                  className="pl-10"
+                  placeholder={t('list.locationPlaceholder')}
+                  value={locationFilter}
+                  onChange={e => setLocationFilter(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      handleSearch();
+                    }
+                  }}
                 />
+
+                <Select
+                  value={sortBy}
+                  onValueChange={(
+                    value: 'start_time' | 'price' | 'created_at'
+                  ) => setSortBy(value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={t('list.sortBy')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="start_time">
+                      {t('list.sortByStartTime')}
+                    </SelectItem>
+                    <SelectItem value="price">
+                      {t('list.sortByPrice')}
+                    </SelectItem>
+                    <SelectItem value="created_at">
+                      {t('list.sortByCreatedAt')}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
-              <Input
-                placeholder={t('list.locationPlaceholder')}
-                value={locationFilter}
-                onChange={e => setLocationFilter(e.target.value)}
-              />
+              {/* 検索・リセットボタン */}
+              <div className="flex gap-2 justify-center">
+                <Button
+                  onClick={handleSearch}
+                  disabled={loading}
+                  className="px-8"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="animate-spin h-4 w-4 mr-2" />
+                      検索中...
+                    </>
+                  ) : (
+                    <>
+                      <SearchIcon className="h-4 w-4 mr-2" />
+                      検索
+                    </>
+                  )}
+                </Button>
 
-              <Select
-                value={sortBy}
-                onValueChange={(value: 'start_time' | 'price' | 'created_at') =>
-                  setSortBy(value)
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={t('list.sortBy')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="start_time">
-                    {t('list.sortByStartTime')}
-                  </SelectItem>
-                  <SelectItem value="price">{t('list.sortByPrice')}</SelectItem>
-                  <SelectItem value="created_at">
-                    {t('list.sortByCreatedAt')}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setSearchQuery('');
-                  setLocationFilter('');
-                  setSortBy('start_time');
-                }}
-              >
-                {t('list.reset')}
-              </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setSearchQuery('');
+                    setLocationFilter('');
+                    setSortBy('start_time');
+                  }}
+                  disabled={loading}
+                >
+                  {t('list.reset')}
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>

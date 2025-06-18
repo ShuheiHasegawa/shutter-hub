@@ -29,6 +29,8 @@ export default function PhotoSessionsPage() {
   // 初期状態はfalse（閉じた状態）
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [searchTrigger, setSearchTrigger] = useState(0);
+  const [isSearchLoading, setIsSearchLoading] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
     keyword: '',
     location: '',
@@ -79,6 +81,16 @@ export default function PhotoSessionsPage() {
       participantsMax: '',
       onlyAvailable: false,
     });
+  };
+
+  const handleSearch = () => {
+    setIsSearchLoading(true);
+    setSearchTrigger(prev => prev + 1);
+    // ローディング状態は PhotoSessionList 側で管理されるため、
+    // 一定時間後にリセット
+    setTimeout(() => {
+      setIsSearchLoading(false);
+    }, 1000);
   };
 
   // マウント前はサーバーサイド対応のため最小限のレンダリング
@@ -152,6 +164,8 @@ export default function PhotoSessionsPage() {
             filters={filters}
             onFiltersChange={setFilters}
             onClearFilters={clearFilters}
+            onSearch={handleSearch}
+            isSearchLoading={isSearchLoading}
           />
         </div>
 
@@ -169,6 +183,8 @@ export default function PhotoSessionsPage() {
                   filters={filters}
                   onFiltersChange={setFilters}
                   onClearFilters={clearFilters}
+                  onSearch={handleSearch}
+                  isSearchLoading={isSearchLoading}
                 />
               </div>
             </aside>
@@ -202,6 +218,8 @@ export default function PhotoSessionsPage() {
                     filters={filters}
                     onFiltersChange={setFilters}
                     onClearFilters={clearFilters}
+                    onSearch={handleSearch}
+                    isSearchLoading={isSearchLoading}
                   />
                 </div>
               </aside>
@@ -228,7 +246,10 @@ export default function PhotoSessionsPage() {
                 </div>
               }
             >
-              <PhotoSessionList filters={filters} />
+              <PhotoSessionList
+                filters={filters}
+                searchTrigger={searchTrigger}
+              />
             </Suspense>
           </main>
         </div>
