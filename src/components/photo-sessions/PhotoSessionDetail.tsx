@@ -7,12 +7,19 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import {
+  ActionBar,
+  ActionBarButton,
+  ActionBarSpacer,
+} from '@/components/ui/action-bar';
+import {
   CalendarIcon,
   MapPinIcon,
   UsersIcon,
   CircleDollarSignIcon,
   UserIcon,
   ImageIcon,
+  CreditCard,
+  Calendar,
 } from 'lucide-react';
 import { PhotoSessionWithOrganizer } from '@/types/database';
 import { PhotoSessionSlot } from '@/types/photo-session';
@@ -46,6 +53,7 @@ export function PhotoSessionDetail({
   );
   const [isParticipant, setIsParticipant] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showBookingForm, setShowBookingForm] = useState(false);
 
   const startDate = new Date(session.start_time);
   const endDate = new Date(session.end_time);
@@ -109,6 +117,7 @@ export function PhotoSessionDetail({
 
   const handleBookingSuccess = () => {
     setRefreshKey(prev => prev + 1);
+    setShowBookingForm(false);
   };
 
   // 予約方式の日本語化
@@ -124,6 +133,49 @@ export function PhotoSessionDetail({
   };
 
   const hasSlots = slots && slots.length > 0;
+
+  // 予約可能状態の判定
+  const canBook = !isOrganizer && !isParticipant && isUpcoming && user;
+  const available = session.max_participants - session.current_participants;
+  const isFull = available === 0;
+
+  // アクションバーのボタン設定
+  const getActionBarButtons = (): ActionBarButton[] => {
+    if (isOrganizer || !user || !canBook) {
+      return [];
+    }
+
+    if (hasSlots) {
+      return [
+        {
+          id: 'select-slot',
+          label: '時間枠を選択',
+          variant: 'default',
+          onClick: () => {
+            // スロット選択エリアにスクロール
+            const slotsElement = document.getElementById('slots-section');
+            if (slotsElement) {
+              slotsElement.scrollIntoView({ behavior: 'smooth' });
+            }
+          },
+          icon: <Calendar className="h-4 w-4" />,
+          className: 'bg-blue-600 hover:bg-blue-700',
+        },
+      ];
+    } else {
+      return [
+        {
+          id: 'book-now',
+          label: isFull ? 'キャンセル待ちに登録' : '予約する',
+          variant: 'default',
+          onClick: () => setShowBookingForm(true),
+          disabled: false,
+          icon: <CreditCard className="h-4 w-4" />,
+          className: 'bg-blue-600 hover:bg-blue-700',
+        },
+      ];
+    }
+  };
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -265,9 +317,13 @@ export function PhotoSessionDetail({
         </CardContent>
       </Card>
 
-      {/* 参加者の場合は予約フォーム */}
+      {/* 参加者の場合は予約フォーム（モーダル表示） */}
       {!isOrganizer && hasSlots ? (
-        <div className="space-y-6" key={`slots-${refreshKey}`}>
+        <div
+          id="slots-section"
+          className="space-y-6"
+          key={`slots-${refreshKey}`}
+        >
           <Card>
             <CardHeader>
               <CardTitle>予約可能枠</CardTitle>
@@ -292,7 +348,7 @@ export function PhotoSessionDetail({
             </CardContent>
           </Card>
         </div>
-      ) : !isOrganizer ? (
+      ) : !isOrganizer && showBookingForm ? (
         <PhotoSessionBookingForm
           key={`booking-${refreshKey}`}
           session={session}
@@ -378,6 +434,18 @@ export function PhotoSessionDetail({
             </CardContent>
           </Card>
         </>
+      )}
+
+      {/* 固定フッターがある場合のスペーサー */}
+      {canBook && <ActionBarSpacer />}
+
+      {/* 固定フッターアクションバー */}
+      {canBook && (
+        <ActionBar
+          actions={getActionBarButtons()}
+          maxColumns={1}
+          background="blur"
+        />
       )}
     </div>
   );
