@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { ActionSheet, ActionButton } from '@/components/ui/action-sheet';
 import {
   Calendar,
   MapPin,
@@ -11,6 +12,8 @@ import {
   Clock,
   CheckCircle,
   AlertTriangle,
+  CreditCard,
+  X,
 } from 'lucide-react';
 import { StripeProvider } from './StripeProvider';
 import { PaymentForm } from './PaymentForm';
@@ -39,12 +42,14 @@ interface PaymentBookingFormProps {
   photoSession: PhotoSession;
   onBookingSuccess?: () => void;
   onBookingError?: (error: string) => void;
+  onCancel?: () => void;
 }
 
 export function PaymentBookingForm({
   photoSession,
   onBookingSuccess,
   onBookingError,
+  onCancel,
 }: PaymentBookingFormProps) {
   const [step, setStep] = useState<'booking' | 'payment' | 'success'>(
     'booking'
@@ -52,6 +57,7 @@ export function PaymentBookingForm({
   const [bookingId, setBookingId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showActionSheet, setShowActionSheet] = useState(false);
 
   // 予約作成
   const handleCreateBooking = async () => {
@@ -67,6 +73,7 @@ export function PaymentBookingForm({
       if (result.success && result.bookingId) {
         setBookingId(result.bookingId);
         setStep('payment');
+        setShowActionSheet(false);
       } else {
         setError(result.error || '予約の作成に失敗しました');
         onBookingError?.(result.error || '予約の作成に失敗しました');
@@ -91,6 +98,33 @@ export function PaymentBookingForm({
     setError(error);
     onBookingError?.(error);
   };
+
+  // キャンセル処理
+  const handleCancel = () => {
+    setShowActionSheet(false);
+    onCancel?.();
+  };
+
+  // 予約確認用のアクションボタン
+  const bookingActions: ActionButton[] = [
+    {
+      id: 'cancel',
+      label: 'キャンセル',
+      variant: 'outline',
+      onClick: handleCancel,
+      icon: <X className="h-4 w-4" />,
+      className: 'border-gray-300 text-gray-700 hover:bg-gray-50',
+    },
+    {
+      id: 'confirm',
+      label: '予約して決済に進む',
+      variant: 'default',
+      onClick: handleCreateBooking,
+      loading: isLoading,
+      icon: <CreditCard className="h-4 w-4" />,
+      className: 'bg-blue-600 hover:bg-blue-700',
+    },
+  ];
 
   return (
     <div className="space-y-6">
@@ -237,14 +271,19 @@ export function PaymentBookingForm({
               </ul>
             </div>
 
-            <Button
-              onClick={handleCreateBooking}
-              disabled={isLoading}
-              className="w-full"
-              size="lg"
-            >
-              {isLoading ? '予約作成中...' : '予約して決済に進む'}
-            </Button>
+            {/* ActionSheetを使った予約確認ボタン */}
+            <ActionSheet
+              trigger={
+                <Button className="w-full" size="lg">
+                  予約を確認する
+                </Button>
+              }
+              title="予約の確認"
+              description="この撮影会への参加を確定しますか？"
+              actions={bookingActions}
+              open={showActionSheet}
+              onOpenChange={setShowActionSheet}
+            />
           </CardContent>
         </Card>
       )}

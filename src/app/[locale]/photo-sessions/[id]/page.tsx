@@ -45,7 +45,7 @@ export default async function PhotoSessionPage({
 
   return (
     <DashboardLayout>
-      <div className="container mx-auto py-8 px-4">
+      <div>
         <Suspense fallback={<LoadingCard />}>
           <PhotoSessionDetail session={session} slots={slots || []} />
         </Suspense>

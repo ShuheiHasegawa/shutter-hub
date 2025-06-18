@@ -26,9 +26,10 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ActionSheet, ActionButton } from '@/components/ui/action-sheet';
 import { updateProfile } from '@/lib/auth/profile';
 import { useToast } from '@/hooks/use-toast';
-import { User, Save } from 'lucide-react';
+import { User, Save, X } from 'lucide-react';
 
 const profileEditSchema = z.object({
   user_type: z.enum(['model', 'photographer', 'organizer']),
@@ -87,6 +88,7 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [showActionSheet, setShowActionSheet] = useState(false);
 
   const form = useForm<ProfileEditValues>({
     resolver: zodResolver(profileEditSchema),
@@ -125,6 +127,7 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
       });
 
       // プロフィールページに戻る
+      setShowActionSheet(false);
       router.push('/profile');
       router.refresh();
     } catch (error) {
@@ -138,6 +141,36 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
       setIsLoading(false);
     }
   };
+
+  const handleCancel = () => {
+    setShowActionSheet(false);
+    router.push('/profile');
+  };
+
+  const handleSaveClick = () => {
+    form.handleSubmit(onSubmit)();
+  };
+
+  // プロフィール編集用のアクションボタン
+  const profileActions: ActionButton[] = [
+    {
+      id: 'cancel',
+      label: 'キャンセル',
+      variant: 'outline',
+      onClick: handleCancel,
+      icon: <X className="h-4 w-4" />,
+      className: 'border-gray-300 text-gray-700 hover:bg-gray-50',
+    },
+    {
+      id: 'save',
+      label: 'プロフィールを更新',
+      variant: 'default',
+      onClick: handleSaveClick,
+      loading: isLoading,
+      icon: <Save className="h-4 w-4" />,
+      className: 'bg-blue-600 hover:bg-blue-700',
+    },
+  ];
 
   const getInitials = (name: string) => {
     return name
@@ -174,7 +207,7 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
         </div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form className="space-y-6">
             <FormField
               control={form.control}
               name="user_type"
@@ -340,28 +373,20 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
               />
             </div>
 
-            <div className="flex gap-4 pt-6">
-              <Button type="submit" className="flex-1" disabled={isLoading}>
-                {isLoading ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                    更新中...
-                  </>
-                ) : (
-                  <>
-                    <Save className="mr-2 h-4 w-4" />
-                    プロフィールを更新
-                  </>
-                )}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => router.push('/profile')}
-                disabled={isLoading}
-              >
-                キャンセル
-              </Button>
+            {/* ActionSheetを使った保存・キャンセルボタン */}
+            <div className="pt-6">
+              <ActionSheet
+                trigger={
+                  <Button className="w-full" size="lg">
+                    変更を保存する
+                  </Button>
+                }
+                title="変更の保存"
+                description="プロフィールの変更を保存しますか？"
+                actions={profileActions}
+                open={showActionSheet}
+                onOpenChange={setShowActionSheet}
+              />
             </div>
           </form>
         </Form>

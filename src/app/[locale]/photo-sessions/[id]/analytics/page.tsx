@@ -131,7 +131,7 @@ export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
 
   return (
     <DashboardLayout>
-      <div className="container mx-auto py-8 px-4 max-w-7xl">
+      <div>
         {/* ヘッダー */}
         <div className="flex items-center gap-4 mb-6">
           <Link href={`/photo-sessions/${id}`}>
