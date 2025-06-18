@@ -63,6 +63,10 @@ export function PhotoSessionList({
   >('start_time');
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
+  // 無限スクロール用のrefs
+  const loadMoreTriggerRef = useRef<HTMLDivElement>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
+
   // フィルター変更検知用のref
   const prevFiltersRef = useRef<string>('');
   const isLoadingRef = useRef(false); // API呼び出し制御用
@@ -280,6 +284,51 @@ export function PhotoSessionList({
     }
   }, [searchTrigger, handleSearch]);
 
+  // 無限スクロール用のIntersection Observer設定
+  useEffect(() => {
+    const trigger = loadMoreTriggerRef.current;
+
+    if (!trigger) return;
+
+    // Intersection Observer を作成
+    observerRef.current = new IntersectionObserver(
+      entries => {
+        const [entry] = entries;
+
+        // 要素が画面に入り、まだデータがあり、ローディング中でない場合
+        if (
+          entry.isIntersecting &&
+          hasMore &&
+          !loadingMore &&
+          !isLoadingRef.current &&
+          sessions.length > 0 // 初回ロード完了後のみ
+        ) {
+          // 少し遅延を入れて連続呼び出しを防ぐ
+          setTimeout(() => {
+            if (hasMore && !isLoadingRef.current) {
+              loadSessions(false); // 追加ロード
+            }
+          }, 100);
+        }
+      },
+      {
+        // 100px手前で発火（先読み）
+        rootMargin: '100px',
+        threshold: 0.1,
+      }
+    );
+
+    // 監視開始
+    observerRef.current.observe(trigger);
+
+    // クリーンアップ
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, [hasMore, loadingMore, sessions.length, loadSessions]);
+
   // クリーンアップ処理（現在は不要）
   // useEffect(() => {
   //   return () => {
@@ -309,12 +358,7 @@ export function PhotoSessionList({
     router.push('/photo-sessions/create');
   };
 
-  // さらに読み込む
-  const handleLoadMore = () => {
-    if (!loadingMore && hasMore) {
-      loadSessions(false);
-    }
-  };
+  // handleLoadMore関数は無限スクロールにより不要
 
   if (loading) {
     return (
@@ -354,12 +398,42 @@ export function PhotoSessionList({
       {/* ヘッダー */}
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">{title || t('list.title')}</h2>
-        {showCreateButton && (
-          <Button onClick={handleCreate}>
-            <PlusIcon className="h-4 w-4 mr-2" />
-            {t('createSession')}
-          </Button>
-        )}
+        <div className="flex items-center gap-3">
+          {/* ソート機能（常に表示） */}
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground hidden sm:inline">
+              並び順:
+            </span>
+            <Select
+              value={sortBy}
+              onValueChange={(
+                value:
+                  | 'start_time'
+                  | 'price'
+                  | 'created_at'
+                  | 'popularity'
+                  | 'end_time'
+              ) => setSortBy(value)}
+            >
+              <SelectTrigger className="w-[120px] sm:w-[140px]">
+                <SelectValue placeholder="並び順" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="start_time">開始日時順</SelectItem>
+                <SelectItem value="end_time">終了日時順</SelectItem>
+                <SelectItem value="price">価格順</SelectItem>
+                <SelectItem value="popularity">人気順</SelectItem>
+                <SelectItem value="created_at">新着順</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          {showCreateButton && (
+            <Button onClick={handleCreate}>
+              <PlusIcon className="h-4 w-4 mr-2" />
+              {t('createSession')}
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* 検索・フィルター（サイドバーがない場合のみ表示） */}
@@ -371,7 +445,7 @@ export function PhotoSessionList({
           <CardContent>
             <div className="space-y-4">
               {/* 検索入力フィールド */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="relative">
                   <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -397,30 +471,6 @@ export function PhotoSessionList({
                     }
                   }}
                 />
-
-                <Select
-                  value={sortBy}
-                  onValueChange={(
-                    value: 'start_time' | 'price' | 'created_at'
-                  ) => setSortBy(value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={t('list.sortBy')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="start_time">
-                      {t('list.sortByStartTime')}
-                    </SelectItem>
-                    <SelectItem value="end_time">終了日時順</SelectItem>
-                    <SelectItem value="price">
-                      {t('list.sortByPrice')}
-                    </SelectItem>
-                    <SelectItem value="popularity">人気順</SelectItem>
-                    <SelectItem value="created_at">
-                      {t('list.sortByCreatedAt')}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
               </div>
 
               {/* 検索・リセットボタン */}
@@ -493,25 +543,25 @@ export function PhotoSessionList({
         </div>
       )}
 
-      {/* ページネーション */}
-      {hasMore && (
-        <div className="flex justify-center">
-          <Button
-            variant="outline"
-            onClick={handleLoadMore}
-            disabled={loadingMore}
-          >
-            {loadingMore ? (
-              <>
-                <Loader2 className="animate-spin h-4 w-4 mr-2" />
-                {t('list.loading')}
-              </>
-            ) : (
-              t('list.loadMore')
-            )}
-          </Button>
-        </div>
-      )}
+      {/* 無限スクロール用のトリガー要素 */}
+      <div ref={loadMoreTriggerRef} className="flex justify-center py-8">
+        {loadingMore && (
+          <div className="flex items-center text-muted-foreground">
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            さらに読み込み中...
+          </div>
+        )}
+        {!hasMore && sessions.length > 0 && (
+          <p className="text-muted-foreground text-center">
+            すべての撮影会を表示しました
+          </p>
+        )}
+        {hasMore && !loadingMore && sessions.length > 0 && (
+          <p className="text-muted-foreground text-center text-sm">
+            スクロールして続きを読み込む
+          </p>
+        )}
+      </div>
     </div>
   );
 }
