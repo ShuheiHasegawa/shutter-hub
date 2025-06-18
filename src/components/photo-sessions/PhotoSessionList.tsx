@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { createClient } from '@/lib/supabase/client';
 import { PhotoSessionCard } from './PhotoSessionCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,35 +14,32 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { PlusIcon, SearchIcon, Loader2 } from 'lucide-react';
-import { createClient } from '@/lib/supabase/client';
-import type { PhotoSessionWithOrganizer, BookingType } from '@/types/database';
-import { useTranslations } from 'next-intl';
+import { Badge } from '@/components/ui/badge';
+import { Plus, Search, Filter, MapPin, Loader2 } from 'lucide-react';
+import type { PhotoSessionWithOrganizer } from '@/types/database';
 import type { User } from '@supabase/supabase-js';
 
-interface FilterState {
-  keyword: string;
-  location: string;
-  priceMin: string;
-  priceMax: string;
-  dateFrom: string;
-  dateTo: string;
-  bookingTypes: BookingType[];
-  participantsMin: string;
-  participantsMax: string;
-  onlyAvailable: boolean;
+const ITEMS_PER_PAGE = 20;
+
+interface SearchFilters {
+  keyword?: string;
+  location?: string;
+  priceMin?: string;
+  priceMax?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  participantsMin?: string;
+  participantsMax?: string;
+  bookingTypes: string[];
+  onlyAvailable?: boolean;
 }
 
 interface PhotoSessionListProps {
   showCreateButton?: boolean;
   organizerId?: string;
   title?: string;
-  filters?: FilterState;
+  filters?: SearchFilters;
 }
-
-const ITEMS_PER_PAGE = 20;
-const DEBOUNCE_DELAY = 1000; // 1000ms デバウンス（延長）
 
 export function PhotoSessionList({
   showCreateButton = false,
@@ -55,6 +54,8 @@ export function PhotoSessionList({
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(0);
+
+  // 検索フィルター（ローカル状態）
   const [searchQuery, setSearchQuery] = useState('');
   const [locationFilter, setLocationFilter] = useState('');
   const [sortBy, setSortBy] = useState<'start_time' | 'price' | 'created_at'>(
@@ -62,13 +63,17 @@ export function PhotoSessionList({
   );
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
-  // デバウンス用のref
-  const debounceRef = useRef<NodeJS.Timeout | undefined>(undefined);
-  const prevFiltersRef = useRef<string>('');
-  const isLoadingRef = useRef(false); // API呼び出し制御用
+  // 無限スクロール用のref
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+  const isLoadingRef = useRef(false);
+  const appliedFiltersRef = useRef<SearchFilters>({
+    keyword: '',
+    location: '',
+    bookingTypes: [],
+  });
 
   const loadSessions = useCallback(
-    async (reset = false) => {
+    async (reset = false, searchFilters?: SearchFilters) => {
       // 既にローディング中の場合は重複呼び出しを防ぐ
       if (isLoadingRef.current) return;
 
@@ -106,51 +111,41 @@ export function PhotoSessionList({
 
         // フィルター条件を適用
         if (organizerId) {
-          // 特定の主催者の撮影会を表示（プロフィールページなど）
           query = query.eq('organizer_id', organizerId);
         } else {
-          // 一般的な撮影会一覧では公開済みのもののみ表示
           query = query.eq('is_published', true);
-
-          // 自分が開催者の撮影会は除外（ログイン時のみ）
           if (authUser?.id) {
             query = query.neq('organizer_id', authUser.id);
           }
         }
 
-        // サイドバーフィルターを優先、なければ従来のフィルターを使用
-        const keyword = filters?.keyword || searchQuery;
-        const location = filters?.location || locationFilter;
+        // 検索フィルターの適用（サイドバーフィルターまたは適用済みフィルター）
+        const activeFilters = searchFilters || appliedFiltersRef.current;
 
-        if (keyword) {
+        if (activeFilters.keyword) {
           query = query.or(
-            `title.ilike.%${keyword}%,description.ilike.%${keyword}%`
+            `title.ilike.%${activeFilters.keyword}%,description.ilike.%${activeFilters.keyword}%`
           );
         }
 
-        if (location) {
-          query = query.ilike('location', `%${location}%`);
+        if (activeFilters.location) {
+          query = query.ilike('location', `%${activeFilters.location}%`);
         }
 
-        // 追加のフィルター条件（サイドバーから）
+        // 外部フィルター（サイドバーから）
         if (filters) {
-          // 料金フィルター
           if (filters.priceMin) {
             query = query.gte('price_per_person', parseInt(filters.priceMin));
           }
           if (filters.priceMax) {
             query = query.lte('price_per_person', parseInt(filters.priceMax));
           }
-
-          // 日時フィルター
           if (filters.dateFrom) {
             query = query.gte('start_time', filters.dateFrom);
           }
           if (filters.dateTo) {
             query = query.lte('start_time', filters.dateTo + 'T23:59:59');
           }
-
-          // 参加者数フィルター
           if (filters.participantsMin) {
             query = query.gte(
               'max_participants',
@@ -163,15 +158,10 @@ export function PhotoSessionList({
               parseInt(filters.participantsMax)
             );
           }
-
-          // 予約方式フィルター
           if (filters.bookingTypes.length > 0) {
             query = query.in('booking_type', filters.bookingTypes);
           }
-
-          // 空きありフィルター
           if (filters.onlyAvailable) {
-            // 現在の参加者数が最大参加者数未満のもののみ
             query = query.filter(
               'current_participants',
               'lt',
@@ -235,254 +225,272 @@ export function PhotoSessionList({
         isLoadingRef.current = false;
       }
     },
-    [organizerId, searchQuery, locationFilter, sortBy, filters, page]
+    [organizerId, sortBy, filters, page]
   );
 
-  // デバウンス機能付きloadSessions
-  const debouncedLoadSessions = useCallback(() => {
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
+  // 検索実行（明示的な検索ボタン用）
+  const handleSearch = useCallback(() => {
+    const newFilters: SearchFilters = {
+      keyword: searchQuery.trim(),
+      location: locationFilter.trim(),
+      bookingTypes: [],
+    };
+
+    appliedFiltersRef.current = newFilters;
+    setSessions([]);
+    setPage(0);
+    setHasMore(true);
+    loadSessions(true, newFilters);
+  }, [searchQuery, locationFilter, loadSessions]);
+
+  // Enter キーでの検索
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearch();
     }
+  };
 
-    debounceRef.current = setTimeout(() => {
-      loadSessions(true); // リセット
-    }, DEBOUNCE_DELAY);
-  }, [loadSessions]);
-
-  // フィルター変更時の処理（デバウンス制御改善）
+  // 外部フィルター変更時の処理
   useEffect(() => {
-    const currentFilters = JSON.stringify({
-      organizerId,
-      searchQuery: searchQuery.trim(), // 余分な空白を除去
-      locationFilter: locationFilter.trim(),
-      sortBy,
-      filters,
-    });
-
-    // フィルターが変更された場合のみリセット
-    if (currentFilters !== prevFiltersRef.current) {
-      prevFiltersRef.current = currentFilters;
-
-      // 検索クエリまたは場所フィルターが変更された場合はデバウンス
-      if (searchQuery.trim() || locationFilter.trim()) {
-        debouncedLoadSessions();
-      } else {
-        // その他のフィルター変更は即座に実行
-        setSessions([]);
-        setPage(0);
-        setHasMore(true);
-        loadSessions(true);
-      }
-    }
-  }, [
-    organizerId,
-    searchQuery,
-    locationFilter,
-    sortBy,
-    filters,
-    debouncedLoadSessions,
-    loadSessions,
-  ]);
-
-  // 初回ロード（依存関係を最小限に）
-  useEffect(() => {
-    if (prevFiltersRef.current === '') {
+    if (filters !== undefined) {
+      setSessions([]);
+      setPage(0);
+      setHasMore(true);
       loadSessions(true);
     }
+  }, [filters, loadSessions]);
+
+  // ソート変更時の処理
+  useEffect(() => {
+    setSessions([]);
+    setPage(0);
+    setHasMore(true);
+    loadSessions(true, appliedFiltersRef.current);
+  }, [sortBy, loadSessions]);
+
+  // 初回ロード
+  useEffect(() => {
+    loadSessions(true);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // クリーンアップ処理
+  // 無限スクロール用のIntersection Observer
   useEffect(() => {
+    const observer = new IntersectionObserver(
+      entries => {
+        const target = entries[0];
+        if (
+          target.isIntersecting &&
+          hasMore &&
+          !loading &&
+          !loadingMore &&
+          !isLoadingRef.current
+        ) {
+          loadSessions(false, appliedFiltersRef.current);
+        }
+      },
+      {
+        threshold: 0.1,
+        rootMargin: '50px',
+      }
+    );
+
+    const currentRef = loadMoreRef.current;
+    if (currentRef) {
+      observer.observe(currentRef);
+    }
+
     return () => {
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current);
+      if (currentRef) {
+        observer.unobserve(currentRef);
       }
     };
-  }, []);
+  }, [hasMore, loading, loadingMore, loadSessions]);
 
   const handleViewDetails = (sessionId: string) => {
     router.push(`/photo-sessions/${sessionId}`);
   };
 
-  const handleEdit = (sessionId: string) => {
-    // 権限チェック
-    const session = sessions.find(s => s.id === sessionId);
-    if (!session || !currentUser || currentUser.id !== session.organizer_id) {
-      console.error('編集権限がありません');
-      // TODO: トースト通知で権限エラーを表示
-      return;
+  const getActiveFiltersCount = () => {
+    let count = 0;
+    if (appliedFiltersRef.current.keyword) count++;
+    if (appliedFiltersRef.current.location) count++;
+    if (filters) {
+      if (filters.priceMin || filters.priceMax) count++;
+      if (filters.dateFrom || filters.dateTo) count++;
+      if (filters.participantsMin || filters.participantsMax) count++;
+      if (filters.bookingTypes.length > 0) count++;
+      if (filters.onlyAvailable) count++;
     }
-
-    // 編集ページに遷移（現在は未実装）
-    console.log('編集機能は開発中です');
-    // router.push(`/photo-sessions/${sessionId}/edit`);
+    return count;
   };
 
-  const handleCreate = () => {
-    router.push('/photo-sessions/create');
-  };
-
-  // さらに読み込む
-  const handleLoadMore = () => {
-    if (!loadingMore && hasMore) {
-      loadSessions(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold">{title}</h2>
-        </div>
-        <div className="space-y-4">
-          {[...Array(6)].map((_, i) => (
-            <Card key={i} className="animate-pulse">
-              <div className="flex p-6">
-                <div className="w-48 h-32 bg-gray-200 rounded-lg mr-6"></div>
-                <div className="flex-1 space-y-3">
-                  <div className="h-6 bg-gray-200 rounded w-3/4"></div>
-                  <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                  <div className="h-4 bg-gray-200 rounded w-2/3"></div>
-                  <div className="flex gap-4">
-                    <div className="h-4 bg-gray-200 rounded w-24"></div>
-                    <div className="h-4 bg-gray-200 rounded w-20"></div>
-                    <div className="h-4 bg-gray-200 rounded w-16"></div>
-                  </div>
-                </div>
-                <div className="w-32 space-y-2">
-                  <div className="h-8 bg-gray-200 rounded"></div>
-                  <div className="h-8 bg-gray-200 rounded"></div>
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
-      </div>
-    );
-  }
+  const activeFiltersCount = getActiveFiltersCount();
 
   return (
     <div className="space-y-6">
       {/* ヘッダー */}
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">{title || t('list.title')}</h2>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">{title || t('list.title')}</h1>
+          {activeFiltersCount > 0 && (
+            <div className="flex items-center gap-2 mt-2">
+              <Filter className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">
+                {activeFiltersCount}個のフィルターが適用中
+              </span>
+              <Badge variant="secondary" className="text-xs">
+                {sessions.length}件
+              </Badge>
+            </div>
+          )}
+        </div>
         {showCreateButton && (
-          <Button onClick={handleCreate}>
-            <PlusIcon className="h-4 w-4 mr-2" />
-            {t('createSession')}
+          <Button
+            onClick={() => router.push('/photo-sessions/create')}
+            className="gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            {t('actions.create')}
           </Button>
         )}
       </div>
 
-      {/* 検索・フィルター（サイドバーがない場合のみ表示） */}
-      {!filters && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">{t('list.searchFilter')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="relative">
-                <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder={t('list.keywordPlaceholder')}
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-
+      {/* 検索フィルター */}
+      <div className="bg-card rounded-lg border p-4 space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {/* キーワード検索 */}
+          <div className="md:col-span-2">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder={t('list.locationPlaceholder')}
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="撮影会タイトルで検索..."
+                className="pl-10"
+              />
+            </div>
+          </div>
+
+          {/* 場所検索 */}
+          <div>
+            <div className="relative">
+              <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
                 value={locationFilter}
                 onChange={e => setLocationFilter(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="場所で検索..."
+                className="pl-10"
               />
-
-              <Select
-                value={sortBy}
-                onValueChange={(value: 'start_time' | 'price' | 'created_at') =>
-                  setSortBy(value)
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={t('list.sortBy')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="start_time">
-                    {t('list.sortByStartTime')}
-                  </SelectItem>
-                  <SelectItem value="price">{t('list.sortByPrice')}</SelectItem>
-                  <SelectItem value="created_at">
-                    {t('list.sortByCreatedAt')}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setSearchQuery('');
-                  setLocationFilter('');
-                  setSortBy('start_time');
-                }}
-              >
-                {t('list.reset')}
-              </Button>
             </div>
-          </CardContent>
-        </Card>
-      )}
+          </div>
+
+          {/* 検索ボタン */}
+          <div>
+            <Button
+              onClick={handleSearch}
+              className="w-full gap-2"
+              disabled={loading}
+            >
+              {loading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Search className="h-4 w-4" />
+              )}
+              検索
+            </Button>
+          </div>
+        </div>
+
+        {/* ソート */}
+        <div className="flex items-center gap-4">
+          <span className="text-sm font-medium">並び順:</span>
+          <Select
+            value={sortBy}
+            onValueChange={(value: typeof sortBy) => setSortBy(value)}
+          >
+            <SelectTrigger className="w-[200px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="start_time">開催日時順</SelectItem>
+              <SelectItem value="price">料金順</SelectItem>
+              <SelectItem value="created_at">作成日順</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
 
       {/* 撮影会一覧 */}
-      {sessions.length === 0 ? (
-        <Card>
-          <CardContent className="text-center py-12">
-            <p className="text-muted-foreground mb-4">
-              {searchQuery || locationFilter
-                ? t('list.noResults')
-                : t('list.noSessions')}
-            </p>
-            {showCreateButton && !searchQuery && !locationFilter && (
-              <Button onClick={handleCreate}>
-                <PlusIcon className="h-4 w-4 mr-2" />
-                {t('list.createFirst')}
-              </Button>
-            )}
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-3 md:space-y-4 pb-8">
-          {sessions.map(session => (
-            <PhotoSessionCard
-              key={session.id}
-              session={session}
-              onViewDetails={handleViewDetails}
-              onEdit={handleEdit}
-              isOwner={currentUser?.id === session.organizer_id}
-              showActions={true}
-              layoutMode="card"
-            />
-          ))}
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin" />
+          <span className="ml-2">読み込み中...</span>
         </div>
-      )}
+      ) : sessions.length > 0 ? (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {sessions.map(session => (
+              <PhotoSessionCard
+                key={session.id}
+                session={session}
+                onViewDetails={() => handleViewDetails(session.id)}
+                isOwner={currentUser?.id === session.organizer_id}
+                layoutMode="card"
+              />
+            ))}
+          </div>
 
-      {/* ページネーション */}
-      {hasMore && (
-        <div className="flex justify-center">
-          <Button
-            variant="outline"
-            onClick={handleLoadMore}
-            disabled={loadingMore}
+          {/* 無限スクロール用のローディング表示 */}
+          <div
+            ref={loadMoreRef}
+            className="flex items-center justify-center py-8"
           >
             {loadingMore ? (
-              <>
-                <Loader2 className="animate-spin h-4 w-4 mr-2" />
-                {t('list.loading')}
-              </>
+              <div className="flex items-center gap-2">
+                <Loader2 className="h-5 w-5 animate-spin" />
+                <span className="text-muted-foreground">
+                  さらに読み込み中...
+                </span>
+              </div>
+            ) : hasMore ? (
+              <div className="text-muted-foreground text-sm">
+                スクロールして続きを読み込む
+              </div>
             ) : (
-              t('list.loadMore')
+              <div className="text-muted-foreground text-sm">
+                すべての撮影会を表示しました
+              </div>
             )}
+          </div>
+        </>
+      ) : (
+        <div className="text-center py-12">
+          <div className="text-muted-foreground mb-4">
+            条件に合う撮影会が見つかりませんでした
+          </div>
+          <Button
+            variant="outline"
+            onClick={() => {
+              setSearchQuery('');
+              setLocationFilter('');
+              appliedFiltersRef.current = {
+                keyword: '',
+                location: '',
+                bookingTypes: [],
+              };
+              setSessions([]);
+              setPage(0);
+              setHasMore(true);
+              loadSessions(true, {
+                keyword: '',
+                location: '',
+                bookingTypes: [],
+              });
+            }}
+          >
+            フィルターをリセット
           </Button>
         </div>
       )}
