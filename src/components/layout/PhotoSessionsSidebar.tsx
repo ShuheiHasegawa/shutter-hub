@@ -17,6 +17,7 @@ import {
   UserCheck,
   Star,
   Filter,
+  Search,
   X,
 } from 'lucide-react';
 import type { BookingType } from '@/types/database';
@@ -337,7 +338,7 @@ export function PhotoSessionsSidebar({
                   </>
                 ) : (
                   <>
-                    <Filter className="h-4 w-4 mr-2" />
+                    <Search className="h-4 w-4 mr-2" />
                     検索
                   </>
                 )}

@@ -58,9 +58,9 @@ export function PhotoSessionList({
   const [page, setPage] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [locationFilter, setLocationFilter] = useState('');
-  const [sortBy, setSortBy] = useState<'start_time' | 'price' | 'created_at'>(
-    'start_time'
-  );
+  const [sortBy, setSortBy] = useState<
+    'start_time' | 'price' | 'created_at' | 'popularity' | 'end_time'
+  >('start_time');
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   // フィルター変更検知用のref
@@ -411,9 +411,11 @@ export function PhotoSessionList({
                     <SelectItem value="start_time">
                       {t('list.sortByStartTime')}
                     </SelectItem>
+                    <SelectItem value="end_time">終了日時順</SelectItem>
                     <SelectItem value="price">
                       {t('list.sortByPrice')}
                     </SelectItem>
+                    <SelectItem value="popularity">人気順</SelectItem>
                     <SelectItem value="created_at">
                       {t('list.sortByCreatedAt')}
                     </SelectItem>

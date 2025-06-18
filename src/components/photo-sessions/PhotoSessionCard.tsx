@@ -7,8 +7,6 @@ import {
   UsersIcon,
   CircleDollarSignIcon,
   Clock,
-  Eye,
-  Edit,
   User,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -77,7 +75,10 @@ export function PhotoSessionCard({
       available <= 0 ? 'full' : available <= 2 ? 'fewLeft' : 'available';
 
     return (
-      <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 group">
+      <Card
+        className="overflow-hidden hover:shadow-xl hover:border-blue-400 hover:scale-[1.02] transition-all duration-300 group cursor-pointer transform"
+        onClick={() => onViewDetails?.(session.id)}
+      >
         <CardContent className="p-0">
           {/* Desktop Layout */}
           <div className="hidden md:flex ">
@@ -161,44 +162,7 @@ export function PhotoSessionCard({
                   </span>
                 </div>
 
-                {showActions && (
-                  <div className="flex space-x-2">
-                    {onViewDetails && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="hover:bg-blue-50 dark:hover:bg-blue-900/20"
-                        onClick={() => onViewDetails(session.id)}
-                      >
-                        <Eye className="w-4 h-4 mr-1" />
-                        {t('viewDetails')}
-                      </Button>
-                    )}
-                    {isOwner && onEdit && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="hover:bg-gray-50 dark:hover:bg-gray-800"
-                        onClick={() => onEdit(session.id)}
-                      >
-                        <Edit className="w-4 h-4 mr-1" />
-                        {t('edit')}
-                      </Button>
-                    )}
-                    {!isOwner && onViewDetails && (
-                      <Button
-                        size="sm"
-                        className="bg-orange-500 hover:bg-orange-600"
-                        disabled={status === 'full'}
-                        onClick={() => onViewDetails(session.id)}
-                      >
-                        {status === 'full'
-                          ? tWaitlist('button.join_waitlist')
-                          : tBooking('reserve')}
-                      </Button>
-                    )}
-                  </div>
-                )}
+                {/* Phase 1: 詳細・予約ボタンを削除（詳細画面専用化） */}
               </div>
             </div>
           </div>
@@ -279,44 +243,7 @@ export function PhotoSessionCard({
                 </div>
               </div>
 
-              {showActions && (
-                <div className="flex space-x-2">
-                  {onViewDetails && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1"
-                      onClick={() => onViewDetails(session.id)}
-                    >
-                      <Eye className="w-4 h-4 mr-1" />
-                      {t('viewDetails')}
-                    </Button>
-                  )}
-                  {isOwner && onEdit && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1"
-                      onClick={() => onEdit(session.id)}
-                    >
-                      <Edit className="w-4 h-4 mr-1" />
-                      {t('edit')}
-                    </Button>
-                  )}
-                  {!isOwner && onViewDetails && (
-                    <Button
-                      size="sm"
-                      className="flex-1 bg-orange-500 hover:bg-orange-600"
-                      disabled={status === 'full'}
-                      onClick={() => onViewDetails(session.id)}
-                    >
-                      {status === 'full'
-                        ? tWaitlist('button.join_waitlist')
-                        : tBooking('reserve')}
-                    </Button>
-                  )}
-                </div>
-              )}
+              {/* Phase 1: モバイル詳細・予約ボタンも削除（詳細画面専用化） */}
             </div>
           </div>
         </CardContent>
@@ -339,7 +266,10 @@ export function PhotoSessionCard({
     };
 
     return (
-      <Card className="w-full hover:shadow-lg transition-all duration-300 bg-white border border-gray-200">
+      <Card
+        className="w-full hover:shadow-lg hover:border-blue-400 hover:scale-[1.02] transition-all duration-300 bg-white border border-gray-200 cursor-pointer transform"
+        onClick={() => onViewDetails?.(session.id)}
+      >
         <div className="p-4">
           {/* ヘッダー */}
           <div className="flex justify-between items-start mb-3">
