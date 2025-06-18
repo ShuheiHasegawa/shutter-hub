@@ -168,7 +168,21 @@ export function PhotoSessionDetail({
           id: 'book-now',
           label: isFull ? 'キャンセル待ちに登録' : '予約する',
           variant: 'default',
-          onClick: () => setShowBookingForm(true),
+          onClick: () => {
+            setShowBookingForm(true);
+            // 予約フォームが表示されたら該当箇所にスクロール
+            setTimeout(() => {
+              const bookingElement = document.getElementById(
+                'booking-form-section'
+              );
+              if (bookingElement) {
+                bookingElement.scrollIntoView({
+                  behavior: 'smooth',
+                  block: 'start',
+                });
+              }
+            }, 100);
+          },
           disabled: false,
           icon: <CreditCard className="h-4 w-4" />,
           className: 'bg-blue-600 hover:bg-blue-700',
@@ -348,12 +362,14 @@ export function PhotoSessionDetail({
             </CardContent>
           </Card>
         </div>
-      ) : !isOrganizer && showBookingForm ? (
-        <PhotoSessionBookingForm
-          key={`booking-${refreshKey}`}
-          session={session}
-          onBookingSuccess={handleBookingSuccess}
-        />
+      ) : !isOrganizer && showBookingForm && !hasSlots ? (
+        <div id="booking-form-section">
+          <PhotoSessionBookingForm
+            key={`booking-${refreshKey}`}
+            session={session}
+            onBookingSuccess={handleBookingSuccess}
+          />
+        </div>
       ) : null}
 
       {/* グループチャット機能（メッセージシステムが利用可能な場合のみ） */}
@@ -434,36 +450,6 @@ export function PhotoSessionDetail({
             </CardContent>
           </Card>
         </>
-      )}
-
-      {/* 参加者向け予約案内（予約可能な場合のみ表示） */}
-      {!isOrganizer && canBook && !hasSlots && (
-        <Card>
-          <CardContent className="py-4">
-            <div className="text-center space-y-2">
-              <h3 className="font-semibold text-lg">
-                この撮影会に参加しますか？
-              </h3>
-              <p className="text-muted-foreground text-sm">
-                下部の「予約する」ボタンから詳細確認と予約手続きができます
-              </p>
-              <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
-                <div className="flex items-center gap-1">
-                  <CircleDollarSignIcon className="h-4 w-4" />
-                  <span>
-                    {session.price_per_person === 0
-                      ? '無料'
-                      : `¥${session.price_per_person.toLocaleString()}`}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <UsersIcon className="h-4 w-4" />
-                  <span>残り{available}名</span>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       )}
 
       {/* 固定フッターがある場合のスペーサー */}
