@@ -33,8 +33,8 @@ interface ActionBarProps {
 /**
  * 固定フッター型アクションバーコンポーネント
  *
- * 画面下部に固定表示されるアクションボタンバー
- * 撮影会詳細ページの予約ボタンなどで使用
+ * main要素内の下部に固定表示されるアクションボタンバー
+ * サイドバーを避けて表示される
  */
 export function ActionBar({
   actions,
@@ -53,12 +53,13 @@ export function ActionBar({
     <div
       className={cn(
         'w-full border-t',
-        sticky && 'fixed bottom-0 left-0 right-0 z-40',
+        sticky && 'fixed bottom-0 right-0 z-40',
+        sticky && 'left-0 md:left-64',
         backgroundClasses[background],
         className
       )}
     >
-      <div className="container mx-auto px-4 py-3 max-w-4xl">
+      <div className="mx-auto px-4 py-3 max-w-4xl">
         <div
           className={cn(
             'grid gap-3',

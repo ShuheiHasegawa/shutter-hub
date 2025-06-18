@@ -436,6 +436,36 @@ export function PhotoSessionDetail({
         </>
       )}
 
+      {/* 参加者向け予約案内（予約可能な場合のみ表示） */}
+      {!isOrganizer && canBook && !hasSlots && (
+        <Card>
+          <CardContent className="py-4">
+            <div className="text-center space-y-2">
+              <h3 className="font-semibold text-lg">
+                この撮影会に参加しますか？
+              </h3>
+              <p className="text-muted-foreground text-sm">
+                下部の「予約する」ボタンから詳細確認と予約手続きができます
+              </p>
+              <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <CircleDollarSignIcon className="h-4 w-4" />
+                  <span>
+                    {session.price_per_person === 0
+                      ? '無料'
+                      : `¥${session.price_per_person.toLocaleString()}`}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <UsersIcon className="h-4 w-4" />
+                  <span>残り{available}名</span>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* 固定フッターがある場合のスペーサー */}
       {canBook && <ActionBarSpacer />}
 
