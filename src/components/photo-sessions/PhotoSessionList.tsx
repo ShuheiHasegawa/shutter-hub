@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { PhotoSessionCard } from './PhotoSessionCard';
 import { Button } from '@/components/ui/button';
@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { PlusIcon, SearchIcon } from 'lucide-react';
+import { PlusIcon, SearchIcon, Loader2 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import type { PhotoSessionWithOrganizer, BookingType } from '@/types/database';
 import { useTranslations } from 'next-intl';
@@ -39,6 +39,9 @@ interface PhotoSessionListProps {
   filters?: FilterState;
 }
 
+const ITEMS_PER_PAGE = 20;
+const DEBOUNCE_DELAY = 500; // 500ms デバウンス
+
 export function PhotoSessionList({
   showCreateButton = false,
   organizerId,
@@ -49,6 +52,9 @@ export function PhotoSessionList({
   const t = useTranslations('photoSessions');
   const [sessions, setSessions] = useState<PhotoSessionWithOrganizer[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [locationFilter, setLocationFilter] = useState('');
   const [sortBy, setSortBy] = useState<'start_time' | 'price' | 'created_at'>(
@@ -56,23 +62,32 @@ export function PhotoSessionList({
   );
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
-  useEffect(() => {
-    loadSessions();
-  }, [organizerId, searchQuery, locationFilter, sortBy, filters]);
+  // デバウンス用のref
+  const debounceRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  const prevFiltersRef = useRef<string>('');
 
-  const loadSessions = async () => {
-    setLoading(true);
-    try {
-      const supabase = createClient();
+  const loadSessions = useCallback(
+    async (reset = false) => {
+      if (reset) {
+        setLoading(true);
+      } else {
+        setLoadingMore(true);
+      }
 
-      // 直接認証状態を取得
-      const {
-        data: { user: authUser },
-      } = await supabase.auth.getUser();
+      try {
+        const supabase = createClient();
+        const currentPage = reset ? 0 : page;
 
-      setCurrentUser(authUser);
+        // 直接認証状態を取得
+        const {
+          data: { user: authUser },
+        } = await supabase.auth.getUser();
 
-      let query = supabase.from('photo_sessions').select(`
+        if (reset) {
+          setCurrentUser(authUser);
+        }
+
+        let query = supabase.from('photo_sessions').select(`
           *,
           organizer:profiles!photo_sessions_organizer_id_fkey(
             id,
@@ -82,111 +97,174 @@ export function PhotoSessionList({
           )
         `);
 
-      // フィルター条件を適用
-      if (organizerId) {
-        // 特定の主催者の撮影会を表示（プロフィールページなど）
-        query = query.eq('organizer_id', organizerId);
-      } else {
-        // 一般的な撮影会一覧では公開済みのもののみ表示
-        query = query.eq('is_published', true);
+        // フィルター条件を適用
+        if (organizerId) {
+          // 特定の主催者の撮影会を表示（プロフィールページなど）
+          query = query.eq('organizer_id', organizerId);
+        } else {
+          // 一般的な撮影会一覧では公開済みのもののみ表示
+          query = query.eq('is_published', true);
 
-        // 自分が開催者の撮影会は除外（ログイン時のみ）
-        if (authUser?.id) {
-          query = query.neq('organizer_id', authUser.id);
+          // 自分が開催者の撮影会は除外（ログイン時のみ）
+          if (authUser?.id) {
+            query = query.neq('organizer_id', authUser.id);
+          }
         }
-      }
 
-      // サイドバーフィルターを優先、なければ従来のフィルターを使用
-      const keyword = filters?.keyword || searchQuery;
-      const location = filters?.location || locationFilter;
+        // サイドバーフィルターを優先、なければ従来のフィルターを使用
+        const keyword = filters?.keyword || searchQuery;
+        const location = filters?.location || locationFilter;
 
-      if (keyword) {
-        query = query.or(
-          `title.ilike.%${keyword}%,description.ilike.%${keyword}%`
+        if (keyword) {
+          query = query.or(
+            `title.ilike.%${keyword}%,description.ilike.%${keyword}%`
+          );
+        }
+
+        if (location) {
+          query = query.ilike('location', `%${location}%`);
+        }
+
+        // 追加のフィルター条件（サイドバーから）
+        if (filters) {
+          // 料金フィルター
+          if (filters.priceMin) {
+            query = query.gte('price_per_person', parseInt(filters.priceMin));
+          }
+          if (filters.priceMax) {
+            query = query.lte('price_per_person', parseInt(filters.priceMax));
+          }
+
+          // 日時フィルター
+          if (filters.dateFrom) {
+            query = query.gte('start_time', filters.dateFrom);
+          }
+          if (filters.dateTo) {
+            query = query.lte('start_time', filters.dateTo + 'T23:59:59');
+          }
+
+          // 参加者数フィルター
+          if (filters.participantsMin) {
+            query = query.gte(
+              'max_participants',
+              parseInt(filters.participantsMin)
+            );
+          }
+          if (filters.participantsMax) {
+            query = query.lte(
+              'max_participants',
+              parseInt(filters.participantsMax)
+            );
+          }
+
+          // 予約方式フィルター
+          if (filters.bookingTypes.length > 0) {
+            query = query.in('booking_type', filters.bookingTypes);
+          }
+
+          // 空きありフィルター
+          if (filters.onlyAvailable) {
+            // 現在の参加者数が最大参加者数未満のもののみ
+            query = query.filter(
+              'current_participants',
+              'lt',
+              'max_participants'
+            );
+          }
+        }
+
+        // ソート条件を適用
+        switch (sortBy) {
+          case 'start_time':
+            query = query.order('start_time', { ascending: true });
+            break;
+          case 'price':
+            query = query.order('price_per_person', { ascending: true });
+            break;
+          case 'created_at':
+            query = query.order('created_at', { ascending: false });
+            break;
+        }
+
+        // ページネーション
+        query = query.range(
+          currentPage * ITEMS_PER_PAGE,
+          (currentPage + 1) * ITEMS_PER_PAGE - 1
         );
-      }
 
-      if (location) {
-        query = query.ilike('location', `%${location}%`);
-      }
+        const { data, error } = await query;
 
-      // 追加のフィルター条件（サイドバーから）
-      if (filters) {
-        // 料金フィルター
-        if (filters.priceMin) {
-          query = query.gte('price_per_person', parseInt(filters.priceMin));
-        }
-        if (filters.priceMax) {
-          query = query.lte('price_per_person', parseInt(filters.priceMax));
+        if (error) {
+          console.error('撮影会一覧取得エラー:', error);
+          return;
         }
 
-        // 日時フィルター
-        if (filters.dateFrom) {
-          query = query.gte('start_time', filters.dateFrom);
-        }
-        if (filters.dateTo) {
-          query = query.lte('start_time', filters.dateTo + 'T23:59:59');
-        }
+        const newSessions = data || [];
 
-        // 参加者数フィルター
-        if (filters.participantsMin) {
-          query = query.gte(
-            'max_participants',
-            parseInt(filters.participantsMin)
-          );
-        }
-        if (filters.participantsMax) {
-          query = query.lte(
-            'max_participants',
-            parseInt(filters.participantsMax)
-          );
+        if (reset) {
+          setSessions(newSessions);
+        } else {
+          setSessions(prev => [...prev, ...newSessions]);
         }
 
-        // 予約方式フィルター
-        if (filters.bookingTypes.length > 0) {
-          query = query.in('booking_type', filters.bookingTypes);
+        // 次のページがあるかチェック
+        setHasMore(newSessions.length === ITEMS_PER_PAGE);
+
+        if (!reset) {
+          setPage(currentPage + 1);
         }
-
-        // 空きありフィルター
-        if (filters.onlyAvailable) {
-          // 現在の参加者数が最大参加者数未満のもののみ
-          query = query.filter(
-            'current_participants',
-            'lt',
-            'max_participants'
-          );
-        }
-      }
-
-      // ソート条件を適用
-      switch (sortBy) {
-        case 'start_time':
-          query = query.order('start_time', { ascending: true });
-          break;
-        case 'price':
-          query = query.order('price_per_person', { ascending: true });
-          break;
-        case 'created_at':
-          query = query.order('created_at', { ascending: false });
-          break;
-      }
-
-      query = query.limit(20);
-
-      const { data, error } = await query;
-
-      if (error) {
+      } catch (error) {
         console.error('撮影会一覧取得エラー:', error);
-        return;
+      } finally {
+        setLoading(false);
+        setLoadingMore(false);
       }
+    },
+    [organizerId, searchQuery, locationFilter, sortBy, filters, page]
+  );
 
-      setSessions(data || []);
-    } catch (error) {
-      console.error('撮影会一覧取得エラー:', error);
-    } finally {
-      setLoading(false);
+  // デバウンス機能付きloadSessions
+  const debouncedLoadSessions = useCallback(() => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
     }
-  };
+
+    debounceRef.current = setTimeout(() => {
+      loadSessions(true); // リセット
+    }, DEBOUNCE_DELAY);
+  }, [loadSessions]);
+
+  // フィルター変更時の処理
+  useEffect(() => {
+    const currentFilters = JSON.stringify({
+      organizerId,
+      searchQuery,
+      locationFilter,
+      sortBy,
+      filters,
+    });
+
+    // フィルターが変更された場合のみリセット
+    if (currentFilters !== prevFiltersRef.current) {
+      prevFiltersRef.current = currentFilters;
+      setPage(0);
+      setSessions([]);
+      setHasMore(true);
+      debouncedLoadSessions();
+    }
+  }, [
+    organizerId,
+    searchQuery,
+    locationFilter,
+    sortBy,
+    filters,
+    debouncedLoadSessions,
+  ]);
+
+  // 初回ロード
+  useEffect(() => {
+    loadSessions(true);
+  }, [loadSessions]);
 
   const handleViewDetails = (sessionId: string) => {
     router.push(`/photo-sessions/${sessionId}`);
@@ -208,6 +286,13 @@ export function PhotoSessionList({
 
   const handleCreate = () => {
     router.push('/photo-sessions/create');
+  };
+
+  // さらに読み込む
+  const handleLoadMore = () => {
+    if (!loadingMore && hasMore) {
+      loadSessions(false);
+    }
   };
 
   if (loading) {
@@ -348,10 +433,23 @@ export function PhotoSessionList({
         </div>
       )}
 
-      {/* ページネーション（将来的に追加） */}
-      {sessions.length >= 20 && (
+      {/* ページネーション */}
+      {hasMore && (
         <div className="flex justify-center">
-          <Button variant="outline">{t('list.loadMore')}</Button>
+          <Button
+            variant="outline"
+            onClick={handleLoadMore}
+            disabled={loadingMore}
+          >
+            {loadingMore ? (
+              <>
+                <Loader2 className="animate-spin h-4 w-4 mr-2" />
+                {t('list.loading')}
+              </>
+            ) : (
+              t('list.loadMore')
+            )}
+          </Button>
         </div>
       )}
     </div>
