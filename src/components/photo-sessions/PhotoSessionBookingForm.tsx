@@ -4,6 +4,17 @@ import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { createPhotoSessionBooking } from '@/app/actions/photo-session-booking';
@@ -260,21 +271,115 @@ export function PhotoSessionBookingForm({
               <p className="text-sm text-muted-foreground mb-4">
                 {t('participateQuestion')}
               </p>
-              <Button
-                onClick={handleBooking}
-                disabled={isLoading}
-                className="w-full"
-                size="lg"
-              >
-                {isLoading ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                    {t('bookingInProgress')}
-                  </>
-                ) : (
-                  t('reserve')
-                )}
-              </Button>
+
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button disabled={isLoading} className="w-full" size="lg">
+                    {isLoading ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                        {t('bookingInProgress')}
+                      </>
+                    ) : (
+                      t('reserve')
+                    )}
+                  </Button>
+                </AlertDialogTrigger>
+
+                <AlertDialogContent className="max-w-md">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                      {t('confirmation.title')}
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      {t('confirmation.description')}
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+
+                  <div className="space-y-4">
+                    {/* 撮影会情報 */}
+                    <div className="space-y-3 text-sm">
+                      <div>
+                        <div className="font-medium text-foreground">
+                          {t('confirmation.sessionTitle')}
+                        </div>
+                        <div className="text-muted-foreground">
+                          {session.title}
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="font-medium text-foreground">
+                          {t('confirmation.dateTime')}
+                        </div>
+                        <div className="text-muted-foreground">
+                          {formatDateLocalized(startDate, locale, 'long')}
+                          <br />
+                          {formatTimeLocalized(startDate, locale)} -{' '}
+                          {formatTimeLocalized(endDate, locale)}
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="font-medium text-foreground">
+                          {t('confirmation.location')}
+                        </div>
+                        <div className="text-muted-foreground">
+                          {session.location}
+                          {session.address && (
+                            <>
+                              <br />
+                              {session.address}
+                            </>
+                          )}
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="font-medium text-foreground">
+                          {t('confirmation.price')}
+                        </div>
+                        <div className="text-muted-foreground">
+                          {session.price_per_person === 0
+                            ? t('free')
+                            : `¥${session.price_per_person.toLocaleString()}`}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 確認事項 */}
+                    <div className="border-t pt-4">
+                      <div className="font-medium text-foreground mb-2">
+                        {t('confirmation.notes.title')}
+                      </div>
+                      <ul className="text-xs text-muted-foreground space-y-1">
+                        <li>• {t('confirmation.notes.item1')}</li>
+                        <li>• {t('confirmation.notes.item2')}</li>
+                        <li>• {t('confirmation.notes.item3')}</li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>
+                      {t('confirmation.cancelButton')}
+                    </AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleBooking}
+                      disabled={isLoading}
+                    >
+                      {isLoading ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                          {t('bookingInProgress')}
+                        </>
+                      ) : (
+                        t('confirmation.confirmButton')
+                      )}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           ) : (
             <div className="text-center">

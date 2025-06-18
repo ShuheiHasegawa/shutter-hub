@@ -201,6 +201,22 @@
       "cancel": "Cancel",
       "confirmBooking": "Book",
       "confirmCancel": "Cancel Booking"
+    },
+    "confirmation": {
+      "title": "Booking Confirmation",
+      "description": "Do you want to book this photo session?",
+      "sessionTitle": "Photo Session",
+      "dateTime": "Date & Time",
+      "location": "Location",
+      "price": "Price",
+      "confirmButton": "Book Now",
+      "cancelButton": "Cancel",
+      "notes": {
+        "title": "Please Note",
+        "item1": "Cancellation after booking has conditions",
+        "item2": "Please pay the participation fee on the day",
+        "item3": "Please arrive 15 minutes before the start time"
+      }
     }
   },
   "bookings": {

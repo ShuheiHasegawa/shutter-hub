@@ -197,6 +197,22 @@
       "cancel": "やめる",
       "confirmBooking": "予約する",
       "confirmCancel": "キャンセルする"
+    },
+    "confirmation": {
+      "title": "予約確認",
+      "description": "以下の撮影会を予約しますか？",
+      "sessionTitle": "撮影会",
+      "dateTime": "日時",
+      "location": "場所",
+      "price": "料金",
+      "confirmButton": "予約する",
+      "cancelButton": "キャンセル",
+      "notes": {
+        "title": "確認事項",
+        "item1": "予約後のキャンセルは条件があります",
+        "item2": "参加費は当日お支払いください",
+        "item3": "開始時刻の15分前には到着してください"
+      }
     }
   },
   "bookings": {
