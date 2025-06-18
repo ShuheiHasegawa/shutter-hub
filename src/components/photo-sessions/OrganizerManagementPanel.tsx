@@ -25,6 +25,18 @@ export function OrganizerManagementPanel({
 }: OrganizerManagementPanelProps) {
   const router = useRouter();
   const hasSlots = slots && slots.length > 0;
+
+  // 予約方式の日本語化
+  const getBookingTypeLabel = (bookingType: string) => {
+    const bookingTypes: Record<string, string> = {
+      first_come: '先着順',
+      lottery: '抽選',
+      admin_lottery: '管理抽選',
+      priority: '優先予約',
+      waitlist: 'キャンセル待ち',
+    };
+    return bookingTypes[bookingType] || bookingType;
+  };
   const totalBookings = hasSlots
     ? slots.reduce((sum, slot) => sum + slot.current_participants, 0)
     : session.current_participants;
@@ -98,7 +110,9 @@ export function OrganizerManagementPanel({
                   {hasSlots ? 'スロット数' : '予約方式'}
                 </p>
                 <p className="text-2xl font-bold">
-                  {hasSlots ? slots.length : session.booking_type}
+                  {hasSlots
+                    ? slots.length
+                    : getBookingTypeLabel(session.booking_type || 'first_come')}
                 </p>
               </div>
               <CalendarIcon className="h-8 w-8 text-muted-foreground" />
