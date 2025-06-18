@@ -23,7 +23,6 @@ import {
 } from 'lucide-react';
 import { PhotoSessionWithOrganizer } from '@/types/database';
 import { PhotoSessionSlot } from '@/types/photo-session';
-import { PhotoSessionBookingForm } from './PhotoSessionBookingForm';
 import PhotoSessionSlotCard from './PhotoSessionSlotCard';
 import { OrganizerManagementPanel } from './OrganizerManagementPanel';
 import { PhotoSessionGroupChat } from './PhotoSessionGroupChat';
@@ -36,6 +35,18 @@ import {
   checkUserParticipation,
   type PhotoSessionParticipant,
 } from '@/app/actions/photo-session-participants';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { useToast } from '@/hooks/use-toast';
+import { createPhotoSessionBooking } from '@/app/actions/photo-session-booking';
 
 interface PhotoSessionDetailProps {
   session: PhotoSessionWithOrganizer;
@@ -53,7 +64,9 @@ export function PhotoSessionDetail({
   );
   const [isParticipant, setIsParticipant] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [showBookingForm, setShowBookingForm] = useState(false);
+  const [showBookingDialog, setShowBookingDialog] = useState(false);
+  const [isBooking, setIsBooking] = useState(false);
+  const { toast } = useToast();
 
   const startDate = new Date(session.start_time);
   const endDate = new Date(session.end_time);
@@ -117,7 +130,47 @@ export function PhotoSessionDetail({
 
   const handleBookingSuccess = () => {
     setRefreshKey(prev => prev + 1);
-    setShowBookingForm(false);
+  };
+
+  // 直接予約処理
+  const handleDirectBooking = async () => {
+    if (!user) {
+      toast({
+        title: 'ログインが必要です',
+        description: '予約するにはログインしてください',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsBooking(true);
+    try {
+      const result = await createPhotoSessionBooking(session.id, user.id);
+
+      if (result.success) {
+        toast({
+          title: '予約が完了しました！',
+          description: '撮影会への参加が確定しました',
+        });
+        setShowBookingDialog(false);
+        setRefreshKey(prev => prev + 1);
+      } else {
+        toast({
+          title: 'エラー',
+          description: result.error || '予約に失敗しました',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      console.error('予約エラー:', error);
+      toast({
+        title: 'エラー',
+        description: '予期しないエラーが発生しました',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsBooking(false);
+    }
   };
 
   // 予約方式の日本語化
@@ -169,19 +222,7 @@ export function PhotoSessionDetail({
           label: isFull ? 'キャンセル待ちに登録' : '予約する',
           variant: 'default',
           onClick: () => {
-            setShowBookingForm(true);
-            // 予約フォームが表示されたら該当箇所にスクロール
-            setTimeout(() => {
-              const bookingElement = document.getElementById(
-                'booking-form-section'
-              );
-              if (bookingElement) {
-                bookingElement.scrollIntoView({
-                  behavior: 'smooth',
-                  block: 'start',
-                });
-              }
-            }, 100);
+            setShowBookingDialog(true);
           },
           disabled: false,
           icon: <CreditCard className="h-4 w-4" />,
@@ -362,14 +403,6 @@ export function PhotoSessionDetail({
             </CardContent>
           </Card>
         </div>
-      ) : !isOrganizer && showBookingForm && !hasSlots ? (
-        <div id="booking-form-section">
-          <PhotoSessionBookingForm
-            key={`booking-${refreshKey}`}
-            session={session}
-            onBookingSuccess={handleBookingSuccess}
-          />
-        </div>
       ) : null}
 
       {/* グループチャット機能（メッセージシステムが利用可能な場合のみ） */}
@@ -463,6 +496,87 @@ export function PhotoSessionDetail({
           background="blur"
         />
       )}
+
+      {/* 予約確認ダイアログ */}
+      <AlertDialog open={showBookingDialog} onOpenChange={setShowBookingDialog}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle>予約確認</AlertDialogTitle>
+            <AlertDialogDescription>
+              以下の撮影会を予約しますか？
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <div className="space-y-4">
+            {/* 撮影会情報 */}
+            <div className="space-y-3 text-sm">
+              <div>
+                <div className="font-medium text-foreground">撮影会</div>
+                <div className="text-muted-foreground">{session.title}</div>
+              </div>
+
+              <div>
+                <div className="font-medium text-foreground">日時</div>
+                <div className="text-muted-foreground">
+                  {formatDateLocalized(startDate, 'ja', 'long')}
+                  <br />
+                  {formatTimeLocalized(startDate, 'ja')} -{' '}
+                  {formatTimeLocalized(endDate, 'ja')}
+                </div>
+              </div>
+
+              <div>
+                <div className="font-medium text-foreground">場所</div>
+                <div className="text-muted-foreground">
+                  {session.location}
+                  {session.address && (
+                    <>
+                      <br />
+                      {session.address}
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <div className="font-medium text-foreground">料金</div>
+                <div className="text-muted-foreground">
+                  {session.price_per_person === 0
+                    ? '無料'
+                    : `¥${session.price_per_person.toLocaleString()}`}
+                </div>
+              </div>
+            </div>
+
+            {/* 確認事項 */}
+            <div className="border-t pt-4">
+              <div className="font-medium text-foreground mb-2">確認事項</div>
+              <ul className="text-xs text-muted-foreground space-y-1">
+                <li>• 予約のキャンセルは撮影会開始の24時間前まで可能です</li>
+                <li>• 遅刻される場合は主催者にご連絡ください</li>
+                <li>• 体調不良の場合は無理をせず参加をお控えください</li>
+              </ul>
+            </div>
+          </div>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel>キャンセル</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDirectBooking}
+              disabled={isBooking}
+            >
+              {isBooking ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                  予約中...
+                </>
+              ) : (
+                '予約する'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
