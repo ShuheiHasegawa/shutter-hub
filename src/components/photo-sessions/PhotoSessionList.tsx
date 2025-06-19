@@ -234,7 +234,8 @@ export function PhotoSessionList({
         }
 
         // 次のページがあるかチェック
-        setHasMore(newSessions.length === ITEMS_PER_PAGE);
+        const hasMoreData = newSessions.length === ITEMS_PER_PAGE;
+        setHasMore(hasMoreData);
 
         if (!reset) {
           setPage(prev => prev + 1);
@@ -297,7 +298,19 @@ export function PhotoSessionList({
   useEffect(() => {
     const trigger = loadMoreTriggerRef.current;
 
-    if (!trigger) return;
+    // hasMoreがfalseの場合は監視を停止
+    if (!trigger || !hasMore) {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+        observerRef.current = null;
+      }
+      return;
+    }
+
+    // 既存のObserverがある場合は一度切断
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+    }
 
     // Intersection Observer を作成
     observerRef.current = new IntersectionObserver(
@@ -314,15 +327,15 @@ export function PhotoSessionList({
         ) {
           // 少し遅延を入れて連続呼び出しを防ぐ
           setTimeout(() => {
-            if (hasMore && !isLoadingRef.current) {
+            if (hasMore && !isLoadingRef.current && !loadingMore) {
               loadSessions(false); // 追加ロード
             }
-          }, 100);
+          }, 200); // 遅延を少し長くして安全性を向上
         }
       },
       {
-        // 100px手前で発火（先読み）
-        rootMargin: '100px',
+        // 50px手前で発火（先読みを少し控えめに）
+        rootMargin: '50px',
         threshold: 0.1,
       }
     );
@@ -338,12 +351,16 @@ export function PhotoSessionList({
     };
   }, [hasMore, loadingMore, sessions.length, loadSessions]);
 
-  // クリーンアップ処理（現在は不要）
-  // useEffect(() => {
-  //   return () => {
-  //     // デバウンス機能削除により不要
-  //   };
-  // }, []);
+  // クリーンアップ処理
+  useEffect(() => {
+    return () => {
+      // コンポーネントアンマウント時にObserverをクリーンアップ
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+        observerRef.current = null;
+      }
+    };
+  }, []);
 
   const handleViewDetails = (sessionId: string) => {
     router.push(`/photo-sessions/${sessionId}`);
@@ -577,7 +594,7 @@ export function PhotoSessionList({
       )}
 
       {/* 無限スクロール用のトリガー要素 */}
-      <div ref={loadMoreTriggerRef} className="flex justify-center py-8">
+      <div className="flex justify-center py-8">
         {loadingMore && (
           <div className="flex items-center text-muted-foreground">
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -589,10 +606,13 @@ export function PhotoSessionList({
             すべての撮影会を表示しました
           </p>
         )}
+        {/* hasMoreがtrueの場合のみトリガー要素を表示 */}
         {hasMore && !loadingMore && sessions.length > 0 && (
-          <p className="text-muted-foreground text-center text-sm">
-            スクロールして続きを読み込む
-          </p>
+          <div ref={loadMoreTriggerRef} className="flex justify-center">
+            <p className="text-muted-foreground text-center text-sm">
+              スクロールして続きを読み込む
+            </p>
+          </div>
         )}
       </div>
     </div>
