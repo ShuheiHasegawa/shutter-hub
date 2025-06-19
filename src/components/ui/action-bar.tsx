@@ -44,9 +44,10 @@ export function ActionBar({
   background = 'blur',
 }: ActionBarProps) {
   const backgroundClasses = {
-    default: 'bg-background/80 backdrop-blur-sm',
-    blur: 'bg-background/80 backdrop-blur-md',
-    solid: 'bg-background',
+    default:
+      'bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-gray-200 dark:border-gray-700',
+    blur: 'bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-gray-200 dark:border-gray-700',
+    solid: 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700',
   };
 
   return (
@@ -62,11 +63,11 @@ export function ActionBar({
       <div className="w-full flex justify-center px-4 py-3">
         <div
           className={cn(
-            'grid gap-3',
-            maxColumns === 1 && 'grid-cols-1 w-full max-w-xs',
-            maxColumns === 2 && 'grid-cols-2 w-full max-w-sm',
-            maxColumns === 3 && 'grid-cols-3 w-full max-w-md',
-            maxColumns === 4 && 'grid-cols-4 w-full max-w-lg'
+            'flex justify-center items-center gap-3',
+            maxColumns === 1 && 'flex-col w-full max-w-xs',
+            maxColumns === 2 && 'flex-row w-full max-w-md',
+            maxColumns === 3 && 'flex-row w-full max-w-lg',
+            maxColumns === 4 && 'flex-row w-full max-w-xl'
           )}
         >
           {actions.map(action => (
@@ -76,7 +77,12 @@ export function ActionBar({
               size={action.size || 'lg'}
               onClick={action.onClick}
               disabled={action.disabled || action.loading}
-              className={cn('h-12 text-base font-medium', action.className)}
+              className={cn(
+                'h-12 text-base font-medium',
+                maxColumns <= 2 ? 'flex-1 min-w-0' : 'px-6',
+                'text-foreground', // 確実に読みやすい文字色
+                action.className
+              )}
             >
               {action.loading ? (
                 <div className="flex items-center gap-2">
