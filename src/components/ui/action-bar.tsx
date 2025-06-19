@@ -60,43 +60,44 @@ export function ActionBar({
         className
       )}
     >
-      <div className="w-full flex justify-center px-4 py-3">
-        <div
-          className={cn(
-            'flex justify-center items-center gap-3',
-            maxColumns === 1 && 'flex-col w-full max-w-xs',
-            maxColumns === 2 && 'flex-row w-full max-w-md',
-            maxColumns === 3 && 'flex-row w-full max-w-lg',
-            maxColumns === 4 && 'flex-row w-full max-w-xl'
-          )}
-        >
-          {actions.map(action => (
-            <Button
-              key={action.id}
-              variant={action.variant || 'default'}
-              size={action.size || 'lg'}
-              onClick={action.onClick}
-              disabled={action.disabled || action.loading}
-              className={cn(
-                'h-12 text-base font-medium',
-                maxColumns <= 2 ? 'flex-1 min-w-0' : 'px-6',
-                'text-foreground', // 確実に読みやすい文字色
-                action.className
-              )}
-            >
-              {action.loading ? (
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                  <span>処理中...</span>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  {action.icon}
-                  <span>{action.label}</span>
-                </div>
-              )}
-            </Button>
-          ))}
+      <div className="w-full px-4 py-3">
+        <div className="flex justify-center items-center">
+          <div
+            className={cn(
+              'grid gap-3 justify-items-center',
+              maxColumns === 1 && 'grid-cols-1 w-full max-w-xs',
+              maxColumns === 2 && 'grid-cols-2 w-full max-w-sm',
+              maxColumns === 3 && 'grid-cols-3 w-full max-w-md',
+              maxColumns === 4 && 'grid-cols-4 w-full max-w-lg'
+            )}
+          >
+            {actions.map(action => (
+              <Button
+                key={action.id}
+                variant={action.variant || 'default'}
+                size={action.size || 'lg'}
+                onClick={action.onClick}
+                disabled={action.disabled || action.loading}
+                className={cn(
+                  'h-12 text-base font-medium w-full',
+                  'text-foreground', // 確実に読みやすい文字色
+                  action.className
+                )}
+              >
+                {action.loading ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    <span>処理中...</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    {action.icon}
+                    <span>{action.label}</span>
+                  </div>
+                )}
+              </Button>
+            ))}
+          </div>
         </div>
       </div>
     </div>
