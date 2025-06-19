@@ -176,12 +176,9 @@ export function PhotoSessionList({
 
           // 空きありフィルター
           if (filters.onlyAvailable) {
-            // 現在の参加者数が最大参加者数未満のもののみ
-            query = query.filter(
-              'current_participants',
-              'lt',
-              'max_participants'
-            );
+            // 空きがある撮影会のみ表示
+            // 満席でない条件：現在の参加者数 ≠ 最大参加者数
+            query = query.neq('current_participants', 'max_participants');
           }
         }
 
@@ -250,7 +247,7 @@ export function PhotoSessionList({
         isLoadingRef.current = false;
       }
     },
-    [organizerId, searchQuery, locationFilter, sortBy, sortOrder, filters, page]
+    [organizerId, searchQuery, locationFilter, sortBy, sortOrder, page]
   );
 
   // 明示的な検索実行関数
