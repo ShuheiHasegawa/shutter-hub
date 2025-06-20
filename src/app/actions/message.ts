@@ -467,15 +467,17 @@ export async function createGroupConversation(
     const uniqueMemberIds = Array.from(new Set([user.id, ...memberIds]));
 
     // グループ会話を作成
+    const conversationData = {
+      is_group: true,
+      group_name: name.trim(),
+      group_description: description?.trim(),
+      group_image_url: imageUrl,
+      created_by: user.id,
+    };
+
     const { data: conversation, error: conversationError } = await supabase
       .from('conversations')
-      .insert({
-        is_group: true,
-        group_name: name.trim(),
-        group_description: description?.trim(),
-        group_image_url: imageUrl,
-        created_by: user.id,
-      })
+      .insert(conversationData)
       .select()
       .single();
 
@@ -497,18 +499,22 @@ export async function createGroupConversation(
       .insert(memberInserts);
 
     if (membersError) {
-      console.error('Group members creation error:', membersError);
       // グループを削除して巻き戻し
       await supabase.from('conversations').delete().eq('id', conversation.id);
+      console.error('Group members creation error:', membersError);
       return { success: false, message: 'メンバーの追加に失敗しました' };
     }
 
     // システムメッセージを送信
-    await sendMessage({
-      conversation_id: conversation.id,
-      content: 'グループが作成されました',
-      message_type: 'system',
-    });
+    try {
+      await sendMessage({
+        conversation_id: conversation.id,
+        content: 'グループが作成されました',
+        message_type: 'system',
+      });
+    } catch (messageError) {
+      console.warn('Send message error:', messageError);
+    }
 
     // メンバー情報を含む完全な会話データを取得
     const { data: conversationWithMembers, error: fetchError } = await supabase
@@ -538,6 +544,12 @@ export async function createGroupConversation(
     };
   } catch (error) {
     console.error('Create group conversation error:', error);
+    console.error('Error type:', typeof error);
+    console.error('Error constructor:', error?.constructor?.name);
+    if (error instanceof Error) {
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+    }
     return { success: false, message: 'グループの作成に失敗しました' };
   }
 }

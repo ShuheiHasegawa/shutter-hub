@@ -21,9 +21,9 @@ import { ChatWindow } from '@/components/social/ChatWindow';
 import { ConversationWithUsers } from '@/types/social';
 import {
   createGroupConversation,
-  sendMessage,
   addGroupMembers,
 } from '@/app/actions/message';
+import { useRouter } from 'next/navigation';
 
 interface PhotoSessionGroupChatProps {
   sessionId: string;
@@ -68,6 +68,7 @@ export function PhotoSessionGroupChat({
   const [creating, setCreating] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [sessionInfo, setSessionInfo] = useState<PhotoSessionInfo | null>(null);
+  const router = useRouter();
 
   // 権限チェック
   const isOrganizer = currentUserId === organizerId;
@@ -205,69 +206,31 @@ export function PhotoSessionGroupChat({
 
     setCreating(true);
     try {
-      // 主催者も含める
-      const allMemberIds = Array.from(
-        new Set([organizerId, ...confirmedParticipants])
-      );
-
       const groupName = `${sessionTitle} - 撮影会チャット`;
       const groupDescription = `${sessionDate} ${sessionLocation}で開催される撮影会の専用チャットです。`;
 
-      console.log('Creating group conversation with:', {
-        groupName,
-        groupDescription,
-        memberIds: allMemberIds.filter(id => id !== currentUserId),
-      });
+      // 主催者以外のメンバーIDを渡す（createGroupConversationで主催者は自動で追加される）
+      const memberIds = confirmedParticipants;
 
       const result = await createGroupConversation(
         groupName,
         groupDescription,
-        allMemberIds.filter(id => id !== currentUserId) // 自分以外を指定
+        memberIds
       );
 
-      console.log('Group conversation result:', result);
-
       if (result.success && result.data) {
-        const newConversation = result.data as ConversationWithUsers;
-        setConversation(newConversation);
-
-        // 撮影会情報を自動共有
-        try {
-          await sharePhotoSessionInfo(newConversation.id);
-        } catch (shareError) {
-          console.warn('Failed to share session info:', shareError);
-          // 情報共有失敗は警告のみ（グループ作成は成功）
-        }
-
-        toast.success(t('groupChatCreated'));
+        toast.success('グループチャットを作成しました');
+        // チャットページにリダイレクト
+        router.push(`/messages/${result.data.id}`);
       } else {
-        console.error('Group creation failed:', result);
-        toast.error(result.message || t('errorCreatingGroupChat'));
+        toast.error(result.message || 'グループチャットの作成に失敗しました');
       }
     } catch (error) {
-      console.error('Create group chat error:', error);
-      toast.error(t('errorCreatingGroupChat'));
+      console.error('Group creation failed:', error);
+      toast.error('グループチャットの作成中にエラーが発生しました');
     } finally {
       setCreating(false);
     }
-  };
-
-  const sharePhotoSessionInfo = async (conversationId: string) => {
-    if (!sessionInfo) return;
-
-    const infoMessage = `📸 撮影会情報
-📅 日時: ${sessionInfo.date}
-📍 場所: ${sessionInfo.location}
-👥 参加者: ${sessionInfo.participant_count}名
-🎯 主催者: ${sessionInfo.organizer_name}
-
-皆さん、よろしくお願いします！`;
-
-    await sendMessage({
-      conversation_id: conversationId,
-      content: infoMessage,
-      message_type: 'system',
-    });
   };
 
   const addNewParticipants = async () => {
