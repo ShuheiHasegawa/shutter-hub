@@ -183,6 +183,30 @@ export async function getConversations(
       return [];
     }
 
+    // ユーザーが参加している会話IDを取得
+    const { data: userConversations } = await supabase
+      .from('conversation_members')
+      .select('conversation_id')
+      .eq('user_id', user.id)
+      .eq('is_active', true);
+
+    const conversationIds =
+      userConversations?.map(m => m.conversation_id) || [];
+
+    // 直接会話も含める
+    const { data: directConversations } = await supabase
+      .from('conversations')
+      .select('id')
+      .or(`participant1_id.eq.${user.id},participant2_id.eq.${user.id}`)
+      .eq('is_group', false);
+
+    const directIds = directConversations?.map(c => c.id) || [];
+    const allConversationIds = [...conversationIds, ...directIds];
+
+    if (allConversationIds.length === 0) {
+      return [];
+    }
+
     // 基本クエリ
     let query = supabase
       .from('conversations')
@@ -190,11 +214,10 @@ export async function getConversations(
         `
         *,
         participant1:participant1_id(id, display_name, avatar_url, user_type),
-        participant2:participant2_id(id, display_name, avatar_url, user_type),
-        last_message:last_message_id(id, content, message_type, sender_id, created_at)
+        participant2:participant2_id(id, display_name, avatar_url, user_type)
       `
       )
-      .or(`participant1_id.eq.${user.id},participant2_id.eq.${user.id}`)
+      .in('id', allConversationIds)
       .order('last_message_at', { ascending: false });
 
     // フィルター適用
@@ -215,9 +238,10 @@ export async function getConversations(
       return [];
     }
 
-    // 各会話の未読数を取得
+    // 各会話の未読数と最新メッセージを取得
     const conversationsWithUnread = await Promise.all(
       conversations.map(async conversation => {
+        // 未読数を取得
         const { data: unreadCount } = await supabase.rpc(
           'get_unread_message_count',
           {
@@ -226,9 +250,19 @@ export async function getConversations(
           }
         );
 
+        // 最新メッセージを取得
+        const { data: lastMessage } = await supabase
+          .from('messages')
+          .select('id, content, message_type, sender_id, created_at')
+          .eq('conversation_id', conversation.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
+
         return {
           ...conversation,
           unread_count: unreadCount || 0,
+          last_message: lastMessage || null,
         } as ConversationWithUsers;
       })
     );
