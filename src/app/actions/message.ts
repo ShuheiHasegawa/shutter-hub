@@ -489,6 +489,7 @@ export async function createGroupConversation(
       conversation_id: conversation.id,
       user_id: memberId,
       role: memberId === user.id ? 'admin' : 'member',
+      is_active: true,
     }));
 
     const { error: membersError } = await supabase
