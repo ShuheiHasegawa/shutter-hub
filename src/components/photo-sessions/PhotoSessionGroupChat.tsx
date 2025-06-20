@@ -213,21 +213,35 @@ export function PhotoSessionGroupChat({
       const groupName = `${sessionTitle} - 撮影会チャット`;
       const groupDescription = `${sessionDate} ${sessionLocation}で開催される撮影会の専用チャットです。`;
 
+      console.log('Creating group conversation with:', {
+        groupName,
+        groupDescription,
+        memberIds: allMemberIds.filter(id => id !== currentUserId),
+      });
+
       const result = await createGroupConversation(
         groupName,
         groupDescription,
         allMemberIds.filter(id => id !== currentUserId) // 自分以外を指定
       );
 
+      console.log('Group conversation result:', result);
+
       if (result.success && result.data) {
         const newConversation = result.data as ConversationWithUsers;
         setConversation(newConversation);
 
         // 撮影会情報を自動共有
-        await sharePhotoSessionInfo(newConversation.id);
+        try {
+          await sharePhotoSessionInfo(newConversation.id);
+        } catch (shareError) {
+          console.warn('Failed to share session info:', shareError);
+          // 情報共有失敗は警告のみ（グループ作成は成功）
+        }
 
         toast.success(t('groupChatCreated'));
       } else {
+        console.error('Group creation failed:', result);
         toast.error(result.message || t('errorCreatingGroupChat'));
       }
     } catch (error) {

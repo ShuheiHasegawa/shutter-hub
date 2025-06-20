@@ -509,11 +509,31 @@ export async function createGroupConversation(
       message_type: 'system',
     });
 
+    // メンバー情報を含む完全な会話データを取得
+    const { data: conversationWithMembers, error: fetchError } = await supabase
+      .from('conversations')
+      .select(
+        `
+        *,
+        members:conversation_members!conversation_id(
+          *,
+          user:user_id(id, display_name, avatar_url, user_type)
+        )
+      `
+      )
+      .eq('id', conversation.id)
+      .single();
+
+    if (fetchError) {
+      console.error('Fetch conversation with members error:', fetchError);
+      return { success: false, message: 'グループ情報の取得に失敗しました' };
+    }
+
     revalidatePath('/messages');
     return {
       success: true,
       message: 'グループが作成されました',
-      data: conversation,
+      data: conversationWithMembers,
     };
   } catch (error) {
     console.error('Create group conversation error:', error);
