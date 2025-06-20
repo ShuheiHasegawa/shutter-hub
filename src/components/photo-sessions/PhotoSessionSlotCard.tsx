@@ -70,7 +70,7 @@ export default function PhotoSessionSlotCard({
 
     if (availability.status === 'full') {
       toast.error(
-        locale === 'ja' ? 'このスロットは満席です' : 'This slot is full'
+        locale === 'ja' ? 'この撮影枠は満席です' : 'This slot is full'
       );
       return;
     }
@@ -94,7 +94,7 @@ export default function PhotoSessionSlotCard({
 
   const texts = {
     ja: {
-      slotNumber: 'スロット',
+      slotNumber: '撮影枠',
       time: '時間',
       participants: '参加者',
       price: '料金',

@@ -35,7 +35,7 @@ export default async function PhotoSessionPage({
     notFound();
   }
 
-  // スロット情報を取得
+  // 撮影枠情報を取得
   const { data: slots } = await supabase
     .from('photo_session_slots')
     .select('*')

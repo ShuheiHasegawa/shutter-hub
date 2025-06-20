@@ -204,7 +204,7 @@ export function PhotoSessionDetail({
           label: '時間枠を選択',
           variant: 'default',
           onClick: () => {
-            // スロット選択エリアにスクロール
+            // 撮影枠選択エリアにスクロール
             const slotsElement = document.getElementById('slots-section');
             if (slotsElement) {
               slotsElement.scrollIntoView({ behavior: 'smooth' });
@@ -446,7 +446,7 @@ export function PhotoSessionDetail({
                 <li>体調不良の場合は無理をせず参加をお控えください</li>
                 {hasSlots && (
                   <li>
-                    スロット制撮影会では、予約した時間枠以外の参加はできません
+                    撮影枠制撮影会では、予約した時間枠以外の参加はできません
                   </li>
                 )}
               </ul>
@@ -473,7 +473,7 @@ export function PhotoSessionDetail({
                 </li>
                 {hasSlots && (
                   <li>
-                    スロット制の場合、各時間枠の参加者管理を適切に行ってください
+                    撮影枠制の場合、各時間枠の参加者管理を適切に行ってください
                   </li>
                 )}
               </ul>

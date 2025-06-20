@@ -61,9 +61,9 @@ export default function PhotoSessionSlotForm({
 
   const texts = {
     ja: {
-      title: 'スロット設定',
+      title: '撮影枠設定',
       addSlot: '枠を追加',
-      slotNumber: 'スロット',
+      slotNumber: '撮影枠',
       startTime: '開始時刻',
       shootingDuration: '撮影時間（分）',
       breakDuration: '休憩時間（分）',
@@ -90,9 +90,9 @@ export default function PhotoSessionSlotForm({
       available: '空きあり',
       full: '満席',
       save: '保存',
-      autoFillSuccess: '次のスロットに時間を自動入力しました',
-      copySuccess: '上のスロットの設定をコピーしました',
-      deleteSuccess: 'スロットを削除しました',
+      autoFillSuccess: '次の撮影枠に時間を自動入力しました',
+      copySuccess: '上の撮影枠の設定をコピーしました',
+      deleteSuccess: '撮影枠を削除しました',
       imageUploadSuccess: '画像をアップロードしました',
       imageUploadError: '画像のアップロードに失敗しました',
       sameImageDetected: '同じ画像が検出されました（容量節約）',
@@ -162,7 +162,7 @@ export default function PhotoSessionSlotForm({
     }
   };
 
-  // 次のスロットの開始時刻を計算
+  // 次の撮影枠の開始時刻を計算
   const calculateNextStartTime = (
     startTime: string,
     shootingDuration: number,
@@ -185,7 +185,7 @@ export default function PhotoSessionSlotForm({
     return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
   };
 
-  // 親コンポーネントにスロット変更を通知
+  // 親コンポーネントに撮影枠変更を通知
   const updateParentSlots = (forms: SlotFormData[]) => {
     // PhotoSessionSlot形式に変換
     const convertedSlots: PhotoSessionSlot[] = forms.map(slot => {
@@ -226,7 +226,7 @@ export default function PhotoSessionSlotForm({
     const newSlotNumber = slotForms.length + 1;
     const lastSlot = slotForms[slotForms.length - 1];
 
-    // 前のスロットから次の開始時刻を計算
+    // 前の撮影枠から次の開始時刻を計算
     const nextStartTime = lastSlot
       ? calculateNextStartTime(
           lastSlot.start_time,
@@ -382,7 +382,7 @@ export default function PhotoSessionSlotForm({
         <CardContent className="space-y-6">
           {slotForms.map((slot, index) => (
             <div key={index} className="border rounded-lg p-4 space-y-4">
-              {/* スロットヘッダー */}
+              {/* 撮影枠ヘッダー */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Badge variant="outline">#{slot.slot_number}</Badge>
@@ -591,7 +591,7 @@ export default function PhotoSessionSlotForm({
                 <Textarea
                   value={slot.notes || ''}
                   onChange={e => updateSlot(index, 'notes', e.target.value)}
-                  placeholder="スロット固有のメモや注意事項"
+                  placeholder="撮影枠固有のメモや注意事項"
                 />
               </div>
             </div>

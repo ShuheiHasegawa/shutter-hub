@@ -65,7 +65,7 @@ export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
   // 参加者データを取得
   const participants = await getPhotoSessionParticipants(id);
 
-  // スロット情報を取得
+  // 撮影枠情報を取得
   const { data: slots } = await supabase
     .from('photo_session_slots')
     .select('*')
@@ -95,7 +95,7 @@ export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
     waitlisted: participants.filter(p => p.status === 'waitlisted').length,
   };
 
-  // 時間別予約分析（スロット制の場合）
+  // 時間別予約分析（撮影枠制の場合）
   const timeSlotAnalysis = hasSlots
     ? slots.map(slot => ({
         time: `${slot.start_time} - ${slot.end_time}`,
@@ -347,7 +347,7 @@ export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
                       : `¥${session.price_per_person.toLocaleString()}/人`}
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    {hasSlots ? 'スロット制' : session.booking_type}
+                    {hasSlots ? '撮影枠制' : session.booking_type}
                   </div>
                 </div>
               </div>
@@ -356,7 +356,7 @@ export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
                 <div className="flex items-center gap-3">
                   <ClockIcon className="h-5 w-5 text-muted-foreground" />
                   <div>
-                    <div className="font-medium">{slots?.length}スロット</div>
+                    <div className="font-medium">{slots?.length}撮影枠</div>
                     <div className="text-sm text-muted-foreground">
                       時間枠制撮影会
                     </div>
@@ -367,11 +367,11 @@ export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
           </Card>
         </div>
 
-        {/* スロット別分析（スロット制の場合） */}
+        {/* 撮影枠別分析（撮影枠制の場合） */}
         {hasSlots && (
           <Card className="mb-8">
             <CardHeader>
-              <CardTitle>スロット別分析</CardTitle>
+              <CardTitle>撮影枠別分析</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -381,7 +381,7 @@ export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
                     className="flex items-center justify-between p-4 border rounded-lg"
                   >
                     <div className="flex items-center gap-4">
-                      <Badge variant="outline">スロット {index + 1}</Badge>
+                      <Badge variant="outline">枠 {index + 1}</Badge>
                       <div>
                         <div className="font-medium">{slot.time}</div>
                         <div className="text-sm text-muted-foreground">

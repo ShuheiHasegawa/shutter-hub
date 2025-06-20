@@ -163,11 +163,11 @@ export function PhotoSessionForm({
 
     setIsLoading(true);
     try {
-      // スロットがある場合とない場合で使用するactionを切り替え
+      // 撮影枠がある場合とない場合で使用するactionを切り替え
       const hasSlots = photoSessionSlots && photoSessionSlots.length > 0;
 
       if (hasSlots) {
-        // スロット制撮影会の場合
+        // 撮影枠制撮影会の場合
         const sessionWithSlotsData: PhotoSessionWithSlotsData = {
           title: formData.title,
           description: formData.description || undefined,
@@ -211,7 +211,7 @@ export function PhotoSessionForm({
         }
 
         if (result.error) {
-          console.error('スロット制撮影会保存エラー:', result.error);
+          console.error('撮影枠制撮影会保存エラー:', result.error);
           toast({
             title: tErrors('title'),
             description: t('form.error.saveFailed'),
@@ -486,9 +486,9 @@ export function PhotoSessionForm({
             disabled={isLoading}
           />
 
-          {/* スロット設定 */}
+          {/* 撮影枠設定 */}
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">スロット設定</h3>
+            <h3 className="text-lg font-medium">撮影枠設定</h3>
             <p className="text-sm text-muted-foreground">
               時間枠を細分化して、枠ごとに料金・衣装・参加者数を設定できます
             </p>
@@ -509,7 +509,7 @@ export function PhotoSessionForm({
           <div className="space-y-4">
             <h3 className="text-lg font-medium">複数枠割引設定</h3>
             <p className="text-sm text-muted-foreground">
-              複数のスロットを予約した場合に適用される割引を設定できます
+              複数の撮影枠を予約した場合に適用される割引を設定できます
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

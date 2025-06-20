@@ -107,7 +107,7 @@ export function OrganizerManagementPanel({
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">
-                  {hasSlots ? 'スロット数' : '予約方式'}
+                  {hasSlots ? '撮影枠数' : '予約方式'}
                 </p>
                 <p className="text-2xl font-bold">
                   {hasSlots
@@ -197,7 +197,7 @@ export function OrganizerManagementPanel({
       {hasSlots && (
         <Card>
           <CardHeader>
-            <CardTitle>スロット別予約状況</CardTitle>
+            <CardTitle>撮影枠別予約状況</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -207,7 +207,7 @@ export function OrganizerManagementPanel({
                   className="flex items-center justify-between p-3 border rounded-lg"
                 >
                   <div className="flex items-center gap-3">
-                    <Badge variant="outline">スロット {index + 1}</Badge>
+                    <Badge variant="outline">枠 {index + 1}</Badge>
                     <div>
                       <p className="font-medium">
                         {formatDate(new Date(slot.start_time), 'short')}{' '}
