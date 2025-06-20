@@ -463,52 +463,36 @@ export async function createGroupConversation(
       return { success: false, message: 'メンバーを選択してください' };
     }
 
-    // 重複を除去し、作成者を含める
-    const uniqueMemberIds = Array.from(new Set([user.id, ...memberIds]));
+    // 重複を除去（作成者は除く）
+    const uniqueMemberIds = Array.from(new Set(memberIds));
+    console.log('Creating group with members:', uniqueMemberIds);
 
-    // グループ会話を作成
-    const conversationData = {
-      is_group: true,
-      group_name: name.trim(),
-      group_description: description?.trim(),
-      group_image_url: imageUrl,
-      created_by: user.id,
-    };
+    // ストアドプロシージャを使用してグループとメンバーを一括作成
+    const { data: conversationId, error: createError } = await supabase.rpc(
+      'create_group_with_members',
+      {
+        group_name: name.trim(),
+        creator_id: user.id,
+        member_ids: uniqueMemberIds,
+        group_description: description?.trim() || null,
+        group_image_url: imageUrl || null,
+      }
+    );
 
-    const { data: conversation, error: conversationError } = await supabase
-      .from('conversations')
-      .insert(conversationData)
-      .select()
-      .single();
-
-    if (conversationError) {
-      console.error('Group conversation creation error:', conversationError);
+    if (createError) {
+      console.error('Group creation with RPC error:', createError);
+      console.error('Error details:', JSON.stringify(createError, null, 2));
       return { success: false, message: 'グループの作成に失敗しました' };
     }
 
-    // メンバーを追加
-    const memberInserts = uniqueMemberIds.map(memberId => ({
-      conversation_id: conversation.id,
-      user_id: memberId,
-      role: memberId === user.id ? 'admin' : 'member',
-      is_active: true,
-    }));
-
-    const { error: membersError } = await supabase
-      .from('conversation_members')
-      .insert(memberInserts);
-
-    if (membersError) {
-      // グループを削除して巻き戻し
-      await supabase.from('conversations').delete().eq('id', conversation.id);
-      console.error('Group members creation error:', membersError);
-      return { success: false, message: 'メンバーの追加に失敗しました' };
+    if (!conversationId) {
+      return { success: false, message: 'グループIDの取得に失敗しました' };
     }
 
     // システムメッセージを送信
     try {
       await sendMessage({
-        conversation_id: conversation.id,
+        conversation_id: conversationId,
         content: 'グループが作成されました',
         message_type: 'system',
       });
@@ -528,7 +512,7 @@ export async function createGroupConversation(
         )
       `
       )
-      .eq('id', conversation.id)
+      .eq('id', conversationId)
       .single();
 
     if (fetchError) {
