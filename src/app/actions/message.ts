@@ -466,8 +466,6 @@ export async function createGroupConversation(
     // 重複を除去し、作成者を含める
     const uniqueMemberIds = Array.from(new Set([user.id, ...memberIds]));
 
-    console.log('Creating group with members:', uniqueMemberIds);
-
     // グループ会話を作成
     const { data: conversation, error: conversationError } = await supabase
       .from('conversations')
@@ -486,35 +484,23 @@ export async function createGroupConversation(
       return { success: false, message: 'グループの作成に失敗しました' };
     }
 
-    console.log('Created conversation:', conversation.id);
+    // メンバーを追加
+    const memberInserts = uniqueMemberIds.map(memberId => ({
+      conversation_id: conversation.id,
+      user_id: memberId,
+      role: memberId === user.id ? 'admin' : 'member',
+    }));
 
-    // 各メンバーを個別に追加（エラー詳細取得のため）
-    const memberResults = [];
-    for (const memberId of uniqueMemberIds) {
-      const { data: memberData, error: memberError } = await supabase
-        .from('conversation_members')
-        .insert({
-          conversation_id: conversation.id,
-          user_id: memberId,
-          role: memberId === user.id ? 'admin' : 'member',
-        })
-        .select()
-        .single();
+    const { error: membersError } = await supabase
+      .from('conversation_members')
+      .insert(memberInserts);
 
-      if (memberError) {
-        console.error(`Failed to add member ${memberId}:`, memberError);
-        // グループを削除して巻き戻し
-        await supabase.from('conversations').delete().eq('id', conversation.id);
-        return {
-          success: false,
-          message: `メンバー追加エラー: ${memberError.message} (Code: ${memberError.code})`,
-        };
-      }
-
-      memberResults.push(memberData);
+    if (membersError) {
+      console.error('Group members creation error:', membersError);
+      // グループを削除して巻き戻し
+      await supabase.from('conversations').delete().eq('id', conversation.id);
+      return { success: false, message: 'メンバーの追加に失敗しました' };
     }
-
-    console.log('All members added successfully:', memberResults.length);
 
     // システムメッセージを送信
     await sendMessage({
