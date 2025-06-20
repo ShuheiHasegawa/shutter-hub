@@ -12,6 +12,7 @@ import {
 import { PhotoSessionWithOrganizer } from '@/types/database';
 import { PhotoSessionSlot } from '@/types/photo-session';
 import { useRouter } from 'next/navigation';
+import { formatTime, formatDate } from '@/lib/utils/date';
 
 interface OrganizerManagementPanelProps {
   session: PhotoSessionWithOrganizer;
@@ -209,7 +210,9 @@ export function OrganizerManagementPanel({
                     <Badge variant="outline">スロット {index + 1}</Badge>
                     <div>
                       <p className="font-medium">
-                        {slot.start_time} - {slot.end_time}
+                        {formatDate(new Date(slot.start_time), 'short')}{' '}
+                        {formatTime(new Date(slot.start_time))} -{' '}
+                        {formatTime(new Date(slot.end_time))}
                       </p>
                       <p className="text-sm text-muted-foreground">
                         ¥
