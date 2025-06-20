@@ -54,9 +54,9 @@ export function ConversationList({
     }
   };
 
-  // 初回ロード
+  // 初回ロード（すべての会話を取得）
   useEffect(() => {
-    loadConversations({ type: 'direct' });
+    loadConversations(); // フィルターなしで全ての会話を取得
   }, []);
 
   // 検索フィルタリング
@@ -69,11 +69,13 @@ export function ConversationList({
     const filtered = conversations.filter(conversation => {
       const participant1Name = conversation.participant1?.display_name || '';
       const participant2Name = conversation.participant2?.display_name || '';
+      const groupName = conversation.group_name || '';
       const lastMessageContent = conversation.last_message?.content || '';
 
       return (
         participant1Name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         participant2Name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        groupName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         lastMessageContent.toLowerCase().includes(searchQuery.toLowerCase())
       );
     });

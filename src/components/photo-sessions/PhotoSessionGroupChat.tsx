@@ -117,12 +117,14 @@ export function PhotoSessionGroupChat({
     try {
       const supabase = createClient();
 
-      // まず撮影会専用グループチャットを検索
+      // まず撮影会専用グループチャットを検索（sessionIdベースとsessionTitleベースの両方をチェック）
       const { data: conversations, error: conversationError } = await supabase
         .from('conversations')
         .select('*')
         .eq('is_group', true)
-        .eq('group_name', `${sessionTitle} - 撮影会チャット`);
+        .or(
+          `group_name.eq.${sessionId} - 撮影会チャット,group_name.eq.${sessionTitle} - 撮影会チャット`
+        );
 
       if (conversationError) {
         // テーブルが存在しない場合は警告のみ表示
@@ -206,8 +208,8 @@ export function PhotoSessionGroupChat({
 
     setCreating(true);
     try {
-      const groupName = `${sessionTitle} - 撮影会チャット`;
-      const groupDescription = `${sessionDate} ${sessionLocation}で開催される撮影会の専用チャットです。`;
+      const groupName = `${sessionId} - 撮影会チャット`;
+      const groupDescription = `${sessionTitle}（${sessionDate} ${sessionLocation}）の専用チャットです。`;
 
       // 主催者以外のメンバーIDを渡す（createGroupConversationで主催者は自動で追加される）
       const memberIds = confirmedParticipants;
