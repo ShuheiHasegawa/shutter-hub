@@ -395,9 +395,18 @@
     "bookingType": {
       "title": "Booking Type",
       "selected": "Selected",
+      "first_come": {
+        "title": "First Come First Served",
+        "description": "Bookings accepted on first-come basis",
+        "badge": "Standard",
+        "feature1": "Real-time inventory management",
+        "feature2": "Instant booking confirmation",
+        "feature3": "Simple and straightforward"
+      },
       "firstCome": {
         "title": "First Come First Served",
         "description": "Bookings accepted on first-come basis",
+        "badge": "Standard",
         "feature1": "Real-time inventory management",
         "feature2": "Instant booking confirmation",
         "feature3": "Simple and straightforward"
@@ -405,13 +414,23 @@
       "lottery": {
         "title": "Lottery Booking",
         "description": "Fair lottery selection after entry period",
+        "badge": "Fair",
         "feature1": "Fair random lottery",
         "feature2": "Configurable entry period",
         "feature3": "Perfect for popular sessions"
       },
+      "admin_lottery": {
+        "title": "Admin Lottery",
+        "description": "Manual selection by organizer",
+        "badge": "Selection",
+        "feature1": "Manual selection by organizer",
+        "feature2": "Flexible selection criteria",
+        "feature3": "Quality-focused sessions"
+      },
       "adminLottery": {
         "title": "Admin Lottery",
         "description": "Manual selection by organizer",
+        "badge": "Selection",
         "feature1": "Manual selection by organizer",
         "feature2": "Flexible selection criteria",
         "feature3": "Quality-focused sessions"
@@ -419,9 +438,18 @@
       "priority": {
         "title": "Priority Booking",
         "description": "Tiered booking based on rank and tickets",
+        "badge": "Premium",
         "feature1": "User rank-based priority",
         "feature2": "Priority ticket support",
         "feature3": "Repeat customer benefits"
+      },
+      "waitlist": {
+        "title": "Waitlist",
+        "description": "Waitlist registration when full",
+        "badge": "Waiting",
+        "feature1": "Automatic promotion notification",
+        "feature2": "Fair first-come basis",
+        "feature3": "Convenient for popular sessions"
       }
     },
     "bookingSettings": {

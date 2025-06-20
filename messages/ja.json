@@ -404,6 +404,14 @@
       "title": "予約方式",
       "description": "撮影会の予約方式を選択してください",
       "selected": "選択中",
+      "first_come": {
+        "title": "先着順予約",
+        "description": "予約開始と同時に先着順で受付",
+        "badge": "スタンダード",
+        "feature1": "リアルタイム在庫管理",
+        "feature2": "即座に予約確定",
+        "feature3": "シンプルで分かりやすい"
+      },
       "firstCome": {
         "title": "先着順予約",
         "description": "予約開始と同時に先着順で受付",
@@ -420,6 +428,14 @@
         "feature2": "エントリー期間設定可能",
         "feature3": "人気撮影会に最適"
       },
+      "admin_lottery": {
+        "title": "管理抽選",
+        "description": "開催者が応募者から手動で選出",
+        "badge": "選考",
+        "feature1": "開催者による手動選出",
+        "feature2": "選出基準を自由設定",
+        "feature3": "質重視の撮影会向け"
+      },
       "adminLottery": {
         "title": "管理抽選",
         "description": "開催者が応募者から手動で選出",
@@ -435,6 +451,14 @@
         "feature1": "ユーザーランク別優先",
         "feature2": "優先チケット対応",
         "feature3": "リピーター優遇"
+      },
+      "waitlist": {
+        "title": "キャンセル待ち",
+        "description": "満席時にキャンセル待ちで登録",
+        "badge": "待機",
+        "feature1": "自動繰り上げ通知",
+        "feature2": "公平な先着順",
+        "feature3": "人気撮影会に便利"
       }
     },
     "bookingSettings": {

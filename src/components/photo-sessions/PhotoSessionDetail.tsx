@@ -5,7 +5,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Separator } from '@/components/ui/separator';
 import {
   ActionBar,
   ActionBarButton,
@@ -433,7 +432,6 @@ export function PhotoSessionDetail({
       {/* 注意事項（主催者以外のみ表示） */}
       {!isOrganizer && (
         <>
-          <Separator />
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">ご注意事項</CardTitle>
@@ -460,7 +458,6 @@ export function PhotoSessionDetail({
       {/* 開催者向け注意事項（主催者のみ表示、最下部） */}
       {isOrganizer && (
         <>
-          <Separator />
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">開催者向け注意事項</CardTitle>
