@@ -193,8 +193,9 @@ export default function PhotoSessionSlotForm({
         // baseDateが未設定の場合は今日の日付を使用
         const currentDate = baseDate || new Date().toISOString().split('T')[0];
 
-        const startDateTime = `${currentDate}T${slot.start_time}:00`;
-        const endDateTime = `${currentDate}T${calculateEndTime(slot.start_time, slot.shooting_duration_minutes)}:00`;
+        // datetime-local形式の文字列を作成（タイムゾーンの問題を回避）
+        const startDateTime = `${currentDate}T${slot.start_time}`;
+        const endDateTime = `${currentDate}T${calculateEndTime(slot.start_time, slot.shooting_duration_minutes)}`;
 
         return {
           id: `temp-${slot.slot_number}`,

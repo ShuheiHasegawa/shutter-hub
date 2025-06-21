@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -100,13 +100,12 @@ export function PhotoSessionForm({
     setFormData(prev => ({ ...prev, booking_type: bookingType }));
   };
 
-  // 撮影枠から自動で開始・終了日時を計算
-  const calculateDateTimeFromSlots = useCallback(() => {
-    if (!photoSessionSlots || photoSessionSlots.length === 0) {
-      return;
-    }
+  // 撮影枠から日時を自動計算
+  const calculateDateTimeFromSlots = (slots: PhotoSessionSlot[]) => {
+    if (slots.length === 0) return { start_time: '', end_time: '' };
 
-    const sortedSlots = [...photoSessionSlots].sort(
+    // 撮影枠を開始時間でソート
+    const sortedSlots = [...slots].sort(
       (a, b) =>
         new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
     );
@@ -114,24 +113,33 @@ export function PhotoSessionForm({
     const firstSlot = sortedSlots[0];
     const lastSlot = sortedSlots[sortedSlots.length - 1];
 
-    if (firstSlot && lastSlot) {
-      const startTime = new Date(firstSlot.start_time);
-      const endTime = new Date(lastSlot.end_time);
+    // datetime-local形式の文字列として返す（タイムゾーンの問題を回避）
+    const startTime = firstSlot.start_time.includes('T')
+      ? firstSlot.start_time.split('.')[0] // ISO形式の場合はミリ秒部分を削除
+      : firstSlot.start_time;
 
-      setFormData(prev => ({
-        ...prev,
-        start_time: startTime.toISOString().slice(0, 16),
-        end_time: endTime.toISOString().slice(0, 16),
-      }));
-    }
-  }, [photoSessionSlots]);
+    const endTime = lastSlot.end_time.includes('T')
+      ? lastSlot.end_time.split('.')[0] // ISO形式の場合はミリ秒部分を削除
+      : lastSlot.end_time;
+
+    return {
+      start_time: startTime,
+      end_time: endTime,
+    };
+  };
 
   // 撮影枠変更時に自動で日時を更新
   useEffect(() => {
     if (photoSessionSlots && photoSessionSlots.length > 0) {
-      calculateDateTimeFromSlots();
+      const { start_time, end_time } =
+        calculateDateTimeFromSlots(photoSessionSlots);
+      setFormData(prev => ({
+        ...prev,
+        start_time,
+        end_time,
+      }));
     }
-  }, [photoSessionSlots, calculateDateTimeFromSlots]);
+  }, [photoSessionSlots]);
 
   // 撮影枠があるかどうかの判定
   const hasSlots = photoSessionSlots && photoSessionSlots.length > 0;
@@ -458,16 +466,19 @@ export function PhotoSessionForm({
                         <p className="text-xs font-medium mb-1">開始日時</p>
                         <p className="text-sm font-mono bg-blue-100 dark:bg-blue-800 px-2 py-1 rounded">
                           {formData.start_time
-                            ? new Date(formData.start_time).toLocaleString(
-                                'ja-JP',
-                                {
-                                  year: 'numeric',
-                                  month: '2-digit',
-                                  day: '2-digit',
-                                  hour: '2-digit',
-                                  minute: '2-digit',
+                            ? (() => {
+                                // datetime-local形式の文字列を解析して表示
+                                const dateTime = formData.start_time;
+                                if (dateTime.includes('T')) {
+                                  const [datePart, timePart] =
+                                    dateTime.split('T');
+                                  const [year, month, day] =
+                                    datePart.split('-');
+                                  const [hour, minute] = timePart.split(':');
+                                  return `${year}年${month}月${day}日 ${hour}:${minute}`;
                                 }
-                              )
+                                return dateTime;
+                              })()
                             : '撮影枠を設定してください'}
                         </p>
                       </div>
@@ -475,16 +486,19 @@ export function PhotoSessionForm({
                         <p className="text-xs font-medium mb-1">終了日時</p>
                         <p className="text-sm font-mono bg-blue-100 dark:bg-blue-800 px-2 py-1 rounded">
                           {formData.end_time
-                            ? new Date(formData.end_time).toLocaleString(
-                                'ja-JP',
-                                {
-                                  year: 'numeric',
-                                  month: '2-digit',
-                                  day: '2-digit',
-                                  hour: '2-digit',
-                                  minute: '2-digit',
+                            ? (() => {
+                                // datetime-local形式の文字列を解析して表示
+                                const dateTime = formData.end_time;
+                                if (dateTime.includes('T')) {
+                                  const [datePart, timePart] =
+                                    dateTime.split('T');
+                                  const [year, month, day] =
+                                    datePart.split('-');
+                                  const [hour, minute] = timePart.split(':');
+                                  return `${year}年${month}月${day}日 ${hour}:${minute}`;
                                 }
-                              )
+                                return dateTime;
+                              })()
                             : '撮影枠を設定してください'}
                         </p>
                       </div>
