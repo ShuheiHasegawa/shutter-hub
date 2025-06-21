@@ -38,50 +38,74 @@ export function SlotBookingFlow({
   const { toast } = useToast();
 
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
+  const [selectedSlotIds, setSelectedSlotIds] = useState<string[]>([]);
   const [isBooking, setIsBooking] = useState(false);
 
   const currentStep = (searchParams.get('step') as BookingStep) || 'select';
   const hasSlots = slots && slots.length > 0;
+  const allowMultiple = session.allow_multiple_bookings && hasSlots;
 
-  // URLパラメータからselectedSlotIdを復元
+  // URLパラメータからselectedSlotId(s)を復元
   useEffect(() => {
-    const slotId = searchParams.get('slotId');
-    if (slotId) {
-      setSelectedSlotId(slotId);
+    if (allowMultiple) {
+      const slotIds = searchParams.get('slotIds');
+      if (slotIds) {
+        setSelectedSlotIds(slotIds.split(','));
+      }
+    } else {
+      const slotId = searchParams.get('slotId');
+      if (slotId) {
+        setSelectedSlotId(slotId);
+      }
     }
-  }, [searchParams]);
+  }, [searchParams, allowMultiple]);
 
   // ステップ遷移関数
   const navigateToStep = useCallback(
-    (step: BookingStep, slotId?: string | null) => {
+    (step: BookingStep, slotIds?: string[] | string | null) => {
       const params = new URLSearchParams(searchParams);
       params.set('step', step);
 
-      if (slotId) {
-        params.set('slotId', slotId);
+      if (allowMultiple && Array.isArray(slotIds) && slotIds.length > 0) {
+        params.set('slotIds', slotIds.join(','));
+      } else if (!allowMultiple && typeof slotIds === 'string') {
+        params.set('slotId', slotIds);
       } else {
         params.delete('slotId');
+        params.delete('slotIds');
       }
 
       router.push(`?${params.toString()}`, { scroll: false });
     },
-    [router, searchParams]
+    [router, searchParams, allowMultiple]
   );
 
   // 戻るボタンの処理
   const handleBack = useCallback(() => {
     if (currentStep === 'confirm') {
-      navigateToStep('select', selectedSlotId);
+      navigateToStep(
+        'select',
+        allowMultiple ? selectedSlotIds : selectedSlotId
+      );
     } else {
-      // 予約フローから撤影会詳細に戻る
+      // 予約フローから撮影会詳細に戻る
       const params = new URLSearchParams(searchParams);
       params.delete('step');
       params.delete('slotId');
+      params.delete('slotIds');
       router.push(`?${params.toString()}`, { scroll: false });
     }
-  }, [currentStep, navigateToStep, selectedSlotId, router, searchParams]);
+  }, [
+    currentStep,
+    navigateToStep,
+    selectedSlotId,
+    selectedSlotIds,
+    allowMultiple,
+    router,
+    searchParams,
+  ]);
 
-  // スロット選択ハンドラー
+  // スロット選択ハンドラー（単一選択）
   const handleSlotSelect = useCallback(
     (slotId: string) => {
       setSelectedSlotId(slotId);
@@ -90,35 +114,106 @@ export function SlotBookingFlow({
     [navigateToStep]
   );
 
+  // スロット選択ハンドラー（複数選択）
+  const handleMultipleSlotToggle = useCallback((slotId: string) => {
+    setSelectedSlotIds(prev => {
+      const newSelection = prev.includes(slotId)
+        ? prev.filter(id => id !== slotId)
+        : [...prev, slotId];
+      return newSelection;
+    });
+  }, []);
+
+  // 複数選択での確認画面への遷移
+  const handleMultipleSlotConfirm = useCallback(() => {
+    if (selectedSlotIds.length === 0) {
+      toast({
+        title: 'エラー',
+        description: '少なくとも1つの時間枠を選択してください',
+        variant: 'destructive',
+      });
+      return;
+    }
+    navigateToStep('confirm', selectedSlotIds);
+  }, [selectedSlotIds, navigateToStep, toast]);
+
   // 予約処理
   const handleBooking = async () => {
     setIsBooking(true);
     try {
       if (hasSlots) {
         // スロット制の場合
-        if (!selectedSlotId) {
-          toast({
-            title: 'エラー',
-            description: '時間枠を選択してください',
-            variant: 'destructive',
-          });
-          setIsBooking(false);
-          return;
-        }
+        if (allowMultiple) {
+          // 複数選択の場合
+          if (selectedSlotIds.length === 0) {
+            toast({
+              title: 'エラー',
+              description: '時間枠を選択してください',
+              variant: 'destructive',
+            });
+            setIsBooking(false);
+            return;
+          }
 
-        const result = await createSlotBooking(selectedSlotId);
-        if (result.success) {
-          navigateToStep('complete');
-          toast({
-            title: '予約が完了しました！',
-            description: '選択した時間枠での参加が確定しました',
-          });
+          // 複数スロットを順次予約
+          let successCount = 0;
+          const errors: string[] = [];
+
+          for (const slotId of selectedSlotIds) {
+            try {
+              const result = await createSlotBooking(slotId);
+              if (result.success) {
+                successCount++;
+              } else {
+                errors.push(result.message || '予約に失敗しました');
+              }
+            } catch (err) {
+              console.error('スロット予約エラー:', err);
+              errors.push('予期しないエラーが発生しました');
+            }
+          }
+
+          if (successCount > 0) {
+            navigateToStep('complete');
+            toast({
+              title: '予約が完了しました！',
+              description: `${successCount}件の時間枠での参加が確定しました${
+                errors.length > 0 ? `（${errors.length}件失敗）` : ''
+              }`,
+            });
+          } else {
+            toast({
+              title: 'エラー',
+              description: `予約に失敗しました: ${errors.join(', ')}`,
+              variant: 'destructive',
+            });
+          }
         } else {
-          toast({
-            title: 'エラー',
-            description: result.message || '予約に失敗しました',
-            variant: 'destructive',
-          });
+          // 単一選択の場合
+          if (!selectedSlotId) {
+            toast({
+              title: 'エラー',
+              description: '時間枠を選択してください',
+              variant: 'destructive',
+            });
+            setIsBooking(false);
+            return;
+          }
+
+          const result = await createSlotBooking(selectedSlotId);
+          if (result.success) {
+            navigateToStep('complete');
+            toast({
+              title: '予約が完了しました！',
+              description: '選択した時間枠での参加が確定しました',
+            });
+          } else {
+            toast({
+              title: 'エラー',
+              description: result.message || '予約に失敗しました',
+              variant: 'destructive',
+            });
+          }
         }
       } else {
         // 通常の撮影会の場合
@@ -160,6 +255,15 @@ export function SlotBookingFlow({
   const selectedSlot = useMemo(
     () => (selectedSlotId ? slots.find(s => s.id === selectedSlotId) : null),
     [selectedSlotId, slots]
+  );
+
+  // 選択されたスロットリストの取得（複数選択用）
+  const selectedSlots = useMemo(
+    () =>
+      selectedSlotIds
+        .map(id => slots.find(s => s.id === id))
+        .filter(Boolean) as PhotoSessionSlot[],
+    [selectedSlotIds, slots]
   );
 
   // ステップインジケーター
@@ -225,14 +329,49 @@ export function SlotBookingFlow({
           <CardContent>
             {hasSlots ? (
               <div className="space-y-3">
+                {allowMultiple && (
+                  <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                    <p className="text-sm text-blue-700 dark:text-blue-300">
+                      💡
+                      この撮影会では複数の時間枠を選択できます。お好みの枠を複数選んでください。
+                    </p>
+                  </div>
+                )}
                 {slots.map((slot, index) => (
                   <SlotCard
                     key={slot.id}
                     slot={slot}
                     index={index}
-                    onSelect={() => handleSlotSelect(slot.id)}
+                    isSelected={
+                      allowMultiple ? selectedSlotIds.includes(slot.id) : false
+                    }
+                    allowMultiple={allowMultiple}
+                    onSelect={
+                      allowMultiple
+                        ? () => handleMultipleSlotToggle(slot.id)
+                        : () => handleSlotSelect(slot.id)
+                    }
                   />
                 ))}
+                {allowMultiple && (
+                  <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      選択中: {selectedSlotIds.length}件の時間枠
+                      {selectedSlotIds.length > 0 && (
+                        <span className="ml-2 text-blue-600 dark:text-blue-400">
+                          （合計料金: ¥
+                          {selectedSlots
+                            .reduce(
+                              (sum, slot) => sum + slot.price_per_person,
+                              0
+                            )
+                            .toLocaleString()}
+                          ）
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                )}
               </div>
             ) : (
               <SessionInfoDisplay session={session} />
@@ -246,6 +385,15 @@ export function SlotBookingFlow({
               {!hasSlots && (
                 <Button onClick={() => navigateToStep('confirm')}>
                   次へ
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </Button>
+              )}
+              {allowMultiple && (
+                <Button
+                  onClick={handleMultipleSlotConfirm}
+                  disabled={selectedSlotIds.length === 0}
+                >
+                  確認画面へ（{selectedSlotIds.length}件選択中）
                   <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
               )}
@@ -389,10 +537,14 @@ export function SlotBookingFlow({
 function SlotCard({
   slot,
   index,
+  isSelected,
+  allowMultiple,
   onSelect,
 }: {
   slot: PhotoSessionSlot;
   index: number;
+  isSelected: boolean;
+  allowMultiple: boolean;
   onSelect: () => void;
 }) {
   const isSlotFull = slot.current_participants >= slot.max_participants;
@@ -404,7 +556,9 @@ function SlotCard({
       className={`w-full p-4 border-2 rounded-lg transition-all duration-200 text-left ${
         isSlotFull
           ? 'bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:border-gray-600'
-          : 'bg-white border-gray-200 hover:border-blue-300 hover:bg-blue-50/50 dark:bg-gray-800 dark:border-gray-600 dark:hover:border-blue-400 dark:hover:bg-blue-900/10 cursor-pointer'
+          : allowMultiple && isSelected
+            ? 'bg-blue-50 border-blue-400 dark:bg-blue-900/20 dark:border-blue-400 cursor-pointer'
+            : 'bg-white border-gray-200 hover:border-blue-300 hover:bg-blue-50/50 dark:bg-gray-800 dark:border-gray-600 dark:hover:border-blue-400 dark:hover:bg-blue-900/10 cursor-pointer'
       }`}
       onClick={onSelect}
       disabled={isSlotFull}
@@ -413,12 +567,19 @@ function SlotCard({
         <h4 className="font-semibold text-lg dark:text-white">
           枠 {index + 1}
         </h4>
-        <Badge
-          variant={isSlotFull ? 'destructive' : 'outline'}
-          className="text-sm"
-        >
-          {isSlotFull ? '満席' : '空きあり'}
-        </Badge>
+        <div className="flex items-center gap-2">
+          {allowMultiple && isSelected && (
+            <Badge variant="default" className="bg-blue-600 text-white">
+              選択中
+            </Badge>
+          )}
+          <Badge
+            variant={isSlotFull ? 'destructive' : 'outline'}
+            className="text-sm"
+          >
+            {isSlotFull ? '満席' : '空きあり'}
+          </Badge>
+        </div>
       </div>
 
       <div className="grid grid-cols-3 gap-4 text-sm">

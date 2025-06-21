@@ -43,6 +43,7 @@ export interface PhotoSession {
   price_per_person: number;
   image_urls: string[] | null;
   booking_type: BookingType;
+  allow_multiple_bookings: boolean;
   is_published: boolean;
   created_at: string;
   updated_at: string;
