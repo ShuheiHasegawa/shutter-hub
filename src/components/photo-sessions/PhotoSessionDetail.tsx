@@ -32,19 +32,8 @@ import {
   checkUserParticipation,
   type PhotoSessionParticipant,
 } from '@/app/actions/photo-session-participants';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { useToast } from '@/hooks/use-toast';
-import { createPhotoSessionBooking } from '@/app/actions/photo-session-booking';
-import { createSlotBooking } from '@/lib/photo-sessions/slots';
+
+import { ResponsiveSlotBooking } from './ResponsiveSlotBooking';
 
 interface PhotoSessionDetailProps {
   session: PhotoSessionWithOrganizer;
@@ -63,9 +52,6 @@ export function PhotoSessionDetail({
   const [isParticipant, setIsParticipant] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showBookingDialog, setShowBookingDialog] = useState(false);
-  const [isBooking, setIsBooking] = useState(false);
-  const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
-  const { toast } = useToast();
 
   const startDate = new Date(session.start_time);
   const endDate = new Date(session.end_time);
@@ -125,80 +111,6 @@ export function PhotoSessionDetail({
       return <Badge variant="secondary">残りわずか</Badge>;
     }
     return <Badge variant="default">空きあり</Badge>;
-  };
-
-  // 直接予約処理
-  const handleDirectBooking = async () => {
-    if (!user) {
-      toast({
-        title: 'ログインが必要です',
-        description: '予約するにはログインしてください',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    setIsBooking(true);
-    try {
-      if (hasSlots) {
-        // スロット制の場合
-        if (!selectedSlotId) {
-          toast({
-            title: 'エラー',
-            description: '時間枠を選択してください',
-            variant: 'destructive',
-          });
-          setIsBooking(false);
-          return;
-        }
-
-        const result = await createSlotBooking(selectedSlotId);
-        if (result.success) {
-          toast({
-            title: '予約が完了しました！',
-            description: '選択した時間枠での参加が確定しました',
-          });
-          setShowBookingDialog(false);
-          setSelectedSlotId(null);
-          // ページをリロードして最新の状態を反映
-          window.location.reload();
-        } else {
-          toast({
-            title: 'エラー',
-            description: result.message || '予約に失敗しました',
-            variant: 'destructive',
-          });
-        }
-      } else {
-        // 通常の撮影会の場合
-        const result = await createPhotoSessionBooking(session.id, user.id);
-
-        if (result.success) {
-          toast({
-            title: '予約が完了しました！',
-            description: '撮影会への参加が確定しました',
-          });
-          setShowBookingDialog(false);
-          // ページをリロードして最新の状態を反映
-          window.location.reload();
-        } else {
-          toast({
-            title: 'エラー',
-            description: result.error || '予約に失敗しました',
-            variant: 'destructive',
-          });
-        }
-      }
-    } catch (error) {
-      console.error('予約エラー:', error);
-      toast({
-        title: 'エラー',
-        description: '予期しないエラーが発生しました',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsBooking(false);
-    }
   };
 
   // 予約方式の日本語化
@@ -587,194 +499,16 @@ export function PhotoSessionDetail({
         />
       )}
 
-      {/* 予約確認ダイアログ */}
-      <AlertDialog open={showBookingDialog} onOpenChange={setShowBookingDialog}>
-        <AlertDialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              {hasSlots ? '時間枠を選択' : '予約確認'}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              {hasSlots
-                ? 'ご希望の時間枠を選択してください'
-                : '以下の撮影会を予約しますか？'}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-
-          <div className="space-y-4">
-            {/* スロット制の場合：スロット選択UI */}
-            {hasSlots ? (
-              <div className="space-y-3">
-                {slots.map(slot => {
-                  const isSlotFull =
-                    slot.current_participants >= slot.max_participants;
-                  const slotStartTime = new Date(slot.start_time);
-                  const slotEndTime = new Date(slot.end_time);
-                  const isSelected = selectedSlotId === slot.id;
-
-                  return (
-                    <div
-                      key={slot.id}
-                      className={`p-3 border rounded-lg cursor-pointer transition-colors ${
-                        isSlotFull
-                          ? 'bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed'
-                          : isSelected
-                            ? 'bg-blue-50 border-blue-500 text-blue-900'
-                            : 'bg-white border-gray-200 hover:border-gray-300'
-                      }`}
-                      onClick={() => {
-                        if (!isSlotFull) {
-                          setSelectedSlotId(slot.id);
-                        }
-                      }}
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-medium">枠 {slot.slot_number}</h4>
-                        <Badge
-                          variant={
-                            isSlotFull
-                              ? 'secondary'
-                              : isSelected
-                                ? 'default'
-                                : 'outline'
-                          }
-                        >
-                          {isSlotFull
-                            ? '満席'
-                            : isSelected
-                              ? '選択中'
-                              : '空きあり'}
-                        </Badge>
-                      </div>
-
-                      <div className="text-sm text-muted-foreground mb-1">
-                        {formatTimeLocalized(slotStartTime, 'ja')} -{' '}
-                        {formatTimeLocalized(slotEndTime, 'ja')}
-                      </div>
-
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="flex items-center gap-1">
-                          <UsersIcon className="h-3 w-3" />
-                          {slot.current_participants}/{slot.max_participants}人
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <CircleDollarSignIcon className="h-3 w-3" />
-                          {slot.price_per_person === 0
-                            ? '無料'
-                            : `¥${slot.price_per_person.toLocaleString()}`}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-
-                {/* 選択されたスロットの詳細表示 */}
-                {selectedSlotId && (
-                  <div className="border-t pt-4">
-                    <div className="font-medium text-foreground mb-2">
-                      選択された時間枠
-                    </div>
-                    {(() => {
-                      const selectedSlot = slots.find(
-                        s => s.id === selectedSlotId
-                      );
-                      if (!selectedSlot) return null;
-
-                      const slotStartTime = new Date(selectedSlot.start_time);
-                      const slotEndTime = new Date(selectedSlot.end_time);
-
-                      return (
-                        <div className="space-y-2 text-sm">
-                          <div>
-                            <span className="font-medium">時間:</span>{' '}
-                            {formatTimeLocalized(slotStartTime, 'ja')} -{' '}
-                            {formatTimeLocalized(slotEndTime, 'ja')}
-                          </div>
-                          <div>
-                            <span className="font-medium">料金:</span>{' '}
-                            {selectedSlot.price_per_person === 0
-                              ? '無料'
-                              : `¥${selectedSlot.price_per_person.toLocaleString()}`}
-                          </div>
-                        </div>
-                      );
-                    })()}
-                  </div>
-                )}
-              </div>
-            ) : (
-              /* 通常の撮影会：確認情報表示 */
-              <div className="space-y-3 text-sm">
-                <div>
-                  <div className="font-medium text-foreground">撮影会</div>
-                  <div className="text-muted-foreground">{session.title}</div>
-                </div>
-
-                <div>
-                  <div className="font-medium text-foreground">日時</div>
-                  <div className="text-muted-foreground">
-                    {formatDateLocalized(startDate, 'ja', 'long')}
-                    <br />
-                    {formatTimeLocalized(startDate, 'ja')} -{' '}
-                    {formatTimeLocalized(endDate, 'ja')}
-                  </div>
-                </div>
-
-                <div>
-                  <div className="font-medium text-foreground">場所</div>
-                  <div className="text-muted-foreground">
-                    {session.location}
-                    {session.address && (
-                      <>
-                        <br />
-                        {session.address}
-                      </>
-                    )}
-                  </div>
-                </div>
-
-                <div>
-                  <div className="font-medium text-foreground">料金</div>
-                  <div className="text-muted-foreground">
-                    {session.price_per_person === 0
-                      ? '無料'
-                      : `¥${session.price_per_person.toLocaleString()}`}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* 確認事項 */}
-            <div className="border-t pt-4">
-              <div className="font-medium text-foreground mb-2">確認事項</div>
-              <ul className="text-xs text-muted-foreground space-y-1">
-                <li>• 予約のキャンセルは撮影会開始の24時間前まで可能です</li>
-                <li>• 遅刻される場合は主催者にご連絡ください</li>
-                <li>• 体調不良の場合は無理をせず参加をお控えください</li>
-              </ul>
-            </div>
-          </div>
-
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setSelectedSlotId(null)}>
-              キャンセル
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDirectBooking}
-              disabled={isBooking || (hasSlots && !selectedSlotId)}
-            >
-              {isBooking ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                  予約中...
-                </>
-              ) : (
-                '予約する'
-              )}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {/* レスポンシブ予約UI */}
+      {user && (
+        <ResponsiveSlotBooking
+          session={session}
+          slots={slots}
+          isOpen={showBookingDialog}
+          onClose={() => setShowBookingDialog(false)}
+          userId={user.id}
+        />
+      )}
     </div>
   );
 }
