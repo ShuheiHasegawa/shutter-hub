@@ -45,11 +45,11 @@ export async function uploadMessageFile(
     const fileName = `${timestamp}_${randomString}.${extension}`;
 
     // ストレージパス
-    const filePath = `message-files/${conversationId}/${fileName}`;
+    const filePath = `${conversationId}/${fileName}`;
 
     // ファイルをアップロード
     const { error } = await supabase.storage
-      .from('photo-sessions')
+      .from('message-files')
       .upload(filePath, file);
 
     if (error) {
@@ -62,7 +62,7 @@ export async function uploadMessageFile(
 
     // 公開URLを取得
     const { data: urlData } = supabase.storage
-      .from('photo-sessions')
+      .from('message-files')
       .getPublicUrl(filePath);
 
     return {
@@ -90,11 +90,11 @@ export async function deleteMessageFile(
     // URLからファイルパスを抽出
     const url = new URL(fileUrl);
     const pathParts = url.pathname.split('/');
-    const filePath = pathParts.slice(-3).join('/'); // message-files/conversationId/fileName
+    const filePath = pathParts.slice(-2).join('/'); // conversationId/fileName
 
     // ファイルを削除
     const { error } = await supabase.storage
-      .from('photo-sessions')
+      .from('message-files')
       .remove([filePath]);
 
     if (error) {
