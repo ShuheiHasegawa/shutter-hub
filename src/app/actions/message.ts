@@ -122,24 +122,45 @@ export async function sendMessage(
     let fileType: string | undefined;
 
     if (request.file) {
-      // 動的インポートでクライアント関数を使用
-      const { uploadMessageFile } = await import('@/lib/storage/message-files');
-      const uploadResult = await uploadMessageFile(
-        request.file,
-        conversationId
-      );
+      try {
+        // ファイルサイズの事前チェック
+        const maxSize = 10 * 1024 * 1024; // 10MB
+        if (request.file.size > maxSize) {
+          return {
+            success: false,
+            message: 'ファイルサイズが10MBを超えています',
+          };
+        }
 
-      if (!uploadResult.success) {
+        // 動的インポートでクライアント関数を使用
+        const { uploadMessageFile } = await import(
+          '@/lib/storage/message-files'
+        );
+        const uploadResult = await uploadMessageFile(
+          request.file,
+          conversationId
+        );
+
+        if (!uploadResult.success) {
+          console.error('File upload failed:', uploadResult.error);
+          return {
+            success: false,
+            message:
+              uploadResult.error || 'ファイルのアップロードに失敗しました',
+          };
+        }
+
+        fileUrl = uploadResult.url;
+        fileName = request.file.name;
+        fileSize = request.file.size;
+        fileType = request.file.type;
+      } catch (fileError) {
+        console.error('File processing error:', fileError);
         return {
           success: false,
-          message: uploadResult.error || 'ファイルのアップロードに失敗しました',
+          message: 'ファイルの処理中にエラーが発生しました',
         };
       }
-
-      fileUrl = uploadResult.url;
-      fileName = request.file.name;
-      fileSize = request.file.size;
-      fileType = request.file.type;
     }
 
     // メッセージを挿入
