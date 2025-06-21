@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -33,7 +34,7 @@ import {
   type PhotoSessionParticipant,
 } from '@/app/actions/photo-session-participants';
 
-import { ResponsiveSlotBooking } from './ResponsiveSlotBooking';
+import { SlotBookingFlow } from './SlotBookingFlow';
 
 interface PhotoSessionDetailProps {
   session: PhotoSessionWithOrganizer;
@@ -45,13 +46,14 @@ export function PhotoSessionDetail({
   slots,
 }: PhotoSessionDetailProps) {
   const { user } = useAuth();
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
   const [participants, setParticipants] = useState<PhotoSessionParticipant[]>(
     []
   );
   const [isParticipant, setIsParticipant] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [showBookingDialog, setShowBookingDialog] = useState(false);
 
   const startDate = new Date(session.start_time);
   const endDate = new Date(session.end_time);
@@ -62,6 +64,10 @@ export function PhotoSessionDetail({
 
   // 開催者判定
   const isOrganizer = user?.id === session.organizer_id;
+
+  // URLパラメータから予約フローの状態を取得
+  const bookingStep = searchParams.get('step');
+  const isInBookingFlow = !!bookingStep;
 
   // 参加者データを取得
   useEffect(() => {
@@ -146,7 +152,7 @@ export function PhotoSessionDetail({
           label: '時間枠を選択して予約',
           variant: 'default',
           onClick: () => {
-            setShowBookingDialog(true);
+            router.push(`?step=select`, { scroll: false });
           },
           icon: <Calendar className="h-4 w-4" />,
           className: 'bg-blue-600 hover:bg-blue-700',
@@ -159,7 +165,7 @@ export function PhotoSessionDetail({
           label: isFull ? 'キャンセル待ちに登録' : '予約する',
           variant: 'default',
           onClick: () => {
-            setShowBookingDialog(true);
+            router.push(`?step=select`, { scroll: false });
           },
           disabled: false,
           icon: <CreditCard className="h-4 w-4" />,
@@ -168,6 +174,11 @@ export function PhotoSessionDetail({
       ];
     }
   };
+
+  // 予約フロー表示中は予約フローコンポーネントのみ表示
+  if (isInBookingFlow && user) {
+    return <SlotBookingFlow session={session} slots={slots} userId={user.id} />;
+  }
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -333,10 +344,10 @@ export function PhotoSessionDetail({
                     key={slot.id}
                     className={`w-full p-6 rounded-lg border-2 transition-all duration-200 ${
                       isSlotFull
-                        ? 'border-red-200 bg-red-50/50'
+                        ? 'border-red-200 bg-red-50/50 dark:border-red-800 dark:bg-red-900/20'
                         : participationRate >= 70
-                          ? 'border-yellow-200 bg-yellow-50/50'
-                          : 'border-green-200 bg-green-50/50'
+                          ? 'border-yellow-200 bg-yellow-50/50 dark:border-yellow-800 dark:bg-yellow-900/20'
+                          : 'border-green-200 bg-green-50/50 dark:border-green-800 dark:bg-green-900/20'
                     }`}
                   >
                     {/* ヘッダー部分 */}
@@ -345,10 +356,10 @@ export function PhotoSessionDetail({
                         variant="outline"
                         className={`font-medium ${
                           isSlotFull
-                            ? 'border-red-300 text-red-700 bg-red-100'
+                            ? 'border-red-300 text-red-700 bg-red-100 dark:border-red-700 dark:text-red-300 dark:bg-red-900/30'
                             : participationRate >= 70
-                              ? 'border-yellow-300 text-yellow-700 bg-yellow-100'
-                              : 'border-green-300 text-green-700 bg-green-100'
+                              ? 'border-yellow-300 text-yellow-700 bg-yellow-100 dark:border-yellow-700 dark:text-yellow-300 dark:bg-yellow-900/30'
+                              : 'border-green-300 text-green-700 bg-green-100 dark:border-green-700 dark:text-green-300 dark:bg-green-900/30'
                         }`}
                       >
                         枠 {index + 1}
@@ -365,13 +376,13 @@ export function PhotoSessionDetail({
                     <div className="grid grid-cols-3 gap-6">
                       {/* 参加者数 */}
                       <div className="text-center">
-                        <div className="flex items-center justify-center gap-2 text-gray-600 mb-1">
+                        <div className="flex items-center justify-center gap-2 text-gray-600 dark:text-gray-400 mb-1">
                           <UsersIcon className="h-4 w-4" />
                           <span className="text-sm font-medium">参加者</span>
                         </div>
-                        <div className="text-2xl font-bold text-gray-900">
+                        <div className="text-2xl font-bold text-gray-900 dark:text-white">
                           {slot.current_participants}
-                          <span className="text-lg text-gray-500">
+                          <span className="text-lg text-gray-500 dark:text-gray-400">
                             /{slot.max_participants}
                           </span>
                         </div>
@@ -379,10 +390,10 @@ export function PhotoSessionDetail({
 
                       {/* 時間 */}
                       <div className="text-center">
-                        <div className="text-sm font-medium text-gray-600 mb-1">
+                        <div className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
                           時間
                         </div>
-                        <div className="text-2xl font-bold text-gray-900">
+                        <div className="text-2xl font-bold text-gray-900 dark:text-white">
                           {formatTimeLocalized(slotStartTime, 'ja')} -{' '}
                           {formatTimeLocalized(slotEndTime, 'ja')}
                         </div>
@@ -390,11 +401,11 @@ export function PhotoSessionDetail({
 
                       {/* 料金 */}
                       <div className="text-center">
-                        <div className="flex items-center justify-center gap-2 text-gray-600 mb-1">
+                        <div className="flex items-center justify-center gap-2 text-gray-600 dark:text-gray-400 mb-1">
                           <CircleDollarSignIcon className="h-4 w-4" />
                           <span className="text-sm font-medium">料金</span>
                         </div>
-                        <div className="text-2xl font-bold text-gray-900">
+                        <div className="text-2xl font-bold text-gray-900 dark:text-white">
                           {slot.price_per_person === 0
                             ? '無料'
                             : `¥${slot.price_per_person.toLocaleString()}`}
@@ -496,17 +507,6 @@ export function PhotoSessionDetail({
           actions={getActionBarButtons()}
           maxColumns={1}
           background="blur"
-        />
-      )}
-
-      {/* レスポンシブ予約UI */}
-      {user && (
-        <ResponsiveSlotBooking
-          session={session}
-          slots={slots}
-          isOpen={showBookingDialog}
-          onClose={() => setShowBookingDialog(false)}
-          userId={user.id}
         />
       )}
     </div>
