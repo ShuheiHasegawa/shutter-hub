@@ -14,6 +14,7 @@ export interface PhotoSessionWithSlotsData {
   max_participants: number;
   price_per_person: number;
   booking_type?: string;
+  allow_multiple_bookings?: boolean;
   booking_settings?: Record<string, unknown>;
   is_published: boolean;
   image_urls?: string[];
@@ -56,6 +57,7 @@ export async function createPhotoSessionWithSlotsAction(
         max_participants: maxParticipants,
         price_per_person: data.price_per_person,
         booking_type: data.booking_type || 'first_come',
+        allow_multiple_bookings: data.allow_multiple_bookings || false,
         booking_settings: data.booking_settings || {},
         is_published: data.is_published,
         image_urls: data.image_urls || [],
@@ -147,6 +149,7 @@ export async function updatePhotoSessionWithSlotsAction(
         max_participants: maxParticipants,
         price_per_person: data.price_per_person,
         booking_type: data.booking_type || 'first_come',
+        allow_multiple_bookings: data.allow_multiple_bookings || false,
         booking_settings: data.booking_settings || {},
         is_published: data.is_published,
         image_urls: data.image_urls || [],

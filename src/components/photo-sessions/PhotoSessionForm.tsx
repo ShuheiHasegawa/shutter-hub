@@ -68,6 +68,7 @@ export function PhotoSessionForm({
     max_participants: initialData?.max_participants || 1,
     price_per_person: initialData?.price_per_person || 0,
     booking_type: (initialData?.booking_type as BookingType) || 'first_come',
+    allow_multiple_bookings: initialData?.allow_multiple_bookings || false,
     is_published: isDuplicating ? false : initialData?.is_published || false,
     image_urls: isDuplicating ? [] : initialData?.image_urls || [],
   });
@@ -87,8 +88,8 @@ export function PhotoSessionForm({
     }));
   };
 
-  const handleSwitchChange = (checked: boolean) => {
-    setFormData(prev => ({ ...prev, is_published: checked }));
+  const handleSwitchChange = (name: string, checked: boolean) => {
+    setFormData(prev => ({ ...prev, [name]: checked }));
   };
 
   const handleImageUrlsChange = (urls: string[]) => {
@@ -178,6 +179,7 @@ export function PhotoSessionForm({
           max_participants: formData.max_participants,
           price_per_person: formData.price_per_person,
           booking_type: formData.booking_type,
+          allow_multiple_bookings: formData.allow_multiple_bookings,
           booking_settings: bookingSettings as Record<string, unknown>,
           is_published: formData.is_published,
           image_urls: formData.image_urls,
@@ -231,6 +233,7 @@ export function PhotoSessionForm({
           max_participants: formData.max_participants,
           price_per_person: formData.price_per_person,
           booking_type: formData.booking_type,
+          allow_multiple_bookings: formData.allow_multiple_bookings,
           is_published: formData.is_published,
           image_urls: formData.image_urls,
           booking_settings: bookingSettings as Record<string, unknown>,
@@ -486,6 +489,58 @@ export function PhotoSessionForm({
             disabled={isLoading}
           />
 
+          {/* 複数予約許可設定 */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium">
+              {t('form.multipleBookingSettings')}
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              {t('form.multipleBookingDescription')}
+            </p>
+
+            <div className="flex items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <label className="text-base font-medium">
+                  {t('form.allowMultipleBookings')}
+                </label>
+                <p className="text-sm text-muted-foreground">
+                  {t('form.allowMultipleBookingsDescription')}
+                </p>
+                <div className="text-xs text-muted-foreground mt-2 space-y-1">
+                  <div>• {t('form.multipleBookingDisabled')}</div>
+                  <div>• {t('form.multipleBookingEnabled')}</div>
+                </div>
+              </div>
+              <Switch
+                checked={formData.allow_multiple_bookings}
+                onCheckedChange={checked =>
+                  handleSwitchChange('allow_multiple_bookings', checked)
+                }
+                disabled={isLoading}
+              />
+            </div>
+
+            {formData.allow_multiple_bookings && (
+              <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                <div className="flex items-start space-x-2">
+                  <div className="text-blue-600 dark:text-blue-400 mt-0.5">
+                    💡
+                  </div>
+                  <div className="text-sm text-blue-700 dark:text-blue-300">
+                    <p className="font-medium mb-1">
+                      {t('form.multipleBookingEnabledTitle')}
+                    </p>
+                    <ul className="space-y-1 text-xs">
+                      <li>• {t('form.multipleBookingFeature1')}</li>
+                      <li>• {t('form.multipleBookingFeature2')}</li>
+                      <li>• {t('form.multipleBookingFeature3')}</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* 撮影枠設定 */}
           <div className="space-y-4">
             <h3 className="text-lg font-medium">撮影枠設定</h3>
@@ -583,7 +638,9 @@ export function PhotoSessionForm({
               </div>
               <Switch
                 checked={formData.is_published}
-                onCheckedChange={handleSwitchChange}
+                onCheckedChange={checked =>
+                  handleSwitchChange('is_published', checked)
+                }
               />
             </div>
           </div>

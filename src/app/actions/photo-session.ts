@@ -12,8 +12,11 @@ export interface PhotoSessionData {
   end_time: string;
   max_participants: number;
   price_per_person: number;
+  booking_type?: string;
+  allow_multiple_bookings?: boolean;
   is_published: boolean;
   image_urls?: string[];
+  booking_settings?: Record<string, unknown>;
 }
 
 export async function createPhotoSessionAction(data: PhotoSessionData) {
