@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -186,41 +186,43 @@ export default function PhotoSessionSlotForm({
   };
 
   // 親コンポーネントに撮影枠変更を通知
-  const updateParentSlots = (forms: SlotFormData[]) => {
-    // PhotoSessionSlot形式に変換
-    const convertedSlots: PhotoSessionSlot[] = forms.map(slot => {
-      const startDateTime = baseDate
-        ? `${baseDate}T${slot.start_time}:00`
-        : `2024-01-01T${slot.start_time}:00`;
-      const endDateTime = baseDate
-        ? `${baseDate}T${calculateEndTime(slot.start_time, slot.shooting_duration_minutes)}:00`
-        : `2024-01-01T${calculateEndTime(slot.start_time, slot.shooting_duration_minutes)}:00`;
+  const updateParentSlots = useCallback(
+    (forms: SlotFormData[]) => {
+      // PhotoSessionSlot形式に変換
+      const convertedSlots: PhotoSessionSlot[] = forms.map(slot => {
+        // baseDateが未設定の場合は今日の日付を使用
+        const currentDate = baseDate || new Date().toISOString().split('T')[0];
 
-      return {
-        id: `temp-${slot.slot_number}`,
-        photo_session_id: photoSessionId,
-        slot_number: slot.slot_number,
-        start_time: startDateTime,
-        end_time: endDateTime,
-        break_duration_minutes: slot.break_duration_minutes,
-        price_per_person: slot.price_per_person,
-        max_participants: slot.max_participants,
-        current_participants: 0,
-        costume_image_url: slot.costume_image_url || undefined,
-        costume_image_hash: slot.costume_image_hash || undefined,
-        costume_description: slot.costume_description || undefined,
-        discount_type: slot.discount_type || 'none',
-        discount_value: slot.discount_value || 0,
-        discount_condition: slot.discount_condition || undefined,
-        notes: slot.notes || undefined,
-        is_active: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
-    });
+        const startDateTime = `${currentDate}T${slot.start_time}:00`;
+        const endDateTime = `${currentDate}T${calculateEndTime(slot.start_time, slot.shooting_duration_minutes)}:00`;
 
-    onSlotsChange(convertedSlots);
-  };
+        return {
+          id: `temp-${slot.slot_number}`,
+          photo_session_id: photoSessionId,
+          slot_number: slot.slot_number,
+          start_time: startDateTime,
+          end_time: endDateTime,
+          break_duration_minutes: slot.break_duration_minutes,
+          price_per_person: slot.price_per_person,
+          max_participants: slot.max_participants,
+          current_participants: 0,
+          costume_image_url: slot.costume_image_url || undefined,
+          costume_image_hash: slot.costume_image_hash || undefined,
+          costume_description: slot.costume_description || undefined,
+          discount_type: slot.discount_type || 'none',
+          discount_value: slot.discount_value || 0,
+          discount_condition: slot.discount_condition || undefined,
+          notes: slot.notes || undefined,
+          is_active: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+      });
+
+      onSlotsChange(convertedSlots);
+    },
+    [baseDate, onSlotsChange, photoSessionId]
+  );
 
   const addSlot = () => {
     const newSlotNumber = slotForms.length + 1;
@@ -365,10 +367,12 @@ export default function PhotoSessionSlotForm({
     }
   };
 
-  // 初期化時に親に通知
+  // 初期化時と撮影枠変更時に親に通知
   useEffect(() => {
-    updateParentSlots(slotForms);
-  }, []); // 初回のみ実行
+    if (slotForms.length > 0) {
+      updateParentSlots(slotForms);
+    }
+  }, [slotForms, updateParentSlots]); // slotFormsとupdateParentSlotsの変更を監視
 
   return (
     <div className="space-y-6">

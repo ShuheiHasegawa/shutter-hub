@@ -660,7 +660,7 @@ export function PhotoSessionForm({
               baseDate={
                 formData.start_time
                   ? formData.start_time.split('T')[0]
-                  : undefined
+                  : new Date().toISOString().split('T')[0]
               }
               locale="ja"
             />
