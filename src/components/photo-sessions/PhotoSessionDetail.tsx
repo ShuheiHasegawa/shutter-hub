@@ -429,24 +429,18 @@ export function PhotoSessionDetail({
                   >
                     {/* ヘッダー部分 */}
                     <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-3">
-                        <Badge
-                          variant="outline"
-                          className={`font-medium ${
-                            isSlotFull
-                              ? 'border-red-300 text-red-700 bg-red-100'
-                              : participationRate >= 70
-                                ? 'border-yellow-300 text-yellow-700 bg-yellow-100'
-                                : 'border-green-300 text-green-700 bg-green-100'
-                          }`}
-                        >
-                          スロット {index + 1}
-                        </Badge>
-                        <h4 className="text-lg font-semibold text-gray-900">
-                          {formatTimeLocalized(slotStartTime, 'ja')} -{' '}
-                          {formatTimeLocalized(slotEndTime, 'ja')}
-                        </h4>
-                      </div>
+                      <Badge
+                        variant="outline"
+                        className={`font-medium ${
+                          isSlotFull
+                            ? 'border-red-300 text-red-700 bg-red-100'
+                            : participationRate >= 70
+                              ? 'border-yellow-300 text-yellow-700 bg-yellow-100'
+                              : 'border-green-300 text-green-700 bg-green-100'
+                        }`}
+                      >
+                        枠 {index + 1}
+                      </Badge>
                       <Badge
                         variant={isSlotFull ? 'destructive' : 'default'}
                         className="text-sm font-medium"
@@ -455,8 +449,16 @@ export function PhotoSessionDetail({
                       </Badge>
                     </div>
 
+                    {/* 時間表示（中央） */}
+                    <div className="text-center mb-6">
+                      <h4 className="text-2xl font-bold text-gray-900">
+                        {formatTimeLocalized(slotStartTime, 'ja')} -{' '}
+                        {formatTimeLocalized(slotEndTime, 'ja')}
+                      </h4>
+                    </div>
+
                     {/* 詳細情報グリッド */}
-                    <div className="grid grid-cols-3 gap-6">
+                    <div className="grid grid-cols-2 gap-8">
                       {/* 参加者数 */}
                       <div className="text-center">
                         <div className="flex items-center justify-center gap-2 text-gray-600 mb-1">
@@ -468,30 +470,6 @@ export function PhotoSessionDetail({
                           <span className="text-lg text-gray-500">
                             /{slot.max_participants}
                           </span>
-                        </div>
-                      </div>
-
-                      {/* 予約率 */}
-                      <div className="text-center">
-                        <div className="text-sm font-medium text-gray-600 mb-1">
-                          予約率
-                        </div>
-                        <div className="text-2xl font-bold text-gray-900 mb-2">
-                          {Math.round(participationRate)}%
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div
-                            className={`h-2 rounded-full transition-all duration-300 ${
-                              isSlotFull
-                                ? 'bg-red-500'
-                                : participationRate >= 70
-                                  ? 'bg-yellow-500'
-                                  : 'bg-green-500'
-                            }`}
-                            style={{
-                              width: `${Math.min(participationRate, 100)}%`,
-                            }}
-                          />
                         </div>
                       </div>
 
@@ -648,9 +626,7 @@ export function PhotoSessionDetail({
                       }}
                     >
                       <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-medium">
-                          スロット {slot.slot_number}
-                        </h4>
+                        <h4 className="font-medium">枠 {slot.slot_number}</h4>
                         <Badge
                           variant={
                             isSlotFull
