@@ -49,7 +49,7 @@ export async function uploadMessageFile(
 
     // ファイルをアップロード
     const { error } = await supabase.storage
-      .from('message-files')
+      .from('photo-sessions')
       .upload(filePath, file);
 
     if (error) {
@@ -62,7 +62,7 @@ export async function uploadMessageFile(
 
     // 公開URLを取得
     const { data: urlData } = supabase.storage
-      .from('message-files')
+      .from('photo-sessions')
       .getPublicUrl(filePath);
 
     return {
@@ -94,7 +94,7 @@ export async function deleteMessageFile(
 
     // ファイルを削除
     const { error } = await supabase.storage
-      .from('message-files')
+      .from('photo-sessions')
       .remove([filePath]);
 
     if (error) {
