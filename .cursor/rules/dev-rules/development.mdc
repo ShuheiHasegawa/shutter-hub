@@ -1333,6 +1333,94 @@ const hoursUntil = differenceInHours(startTime, new Date());
    git push origin main
    ```
 
+### **🔍 調査段階のコミット不要ルール**
+
+#### **基本原則**
+- **調査・デバッグ目的のコードはコミット不要**
+- **問題解決後は調査コードを削除して本来の実装にクリーンアップ**
+- **調査段階と本実装を明確に分離**
+
+#### **調査段階の対象コード**
+```yaml
+debug_investigation:
+  temporary_logs:
+    - console.log("調査用ログ")
+    - console.error("デバッグ詳細", error)
+    - alert("テスト確認")
+  
+  detailed_error_output:
+    - JSON.stringify(error, null, 2)
+    - エラーコード・スタックトレース出力
+    - 詳細なペイロード確認
+  
+  individual_processing:
+    - for文での個別エラー取得
+    - 一括処理を個別に分解
+    - ステップ毎の状態確認
+    
+  temporary_modifications:
+    - 一時的なデータ構造変更
+    - テスト用の条件分岐
+    - 調査用の処理追加
+```
+
+#### **調査完了後の必須作業**
+```yaml
+cleanup_process:
+  1_remove_debug_code:
+    - 調査用console.logの完全削除
+    - テスト用alertの削除
+    - 詳細エラー出力の削除
+  
+  2_restore_clean_implementation:
+    - 本来のシンプルな実装に復元
+    - パフォーマンス重視の処理に戻す
+    - 一括処理の復活
+  
+  3_commit_clean_version:
+    - クリーンアップ後の実装をコミット
+    - 調査コードなしの状態で記録
+    - "fix: [問題の修正内容]"でコミット
+```
+
+#### **実装例**
+```typescript
+// 🔍 調査段階（コミット不要）
+console.log('Creating group with members:', uniqueMemberIds);
+for (const memberId of uniqueMemberIds) {
+  console.log(`Processing member: ${memberId}`);
+  const result = await processIndividually(memberId);
+  console.log(`Result:`, JSON.stringify(result, null, 2));
+}
+
+// ✅ 本実装（コミット対象）
+const memberInserts = uniqueMemberIds.map(memberId => ({
+  conversation_id: conversation.id,
+  user_id: memberId,
+  role: memberId === user.id ? 'admin' : 'member',
+}));
+const { error } = await supabase.from('table').insert(memberInserts);
+```
+
+#### **調査段階の判定基準**
+```yaml
+investigation_indicators:
+  temporary_nature:
+    - "エラー原因の特定が目的"
+    - "詳細ログによる状況把握"
+    - "個別処理での問題切り分け"
+  
+  clean_implementation_exists:
+    - "本来のシンプルな実装方法が明確"
+    - "調査完了後の理想的な形が決まっている"
+    - "パフォーマンス重視の実装に戻せる"
+```
+
+#### **このルールの効果**
+- **ログ汚染防止**: 本番環境に調査用コードが混入しない
+- **コード品質維持**: 常にクリーンな実装状態を保持
+- **効率的な問題解決**: 調査と実装を分離して集中
+
 ### コミット・プッシュ自動化ルール
 機能実装とTODO更新が完了したら、**必ず以下のコマンドを実行**してください：
 
@@ -1405,9 +1493,72 @@ supabase/migrations/
 └── 20241201000008_[次の変更].sql              # 新規追加時
 ```
 
+### **🔧 MCP連携によるマイグレーション管理ルール**
+
+#### **基本原則**
+- **MCP連携のみ使用**: npxコマンドは使用禁止
+- **Supabase MCP連携**: 直接データベース操作・マイグレーション適用
+- **確実な適用**: マイグレーションファイル作成後は必ずMCP連携で適用
+
+#### **MCP連携必須手順**
+```yaml
+migration_workflow:
+  1_create_migration_file:
+    - supabase/migrations/ にSQLファイル作成
+    - タイムスタンプ形式の命名（YYYYMMDDHHMMSS_description.sql）
+    - 適切なコメント・説明を記載
+  
+  2_mcp_application:
+    - MCP連携でSupabaseプロジェクトに直接適用
+    - npxコマンドは使用禁止
+    - 適用完了の確認必須
+  
+  3_verification:
+    - データベーススキーマの変更確認
+    - 新しいテーブル・カラム・ポリシーの動作確認
+    - アプリケーションでの動作テスト
+  
+  4_commit_process:
+    - マイグレーションファイルをコミット
+    - 関連するTypeScript型定義も更新・コミット
+    - "feat/fix: [データベース変更内容]"でコミット
+```
+
+#### **MCP連携の利点**
+```yaml
+mcp_advantages:
+  direct_application:
+    - Supabaseプロジェクトへの直接適用
+    - 認証・設定不要
+    - 確実な適用保証
+  
+  real_time_feedback:
+    - 即座の結果確認
+    - エラー時の詳細情報取得
+    - デバッグ情報の充実
+  
+  consistency:
+    - 開発環境とプロダクション環境の一致
+    - 手動ミスの防止
+    - 一元的なマイグレーション管理
+```
+
+#### **禁止事項**
+```yaml
+prohibited_commands:
+  - "supabase db push"        # ❌ npxコマンド使用禁止
+  - "supabase migration up"   # ❌ npxコマンド使用禁止
+  - "supabase db reset"       # ❌ npxコマンド使用禁止
+  - "supabase link"           # ❌ npxコマンド使用禁止
+
+required_method:
+  - "MCP連携のみ使用"         # ✅ 必須方法
+  - "Supabase MCP直接操作"    # ✅ 推奨方法
+```
+
 ### DB変更時の必須手順
 1. **マイグレーションファイル作成**: `supabase/migrations/` に追加
-2. **MCP実行**: Supabaseプロジェクトに変更を適用
+2. **【必須】MCP連携実行**: Supabaseプロジェクトに変更を適用（npxコマンド禁止）
 3. **型定義更新**: 必要に応じてTypeScript型を更新
 4. **テスト実行**: DB変更に関連するテストを実行
 5. **コミット**: マイグレーションファイルと関連変更をコミット
