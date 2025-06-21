@@ -449,16 +449,8 @@ export function PhotoSessionDetail({
                       </Badge>
                     </div>
 
-                    {/* 時間表示（中央） */}
-                    <div className="text-center mb-6">
-                      <h4 className="text-2xl font-bold text-gray-900">
-                        {formatTimeLocalized(slotStartTime, 'ja')} -{' '}
-                        {formatTimeLocalized(slotEndTime, 'ja')}
-                      </h4>
-                    </div>
-
                     {/* 詳細情報グリッド */}
-                    <div className="grid grid-cols-2 gap-8">
+                    <div className="grid grid-cols-3 gap-6">
                       {/* 参加者数 */}
                       <div className="text-center">
                         <div className="flex items-center justify-center gap-2 text-gray-600 mb-1">
@@ -470,6 +462,17 @@ export function PhotoSessionDetail({
                           <span className="text-lg text-gray-500">
                             /{slot.max_participants}
                           </span>
+                        </div>
+                      </div>
+
+                      {/* 時間 */}
+                      <div className="text-center">
+                        <div className="text-sm font-medium text-gray-600 mb-1">
+                          時間
+                        </div>
+                        <div className="text-2xl font-bold text-gray-900">
+                          {formatTimeLocalized(slotStartTime, 'ja')} -{' '}
+                          {formatTimeLocalized(slotEndTime, 'ja')}
                         </div>
                       </div>
 
