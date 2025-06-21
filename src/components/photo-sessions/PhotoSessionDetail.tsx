@@ -216,7 +216,8 @@ export function PhotoSessionDetail({
   const hasSlots = slots && slots.length > 0;
 
   // 予約可能状態の判定
-  const canBook = !isOrganizer && !isParticipant && isUpcoming && user;
+  const canBook =
+    !isOrganizer && isUpcoming && user && (hasSlots || !isParticipant);
   const available = session.max_participants - session.current_participants;
   const isFull = available === 0;
 
@@ -406,51 +407,105 @@ export function PhotoSessionDetail({
             </p>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {slots.map(slot => {
+            <div className="space-y-4">
+              {slots.map((slot, index) => {
                 const isSlotFull =
                   slot.current_participants >= slot.max_participants;
                 const slotStartTime = new Date(slot.start_time);
                 const slotEndTime = new Date(slot.end_time);
+                const participationRate =
+                  (slot.current_participants / slot.max_participants) * 100;
 
                 return (
                   <div
                     key={slot.id}
-                    className={`p-4 border rounded-lg ${
+                    className={`w-full p-6 rounded-lg border-2 transition-all duration-200 ${
                       isSlotFull
-                        ? 'bg-gray-50 border-gray-200 text-gray-500'
-                        : 'bg-white border-gray-200'
+                        ? 'border-red-200 bg-red-50/50'
+                        : participationRate >= 70
+                          ? 'border-yellow-200 bg-yellow-50/50'
+                          : 'border-green-200 bg-green-50/50'
                     }`}
                   >
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <h4 className="font-medium">
-                          スロット {slot.slot_number}
-                        </h4>
-                        <Badge variant={isSlotFull ? 'secondary' : 'default'}>
-                          {isSlotFull ? '満席' : '空きあり'}
+                    {/* ヘッダー部分 */}
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <Badge
+                          variant="outline"
+                          className={`font-medium ${
+                            isSlotFull
+                              ? 'border-red-300 text-red-700 bg-red-100'
+                              : participationRate >= 70
+                                ? 'border-yellow-300 text-yellow-700 bg-yellow-100'
+                                : 'border-green-300 text-green-700 bg-green-100'
+                          }`}
+                        >
+                          スロット {index + 1}
                         </Badge>
+                        <h4 className="text-lg font-semibold text-gray-900">
+                          {formatTimeLocalized(slotStartTime, 'ja')} -{' '}
+                          {formatTimeLocalized(slotEndTime, 'ja')}
+                        </h4>
+                      </div>
+                      <Badge
+                        variant={isSlotFull ? 'destructive' : 'default'}
+                        className="text-sm font-medium"
+                      >
+                        {isSlotFull ? '満席' : '空きあり'}
+                      </Badge>
+                    </div>
+
+                    {/* 詳細情報グリッド */}
+                    <div className="grid grid-cols-3 gap-6">
+                      {/* 参加者数 */}
+                      <div className="text-center">
+                        <div className="flex items-center justify-center gap-2 text-gray-600 mb-1">
+                          <UsersIcon className="h-4 w-4" />
+                          <span className="text-sm font-medium">参加者</span>
+                        </div>
+                        <div className="text-2xl font-bold text-gray-900">
+                          {slot.current_participants}
+                          <span className="text-lg text-gray-500">
+                            /{slot.max_participants}
+                          </span>
+                        </div>
                       </div>
 
-                      <div className="text-sm text-muted-foreground">
-                        {formatTimeLocalized(slotStartTime, 'ja')} -{' '}
-                        {formatTimeLocalized(slotEndTime, 'ja')}
+                      {/* 予約率 */}
+                      <div className="text-center">
+                        <div className="text-sm font-medium text-gray-600 mb-1">
+                          予約率
+                        </div>
+                        <div className="text-2xl font-bold text-gray-900 mb-2">
+                          {Math.round(participationRate)}%
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div
+                            className={`h-2 rounded-full transition-all duration-300 ${
+                              isSlotFull
+                                ? 'bg-red-500'
+                                : participationRate >= 70
+                                  ? 'bg-yellow-500'
+                                  : 'bg-green-500'
+                            }`}
+                            style={{
+                              width: `${Math.min(participationRate, 100)}%`,
+                            }}
+                          />
+                        </div>
                       </div>
 
-                      <div className="flex items-center gap-2 text-sm">
-                        <UsersIcon className="h-4 w-4" />
-                        <span>
-                          {slot.current_participants}/{slot.max_participants}人
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-2 text-sm">
-                        <CircleDollarSignIcon className="h-4 w-4" />
-                        <span>
+                      {/* 料金 */}
+                      <div className="text-center">
+                        <div className="flex items-center justify-center gap-2 text-gray-600 mb-1">
+                          <CircleDollarSignIcon className="h-4 w-4" />
+                          <span className="text-sm font-medium">料金</span>
+                        </div>
+                        <div className="text-2xl font-bold text-gray-900">
                           {slot.price_per_person === 0
                             ? '無料'
                             : `¥${slot.price_per_person.toLocaleString()}`}
-                        </span>
+                        </div>
                       </div>
                     </div>
                   </div>
