@@ -58,7 +58,7 @@ export function ResponsiveSlotBooking({
   const [currentStep, setCurrentStep] = useState<BookingStep>('select');
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
   const [isBooking, setIsBooking] = useState(false);
-  const [isTransitioning, setIsTransitioning] = useState(false);
+
   const { toast } = useToast();
 
   const hasSlots = slots && slots.length > 0;
@@ -80,19 +80,13 @@ export function ResponsiveSlotBooking({
       setCurrentStep('select');
       setSelectedSlotId(null);
       setIsBooking(false);
-      setIsTransitioning(false);
     }
   }, [isOpen]);
 
-  // スムーズなステップ遷移関数
-  const transitionToStep = (nextStep: BookingStep) => {
-    setIsTransitioning(true);
-    // 短いディレイでスムーズな遷移
-    setTimeout(() => {
-      setCurrentStep(nextStep);
-      setIsTransitioning(false);
-    }, 150);
-  };
+  // 即座のステップ遷移関数（ディレイなし）
+  const transitionToStep = useCallback((nextStep: BookingStep) => {
+    setCurrentStep(nextStep);
+  }, []);
 
   // 予約処理
   const handleBooking = async () => {
@@ -176,12 +170,6 @@ export function ResponsiveSlotBooking({
   const DesktopStepFlow = () => (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
       <AlertDialogContent className="max-w-2xl max-h-[85vh] overflow-hidden dark:bg-gray-900 dark:border-gray-700">
-        {/* トランジション中のオーバーレイ */}
-        {isTransitioning && (
-          <div className="absolute inset-0 bg-white/50 dark:bg-gray-900/50 z-50 flex items-center justify-center">
-            <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-          </div>
-        )}
         {/* ステップインジケーター */}
         <div className="flex items-center justify-center space-x-8 py-4 border-b dark:border-gray-700">
           {Object.entries(stepLabels).map(([step, label], index) => {
@@ -355,7 +343,7 @@ export function ResponsiveSlotBooking({
                 onClick={() =>
                   hasSlots ? transitionToStep('confirm') : handleBooking()
                 }
-                disabled={(hasSlots && !selectedSlotId) || isTransitioning}
+                disabled={hasSlots && !selectedSlotId}
                 className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700"
               >
                 {hasSlots ? (
@@ -375,7 +363,6 @@ export function ResponsiveSlotBooking({
               <Button
                 variant="outline"
                 onClick={() => transitionToStep('select')}
-                disabled={isTransitioning}
                 className="dark:border-gray-600 dark:text-gray-300"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
@@ -383,7 +370,7 @@ export function ResponsiveSlotBooking({
               </Button>
               <Button
                 onClick={handleBooking}
-                disabled={isBooking || isTransitioning}
+                disabled={isBooking}
                 className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700"
               >
                 {isBooking ? (
@@ -470,7 +457,7 @@ export function ResponsiveSlotBooking({
         <AlertDialog
           open={currentStep === 'confirm'}
           onOpenChange={open => {
-            if (!open && !isTransitioning) {
+            if (!open) {
               transitionToStep('select');
               setSelectedSlotId(null);
             }
@@ -532,14 +519,13 @@ export function ResponsiveSlotBooking({
                   transitionToStep('select');
                   setSelectedSlotId(null);
                 }}
-                disabled={isTransitioning}
                 className="dark:text-gray-300 dark:border-gray-600"
               >
                 戻る
               </AlertDialogCancel>
               <AlertDialogAction
                 onClick={handleBooking}
-                disabled={isBooking || isTransitioning}
+                disabled={isBooking}
                 className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700"
               >
                 {isBooking ? (
