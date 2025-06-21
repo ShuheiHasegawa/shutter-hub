@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback, memo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -162,9 +162,15 @@ export function ResponsiveSlotBooking({
   };
 
   // 選択されたスロットの取得
-  const selectedSlot = selectedSlotId
-    ? slots.find(s => s.id === selectedSlotId)
-    : null;
+  const selectedSlot = useMemo(
+    () => (selectedSlotId ? slots.find(s => s.id === selectedSlotId) : null),
+    [selectedSlotId, slots]
+  );
+
+  // スロット選択ハンドラーをメモ化
+  const handleSlotSelect = useCallback((slotId: string) => {
+    setSelectedSlotId(slotId);
+  }, []);
 
   // PC用ステップ式コンポーネント
   const DesktopStepFlow = () => (
@@ -240,89 +246,15 @@ export function ResponsiveSlotBooking({
             {/* ステップ1: 時間枠選択 */}
             {currentStep === 'select' && hasSlots && (
               <div className="space-y-3">
-                {slots.map((slot, index) => {
-                  const isSlotFull =
-                    slot.current_participants >= slot.max_participants;
-                  const slotStartTime = new Date(slot.start_time);
-                  const slotEndTime = new Date(slot.end_time);
-                  const isSelected = selectedSlotId === slot.id;
-
-                  return (
-                    <div
-                      key={slot.id}
-                      className={`p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
-                        isSlotFull
-                          ? 'bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:border-gray-600'
-                          : isSelected
-                            ? 'bg-blue-50 border-blue-500 text-blue-900 dark:bg-blue-900/20 dark:border-blue-400 dark:text-blue-100'
-                            : 'bg-white border-gray-200 hover:border-blue-300 hover:bg-blue-50/50 dark:bg-gray-800 dark:border-gray-600 dark:hover:border-blue-400 dark:hover:bg-blue-900/10'
-                      }`}
-                      onClick={() => {
-                        if (!isSlotFull) {
-                          setSelectedSlotId(slot.id);
-                        }
-                      }}
-                    >
-                      <div className="flex items-center justify-between mb-3">
-                        <h4 className="font-semibold text-lg dark:text-white">
-                          枠 {index + 1}
-                        </h4>
-                        <Badge
-                          variant={
-                            isSlotFull
-                              ? 'destructive'
-                              : isSelected
-                                ? 'default'
-                                : 'outline'
-                          }
-                          className="text-sm"
-                        >
-                          {isSlotFull
-                            ? '満席'
-                            : isSelected
-                              ? '選択中'
-                              : '空きあり'}
-                        </Badge>
-                      </div>
-
-                      <div className="grid grid-cols-3 gap-4 text-sm">
-                        <div className="text-center">
-                          <div className="flex items-center justify-center gap-1 text-gray-600 dark:text-gray-400 mb-1">
-                            <Clock className="h-4 w-4" />
-                            <span>時間</span>
-                          </div>
-                          <div className="font-medium dark:text-white">
-                            {formatTimeLocalized(slotStartTime, 'ja')} -{' '}
-                            {formatTimeLocalized(slotEndTime, 'ja')}
-                          </div>
-                        </div>
-
-                        <div className="text-center">
-                          <div className="flex items-center justify-center gap-1 text-gray-600 dark:text-gray-400 mb-1">
-                            <UsersIcon className="h-4 w-4" />
-                            <span>参加者</span>
-                          </div>
-                          <div className="font-medium dark:text-white">
-                            {slot.current_participants}/{slot.max_participants}
-                            人
-                          </div>
-                        </div>
-
-                        <div className="text-center">
-                          <div className="flex items-center justify-center gap-1 text-gray-600 dark:text-gray-400 mb-1">
-                            <CircleDollarSignIcon className="h-4 w-4" />
-                            <span>料金</span>
-                          </div>
-                          <div className="font-medium dark:text-white">
-                            {slot.price_per_person === 0
-                              ? '無料'
-                              : `¥${slot.price_per_person.toLocaleString()}`}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+                {slots.map((slot, index) => (
+                  <SlotCard
+                    key={slot.id}
+                    slot={slot}
+                    index={index}
+                    isSelected={selectedSlotId === slot.id}
+                    onSelect={handleSlotSelect}
+                  />
+                ))}
               </div>
             )}
 
@@ -661,6 +593,107 @@ export function ResponsiveSlotBooking({
   // レスポンシブに応じてコンポーネントを切り替え
   return isMobile ? <MobileActionSheet /> : <DesktopStepFlow />;
 }
+
+// スロットカードコンポーネント（メモ化）
+const SlotCard = memo(function SlotCard({
+  slot,
+  index,
+  isSelected,
+  onSelect,
+}: {
+  slot: PhotoSessionSlot;
+  index: number;
+  isSelected: boolean;
+  onSelect: (slotId: string) => void;
+}) {
+  const isSlotFull = slot.current_participants >= slot.max_participants;
+  const slotStartTime = useMemo(
+    () => new Date(slot.start_time),
+    [slot.start_time]
+  );
+  const slotEndTime = useMemo(() => new Date(slot.end_time), [slot.end_time]);
+
+  const handleClick = useCallback(() => {
+    if (!isSlotFull) {
+      onSelect(slot.id);
+    }
+  }, [isSlotFull, onSelect, slot.id]);
+
+  const cardClassName = useMemo(() => {
+    const baseClasses =
+      'p-4 border-2 rounded-lg cursor-pointer transition-all duration-200';
+
+    if (isSlotFull) {
+      return `${baseClasses} bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:border-gray-600`;
+    }
+
+    if (isSelected) {
+      return `${baseClasses} bg-blue-50 border-blue-500 text-blue-900 dark:bg-blue-900/20 dark:border-blue-400 dark:text-blue-100`;
+    }
+
+    return `${baseClasses} bg-white border-gray-200 hover:border-blue-300 hover:bg-blue-50/50 dark:bg-gray-800 dark:border-gray-600 dark:hover:border-blue-400 dark:hover:bg-blue-900/10`;
+  }, [isSlotFull, isSelected]);
+
+  const badgeVariant = useMemo(() => {
+    if (isSlotFull) return 'destructive';
+    if (isSelected) return 'default';
+    return 'outline';
+  }, [isSlotFull, isSelected]);
+
+  const badgeText = useMemo(() => {
+    if (isSlotFull) return '満席';
+    if (isSelected) return '選択中';
+    return '空きあり';
+  }, [isSlotFull, isSelected]);
+
+  return (
+    <div className={cardClassName} onClick={handleClick}>
+      <div className="flex items-center justify-between mb-3">
+        <h4 className="font-semibold text-lg dark:text-white">
+          枠 {index + 1}
+        </h4>
+        <Badge variant={badgeVariant} className="text-sm">
+          {badgeText}
+        </Badge>
+      </div>
+
+      <div className="grid grid-cols-3 gap-4 text-sm">
+        <div className="text-center">
+          <div className="flex items-center justify-center gap-1 text-gray-600 dark:text-gray-400 mb-1">
+            <Clock className="h-4 w-4" />
+            <span>時間</span>
+          </div>
+          <div className="font-medium dark:text-white">
+            {formatTimeLocalized(slotStartTime, 'ja')} -{' '}
+            {formatTimeLocalized(slotEndTime, 'ja')}
+          </div>
+        </div>
+
+        <div className="text-center">
+          <div className="flex items-center justify-center gap-1 text-gray-600 dark:text-gray-400 mb-1">
+            <UsersIcon className="h-4 w-4" />
+            <span>参加者</span>
+          </div>
+          <div className="font-medium dark:text-white">
+            {slot.current_participants}/{slot.max_participants}人
+          </div>
+        </div>
+
+        <div className="text-center">
+          <div className="flex items-center justify-center gap-1 text-gray-600 dark:text-gray-400 mb-1">
+            <CircleDollarSignIcon className="h-4 w-4" />
+            <span>料金</span>
+          </div>
+          <div className="font-medium dark:text-white">
+            {slot.price_per_person === 0
+              ? '無料'
+              : `¥${slot.price_per_person.toLocaleString()}`}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+});
 
 // セッション情報表示コンポーネント
 function SessionInfoDisplay({
