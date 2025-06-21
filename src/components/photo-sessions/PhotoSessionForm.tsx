@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -100,6 +100,42 @@ export function PhotoSessionForm({
     setFormData(prev => ({ ...prev, booking_type: bookingType }));
   };
 
+  // 撮影枠から自動で開始・終了日時を計算
+  const calculateDateTimeFromSlots = useCallback(() => {
+    if (!photoSessionSlots || photoSessionSlots.length === 0) {
+      return;
+    }
+
+    const sortedSlots = [...photoSessionSlots].sort(
+      (a, b) =>
+        new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
+    );
+
+    const firstSlot = sortedSlots[0];
+    const lastSlot = sortedSlots[sortedSlots.length - 1];
+
+    if (firstSlot && lastSlot) {
+      const startTime = new Date(firstSlot.start_time);
+      const endTime = new Date(lastSlot.end_time);
+
+      setFormData(prev => ({
+        ...prev,
+        start_time: startTime.toISOString().slice(0, 16),
+        end_time: endTime.toISOString().slice(0, 16),
+      }));
+    }
+  }, [photoSessionSlots]);
+
+  // 撮影枠変更時に自動で日時を更新
+  useEffect(() => {
+    if (photoSessionSlots && photoSessionSlots.length > 0) {
+      calculateDateTimeFromSlots();
+    }
+  }, [photoSessionSlots, calculateDateTimeFromSlots]);
+
+  // 撮影枠があるかどうかの判定
+  const hasSlots = photoSessionSlots && photoSessionSlots.length > 0;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -131,10 +167,45 @@ export function PhotoSessionForm({
       return;
     }
 
-    if (!formData.start_time || !formData.end_time) {
+    // 撮影枠がない場合のみ日時バリデーションを実行
+    if (!hasSlots) {
+      if (!formData.start_time || !formData.end_time) {
+        toast({
+          title: tErrors('title'),
+          description: t('form.validation.dateTimeRequired'),
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      const startTime = new Date(formData.start_time);
+      const endTime = new Date(formData.end_time);
+      const now = new Date();
+
+      if (startTime <= now) {
+        toast({
+          title: tErrors('title'),
+          description: t('form.validation.startTimeInvalid'),
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      if (endTime <= startTime) {
+        toast({
+          title: tErrors('title'),
+          description: t('form.validation.endTimeInvalid'),
+          variant: 'destructive',
+        });
+        return;
+      }
+    }
+
+    // 撮影枠がある場合でも、自動計算された日時の確認
+    if (hasSlots && (!formData.start_time || !formData.end_time)) {
       toast({
         title: tErrors('title'),
-        description: t('form.validation.dateTimeRequired'),
+        description: '撮影枠を設定してください。日時が自動計算されます。',
         variant: 'destructive',
       });
       return;
@@ -142,31 +213,10 @@ export function PhotoSessionForm({
 
     const startTime = new Date(formData.start_time);
     const endTime = new Date(formData.end_time);
-    const now = new Date();
-
-    if (startTime <= now) {
-      toast({
-        title: tErrors('title'),
-        description: t('form.validation.startTimeInvalid'),
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    if (endTime <= startTime) {
-      toast({
-        title: tErrors('title'),
-        description: t('form.validation.endTimeInvalid'),
-        variant: 'destructive',
-      });
-      return;
-    }
 
     setIsLoading(true);
     try {
       // 撮影枠がある場合とない場合で使用するactionを切り替え
-      const hasSlots = photoSessionSlots && photoSessionSlots.length > 0;
-
       if (hasSlots) {
         // 撮影枠制撮影会の場合
         const sessionWithSlotsData: PhotoSessionWithSlotsData = {
@@ -392,41 +442,97 @@ export function PhotoSessionForm({
           <div className="space-y-4">
             <h3 className="text-lg font-medium">{t('form.dateTimeInfo')}</h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label
-                  htmlFor="start_time"
-                  className="block text-sm font-medium mb-2"
-                >
-                  {t('form.startTimeLabel')} {t('form.required')}
-                </label>
-                <Input
-                  id="start_time"
-                  name="start_time"
-                  type="datetime-local"
-                  value={formData.start_time}
-                  onChange={handleInputChange}
-                  required
-                />
+            {hasSlots ? (
+              // 撮影枠がある場合は自動計算された日時を表示
+              <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                <div className="flex items-start space-x-2">
+                  <div className="text-blue-600 dark:text-blue-400 mt-0.5">
+                    ℹ️
+                  </div>
+                  <div className="text-sm text-blue-700 dark:text-blue-300">
+                    <p className="font-medium mb-2">
+                      撮影枠から自動計算されています
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-xs font-medium mb-1">開始日時</p>
+                        <p className="text-sm font-mono bg-blue-100 dark:bg-blue-800 px-2 py-1 rounded">
+                          {formData.start_time
+                            ? new Date(formData.start_time).toLocaleString(
+                                'ja-JP',
+                                {
+                                  year: 'numeric',
+                                  month: '2-digit',
+                                  day: '2-digit',
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                }
+                              )
+                            : '撮影枠を設定してください'}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium mb-1">終了日時</p>
+                        <p className="text-sm font-mono bg-blue-100 dark:bg-blue-800 px-2 py-1 rounded">
+                          {formData.end_time
+                            ? new Date(formData.end_time).toLocaleString(
+                                'ja-JP',
+                                {
+                                  year: 'numeric',
+                                  month: '2-digit',
+                                  day: '2-digit',
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                }
+                              )
+                            : '撮影枠を設定してください'}
+                        </p>
+                      </div>
+                    </div>
+                    <p className="text-xs mt-2 opacity-75">
+                      開始日時は最初の撮影枠の開始時刻、終了日時は最後の撮影枠の終了時刻が自動設定されます
+                    </p>
+                  </div>
+                </div>
               </div>
+            ) : (
+              // 撮影枠がない場合は手動入力
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label
+                    htmlFor="start_time"
+                    className="block text-sm font-medium mb-2"
+                  >
+                    {t('form.startTimeLabel')} {t('form.required')}
+                  </label>
+                  <Input
+                    id="start_time"
+                    name="start_time"
+                    type="datetime-local"
+                    value={formData.start_time}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
 
-              <div>
-                <label
-                  htmlFor="end_time"
-                  className="block text-sm font-medium mb-2"
-                >
-                  {t('form.endTimeLabel')} {t('form.required')}
-                </label>
-                <Input
-                  id="end_time"
-                  name="end_time"
-                  type="datetime-local"
-                  value={formData.end_time}
-                  onChange={handleInputChange}
-                  required
-                />
+                <div>
+                  <label
+                    htmlFor="end_time"
+                    className="block text-sm font-medium mb-2"
+                  >
+                    {t('form.endTimeLabel')} {t('form.required')}
+                  </label>
+                  <Input
+                    id="end_time"
+                    name="end_time"
+                    type="datetime-local"
+                    value={formData.end_time}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* 参加者・料金情報 */}
