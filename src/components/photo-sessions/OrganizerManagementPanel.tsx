@@ -197,48 +197,126 @@ export function OrganizerManagementPanel({
       {hasSlots && (
         <Card>
           <CardHeader>
-            <CardTitle>撮影枠別予約状況</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <CalendarIcon className="h-5 w-5" />
+              撮影枠別予約状況
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {slots.map((slot, index) => (
-                <div
-                  key={slot.id}
-                  className="flex items-center justify-between p-3 border rounded-lg"
-                >
-                  <div className="flex items-center gap-3">
-                    <Badge variant="outline">枠 {index + 1}</Badge>
-                    <div>
-                      <p className="font-medium">
-                        {formatDate(new Date(slot.start_time), 'short')}{' '}
-                        {formatTime(new Date(slot.start_time))} -{' '}
-                        {formatTime(new Date(slot.end_time))}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        ¥
-                        {slot.price_per_person?.toLocaleString() ||
-                          session.price_per_person.toLocaleString()}
-                      </p>
+            <div className="space-y-4">
+              {slots.map(slot => {
+                const isFullyBooked =
+                  slot.current_participants >= slot.max_participants;
+                const bookingRate =
+                  slot.max_participants > 0
+                    ? Math.round(
+                        (slot.current_participants / slot.max_participants) *
+                          100
+                      )
+                    : 0;
+
+                return (
+                  <div
+                    key={slot.id}
+                    className={`w-full p-4 border-2 rounded-xl transition-all duration-200 ${
+                      isFullyBooked
+                        ? 'border-red-200 bg-red-50/50'
+                        : bookingRate >= 70
+                          ? 'border-yellow-200 bg-yellow-50/50'
+                          : 'border-green-200 bg-green-50/50'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <Badge
+                          variant="secondary"
+                          className={`px-3 py-1 font-medium ${
+                            isFullyBooked
+                              ? 'bg-red-100 text-red-800'
+                              : bookingRate >= 70
+                                ? 'bg-yellow-100 text-yellow-800'
+                                : 'bg-green-100 text-green-800'
+                          }`}
+                        >
+                          枠 {slot.slot_number}
+                        </Badge>
+                        <div className="text-lg font-semibold text-gray-900">
+                          {formatDate(new Date(slot.start_time), 'short')}{' '}
+                          {formatTime(new Date(slot.start_time))} -{' '}
+                          {formatTime(new Date(slot.end_time))}
+                        </div>
+                      </div>
+                      <Badge
+                        variant={isFullyBooked ? 'destructive' : 'default'}
+                        className="px-3 py-1 text-sm font-medium"
+                      >
+                        {isFullyBooked ? '満席' : '空きあり'}
+                      </Badge>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                      <div className="flex items-center gap-2">
+                        <UsersIcon className="h-4 w-4 text-gray-500" />
+                        <span className="text-sm text-gray-600">参加者</span>
+                        <span className="font-bold text-gray-900">
+                          {slot.current_participants}/{slot.max_participants}人
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <BarChart3Icon className="h-4 w-4 text-gray-500" />
+                        <span className="text-sm text-gray-600">予約率</span>
+                        <span className="font-bold text-gray-900">
+                          {bookingRate}%
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-600">料金</span>
+                        <span className="font-bold text-gray-900">
+                          ¥
+                          {(
+                            slot.price_per_person || session.price_per_person
+                          ).toLocaleString()}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-600">収益</span>
+                        <span className="font-bold text-green-600">
+                          ¥
+                          {(
+                            slot.current_participants *
+                            (slot.price_per_person || session.price_per_person)
+                          ).toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* 予約率の視覚的表示 */}
+                    <div className="mt-3">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs text-gray-500">予約進捗</span>
+                        <span className="text-xs font-medium text-gray-700">
+                          {bookingRate}%
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div
+                          className={`h-2 rounded-full transition-all duration-300 ${
+                            isFullyBooked
+                              ? 'bg-red-500'
+                              : bookingRate >= 70
+                                ? 'bg-yellow-500'
+                                : 'bg-green-500'
+                          }`}
+                          style={{ width: `${bookingRate}%` }}
+                        />
+                      </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm">
-                      {slot.current_participants}/{slot.max_participants}
-                    </span>
-                    <Badge
-                      variant={
-                        slot.current_participants >= slot.max_participants
-                          ? 'destructive'
-                          : 'default'
-                      }
-                    >
-                      {slot.current_participants >= slot.max_participants
-                        ? '満席'
-                        : '空きあり'}
-                    </Badge>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </CardContent>
         </Card>
