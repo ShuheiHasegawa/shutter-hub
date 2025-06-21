@@ -30,6 +30,7 @@ import { BookingTypeSelector } from '@/components/photo-sessions/BookingTypeSele
 import { BookingSettingsForm } from '@/components/photo-sessions/BookingSettingsForm';
 import PhotoSessionSlotForm from '@/components/photo-sessions/PhotoSessionSlotForm';
 import { Label } from '@/components/ui/label';
+import { FormattedDateTime } from '@/components/ui/formatted-display';
 
 interface PhotoSessionFormProps {
   initialData?: PhotoSessionWithOrganizer;
@@ -465,41 +466,27 @@ export function PhotoSessionForm({
                       <div>
                         <p className="text-xs font-medium mb-1">開始日時</p>
                         <p className="text-sm font-mono bg-blue-100 dark:bg-blue-800 px-2 py-1 rounded">
-                          {formData.start_time
-                            ? (() => {
-                                // datetime-local形式の文字列を解析して表示
-                                const dateTime = formData.start_time;
-                                if (dateTime.includes('T')) {
-                                  const [datePart, timePart] =
-                                    dateTime.split('T');
-                                  const [year, month, day] =
-                                    datePart.split('-');
-                                  const [hour, minute] = timePart.split(':');
-                                  return `${year}年${month}月${day}日 ${hour}:${minute}`;
-                                }
-                                return dateTime;
-                              })()
-                            : '撮影枠を設定してください'}
+                          {formData.start_time ? (
+                            <FormattedDateTime
+                              value={formData.start_time}
+                              format="datetime-long"
+                            />
+                          ) : (
+                            '撮影枠を設定してください'
+                          )}
                         </p>
                       </div>
                       <div>
                         <p className="text-xs font-medium mb-1">終了日時</p>
                         <p className="text-sm font-mono bg-blue-100 dark:bg-blue-800 px-2 py-1 rounded">
-                          {formData.end_time
-                            ? (() => {
-                                // datetime-local形式の文字列を解析して表示
-                                const dateTime = formData.end_time;
-                                if (dateTime.includes('T')) {
-                                  const [datePart, timePart] =
-                                    dateTime.split('T');
-                                  const [year, month, day] =
-                                    datePart.split('-');
-                                  const [hour, minute] = timePart.split(':');
-                                  return `${year}年${month}月${day}日 ${hour}:${minute}`;
-                                }
-                                return dateTime;
-                              })()
-                            : '撮影枠を設定してください'}
+                          {formData.end_time ? (
+                            <FormattedDateTime
+                              value={formData.end_time}
+                              format="datetime-long"
+                            />
+                          ) : (
+                            '撮影枠を設定してください'
+                          )}
                         </p>
                       </div>
                     </div>

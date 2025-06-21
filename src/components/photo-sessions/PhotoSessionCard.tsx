@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { formatDateLocalized, formatTimeLocalized } from '@/lib/utils/date';
 import {
   CalendarIcon,
@@ -14,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useTranslations, useLocale } from 'next-intl';
 import type { PhotoSessionWithOrganizer } from '@/types/database';
+import { FormattedPrice } from '@/components/ui/formatted-display';
 
 interface PhotoSessionCardProps {
   session: PhotoSessionWithOrganizer;
@@ -156,9 +158,14 @@ export function PhotoSessionCard({
                 <div className="flex items-center">
                   <CircleDollarSignIcon className="w-5 h-5 mr-1 text-orange-500" />
                   <span className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {session.price_per_person === 0
-                      ? tBooking('free')
-                      : `¥${session.price_per_person.toLocaleString()}`}
+                    {session.price_per_person === 0 ? (
+                      tBooking('free')
+                    ) : (
+                      <FormattedPrice
+                        value={session.price_per_person}
+                        format="simple"
+                      />
+                    )}
                   </span>
                 </div>
 
@@ -236,9 +243,14 @@ export function PhotoSessionCard({
                 <div className="flex items-center">
                   <CircleDollarSignIcon className="w-5 h-5 mr-1 text-orange-500" />
                   <span className="text-xl font-bold text-gray-900 dark:text-white">
-                    {session.price_per_person === 0
-                      ? tBooking('free')
-                      : `¥${session.price_per_person.toLocaleString()}`}
+                    {session.price_per_person === 0 ? (
+                      tBooking('free')
+                    ) : (
+                      <FormattedPrice
+                        value={session.price_per_person}
+                        format="simple"
+                      />
+                    )}
                   </span>
                 </div>
               </div>
@@ -365,9 +377,14 @@ export function PhotoSessionCard({
                 </span>
               </div>
               <div className="text-sm font-bold text-gray-900 mt-auto">
-                {session.price_per_person === 0
-                  ? tBooking('free')
-                  : `¥${session.price_per_person.toLocaleString()}`}
+                {session.price_per_person === 0 ? (
+                  tBooking('free')
+                ) : (
+                  <FormattedPrice
+                    value={session.price_per_person}
+                    format="simple"
+                  />
+                )}
               </div>
             </div>
           </div>
@@ -556,9 +573,14 @@ export function PhotoSessionCard({
                   </span>
                 </div>
                 <div className="text-lg font-bold text-gray-900 mt-auto">
-                  {session.price_per_person === 0
-                    ? tBooking('free')
-                    : `¥${session.price_per_person.toLocaleString()}`}
+                  {session.price_per_person === 0 ? (
+                    tBooking('free')
+                  ) : (
+                    <FormattedPrice
+                      value={session.price_per_person}
+                      format="simple"
+                    />
+                  )}
                 </div>
               </div>
             </div>
@@ -679,9 +701,14 @@ export function PhotoSessionCard({
           <div className="flex items-center gap-2">
             <CircleDollarSignIcon className="h-4 w-4 text-muted-foreground" />
             <span>
-              {session.price_per_person === 0
-                ? tBooking('free')
-                : `¥${session.price_per_person.toLocaleString()}`}
+              {session.price_per_person === 0 ? (
+                tBooking('free')
+              ) : (
+                <FormattedPrice
+                  value={session.price_per_person}
+                  format="simple"
+                />
+              )}
             </span>
           </div>
         </div>

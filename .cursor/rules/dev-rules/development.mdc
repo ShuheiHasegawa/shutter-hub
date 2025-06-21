@@ -1859,3 +1859,167 @@ migration: [マイグレーション追加・更新]
 - [ ] 工数・スケジュール調整が必要
 
 この曖昧さ解消プロセスにより、手戻りを最小化し、効率的な開発を実現します。
+
+## 日時・価格表示統一ルール
+
+### **基本原則**
+- **日時・価格表示は必ず共通コンポーネントを使用する**
+- **個別の`toLocaleString`、`toLocaleDateString`、`toLocaleTimeString`の使用を禁止**
+- **表記の統一性とメンテナンス性を最優先**
+
+### **必須使用コンポーネント**
+```typescript
+// 日時表示
+import { FormattedDateTime, DateTime } from '@/components/ui/formatted-display';
+
+// 価格表示
+import { FormattedPrice, Price } from '@/components/ui/formatted-display';
+```
+
+### **日時表示ルール**
+
+#### **✅ 正しい使用例**
+```typescript
+// 基本的な日時表示
+<FormattedDateTime value={new Date()} format="datetime-long" />
+<FormattedDateTime value="2024-12-01T14:30" format="time-range" endValue="2024-12-01T16:00" />
+
+// 短縮形での使用
+<DateTime value={session.start_time} format="date-long" />
+<DateTime value={slot.start_time} format="time" endValue={slot.end_time} />
+
+// 相対時間表示
+<DateTime value={message.created_at} format="relative" />
+```
+
+#### **❌ 禁止される使用例**
+```typescript
+// これらの使用は禁止
+{new Date().toLocaleString()}
+{new Date().toLocaleDateString('ja-JP')}
+{new Date().toLocaleTimeString()}
+{startDate.toLocaleString('ja-JP', { year: 'numeric', month: 'long' })}
+
+// date-fnsの直接使用も避ける
+{format(new Date(), 'PPP', { locale: ja })}
+```
+
+### **価格表示ルール**
+
+#### **✅ 正しい使用例**
+```typescript
+// 基本的な価格表示
+<FormattedPrice value={5000} format="simple" />
+<FormattedPrice value={5000} format="with-unit" unit="/人" />
+
+// 短縮形での使用
+<Price value={session.price_per_person} format="with-unit" unit="/人" />
+<Price value={3000} format="range" maxValue={8000} />
+
+// 税込表示
+<Price value={5000} format="breakdown" />
+```
+
+#### **❌ 禁止される使用例**
+```typescript
+// これらの使用は禁止
+¥{price.toLocaleString()}
+¥{session.price_per_person.toLocaleString()}/人
+{amount.toLocaleString()}円
+
+// 手動での価格フォーマット
+`¥${price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`
+```
+
+### **フォーマット種類一覧**
+
+#### **日時フォーマット**
+```typescript
+type DateTimeFormat = 
+  | 'date-short'        // 2024/12/1
+  | 'date-long'         // 2024年12月1日日曜日
+  | 'time'              // 14:30
+  | 'datetime-short'    // 2024/12/1 14:30
+  | 'datetime-long'     // 2024年12月1日日曜日 14:30
+  | 'date-only'         // 12月1日
+  | 'time-range'        // 14:30-16:00
+  | 'relative'          // 3時間前
+  | 'weekday'           // 日曜日
+```
+
+#### **価格フォーマット**
+```typescript
+type PriceFormat = 
+  | 'simple'            // ¥5,000
+  | 'with-unit'         // ¥5,000/人
+  | 'range'             // ¥3,000-¥8,000
+  | 'breakdown'         // ¥5,000 (税込)
+```
+
+### **実装時の必須チェック**
+```yaml
+pre_implementation_check:
+  question_yourself:
+    - "日時・価格表示でtoLocaleStringを使用していないか？"
+    - "FormattedDateTime/FormattedPriceコンポーネントを使用しているか？"
+    - "適切なフォーマットを選択しているか？"
+    - "多言語対応が考慮されているか？"
+  
+  if_uncertain:
+    - "共通コンポーネントの使用を最優先する"
+    - "新しいフォーマットが必要な場合は共通コンポーネントに追加"
+    - "既存の個別実装は見つけ次第共通コンポーネントに置き換える"
+```
+
+### **移行ガイドライン**
+
+#### **段階的移行手順**
+1. **新規実装**: 必ず共通コンポーネントを使用
+2. **既存修正時**: 見つけ次第共通コンポーネントに置き換え
+3. **一括置換**: 時間がある時に既存箇所を一括で置き換え
+
+#### **移行例**
+```typescript
+// Before (禁止)
+{new Date(session.start_time).toLocaleString('ja-JP', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+  weekday: 'long',
+  hour: '2-digit',
+  minute: '2-digit',
+})}
+
+// After (推奨)
+<DateTime value={session.start_time} format="datetime-long" />
+
+// Before (禁止)
+¥{session.price_per_person.toLocaleString()}/人
+
+// After (推奨)
+<Price value={session.price_per_person} format="with-unit" unit="/人" />
+```
+
+### **利点**
+- **表記統一**: 全画面で一貫した日時・価格表示
+- **メンテナンス性**: 一箇所の修正で全体に反映
+- **多言語対応**: 自動的なロケール対応
+- **アクセシビリティ**: セマンティックHTMLとARIA属性
+- **型安全性**: TypeScriptによる型チェック
+- **バグ防止**: 個別実装によるフォーマット不整合を防止
+
+### **違反時の対応**
+```yaml
+violation_response:
+  immediate_action:
+    - "個別のtoLocaleString使用を即座に共通コンポーネントに置き換え"
+    - "なぜ共通コンポーネントを使用しなかったかを報告"
+    - "再発防止策を検討"
+  
+  prevention:
+    - "実装前に必ずこのルールを確認"
+    - "迷った場合は必ず共通コンポーネントを使用"
+    - "新しいフォーマットが必要な場合は共通コンポーネントに追加提案"
+```
+
+この統一ルールにより、プロジェクト全体で一貫した日時・価格表示を実現し、メンテナンス性とユーザビリティを大幅に向上させます。
