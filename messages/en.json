@@ -1209,6 +1209,11 @@
       "addMembersError": "Failed to add members",
       "removeMemberError": "Failed to remove member",
       "leaveGroupError": "Failed to leave group",
+      "attachFile": "Attach File",
+      "removeFile": "Remove File",
+      "fileSizeError": "File size exceeds limit",
+      "fileTypeError": "Unsupported file format",
+      "fileUploadError": "Failed to upload file",
       "fileUpload": {
         "title": "Upload Files",
         "description": "Select files or drag & drop here",

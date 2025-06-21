@@ -808,7 +808,12 @@
       "updateSettingsError": "設定の更新に失敗しました",
       "addMembersError": "メンバーの追加に失敗しました",
       "removeMemberError": "メンバーの削除に失敗しました",
-      "leaveGroupError": "グループの退出に失敗しました"
+      "leaveGroupError": "グループの退出に失敗しました",
+      "attachFile": "ファイルを添付",
+      "removeFile": "ファイルを削除",
+      "fileSizeError": "ファイルサイズが制限を超えています",
+      "fileTypeError": "サポートされていないファイル形式です",
+      "fileUploadError": "ファイルのアップロードに失敗しました"
     }
   },
   "adminLottery": {

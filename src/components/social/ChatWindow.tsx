@@ -21,6 +21,9 @@ import {
   Video,
   Check,
   CheckCheck,
+  X,
+  Image,
+  File,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -37,9 +40,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { ja, enUS } from 'date-fns/locale';
 import { useLocale } from 'next-intl';
 import { toast } from 'sonner';
-// Note: FileUpload and MessageAttachment are prepared for future file attachment feature
-// import { FileUpload } from './FileUpload';
-// import { MessageAttachment } from './MessageAttachment';
+import { formatFileSize, isImageFile } from '@/lib/storage/message-files';
 
 interface ChatWindowProps {
   conversation: ConversationWithUsers;
@@ -62,8 +63,10 @@ export function ChatWindow({
   const [messageText, setMessageText] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // 相手ユーザーを取得
   const otherUser = conversation.is_group
@@ -106,19 +109,52 @@ export function ChatWindow({
     }
   };
 
+  // ファイル選択処理
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+    }
+  };
+
+  // ファイル添付ボタンクリック
+  const handleAttachClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  // ファイル削除
+  const handleRemoveFile = () => {
+    setSelectedFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   // メッセージ送信
   const handleSendMessage = async () => {
-    if (!messageText.trim() || sending) return;
+    if ((!messageText.trim() && !selectedFile) || sending) return;
 
     const messageContent = messageText.trim();
+    const fileToSend = selectedFile;
+
     setMessageText('');
+    setSelectedFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
     setSending(true);
 
     try {
       const request: SendMessageRequest = {
         conversation_id: conversation.id,
-        content: messageContent,
-        message_type: 'text',
+        content:
+          messageContent || (fileToSend ? `[ファイル] ${fileToSend.name}` : ''),
+        message_type: fileToSend
+          ? fileToSend.type.startsWith('image/')
+            ? 'image'
+            : 'file'
+          : 'text',
+        file: fileToSend || undefined,
       };
 
       const result = await sendMessage(request);
@@ -146,11 +182,13 @@ export function ChatWindow({
       } else {
         toast.error(result.message || t('errorSendingMessage'));
         setMessageText(messageContent); // 元に戻す
+        setSelectedFile(fileToSend); // ファイルも元に戻す
       }
     } catch (error) {
       console.error('Send message error:', error);
       toast.error(t('errorSendingMessage'));
       setMessageText(messageContent); // 元に戻す
+      setSelectedFile(fileToSend); // ファイルも元に戻す
     } finally {
       setSending(false);
     }
@@ -340,7 +378,57 @@ export function ChatWindow({
                             : 'bg-muted'
                         )}
                       >
-                        <p className="text-sm">{message.content}</p>
+                        {/* ファイル表示 */}
+                        {message.file_url && (
+                          <div className="mb-2">
+                            {message.message_type === 'image' ? (
+                              <div className="relative">
+                                <img
+                                  src={message.file_url}
+                                  alt={message.file_name || 'Image'}
+                                  className="max-w-xs max-h-64 rounded-lg cursor-pointer"
+                                  onClick={() =>
+                                    window.open(message.file_url, '_blank')
+                                  }
+                                />
+                                {message.file_name && (
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    {message.file_name}
+                                  </p>
+                                )}
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-2 p-2 bg-background/10 rounded-lg">
+                                <File className="h-4 w-4" />
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium truncate">
+                                    {message.file_name || 'ファイル'}
+                                  </p>
+                                  {message.file_size && (
+                                    <p className="text-xs text-muted-foreground">
+                                      {formatFileSize(message.file_size)}
+                                    </p>
+                                  )}
+                                </div>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() =>
+                                    window.open(message.file_url, '_blank')
+                                  }
+                                  className="h-6 w-6 p-0"
+                                >
+                                  <ArrowLeft className="h-3 w-3 rotate-180" />
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* テキストコンテンツ */}
+                        {message.content && (
+                          <p className="text-sm">{message.content}</p>
+                        )}
                       </div>
 
                       {/* メッセージ状態 */}
@@ -375,10 +463,54 @@ export function ChatWindow({
 
       {/* メッセージ入力エリア */}
       <div className="p-4 border-t bg-background">
+        {/* ファイルプレビュー */}
+        {selectedFile && (
+          <div className="mb-3 p-3 bg-muted rounded-lg">
+            <div className="flex items-center gap-2">
+              {isImageFile(selectedFile.type) ? (
+                <Image className="h-4 w-4" />
+              ) : (
+                <File className="h-4 w-4" />
+              )}
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">
+                  {selectedFile.name}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {formatFileSize(selectedFile.size)}
+                </p>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleRemoveFile}
+                className="h-6 w-6 p-0"
+              >
+                <X className="h-3 w-3" />
+              </Button>
+            </div>
+          </div>
+        )}
+
         <div className="flex items-end gap-2">
-          <Button variant="ghost" size="sm" disabled>
+          {/* ファイル添付ボタン */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleAttachClick}
+            disabled={sending}
+          >
             <Paperclip className="h-4 w-4" />
           </Button>
+
+          {/* 隠しファイル入力 */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            onChange={handleFileSelect}
+            accept="image/*,.pdf,.txt,.doc,.docx"
+            className="hidden"
+          />
 
           <div className="flex-1 flex gap-2">
             <Input
@@ -391,7 +523,7 @@ export function ChatWindow({
             />
             <Button
               onClick={handleSendMessage}
-              disabled={!messageText.trim() || sending}
+              disabled={(!messageText.trim() && !selectedFile) || sending}
               size="sm"
             >
               <Send className="h-4 w-4" />

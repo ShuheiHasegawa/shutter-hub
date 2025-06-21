@@ -115,21 +115,31 @@ export async function sendMessage(
       };
     }
 
-    // ファイルアップロード処理（今後実装）
+    // ファイルアップロード処理
     let fileUrl: string | undefined;
     let fileName: string | undefined;
     let fileSize: number | undefined;
     let fileType: string | undefined;
 
     if (request.file) {
-      // TODO: ファイルアップロード処理を実装
-      // const uploadResult = await uploadMessageFile(request.file);
-      // if (uploadResult.success) {
-      //   fileUrl = uploadResult.url;
-      //   fileName = request.file.name;
-      //   fileSize = request.file.size;
-      //   fileType = request.file.type;
-      // }
+      // 動的インポートでクライアント関数を使用
+      const { uploadMessageFile } = await import('@/lib/storage/message-files');
+      const uploadResult = await uploadMessageFile(
+        request.file,
+        conversationId
+      );
+
+      if (!uploadResult.success) {
+        return {
+          success: false,
+          message: uploadResult.error || 'ファイルのアップロードに失敗しました',
+        };
+      }
+
+      fileUrl = uploadResult.url;
+      fileName = request.file.name;
+      fileSize = request.file.size;
+      fileType = request.file.type;
     }
 
     // メッセージを挿入
