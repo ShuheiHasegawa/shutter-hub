@@ -38,6 +38,7 @@ interface PhotoSessionSlotFormProps {
   onSlotsChange: (slots: PhotoSessionSlot[]) => void;
   baseDate?: string; // YYYY-MM-DD format
   locale?: string;
+  allowMultipleBookings?: boolean; // 複数予約許可設定
 }
 
 export default function PhotoSessionSlotForm({
@@ -45,6 +46,7 @@ export default function PhotoSessionSlotForm({
   onSlotsChange,
   baseDate,
   locale = 'ja',
+  allowMultipleBookings = false,
 }: PhotoSessionSlotFormProps) {
   const [slotForms, setSlotForms] = useState<SlotFormData[]>([
     {
@@ -318,6 +320,11 @@ export default function PhotoSessionSlotForm({
       updateParentSlots(slotForms);
     }
   }, [slotForms, updateParentSlots]); // slotFormsとupdateParentSlotsの変更を監視
+
+  // 複数予約許可設定による将来の機能拡張用
+  // allowMultipleBookingsがtrueの場合、将来的に撮影枠レベルでの割引設定UIを表示する予定
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const shouldShowDiscountSettings = allowMultipleBookings && false; // 現在は未実装
 
   return (
     <div className="space-y-4">

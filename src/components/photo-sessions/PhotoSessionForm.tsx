@@ -667,71 +667,76 @@ export function PhotoSessionForm({
                   : new Date().toISOString().split('T')[0]
               }
               locale="ja"
+              allowMultipleBookings={formData.allow_multiple_bookings}
             />
           </div>
 
-          {/* 複数枠割引設定 */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">複数枠割引設定</h3>
-            <p className="text-sm text-muted-foreground">
-              複数の撮影枠を予約した場合に適用される割引を設定できます
-            </p>
+          {/* 複数枠割引設定 - 複数予約が許可されている場合のみ表示 */}
+          {formData.allow_multiple_bookings && (
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">複数枠割引設定</h3>
+              <p className="text-sm text-muted-foreground">
+                複数の撮影枠を予約した場合に適用される割引を設定できます
+              </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Label htmlFor="multi_slot_discount_threshold">
+                    適用条件（枠数）
+                  </Label>
+                  <Input
+                    id="multi_slot_discount_threshold"
+                    type="number"
+                    min="2"
+                    max="10"
+                    placeholder="例: 2"
+                    className="mt-1"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    この枠数以上で割引適用
+                  </p>
+                </div>
+
+                <div>
+                  <Label htmlFor="multi_slot_discount_type">割引タイプ</Label>
+                  <select
+                    id="multi_slot_discount_type"
+                    className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                  >
+                    <option value="none">割引なし</option>
+                    <option value="percentage">パーセンテージ割引</option>
+                    <option value="fixed_amount">固定金額割引</option>
+                  </select>
+                </div>
+
+                <div>
+                  <Label htmlFor="multi_slot_discount_value">割引値</Label>
+                  <Input
+                    id="multi_slot_discount_value"
+                    type="number"
+                    min="0"
+                    placeholder="例: 10 または 1000"
+                    className="mt-1"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    %または円で入力
+                  </p>
+                </div>
+              </div>
+
               <div>
-                <Label htmlFor="multi_slot_discount_threshold">
-                  適用条件（枠数）
+                <Label htmlFor="multi_slot_discount_description">
+                  割引説明
                 </Label>
-                <Input
-                  id="multi_slot_discount_threshold"
-                  type="number"
-                  min="2"
-                  max="10"
-                  placeholder="例: 2"
+                <Textarea
+                  id="multi_slot_discount_description"
+                  placeholder="例: 2枠以上のご予約で10%割引！"
+                  rows={2}
                   className="mt-1"
                 />
-                <p className="text-xs text-muted-foreground mt-1">
-                  この枠数以上で割引適用
-                </p>
-              </div>
-
-              <div>
-                <Label htmlFor="multi_slot_discount_type">割引タイプ</Label>
-                <select
-                  id="multi_slot_discount_type"
-                  className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                >
-                  <option value="none">割引なし</option>
-                  <option value="percentage">パーセンテージ割引</option>
-                  <option value="fixed_amount">固定金額割引</option>
-                </select>
-              </div>
-
-              <div>
-                <Label htmlFor="multi_slot_discount_value">割引値</Label>
-                <Input
-                  id="multi_slot_discount_value"
-                  type="number"
-                  min="0"
-                  placeholder="例: 10 または 1000"
-                  className="mt-1"
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  %または円で入力
-                </p>
               </div>
             </div>
-
-            <div>
-              <Label htmlFor="multi_slot_discount_description">割引説明</Label>
-              <Textarea
-                id="multi_slot_discount_description"
-                placeholder="例: 2枠以上のご予約で10%割引！"
-                rows={2}
-                className="mt-1"
-              />
-            </div>
-          </div>
+          )}
 
           {/* 公開設定 */}
           <div className="space-y-4">
