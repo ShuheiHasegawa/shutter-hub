@@ -13,6 +13,7 @@ import { PhotoSessionSlot, DiscountType } from '@/types/photo-session';
 import { uploadPhotoSessionImage } from '@/lib/storage/photo-session-images';
 import { toast } from 'sonner';
 import { addMinutes, format, parse } from 'date-fns';
+import { PriceInput } from '@/components/ui/price-input';
 
 interface SlotFormData {
   slot_number: number;
@@ -505,21 +506,16 @@ export default function PhotoSessionSlotForm({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label>{t.pricePerPerson}</Label>
-                  <Input
-                    type="number"
-                    min="0"
-                    max="100000"
-                    step="100"
+                  <PriceInput
                     value={slot.price_per_person}
-                    onChange={e =>
+                    onChange={value =>
                       updateSlot(
                         index,
                         'price_per_person',
-                        parseInt(e.target.value) || 0
+                        parseInt(value) || 0
                       )
                     }
                     placeholder={t.priceInputPlaceholder}
-                    inputMode="numeric"
                   />
                 </div>
                 <div>

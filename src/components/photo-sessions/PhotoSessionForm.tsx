@@ -31,6 +31,7 @@ import { BookingSettingsForm } from '@/components/photo-sessions/BookingSettings
 import PhotoSessionSlotForm from '@/components/photo-sessions/PhotoSessionSlotForm';
 import { Label } from '@/components/ui/label';
 import { FormattedDateTime } from '@/components/ui/formatted-display';
+import { PriceInput } from '@/components/ui/price-input';
 
 interface PhotoSessionFormProps {
   initialData?: PhotoSessionWithOrganizer;
@@ -567,14 +568,16 @@ export function PhotoSessionForm({
                 >
                   {t('form.priceLabel')} {t('form.required')}
                 </label>
-                <Input
+                <PriceInput
                   id="price_per_person"
                   name="price_per_person"
-                  type="number"
-                  min="0"
-                  max="1000000"
                   value={formData.price_per_person}
-                  onChange={handleInputChange}
+                  onChange={value => {
+                    setFormData(prev => ({
+                      ...prev,
+                      price_per_person: parseInt(value) || 0,
+                    }));
+                  }}
                   required
                 />
               </div>

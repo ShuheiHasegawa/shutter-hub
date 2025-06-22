@@ -15,7 +15,8 @@
     "search": "検索",
     "filter": "フィルター",
     "sort": "並び替え",
-    "more": "もっと見る"
+    "more": "もっと見る",
+    "priceInputPlaceholder": "料金を入力してください"
   },
   "dashboard": {
     "loading": "読み込み中...",
