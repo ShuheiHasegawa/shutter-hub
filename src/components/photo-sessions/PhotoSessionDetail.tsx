@@ -33,6 +33,7 @@ import {
   checkUserParticipation,
   type PhotoSessionParticipant,
 } from '@/app/actions/photo-session-participants';
+import { usePhotoSessionBooking } from '@/hooks/usePhotoSessionBooking';
 
 import { SlotBookingFlow } from './SlotBookingFlow';
 
@@ -54,6 +55,13 @@ export function PhotoSessionDetail({
   );
   const [isParticipant, setIsParticipant] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  // 予約状態を管理するhook
+  const {
+    canBook: canBookFromHook,
+    reason,
+    isLoading: bookingLoading,
+  } = usePhotoSessionBooking(session);
 
   const startDate = new Date(session.start_time);
   const endDate = new Date(session.end_time);
@@ -133,27 +141,42 @@ export function PhotoSessionDetail({
 
   const hasSlots = slots && slots.length > 0;
 
-  // 予約可能状態の判定
-  const canBook =
-    !isOrganizer && isUpcoming && user && (hasSlots || !isParticipant);
+  // 予約可能状態の判定（hookの結果を使用）
+  const canBook = !isOrganizer && canBookFromHook;
   const available = session.max_participants - session.current_participants;
   const isFull = available === 0;
 
   // アクションバーのボタン設定
   const getActionBarButtons = (): ActionBarButton[] => {
-    if (isOrganizer || !user || !canBook) {
+    if (isOrganizer || !user) {
       return [];
+    }
+
+    // 予約できない場合は無効化されたボタンを表示
+    if (!canBook) {
+      return [
+        {
+          id: 'cannot-book',
+          label: reason || '予約できません',
+          variant: 'secondary',
+          onClick: () => {}, // 何もしない
+          disabled: true,
+          icon: <Calendar className="h-4 w-4" />,
+          className: 'bg-gray-400 text-gray-600 cursor-not-allowed',
+        },
+      ];
     }
 
     if (hasSlots) {
       return [
         {
           id: 'select-slot',
-          label: '時間枠を選択して予約',
+          label: bookingLoading ? '確認中...' : '時間枠を選択して予約',
           variant: 'default',
           onClick: () => {
             router.push(`?step=select`, { scroll: false });
           },
+          disabled: bookingLoading,
           icon: <Calendar className="h-4 w-4" />,
           className: 'bg-blue-600 hover:bg-blue-700',
         },
@@ -162,12 +185,16 @@ export function PhotoSessionDetail({
       return [
         {
           id: 'book-now',
-          label: isFull ? 'キャンセル待ちに登録' : '予約する',
+          label: bookingLoading
+            ? '確認中...'
+            : isFull
+              ? 'キャンセル待ちに登録'
+              : '予約する',
           variant: 'default',
           onClick: () => {
             router.push(`?step=select`, { scroll: false });
           },
-          disabled: false,
+          disabled: bookingLoading,
           icon: <CreditCard className="h-4 w-4" />,
           className: 'bg-blue-600 hover:bg-blue-700',
         },
@@ -499,10 +526,10 @@ export function PhotoSessionDetail({
       )}
 
       {/* 固定フッターがある場合のスペーサー */}
-      {canBook && <ActionBarSpacer />}
+      {!isOrganizer && user && <ActionBarSpacer />}
 
       {/* 固定フッターアクションバー */}
-      {canBook && (
+      {!isOrganizer && user && (
         <ActionBar
           actions={getActionBarButtons()}
           maxColumns={1}

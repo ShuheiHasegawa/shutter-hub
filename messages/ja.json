@@ -174,6 +174,13 @@
     "sessionEnded": "この撮影会は既に開始または終了しています",
     "notPublished": "この撮影会は公開されていません",
     "cannotBook": "予約できません",
+    "cannotBookReasons": {
+      "alreadyBooked": "既に予約済みです",
+      "sessionFull": "満席です",
+      "sessionEnded": "開始・終了済みです",
+      "notPublished": "非公開です",
+      "unknown": "予約できません"
+    },
     "participateQuestion": "この撮影会に参加しますか？",
     "bookingInProgress": "予約中...",
     "cancelInProgress": "キャンセル中...",

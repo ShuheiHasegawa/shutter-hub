@@ -178,6 +178,13 @@
     "sessionEnded": "This photo session has already started or ended",
     "notPublished": "This photo session is not published",
     "cannotBook": "Cannot book",
+    "cannotBookReasons": {
+      "alreadyBooked": "Already booked",
+      "sessionFull": "Session full",
+      "sessionEnded": "Session ended",
+      "notPublished": "Not published",
+      "unknown": "Cannot book"
+    },
     "participateQuestion": "Would you like to participate in this photo session?",
     "bookingInProgress": "Booking...",
     "cancelInProgress": "Canceling...",
