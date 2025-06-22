@@ -102,6 +102,48 @@ export async function createSlotBooking(
     throw new Error('ログインが必要です');
   }
 
+  // スロット情報を取得
+  const { data: slotData, error: slotError } = await supabase
+    .from('photo_session_slots')
+    .select(
+      `
+      *,
+      photo_session:photo_sessions!inner(
+        id,
+        allow_multiple_bookings,
+        title
+      )
+    `
+    )
+    .eq('id', slotId)
+    .single();
+
+  if (slotError || !slotData) {
+    console.error('Error fetching slot data:', slotError);
+    throw new Error('スロット情報の取得に失敗しました');
+  }
+
+  // 複数予約が許可されていない場合、既存の予約をチェック
+  if (!slotData.photo_session.allow_multiple_bookings) {
+    const { data: existingBookings, error: checkError } = await supabase
+      .from('bookings')
+      .select('id')
+      .eq('photo_session_id', slotData.photo_session_id)
+      .eq('user_id', user.id)
+      .eq('status', 'confirmed');
+
+    if (checkError) {
+      console.error('Error checking existing bookings:', checkError);
+      throw new Error('既存予約の確認に失敗しました');
+    }
+
+    if (existingBookings && existingBookings.length > 0) {
+      throw new Error(
+        `この撮影会「${slotData.photo_session.title}」には既に予約済みです。複数枠の予約は許可されていません。`
+      );
+    }
+  }
+
   const { data, error } = await supabase.rpc('create_slot_booking', {
     p_slot_id: slotId,
     p_user_id: user.id,
@@ -109,6 +151,15 @@ export async function createSlotBooking(
 
   if (error) {
     console.error('Error creating slot booking:', error);
+    // PostgreSQLの一意制約違反エラーの場合、より分かりやすいメッセージを表示
+    if (
+      error.code === '23505' &&
+      error.message?.includes('bookings_photo_session_id_user_id_key')
+    ) {
+      throw new Error(
+        'この撮影会には既に予約済みです。複数枠の予約は許可されていません。'
+      );
+    }
     throw new Error('予約の作成に失敗しました');
   }
 

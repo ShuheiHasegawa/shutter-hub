@@ -169,7 +169,11 @@ export function SlotBookingFlow({
               }
             } catch (err) {
               console.error('スロット予約エラー:', err);
-              errors.push('予期しないエラーが発生しました');
+              const errorMessage =
+                err instanceof Error
+                  ? err.message
+                  : '予期しないエラーが発生しました';
+              errors.push(errorMessage);
             }
           }
 
@@ -200,17 +204,30 @@ export function SlotBookingFlow({
             return;
           }
 
-          const result = await createSlotBooking(selectedSlotId);
-          if (result.success) {
-            navigateToStep('complete');
-            toast({
-              title: '予約が完了しました！',
-              description: '選択した時間枠での参加が確定しました',
-            });
-          } else {
+          try {
+            const result = await createSlotBooking(selectedSlotId);
+            if (result.success) {
+              navigateToStep('complete');
+              toast({
+                title: '予約が完了しました！',
+                description: '選択した時間枠での参加が確定しました',
+              });
+            } else {
+              toast({
+                title: 'エラー',
+                description: result.message || '予約に失敗しました',
+                variant: 'destructive',
+              });
+            }
+          } catch (err) {
+            console.error('スロット予約エラー:', err);
+            const errorMessage =
+              err instanceof Error
+                ? err.message
+                : '予期しないエラーが発生しました';
             toast({
               title: 'エラー',
-              description: result.message || '予約に失敗しました',
+              description: errorMessage,
               variant: 'destructive',
             });
           }
