@@ -20,6 +20,7 @@ import {
   ImageIcon,
   CreditCard,
   Calendar,
+  ShieldCheckIcon,
 } from 'lucide-react';
 import { PhotoSessionWithOrganizer } from '@/types/database';
 import { PhotoSessionSlot } from '@/types/photo-session';
@@ -157,7 +158,7 @@ export function PhotoSessionDetail({
       return [
         {
           id: 'cannot-book',
-          label: reason || '予約できません',
+          label: '予約不可',
           variant: 'secondary',
           onClick: () => {}, // 何もしない
           disabled: true,
@@ -171,7 +172,7 @@ export function PhotoSessionDetail({
       return [
         {
           id: 'select-slot',
-          label: bookingLoading ? '確認中...' : '時間枠を選択して予約',
+          label: bookingLoading ? '確認中...' : '時間枠を選択',
           variant: 'default',
           onClick: () => {
             router.push(`?step=select`, { scroll: false });
@@ -188,7 +189,7 @@ export function PhotoSessionDetail({
           label: bookingLoading
             ? '確認中...'
             : isFull
-              ? 'キャンセル待ちに登録'
+              ? 'キャンセル待ち'
               : '予約する',
           variant: 'default',
           onClick: () => {
@@ -322,6 +323,25 @@ export function PhotoSessionDetail({
                     {getBookingTypeLabel(session.booking_type || 'first_come')}
                   </span>
                 </div>
+
+                {/* 予約制限表示 */}
+                {!isOrganizer && user && (
+                  <div className="flex items-center gap-3">
+                    <ShieldCheckIcon className="h-5 w-5 text-muted-foreground" />
+                    <div>
+                      <span className="font-medium">予約制限: </span>
+                      {bookingLoading ? (
+                        <span className="text-muted-foreground">確認中...</span>
+                      ) : canBookFromHook ? (
+                        <span className="text-green-600">予約可能</span>
+                      ) : (
+                        <span className="text-red-600">
+                          {reason || '予約不可'}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
