@@ -6,14 +6,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Clock, Trash2, Plus, ArrowDown, Copy, Image } from 'lucide-react';
+import { Trash2, Plus, ArrowDown, Copy, Image } from 'lucide-react';
 import { PhotoSessionSlot, DiscountType } from '@/types/photo-session';
 import { uploadPhotoSessionImage } from '@/lib/storage/photo-session-images';
 import { toast } from 'sonner';
 import { addMinutes, format, parse } from 'date-fns';
 import { PriceInput } from '@/components/ui/price-input';
+import { ImageUploadCommon } from '@/components/ui/image-upload-common';
 
 interface SlotFormData {
   slot_number: number;
@@ -57,8 +58,6 @@ export default function PhotoSessionSlotForm({
       discount_value: 0,
     },
   ]);
-  const [uploadingSlots, setUploadingSlots] = useState<Set<number>>(new Set());
-  const [imageCache, setImageCache] = useState<Map<string, string>>(new Map()); // hash -> url
 
   const texts = {
     ja: {
@@ -176,14 +175,6 @@ export default function PhotoSessionSlotForm({
     } catch {
       return '';
     }
-  };
-
-  // 画像のハッシュ値を計算（簡易版）
-  const calculateImageHash = async (file: File): Promise<string> => {
-    const buffer = await file.arrayBuffer();
-    const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
   };
 
   // 親コンポーネントに撮影枠変更を通知
@@ -321,54 +312,6 @@ export default function PhotoSessionSlotForm({
     toast.success(t.copySuccess);
   };
 
-  const handleImageUpload = async (
-    index: number,
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    setUploadingSlots(prev => new Set(prev).add(index));
-
-    try {
-      // 画像のハッシュ値を計算
-      const imageHash = await calculateImageHash(file);
-
-      // 既存の画像キャッシュをチェック
-      if (imageCache.has(imageHash)) {
-        const existingUrl = imageCache.get(imageHash);
-        if (existingUrl) {
-          updateSlot(index, 'costume_image_url', existingUrl);
-          updateSlot(index, 'costume_image_hash', imageHash);
-          toast.success(t.sameImageDetected);
-          return;
-        }
-      }
-
-      // 新しい画像をアップロード
-      const result = await uploadPhotoSessionImage(file, photoSessionId);
-      const imageUrl = typeof result === 'string' ? result : result.url;
-
-      if (imageUrl) {
-        // キャッシュに保存
-        setImageCache(prev => new Map(prev).set(imageHash, imageUrl));
-
-        updateSlot(index, 'costume_image_url', imageUrl);
-        updateSlot(index, 'costume_image_hash', imageHash);
-      }
-      toast.success(t.imageUploadSuccess);
-    } catch (error) {
-      console.error('Error uploading image:', error);
-      toast.error(t.imageUploadError);
-    } finally {
-      setUploadingSlots(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(index);
-        return newSet;
-      });
-    }
-  };
-
   // 初期化時と撮影枠変更時に親に通知
   useEffect(() => {
     if (slotForms.length > 0) {
@@ -377,17 +320,26 @@ export default function PhotoSessionSlotForm({
   }, [slotForms, updateParentSlots]); // slotFormsとupdateParentSlotsの変更を監視
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Clock className="h-5 w-5" />
-            {t.title}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {slotForms.map((slot, index) => (
-            <div key={index} className="border rounded-lg p-4 space-y-4">
+    <div className="space-y-4">
+      {/* ヘッダー */}
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-medium">{t.title}</h3>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={addSlot}
+          className="flex items-center gap-2"
+        >
+          <Plus className="h-4 w-4" />
+          {t.addSlot}
+        </Button>
+      </div>
+
+      {/* 撮影枠リスト */}
+      <div className="space-y-4">
+        {slotForms.map((slot, index) => (
+          <Card key={index} className="p-4">
+            <div className="space-y-4">
               {/* 撮影枠ヘッダー */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -542,37 +494,36 @@ export default function PhotoSessionSlotForm({
               {/* 衣装設定 */}
               <div className="space-y-4">
                 <div>
-                  <Label className="flex items-center gap-2">
+                  <Label className="flex items-center gap-2 mb-2">
                     <Image className="h-4 w-4" />
                     {t.costumeImage}
                   </Label>
-                  <div className="flex items-center gap-4">
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      onChange={e => handleImageUpload(index, e)}
-                      disabled={uploadingSlots.has(index)}
-                    />
-                    {uploadingSlots.has(index) && (
-                      <span className="text-sm text-muted-foreground">
-                        {t.uploading}
-                      </span>
-                    )}
-                  </div>
-                  {slot.costume_image_url && (
-                    <div className="mt-2 flex items-center gap-4">
-                      <img
-                        src={slot.costume_image_url}
-                        alt="Costume preview"
-                        className="w-32 h-32 object-cover rounded-lg"
-                      />
-                      {slot.costume_image_hash && (
-                        <div className="text-xs text-muted-foreground">
-                          Hash: {slot.costume_image_hash.substring(0, 8)}...
-                        </div>
-                      )}
-                    </div>
-                  )}
+                  <ImageUploadCommon
+                    value={slot.costume_image_url || ''}
+                    onChange={value =>
+                      updateSlot(index, 'costume_image_url', value as string)
+                    }
+                    multiple={false}
+                    showSizeInfo={false}
+                    showFormatInfo={false}
+                    showMaxImagesInfo={false}
+                    showTips={false}
+                    showMainImageBadge={false}
+                    showReorderButtons={false}
+                    uploadFunction={async file => {
+                      const result = await uploadPhotoSessionImage(
+                        file,
+                        photoSessionId
+                      );
+                      return typeof result === 'string'
+                        ? result
+                        : result.url || '';
+                    }}
+                    labels={{
+                      selectFiles: t.uploadImage,
+                      uploading: t.uploading,
+                    }}
+                  />
                 </div>
                 <div>
                   <Label>{t.costumeDescription}</Label>
@@ -596,22 +547,9 @@ export default function PhotoSessionSlotForm({
                 />
               </div>
             </div>
-          ))}
-
-          {/* 枠追加ボタン */}
-          <div className="flex justify-center">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={addSlot}
-              className="flex items-center gap-2"
-            >
-              <Plus className="h-4 w-4" />
-              {t.addSlot}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 }
