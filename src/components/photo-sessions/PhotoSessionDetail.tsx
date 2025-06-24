@@ -28,7 +28,7 @@ import { OrganizerManagementPanel } from './OrganizerManagementPanel';
 import { PhotoSessionGroupChat } from './PhotoSessionGroupChat';
 import { PhotoSessionDocuments } from './PhotoSessionDocuments';
 import { formatDateLocalized, formatTimeLocalized } from '@/lib/utils/date';
-import { DateTime, Price } from '@/components/ui/formatted-display';
+import { Price } from '@/components/ui/formatted-display';
 
 import {
   getPhotoSessionParticipants,
@@ -337,17 +337,11 @@ export function PhotoSessionDetail({
                     <CalendarIcon className="h-5 w-5 text-muted-foreground" />
                     <div>
                       <div className="font-medium">
-                        <DateTime
-                          value={session.start_time}
-                          format="date-long"
-                        />
+                        {formatDateLocalized(startDate, 'ja', 'long')}
                       </div>
                       <div className="text-sm text-muted-foreground">
-                        <DateTime
-                          value={session.start_time}
-                          format="time-range"
-                          endValue={session.end_time}
-                        />
+                        {formatTimeLocalized(startDate, 'ja')} -{' '}
+                        {formatTimeLocalized(endDate, 'ja')}
                       </div>
                     </div>
                   </div>
@@ -475,17 +469,11 @@ export function PhotoSessionDetail({
                     <CalendarIcon className="h-5 w-5 text-muted-foreground" />
                     <div>
                       <div className="font-medium">
-                        <DateTime
-                          value={session.start_time}
-                          format="date-long"
-                        />
+                        {formatDateLocalized(startDate, 'ja', 'long')}
                       </div>
                       <div className="text-sm text-muted-foreground">
-                        <DateTime
-                          value={session.start_time}
-                          format="time-range"
-                          endValue={session.end_time}
-                        />
+                        {formatTimeLocalized(startDate, 'ja')} -{' '}
+                        {formatTimeLocalized(endDate, 'ja')}
                       </div>
                     </div>
                   </div>
