@@ -291,98 +291,112 @@ export function PhotoSessionDetail({
         <OrganizerManagementPanel session={session} slots={slots} />
       )}
 
-      {/* 開催者向け撮影会基本情報（管理パネル直下） */}
-      {isOrganizer && (
-        <Card>
-          <CardHeader>
-            <CardTitle>撮影会情報</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <h3 className="font-semibold">開催詳細</h3>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <CalendarIcon className="h-5 w-5 text-muted-foreground" />
-                    <div>
-                      <div className="font-medium">
-                        {formatDateLocalized(startDate, 'ja', 'long')}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        {formatTimeLocalized(startDate, 'ja')} -{' '}
-                        {formatTimeLocalized(endDate, 'ja')}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <MapPinIcon className="h-5 w-5 text-muted-foreground" />
-                    <div>
-                      <div className="font-medium">{session.location}</div>
-                      {session.address && (
-                        <div className="text-sm text-muted-foreground">
-                          {session.address}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {!hasSlots && (
-                    <>
-                      <div className="flex items-center gap-3">
-                        <UsersIcon className="h-5 w-5 text-muted-foreground" />
-                        <span>
-                          {session.current_participants}/
-                          {session.max_participants}人
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-3">
-                        <CircleDollarSignIcon className="h-5 w-5 text-muted-foreground" />
-                        <span>
-                          {session.price_per_person === 0
-                            ? '無料'
-                            : `¥${session.price_per_person.toLocaleString()}/人`}
-                        </span>
-                      </div>
-                    </>
-                  )}
-
-                  <div className="flex items-center gap-3">
-                    <CalendarIcon className="h-5 w-5 text-muted-foreground" />
-                    <span>
-                      予約方式:{' '}
-                      {getBookingTypeLabel(
-                        session.booking_type || 'first_come'
-                      )}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <h3 className="font-semibold">主催者情報</h3>
+      {/* 撮影会基本情報（管理パネル直下に統合配置） */}
+      <Card>
+        <CardHeader>
+          <CardTitle>撮影会情報</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <h3 className="font-semibold">開催詳細</h3>
+              <div className="space-y-3">
                 <div className="flex items-center gap-3">
-                  <Avatar>
-                    <AvatarImage src={session.organizer.avatar_url || ''} />
-                    <AvatarFallback>
-                      {session.organizer.display_name?.[0] ||
-                        session.organizer.email[0]}
-                    </AvatarFallback>
-                  </Avatar>
+                  <CalendarIcon className="h-5 w-5 text-muted-foreground" />
                   <div>
                     <div className="font-medium">
-                      {session.organizer.display_name ||
-                        session.organizer.email}
+                      {formatDateLocalized(startDate, 'ja', 'long')}
                     </div>
-                    <div className="text-sm text-muted-foreground">主催者</div>
+                    <div className="text-sm text-muted-foreground">
+                      {formatTimeLocalized(startDate, 'ja')} -{' '}
+                      {formatTimeLocalized(endDate, 'ja')}
+                    </div>
                   </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <MapPinIcon className="h-5 w-5 text-muted-foreground" />
+                  <div>
+                    <div className="font-medium">{session.location}</div>
+                    {session.address && (
+                      <div className="text-sm text-muted-foreground">
+                        {session.address}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {!hasSlots && (
+                  <>
+                    <div className="flex items-center gap-3">
+                      <UsersIcon className="h-5 w-5 text-muted-foreground" />
+                      <span>
+                        {session.current_participants}/
+                        {session.max_participants}人
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <CircleDollarSignIcon className="h-5 w-5 text-muted-foreground" />
+                      <span>
+                        {session.price_per_person === 0
+                          ? '無料'
+                          : `¥${session.price_per_person.toLocaleString()}/人`}
+                      </span>
+                    </div>
+                  </>
+                )}
+
+                <div className="flex items-center gap-3">
+                  <CalendarIcon className="h-5 w-5 text-muted-foreground" />
+                  <span>
+                    予約方式:{' '}
+                    {getBookingTypeLabel(session.booking_type || 'first_come')}
+                  </span>
+                </div>
+
+                {/* 予約制限表示（ログインユーザーのみ） */}
+                {user && !isOrganizer && (
+                  <div className="flex items-center gap-3">
+                    <ShieldCheckIcon className="h-5 w-5 text-muted-foreground" />
+                    <div>
+                      <span className="font-medium">予約制限: </span>
+                      {bookingLoading ? (
+                        <span className="text-muted-foreground">確認中...</span>
+                      ) : canBookFromHook ? (
+                        <span className="text-green-600">予約可能</span>
+                      ) : (
+                        <span className="text-red-600">
+                          {reason || '予約不可'}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="font-semibold">主催者情報</h3>
+              <div className="flex items-center gap-3">
+                <Avatar>
+                  <AvatarImage src={session.organizer.avatar_url || ''} />
+                  <AvatarFallback>
+                    {session.organizer.display_name?.[0] ||
+                      session.organizer.email[0]}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <div className="font-medium">
+                    {session.organizer.display_name || session.organizer.email}
+                  </div>
+                  <div className="text-sm text-muted-foreground">主催者</div>
                 </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
-      )}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* ヘッダー */}
       <Card>
@@ -440,114 +454,6 @@ export function PhotoSessionDetail({
                     />
                   </div>
                 ))}
-              </div>
-            </div>
-          )}
-
-          {/* 参加者・未参加者向け基本情報 */}
-          {!isOrganizer && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <h3 className="font-semibold">開催詳細</h3>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <CalendarIcon className="h-5 w-5 text-muted-foreground" />
-                    <div>
-                      <div className="font-medium">
-                        {formatDateLocalized(startDate, 'ja', 'long')}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        {formatTimeLocalized(startDate, 'ja')} -{' '}
-                        {formatTimeLocalized(endDate, 'ja')}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <MapPinIcon className="h-5 w-5 text-muted-foreground" />
-                    <div>
-                      <div className="font-medium">{session.location}</div>
-                      {session.address && (
-                        <div className="text-sm text-muted-foreground">
-                          {session.address}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {!hasSlots && (
-                    <>
-                      <div className="flex items-center gap-3">
-                        <UsersIcon className="h-5 w-5 text-muted-foreground" />
-                        <span>
-                          {session.current_participants}/
-                          {session.max_participants}人
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-3">
-                        <CircleDollarSignIcon className="h-5 w-5 text-muted-foreground" />
-                        <span>
-                          {session.price_per_person === 0
-                            ? '無料'
-                            : `¥${session.price_per_person.toLocaleString()}/人`}
-                        </span>
-                      </div>
-                    </>
-                  )}
-
-                  {/* 予約方式表示 */}
-                  <div className="flex items-center gap-3">
-                    <CalendarIcon className="h-5 w-5 text-muted-foreground" />
-                    <span>
-                      予約方式:{' '}
-                      {getBookingTypeLabel(
-                        session.booking_type || 'first_come'
-                      )}
-                    </span>
-                  </div>
-
-                  {/* 予約制限表示 */}
-                  {user && (
-                    <div className="flex items-center gap-3">
-                      <ShieldCheckIcon className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <span className="font-medium">予約制限: </span>
-                        {bookingLoading ? (
-                          <span className="text-muted-foreground">
-                            確認中...
-                          </span>
-                        ) : canBookFromHook ? (
-                          <span className="text-green-600">予約可能</span>
-                        ) : (
-                          <span className="text-red-600">
-                            {reason || '予約不可'}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <h3 className="font-semibold">主催者情報</h3>
-                <div className="flex items-center gap-3">
-                  <Avatar>
-                    <AvatarImage src={session.organizer.avatar_url || ''} />
-                    <AvatarFallback>
-                      {session.organizer.display_name?.[0] ||
-                        session.organizer.email[0]}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <div className="font-medium">
-                      {session.organizer.display_name ||
-                        session.organizer.email}
-                    </div>
-                    <div className="text-sm text-muted-foreground">主催者</div>
-                  </div>
-                </div>
               </div>
             </div>
           )}
