@@ -290,12 +290,34 @@ export function PhotoSessionDetail({
         <OrganizerManagementPanel session={session} slots={slots} />
       )}
 
-      {/* 撮影会基本情報（管理パネル直下に統合配置） */}
+      {/* 撮影会基本情報（全ての情報を統合） */}
       <Card>
         <CardHeader>
-          <CardTitle>撮影会情報</CardTitle>
+          <div className="flex justify-between items-start">
+            <CardTitle className="text-2xl">{session.title}</CardTitle>
+            <div className="flex items-center gap-2">
+              {/* Googleカレンダー追加ボタン */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleAddToGoogleCalendar}
+                className="flex items-center gap-2"
+              >
+                <CalendarPlus className="h-4 w-4" />
+                <span className="hidden sm:inline">カレンダーに追加</span>
+                <span className="sm:hidden">追加</span>
+              </Button>
+              {getStatusBadge()}
+              {!hasSlots && getAvailabilityBadge()}
+            </div>
+          </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-6">
+          {/* 説明 */}
+          {session.description && (
+            <p className="text-muted-foreground">{session.description}</p>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
               <h3 className="font-semibold">開催詳細</h3>
@@ -394,39 +416,6 @@ export function PhotoSessionDetail({
               </div>
             </div>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* ヘッダー */}
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-start">
-            <div className="space-y-2">
-              <CardTitle className="text-2xl">{session.title}</CardTitle>
-            </div>
-            <div className="flex items-center gap-2">
-              {/* Googleカレンダー追加ボタン */}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleAddToGoogleCalendar}
-                className="flex items-center gap-2"
-              >
-                <CalendarPlus className="h-4 w-4" />
-                <span className="hidden sm:inline">カレンダーに追加</span>
-                <span className="sm:hidden">追加</span>
-              </Button>
-              {getStatusBadge()}
-              {!hasSlots && getAvailabilityBadge()}
-            </div>
-          </div>
-        </CardHeader>
-
-        <CardContent className="space-y-6">
-          {/* 説明 */}
-          {session.description && (
-            <p className="text-muted-foreground">{session.description}</p>
-          )}
 
           {/* 画像ギャラリー */}
           {session.image_urls && session.image_urls.length > 0 && (
