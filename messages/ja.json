@@ -612,6 +612,9 @@
       "shareLocation": "位置情報を共有",
       "setReminder": "リマインダーを設定",
       "sharePhotos": "写真を共有",
+      "addToCalendar": "カレンダーに追加",
+      "addToGoogleCalendar": "Googleカレンダーに追加",
+      "calendarEventCreated": "カレンダーイベントが作成されました",
       "photoSharing": "写真共有",
       "photoSharingComingSoon": "撮影後の写真共有機能は近日公開予定です。",
       "accessDenied": "このグループチャットにアクセスする権限がありません。",
@@ -1340,5 +1343,10 @@
     "maxTagsReached": "タグ付け上限に達しました",
     "tagAdded": "モデルをタグ付けしました",
     "tagRemoved": "タグを削除しました"
+  },
+  "calendar": {
+    "addToCalendar": "カレンダーに追加",
+    "addToGoogleCalendar": "Googleカレンダーに追加",
+    "calendarEventCreated": "カレンダーイベントが作成されました"
   }
 }

@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 import {
   ActionBar,
   ActionBarButton,
@@ -21,6 +22,7 @@ import {
   CreditCard,
   Calendar,
   ShieldCheckIcon,
+  CalendarPlus,
 } from 'lucide-react';
 import { PhotoSessionWithOrganizer } from '@/types/database';
 import { PhotoSessionSlot } from '@/types/photo-session';
@@ -42,6 +44,30 @@ interface PhotoSessionDetailProps {
   session: PhotoSessionWithOrganizer;
   slots: PhotoSessionSlot[];
 }
+
+// Googleカレンダーイベント作成関数
+const createGoogleCalendarEvent = (
+  title: string,
+  startTime: Date,
+  endTime: Date,
+  location: string,
+  description?: string
+) => {
+  const formatGoogleDate = (date: Date) => {
+    return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+  };
+
+  const params = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: title,
+    dates: `${formatGoogleDate(startTime)}/${formatGoogleDate(endTime)}`,
+    location: location,
+    details: description || '',
+  });
+
+  const url = `https://calendar.google.com/calendar/render?${params.toString()}`;
+  window.open(url, '_blank');
+};
 
 export function PhotoSessionDetail({
   session,
@@ -147,6 +173,56 @@ export function PhotoSessionDetail({
   const available = session.max_participants - session.current_participants;
   const isFull = available === 0;
 
+  // Googleカレンダー追加ハンドラー
+  const handleAddToGoogleCalendar = () => {
+    if (hasSlots && slots.length > 0) {
+      // 撮影枠がある場合、参加者は予約した枠のみ、開催者は全体の時間
+      if (isOrganizer) {
+        // 開催者の場合、全体の撮影会時間でカレンダー追加
+        createGoogleCalendarEvent(
+          `【開催】${session.title}`,
+          startDate,
+          endDate,
+          session.location,
+          `撮影会の開催\n\n場所: ${session.location}\n${session.address ? `住所: ${session.address}\n` : ''}主催者: ${session.organizer.display_name || session.organizer.email}\n\n${session.description || ''}`
+        );
+      } else if (isParticipant) {
+        // 参加者の場合、予約した枠の時間（実装上は全体時間）
+        // TODO: 実際の予約枠情報を取得して、その時間を使用する
+        createGoogleCalendarEvent(
+          `【参加】${session.title}`,
+          startDate,
+          endDate,
+          session.location,
+          `撮影会への参加\n\n場所: ${session.location}\n${session.address ? `住所: ${session.address}\n` : ''}主催者: ${session.organizer.display_name || session.organizer.email}\n\n${session.description || ''}`
+        );
+      } else {
+        // 未参加者の場合、全体時間で参考として追加
+        createGoogleCalendarEvent(
+          `【予定】${session.title}`,
+          startDate,
+          endDate,
+          session.location,
+          `撮影会の予定\n\n場所: ${session.location}\n${session.address ? `住所: ${session.address}\n` : ''}主催者: ${session.organizer.display_name || session.organizer.email}\n\n${session.description || ''}`
+        );
+      }
+    } else {
+      // 通常の撮影会の場合
+      const prefix = isOrganizer
+        ? '【開催】'
+        : isParticipant
+          ? '【参加】'
+          : '【予定】';
+      createGoogleCalendarEvent(
+        `${prefix}${session.title}`,
+        startDate,
+        endDate,
+        session.location,
+        `撮影会${isOrganizer ? 'の開催' : isParticipant ? 'への参加' : 'の予定'}\n\n場所: ${session.location}\n${session.address ? `住所: ${session.address}\n` : ''}主催者: ${session.organizer.display_name || session.organizer.email}\n\n${session.description || ''}`
+      );
+    }
+  };
+
   // アクションバーのボタン設定
   const getActionBarButtons = (): ActionBarButton[] => {
     if (isOrganizer || !user) {
@@ -229,7 +305,18 @@ export function PhotoSessionDetail({
                 </span>
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
+              {/* Googleカレンダー追加ボタン */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleAddToGoogleCalendar}
+                className="flex items-center gap-2"
+              >
+                <CalendarPlus className="h-4 w-4" />
+                <span className="hidden sm:inline">カレンダーに追加</span>
+                <span className="sm:hidden">追加</span>
+              </Button>
               {getStatusBadge()}
               {!hasSlots && getAvailabilityBadge()}
             </div>

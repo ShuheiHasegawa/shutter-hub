@@ -6,16 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import {
-  MessageCircle,
-  Users,
-  MapPin,
-  Calendar,
-  Clock,
-  Camera,
-  FileImage,
-  Share2,
-} from 'lucide-react';
+import { MessageCircle, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { ChatWindow } from '@/components/social/ChatWindow';
 import { ConversationWithUsers } from '@/types/social';
@@ -44,14 +35,6 @@ interface PhotoSessionGroupChatProps {
   }>;
 }
 
-interface PhotoSessionInfo {
-  title: string;
-  date: string;
-  location: string;
-  organizer_name: string;
-  participant_count: number;
-}
-
 export function PhotoSessionGroupChat({
   sessionId,
   sessionTitle,
@@ -67,7 +50,7 @@ export function PhotoSessionGroupChat({
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [showChat, setShowChat] = useState(false);
-  const [sessionInfo, setSessionInfo] = useState<PhotoSessionInfo | null>(null);
+
   const router = useRouter();
 
   // 権限チェック
@@ -78,40 +61,8 @@ export function PhotoSessionGroupChat({
   useEffect(() => {
     if (hasAccess) {
       checkExistingGroupChat();
-      loadSessionInfo();
     }
   }, [sessionId, hasAccess, sessionTitle]);
-
-  const loadSessionInfo = async () => {
-    try {
-      const supabase = createClient();
-      const { data, error } = await supabase
-        .from('photo_sessions')
-        .select(
-          `
-          title,
-          start_time,
-          location,
-          organizer:organizer_id(display_name)
-        `
-        )
-        .eq('id', sessionId)
-        .single();
-
-      if (error) throw error;
-
-      setSessionInfo({
-        title: data.title,
-        date: data.start_time,
-        location: data.location,
-        organizer_name:
-          (data.organizer as { display_name?: string })?.display_name || '不明',
-        participant_count: participants.length,
-      });
-    } catch (error) {
-      console.error('Session info load error:', error);
-    }
-  };
 
   const checkExistingGroupChat = async () => {
     try {
@@ -411,80 +362,6 @@ export function PhotoSessionGroupChat({
               </div>
             </div>
           )}
-        </CardContent>
-      </Card>
-
-      {/* 撮影会情報共有 */}
-      {sessionInfo && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Camera className="h-5 w-5" />
-              {t('sessionInfo')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">{sessionInfo.date}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">{sessionInfo.location}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Users className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">
-                  {sessionInfo.participant_count}名参加
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Camera className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">
-                  {t('organizer')}: {sessionInfo.organizer_name}
-                </span>
-              </div>
-            </div>
-
-            {conversation && (
-              <div className="pt-4 border-t">
-                <h4 className="font-medium mb-2">{t('quickActions')}</h4>
-                <div className="flex flex-wrap gap-2">
-                  <Button variant="outline" size="sm">
-                    <MapPin className="h-3 w-3 mr-1" />
-                    {t('shareLocation')}
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    <Clock className="h-3 w-3 mr-1" />
-                    {t('setReminder')}
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    <FileImage className="h-3 w-3 mr-1" />
-                    {t('sharePhotos')}
-                  </Button>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* 撮影後の作品交換（将来実装） */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Share2 className="h-5 w-5" />
-            {t('photoSharing')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8">
-            <FileImage className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground">
-              {t('photoSharingComingSoon')}
-            </p>
-          </div>
         </CardContent>
       </Card>
     </div>

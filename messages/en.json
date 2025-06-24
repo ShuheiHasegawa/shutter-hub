@@ -603,6 +603,9 @@
       },
       "setReminder": "Set Reminder",
       "sharePhotos": "Share Photos",
+      "addToCalendar": "Add to Calendar",
+      "addToGoogleCalendar": "Add to Google Calendar",
+      "calendarEventCreated": "Calendar event created",
       "photoSharing": "Photo Sharing",
       "photoSharingComingSoon": "Photo sharing feature after the session is coming soon.",
       "accessDenied": "You don't have access to this group chat.",
@@ -1348,5 +1351,10 @@
     "maxTagsReached": "Maximum tags reached",
     "tagAdded": "Model tagged successfully",
     "tagRemoved": "Tag removed successfully"
+  },
+  "calendar": {
+    "addToCalendar": "Add to Calendar",
+    "addToGoogleCalendar": "Add to Google Calendar",
+    "calendarEventCreated": "Calendar event created"
   }
 }
