@@ -510,7 +510,12 @@ export function PhotoSessionDetail({
                   {user && !isOrganizer && (
                     <div className="flex items-center gap-3">
                       <ShieldCheckIcon className="h-5 w-5 text-muted-foreground" />
-                      <span>予約制限: 制限なし</span>
+                      <span>
+                        予約制限:{' '}
+                        {session.allow_multiple_bookings
+                          ? '複数予約可能'
+                          : '1人1枠まで'}
+                      </span>
                     </div>
                   )}
                 </div>
