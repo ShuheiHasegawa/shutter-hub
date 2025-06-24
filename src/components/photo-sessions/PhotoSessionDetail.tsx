@@ -17,7 +17,6 @@ import {
   MapPinIcon,
   UsersIcon,
   CircleDollarSignIcon,
-  UserIcon,
   ImageIcon,
   CreditCard,
   Calendar,
@@ -404,13 +403,6 @@ export function PhotoSessionDetail({
           <div className="flex justify-between items-start">
             <div className="space-y-2">
               <CardTitle className="text-2xl">{session.title}</CardTitle>
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <UserIcon className="h-4 w-4" />
-                <span>
-                  主催者:{' '}
-                  {session.organizer.display_name || session.organizer.email}
-                </span>
-              </div>
             </div>
             <div className="flex items-center gap-2">
               {/* Googleカレンダー追加ボタン */}
