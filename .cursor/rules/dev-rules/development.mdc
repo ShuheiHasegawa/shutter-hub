@@ -715,6 +715,9 @@ components={{
 5. **適切なローディング表示なしの非同期処理**
 6. **依存関係の無計画な更新**（上記ルール参照）
 7. **ハードコードされた日本語・英語テキスト**（多言語化必須）
+   - 静的テキストのハードコード禁止
+   - **条件分岐テキストのハードコード禁止**（`condition ? '日本語' : '日本語'`）
+   - **データベースフィールドに基づく表示テキストのハードコード禁止**
 8. **🚨【絶対禁止】明示的依頼なしのUI/UXデザイン変更**
 
 ### 🚨 **UI/UXデザイン変更の絶対禁止（重要）**
@@ -858,131 +861,69 @@ const locale = useLocale();
 const options = { locale };
 ```
 
-### ファイル構造
-```
-messages/
-├── ja.json    # 日本語
-├── en.json    # 英語
-└── [locale].json  # 追加言語
-```
-
-### 言語ファイルの構造
-```json
-{
-  "common": { "基本的な共通テキスト" },
-  "navigation": { "ナビゲーション関連" },
-  "booking": { "予約関連" },
-  "photoSessions": { "撮影会関連" },
-  "errors": { "エラーメッセージ" },
-  "success": { "成功メッセージ" },
-  "validation": { "バリデーションメッセージ" }
-}
-```
-
-### 新規コンポーネント作成時の多言語化チェックリスト
-
-#### 1. コンポーネント作成前の準備
+#### 4. 条件付きテキストの多言語化
 ```tsx
-// 1. 必要な翻訳キーを messages/ja.json に追加
-{
-  "newFeature": {
-    "title": "新機能タイトル",
-    "description": "新機能の説明",
-    "button": {
-      "submit": "送信",
-      "cancel": "キャンセル"
-    },
-    "labels": {
-      "name": "名前",
-      "email": "メールアドレス"
-    }
-  }
-}
-
-// 2. 対応する英語翻訳を messages/en.json に追加
-{
-  "newFeature": {
-    "title": "New Feature Title",
-    "description": "Description of new feature",
-    "button": {
-      "submit": "Submit",
-      "cancel": "Cancel"
-    },
-    "labels": {
-      "name": "Name",
-      "email": "Email"
-    }
-  }
-}
-```
-
-#### 2. コンポーネントでの実装
-```tsx
-// ✅ 良い例: 新規コンポーネント
-'use client';
-
-import { useTranslations } from 'next-intl';
-import { Button } from '@/components/ui/button';
-
-export function NewFeatureComponent() {
-  const t = useTranslations('newFeature');
-  
-  return (
-    <div>
-      <h1>{t('title')}</h1>
-      <p>{t('description')}</p>
-      <Button>{t('button.submit')}</Button>
-    </div>
-  );
-}
-```
-
-#### 3. 多言語化必須項目
-- [ ] すべてのボタンテキスト
-- [ ] すべてのラベル
-- [ ] プレースホルダーテキスト
-- [ ] エラーメッセージ
-- [ ] 成功メッセージ
-- [ ] ツールチップ
-- [ ] アラートメッセージ
-- [ ] 確認ダイアログのテキスト
-- [ ] フォームのバリデーションメッセージ
-
-#### 4. 動的テキストの多言語化
-```tsx
-// ❌ 悪い例
-const message = `${count}件の結果が見つかりました`;
-
-// ✅ 良い例
-const t = useTranslations('search');
-const message = t('results.count', { count });
-
-// messages/ja.json
-{
-  "search": {
-    "results": {
-      "count": "{count}件の結果が見つかりました"
-    }
-  }
-}
-```
-
-#### 5. 条件付きテキストの多言語化
-```tsx
-// ❌ 悪い例
+// ❌ 悪い例: 条件分岐でのハードコードテキスト
 const status = isActive ? '有効' : '無効';
+const restriction = session.allow_multiple_bookings ? '複数予約可能' : '1人1枠まで';
+const bookingType = session.booking_type === 'lottery' ? '抽選' : '先着順';
 
-// ✅ 良い例
+// ✅ 良い例: 条件分岐も多言語化対応
 const t = useTranslations('status');
 const status = isActive ? t('active') : t('inactive');
+
+const t = useTranslations('booking');
+const restriction = session.allow_multiple_bookings ? t('multipleAllowed') : t('singleOnly');
+const bookingType = session.booking_type === 'lottery' ? t('lottery') : t('firstCome');
+```
+
+#### 5. データベースフィールドに基づく表示テキストの多言語化
+```tsx
+// ❌ 悪い例: データベース値に基づくハードコードテキスト
+<span>予約制限: 制限なし</span>
+<span>ステータス: {session.status === 'active' ? '開催中' : '終了'}</span>
+<span>参加費: {session.is_free ? '無料' : `¥${session.price}`}</span>
+
+// ✅ 良い例: データベース値も多言語化対応
+const t = useTranslations('photoSessions');
+<span>{t('restriction')}: {session.allow_multiple_bookings ? t('multipleAllowed') : t('singleOnly')}</span>
+<span>{t('status')}: {session.status === 'active' ? t('statusActive') : t('statusEnded')}</span>
+<span>{t('fee')}: {session.is_free ? t('free') : `¥${session.price}`}</span>
+```
+
+#### 6. ハードコードテキスト検出方法
+```bash
+# 日本語ハードコードの検出
+grep -r "['\"]\s*[あ-ん\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]" src/components/
+
+# 条件分岐でのハードコード検出
+grep -r "\?\s*['\"][^'\"]*[あ-ん]" src/components/
+grep -r ":\s*['\"][^'\"]*[あ-ん]" src/components/
+
+# 具体例
+grep -r "複数予約可能\|1人1枠まで\|制限なし\|開催中\|終了" src/components/
 ```
 
 ### 多言語化レビューチェックリスト
 - [ ] ハードコードされた日本語・英語がないか確認
 - [ ] すべてのユーザー向けテキストが翻訳されているか
 - [ ] 動的な値を含むテキストが適切に処理されているか
+- [ ] **条件分岐テキスト**（三項演算子、if文での表示切り替え）が多言語化されているか
+- [ ] **データベースフィールドに基づく表示テキスト**が多言語化されているか
+- [ ] **ステータス表示**（active/inactive、enabled/disabled等）が多言語化されているか
+- [ ] **制限・設定表示**（allow_multiple_bookings等のboolean値表示）が多言語化されているか
 - [ ] 日付・時刻が多言語化対応されているか
 - [ ] 数値フォーマットがロケールに対応しているか
+
+### ハードコードテキスト自動検出
+実装前・実装後に以下のコマンドでハードコードテキストを検出：
+```bash
+# 日本語ハードコード全般検出
+grep -r "['\"]\s*[あ-ん\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]" src/components/
+
+# よくある条件分岐ハードコード
+grep -r "複数予約可能\|1人1枠まで\|制限なし\|開催中\|終了\|有効\|無効\|抽選\|先着順" src/components/
+```
 
 ## メッセージファイル開発ルール
 
