@@ -6,8 +6,7 @@ import { PhotoSessionsSidebar } from '@/components/layout/PhotoSessionsSidebar';
 import { CompactFilterBar } from '@/components/photo-sessions/CompactFilterBar';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { Button } from '@/components/ui/button';
-import { Plus, SidebarOpen, SidebarClose } from 'lucide-react';
-import { Link } from '@/i18n/routing';
+import { SidebarClose } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { BookingType } from '@/types/database';
 
@@ -118,37 +117,6 @@ export default function PhotoSessionsPage() {
           </div>
         </div>
 
-        {/* フィルター閉じ時の状態インジケーター */}
-        {!sidebarOpen && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <div className="flex justify-between items-center">
-              <p className="text-blue-700 text-sm">
-                {t('sidebar.filtersClosedMessage')}
-              </p>
-              <div className="flex items-center gap-2">
-                {/* 撮影会作成ボタン */}
-                <Button asChild size="sm">
-                  <Link href="/photo-sessions/create">
-                    <Plus className="h-4 w-4 mr-2" />
-                    {t('createSession')}
-                  </Link>
-                </Button>
-                {/* フィルター開くボタン */}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setSidebarOpen(true)}
-                  className="h-9 w-9 hover:bg-blue-100 dark:hover:bg-blue-800 transition-colors"
-                  title={t('sidebar.openFilters')}
-                  aria-label={t('sidebar.openFilters')}
-                >
-                  <SidebarOpen className="h-5 w-5" />
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* スマホ・タブレット用コンパクトフィルター（XL画面未満のみ） */}
         <div className="xl:hidden">
           <CompactFilterBar
@@ -171,31 +139,6 @@ export default function PhotoSessionsPage() {
             <aside className="hidden xl:block">
               <div className="sticky top-6">
                 {/* フィルターヘッダー */}
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-lg font-semibold">
-                    {t('sidebar.filters')}
-                  </h2>
-                  <div className="flex items-center gap-2">
-                    {/* 撮影会作成ボタン */}
-                    <Button asChild size="sm">
-                      <Link href="/photo-sessions/create">
-                        <Plus className="h-4 w-4 mr-2" />
-                        {t('createSession')}
-                      </Link>
-                    </Button>
-                    {/* フィルター閉じるボタン */}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setSidebarOpen(false)}
-                      className="h-9 w-9 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                      title={t('sidebar.closeFilters')}
-                      aria-label={t('sidebar.closeFilters')}
-                    >
-                      <SidebarClose className="h-5 w-5" />
-                    </Button>
-                  </div>
-                </div>
                 <PhotoSessionsSidebar
                   filters={filters}
                   onFiltersChange={setFilters}
@@ -266,6 +209,8 @@ export default function PhotoSessionsPage() {
               <PhotoSessionList
                 filters={filters}
                 searchTrigger={searchTrigger}
+                sidebarOpen={sidebarOpen}
+                onToggleSidebar={() => setSidebarOpen(prev => !prev)}
               />
             </Suspense>
           </main>

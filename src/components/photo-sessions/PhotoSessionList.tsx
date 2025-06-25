@@ -18,6 +18,7 @@ import {
   SearchIcon,
   Loader2,
   SidebarClose,
+  SidebarOpen,
   Plus,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -45,6 +46,8 @@ interface PhotoSessionListProps {
   title?: string;
   filters?: FilterState;
   searchTrigger?: number; // 検索トリガー用の数値
+  sidebarOpen?: boolean; // サイドバーの開閉状態
+  onToggleSidebar?: () => void; // サイドバートグル関数
 }
 
 const ITEMS_PER_PAGE = 20;
@@ -55,6 +58,8 @@ export function PhotoSessionList({
   title,
   filters,
   searchTrigger = 0,
+  sidebarOpen = false,
+  onToggleSidebar,
 }: PhotoSessionListProps) {
   const router = useRouter();
   const t = useTranslations('photoSessions');
@@ -430,18 +435,20 @@ export function PhotoSessionList({
     <div className="space-y-6">
       {/* ヘッダーコントロール */}
       <div className="flex justify-between items-center">
-        {/* 左側: フィルター閉じるアイコン */}
+        {/* 左側: フィルタートグルアイコン */}
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => {
-            /* フィルター閉じる処理 */
-          }}
+          onClick={onToggleSidebar}
           className="h-9 w-9 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-          title="フィルターを閉じる"
-          aria-label="フィルターを閉じる"
+          title={sidebarOpen ? 'フィルターを閉じる' : 'フィルターを開く'}
+          aria-label={sidebarOpen ? 'フィルターを閉じる' : 'フィルターを開く'}
         >
-          <SidebarClose className="h-5 w-5" />
+          {sidebarOpen ? (
+            <SidebarClose className="h-5 w-5" />
+          ) : (
+            <SidebarOpen className="h-5 w-5" />
+          )}
         </Button>
 
         {/* 右側: 並び順と撮影会作成ボタン */}
@@ -468,7 +475,7 @@ export function PhotoSessionList({
                 setSortOrder(newSortOrder);
               }}
             >
-              <SelectTrigger className="w-[140px] sm:w-[160px]">
+              <SelectTrigger className="w-[180px] sm:w-[200px]">
                 <SelectValue placeholder="並び順" />
               </SelectTrigger>
               <SelectContent>

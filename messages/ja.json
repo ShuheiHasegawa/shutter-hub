@@ -391,8 +391,7 @@
       "onlyAvailable": "空きがある撮影会のみ",
       "filters": "フィルター",
       "closeFilters": "フィルターを閉じる",
-      "openFilters": "フィルターを開く",
-      "filtersClosedMessage": "フィルターは閉じています。横幅を最大限活用して撮影会を表示しています。"
+      "openFilters": "フィルターを開く"
     },
     "card": {
       "labels": {
