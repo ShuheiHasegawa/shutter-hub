@@ -421,67 +421,53 @@ export function PhotoSessionList({
 
   return (
     <div className="space-y-6">
-      {/* ヘッダー */}
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">{title || t('list.title')}</h2>
-        <div className="flex items-center gap-3">
-          {/* ソート機能（常に表示） */}
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground hidden sm:inline">
-              並び順:
-            </span>
-            <Select
-              value={`${sortBy}_${sortOrder}`}
-              onValueChange={value => {
-                const [newSortBy, newSortOrder] = value.split('_') as [
-                  (
-                    | 'start_time'
-                    | 'price'
-                    | 'created_at'
-                    | 'popularity'
-                    | 'end_time'
-                  ),
-                  'asc' | 'desc',
-                ];
-                setSortBy(newSortBy);
-                setSortOrder(newSortOrder);
-              }}
-            >
-              <SelectTrigger className="w-[140px] sm:w-[160px]">
-                <SelectValue placeholder="並び順" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="start_time_asc">
-                  開催日時順（早い順）
-                </SelectItem>
-                <SelectItem value="start_time_desc">
-                  開催日時順（遅い順）
-                </SelectItem>
-                <SelectItem value="end_time_asc">
-                  終了日時順（早い順）
-                </SelectItem>
-                <SelectItem value="end_time_desc">
-                  終了日時順（遅い順）
-                </SelectItem>
-                <SelectItem value="price_asc">価格順（安い順）</SelectItem>
-                <SelectItem value="price_desc">価格順（高い順）</SelectItem>
-                <SelectItem value="popularity_desc">
-                  人気順（高い順）
-                </SelectItem>
-                <SelectItem value="popularity_asc">人気順（低い順）</SelectItem>
-                <SelectItem value="created_at_desc">
-                  新着順（新しい順）
-                </SelectItem>
-                <SelectItem value="created_at_asc">新着順（古い順）</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          {showCreateButton && (
-            <Button onClick={handleCreate}>
-              <PlusIcon className="h-4 w-4 mr-2" />
-              {t('createSession')}
-            </Button>
-          )}
+      {/* ソート機能 */}
+      <div className="flex justify-end items-center">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground hidden sm:inline">
+            並び順:
+          </span>
+          <Select
+            value={`${sortBy}_${sortOrder}`}
+            onValueChange={value => {
+              const [newSortBy, newSortOrder] = value.split('_') as [
+                (
+                  | 'start_time'
+                  | 'price'
+                  | 'created_at'
+                  | 'popularity'
+                  | 'end_time'
+                ),
+                'asc' | 'desc',
+              ];
+              setSortBy(newSortBy);
+              setSortOrder(newSortOrder);
+            }}
+          >
+            <SelectTrigger className="w-[140px] sm:w-[160px]">
+              <SelectValue placeholder="並び順" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="start_time_asc">
+                開催日時順（早い順）
+              </SelectItem>
+              <SelectItem value="start_time_desc">
+                開催日時順（遅い順）
+              </SelectItem>
+              <SelectItem value="end_time_asc">終了日時順（早い順）</SelectItem>
+              <SelectItem value="end_time_desc">
+                終了日時順（遅い順）
+              </SelectItem>
+              <SelectItem value="price_asc">価格順（安い順）</SelectItem>
+              <SelectItem value="price_desc">価格順（高い順）</SelectItem>
+              <SelectItem value="popularity_desc">人気順（高い順）</SelectItem>
+              <SelectItem value="popularity_asc">人気順（低い順）</SelectItem>
+              <SelectItem value="created_at_desc">
+                新着順（新しい順）
+              </SelectItem>
+              <SelectItem value="created_at_asc">新着順（古い順）</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 

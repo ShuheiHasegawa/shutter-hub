@@ -116,46 +116,36 @@ export default function PhotoSessionsPage() {
             <h1 className="text-3xl font-bold">{t('list.title')}</h1>
             <p className="text-muted-foreground">{t('list.description')}</p>
           </div>
-          <div className="flex items-center gap-4">
-            {/* フィルター切り替えボタン - Twitchライクなアイコンのみ */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="h-9 w-9 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-              title={
-                sidebarOpen
-                  ? t('sidebar.closeFilters')
-                  : t('sidebar.openFilters')
-              }
-              aria-label={
-                sidebarOpen
-                  ? t('sidebar.closeFilters')
-                  : t('sidebar.openFilters')
-              }
-              aria-expanded={sidebarOpen}
-            >
-              {sidebarOpen ? (
-                <SidebarClose className="h-5 w-5" />
-              ) : (
-                <SidebarOpen className="h-5 w-5" />
-              )}
-            </Button>
-            <Button asChild>
-              <Link href="/photo-sessions/create">
-                <Plus className="h-4 w-4 mr-2" />
-                {t('createSession')}
-              </Link>
-            </Button>
-          </div>
         </div>
 
         {/* フィルター閉じ時の状態インジケーター */}
         {!sidebarOpen && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
-            <p className="text-blue-700 text-sm">
-              {t('sidebar.filtersClosedMessage')}
-            </p>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex justify-between items-center">
+              <p className="text-blue-700 text-sm">
+                {t('sidebar.filtersClosedMessage')}
+              </p>
+              <div className="flex items-center gap-2">
+                {/* 撮影会作成ボタン */}
+                <Button asChild size="sm">
+                  <Link href="/photo-sessions/create">
+                    <Plus className="h-4 w-4 mr-2" />
+                    {t('createSession')}
+                  </Link>
+                </Button>
+                {/* フィルター開くボタン */}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setSidebarOpen(true)}
+                  className="h-9 w-9 hover:bg-blue-100 dark:hover:bg-blue-800 transition-colors"
+                  title={t('sidebar.openFilters')}
+                  aria-label={t('sidebar.openFilters')}
+                >
+                  <SidebarOpen className="h-5 w-5" />
+                </Button>
+              </div>
+            </div>
           </div>
         )}
 
@@ -180,6 +170,32 @@ export default function PhotoSessionsPage() {
           {sidebarOpen && (
             <aside className="hidden xl:block">
               <div className="sticky top-6">
+                {/* フィルターヘッダー */}
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-lg font-semibold">
+                    {t('sidebar.filters')}
+                  </h2>
+                  <div className="flex items-center gap-2">
+                    {/* 撮影会作成ボタン */}
+                    <Button asChild size="sm">
+                      <Link href="/photo-sessions/create">
+                        <Plus className="h-4 w-4 mr-2" />
+                        {t('createSession')}
+                      </Link>
+                    </Button>
+                    {/* フィルター閉じるボタン */}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setSidebarOpen(false)}
+                      className="h-9 w-9 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                      title={t('sidebar.closeFilters')}
+                      aria-label={t('sidebar.closeFilters')}
+                    >
+                      <SidebarClose className="h-5 w-5" />
+                    </Button>
+                  </div>
+                </div>
                 <PhotoSessionsSidebar
                   filters={filters}
                   onFiltersChange={setFilters}
