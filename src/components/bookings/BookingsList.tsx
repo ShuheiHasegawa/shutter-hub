@@ -192,7 +192,7 @@ export function BookingsList() {
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-red-600">
+            <div className="text-2xl font-bold text-error">
               {statusCounts.cancelled}
             </div>
             <div className="text-sm text-muted-foreground">

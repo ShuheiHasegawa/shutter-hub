@@ -170,7 +170,7 @@ export const ConsentSwipeCard: React.FC<ConsentSwipeCardProps> = ({
 
           {/* スワイプインジケーター */}
           <motion.div
-            className="absolute top-4 left-4 px-3 py-1.5 bg-red-500 text-white text-sm font-semibold rounded-full opacity-0"
+            className="absolute top-4 left-4 px-3 py-1.5 bg-error text-white text-sm font-semibold rounded-full opacity-0"
             style={{
               opacity: useTransform(x, [-150, -50], [1, 0]),
             }}
@@ -179,7 +179,7 @@ export const ConsentSwipeCard: React.FC<ConsentSwipeCardProps> = ({
           </motion.div>
 
           <motion.div
-            className="absolute top-4 right-16 px-3 py-1.5 bg-green-500 text-white text-sm font-semibold rounded-full opacity-0"
+            className="absolute top-4 right-16 px-3 py-1.5 bg-success text-white text-sm font-semibold rounded-full opacity-0"
             style={{
               opacity: useTransform(x, [50, 150], [0, 1]),
             }}
@@ -188,7 +188,7 @@ export const ConsentSwipeCard: React.FC<ConsentSwipeCardProps> = ({
           </motion.div>
 
           <motion.div
-            className="absolute top-4 left-1/2 transform -translate-x-1/2 px-3 py-1.5 bg-yellow-500 text-white text-sm font-semibold rounded-full opacity-0"
+            className="absolute top-4 left-1/2 transform -translate-x-1/2 px-3 py-1.5 bg-warning/10 text-warning text-sm font-semibold rounded-full opacity-0"
             style={{
               opacity: useTransform(y, [-150, -50], [1, 0]),
             }}
@@ -214,10 +214,10 @@ export const ConsentSwipeCard: React.FC<ConsentSwipeCardProps> = ({
               <div
                 className={`px-2 py-1 rounded-full text-xs font-medium ${
                   consent.consentStatus === 'pending'
-                    ? 'bg-yellow-100 text-yellow-800'
+                    ? 'bg-warning/10 text-warning'
                     : consent.consentStatus === 'approved'
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-red-100 text-red-800'
+                      ? 'bg-success/10 text-success'
+                      : 'bg-error/10 text-error'
                 }`}
               >
                 {consent.consentStatus === 'pending'
@@ -247,13 +247,13 @@ export const ConsentSwipeCard: React.FC<ConsentSwipeCardProps> = ({
           {/* アクションボタン（非アクティブカード用） */}
           {!isActive && (
             <div className="flex items-center justify-center space-x-4 pt-2">
-              <button className="p-3 bg-red-100 rounded-full text-red-600 hover:bg-red-200 transition-colors">
+              <button className="p-3 bg-error/10 rounded-full text-error hover:bg-error/20 transition-colors">
                 <X size={20} />
               </button>
-              <button className="p-3 bg-yellow-100 rounded-full text-yellow-600 hover:bg-yellow-200 transition-colors">
+              <button className="p-3 bg-warning/10 rounded-full text-warning hover:bg-warning/20 transition-colors">
                 <MessageCircle size={20} />
               </button>
-              <button className="p-3 bg-green-100 rounded-full text-green-600 hover:bg-green-200 transition-colors">
+              <button className="p-3 bg-success/10 rounded-full text-success hover:bg-success/20 transition-colors">
                 <Heart size={20} />
               </button>
             </div>

@@ -591,9 +591,9 @@ export function PhotoSessionDetail({
                     key={slot.id}
                     className={`w-full p-6 rounded-lg border-2 transition-all duration-200 ${
                       isSlotFull
-                        ? 'border-red-200 bg-red-50/50 dark:border-red-800 dark:bg-red-900/20'
+                        ? 'border-error/20 bg-error/5 dark:border-error/80 dark:bg-error/20'
                         : participationRate >= 70
-                          ? 'border-yellow-200 bg-yellow-50/50 dark:border-yellow-800 dark:bg-yellow-900/20'
+                          ? 'border-warning/30 text-warning bg-warning/10 dark:border-warning/70 dark:text-warning dark:bg-warning/30'
                           : 'border-green-200 bg-green-50/50 dark:border-green-800 dark:bg-green-900/20'
                     }`}
                   >
@@ -603,9 +603,9 @@ export function PhotoSessionDetail({
                         variant="outline"
                         className={`font-medium ${
                           isSlotFull
-                            ? 'border-red-300 text-red-700 bg-red-100 dark:border-red-700 dark:text-red-300 dark:bg-red-900/30'
+                            ? 'border-error/30 text-error bg-error/10 dark:border-error/70 dark:text-error dark:bg-error/30'
                             : participationRate >= 70
-                              ? 'border-yellow-300 text-yellow-700 bg-yellow-100 dark:border-yellow-700 dark:text-yellow-300 dark:bg-yellow-900/30'
+                              ? 'border-warning/30 text-warning bg-warning/10 dark:border-warning/70 dark:text-warning dark:bg-warning/30'
                               : 'border-green-300 text-green-700 bg-green-100 dark:border-green-700 dark:text-green-300 dark:bg-green-900/30'
                         }`}
                       >

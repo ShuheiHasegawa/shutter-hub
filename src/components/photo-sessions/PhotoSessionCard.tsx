@@ -271,8 +271,8 @@ export function PhotoSessionCard({
 
     // バッテリー風のカラーリング
     const getBatteryColor = (percentage: number) => {
-      if (percentage >= 90) return 'bg-red-500'; // 満員間近
-      if (percentage >= 70) return 'bg-yellow-500'; // 多め
+      if (percentage >= 90) return 'bg-error'; // 満員間近
+      if (percentage >= 70) return 'bg-warning'; // 多め
       if (percentage >= 30) return 'bg-success'; // 適度
       return 'bg-blue-500'; // 余裕あり
     };
@@ -426,7 +426,7 @@ export function PhotoSessionCard({
                       variant="outline"
                       size="sm"
                       onClick={() => onViewDetails(session.id)}
-                      className="flex-1 h-11 border-yellow-400 text-yellow-700 hover:bg-yellow-50"
+                      className="flex-1 h-11 border-warning text-warning hover:bg-warning/10"
                     >
                       {tWaitlist('button.join_waitlist')}
                     </Button>
@@ -457,8 +457,8 @@ export function PhotoSessionCard({
 
     // バッテリー風のカラーリング
     const getBatteryColor = (percentage: number) => {
-      if (percentage >= 90) return 'bg-red-500'; // 満員間近
-      if (percentage >= 70) return 'bg-yellow-500'; // 多め
+      if (percentage >= 90) return 'bg-error'; // 満員間近
+      if (percentage >= 70) return 'bg-warning'; // 多め
       if (percentage >= 30) return 'bg-success'; // 適度
       return 'bg-blue-500'; // 余裕あり
     };
@@ -618,7 +618,7 @@ export function PhotoSessionCard({
                       variant="outline"
                       size="sm"
                       onClick={() => onViewDetails(session.id)}
-                      className="border-yellow-400 text-yellow-700 hover:bg-yellow-50"
+                      className="border-warning text-warning hover:bg-warning/10"
                     >
                       {tWaitlist('button.join_waitlist')}
                     </Button>

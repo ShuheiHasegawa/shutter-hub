@@ -223,6 +223,30 @@ alwaysApply: true
   - **優先度**: ✅ 完了（料金入力の使いやすさ大幅向上）
   - **対象箇所**: PhotoSessionForm、PhotoSessionSlotForm（さらなる展開予定）
 
+### **🔴 t0-042: カラーシステム統一化（リリース品質向上の核心）**
+- [x] **Phase 1**: CSS Variables拡張・セマンティッククラス定義 ✅
+- [x] **Phase 2**: 高頻度使用箇所の優先置き換え（20ファイル）✅
+- [x] **Phase 3**: コンポーネント別段階的置き換え（100+ファイル）🔄 進行中
+- [x] **Phase 4**: カラーシステム使用ルール策定・ドキュメント化 ✅
+- [ ] **Phase 5**: 統一化完了検証・品質チェック
+- **優先度**: 🔴 最高（ダークモード・カスタムテーマ対応、ブランド統一）
+- **見積時間**: 1-2週間
+- **実装時間**: Phase 1-3進行中（2024年12月14日、6時間）
+- **依存関係**: なし（並行作業可能）
+- **完成判定**: 全コンポーネントでブランドカラー統一、ダークモード完全対応
+- **技術成果**: 
+  - **✅ セマンティッククラス定義完了**: `text-success`, `bg-warning`, `border-primary`等の統一クラス実装
+  - **✅ CSS Variables拡張完了**: HSLベースシステムに撮影会特有色（success, warning, info, error, available, booked, pending）追加
+  - **✅ 実装例確認完了**: OrganizerManagementPanelで`green-500` → `bg-success`置き換え実証
+  - **✅ ダークモード自動対応**: CSS Variablesによる自動テーマ切り替え実装
+  - **✅ カスタムテーマ基盤**: 将来のユーザー配色カスタマイズ機能への拡張性確保
+  - **✅ 保守性向上**: 一箇所の変更で全体配色変更可能な統一システム構築
+  - **✅ 高頻度使用箇所の置き換え完了**: BookingsList、PhotoSessionCard、PaymentBookingForm、PhotoSessionForm
+  - **✅ 開発ルール改正完了**: development.mdcにカラーシステム統一ルール追加、新規実装時ガバナンス強化
+  - **🔄 段階的置き換え進行中**: PhotoSessionDetail、ConsentSwipeCard等で赤・黄・緑系色の統一化
+  - **✅ セマンティック置き換え実証**: `red-500` → `bg-error`, `yellow-500` → `bg-warning`, `green-500` → `bg-success`
+  - **✅ ダークモード配慮**: すべての置き換えでダークモード対応クラス（/10, /20, /30等）使用"
+
 ### **🔴 t0-027: 基本E2Eテスト構築（品質保証の核心）**
 - [ ] **Phase 1**: Playwright環境最終調整
 - [ ] **Phase 2**: 認証フロー自動テスト（Google/X OAuth）
