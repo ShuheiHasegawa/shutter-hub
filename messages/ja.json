@@ -238,6 +238,7 @@
     "cancelError": "キャンセル失敗",
     "cancelErrorDescription": "予約のキャンセルに失敗しました",
     "cancelNote": "キャンセルポリシーに従って処理されます",
+    "detailsNote": "キャンセルや詳細な操作は詳細画面で行えます",
     "loadError": "読み込みエラー",
     "loadErrorDescription": "予約一覧の読み込みに失敗しました",
     "status": {

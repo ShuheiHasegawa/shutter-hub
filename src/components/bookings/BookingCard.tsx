@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,23 +10,17 @@ import {
   UsersIcon,
   CircleDollarSignIcon,
   ClockIcon,
-  XIcon,
   EyeIcon,
 } from 'lucide-react';
 import { formatDateLocalized, formatTimeLocalized } from '@/lib/utils/date';
 import { useTranslations, useLocale } from 'next-intl';
 import { BookingWithDetails } from '@/types/database';
-import { cancelBooking } from '@/app/actions/bookings';
-import { useToast } from '@/hooks/use-toast';
 
 interface BookingCardProps {
   booking: BookingWithDetails;
-  onBookingUpdate?: () => void;
 }
 
-export function BookingCard({ booking, onBookingUpdate }: BookingCardProps) {
-  const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
+export function BookingCard({ booking }: BookingCardProps) {
   const t = useTranslations('bookings');
   const locale = useLocale();
 
@@ -62,36 +55,7 @@ export function BookingCard({ booking, onBookingUpdate }: BookingCardProps) {
 
   const canCancel = booking.status === 'confirmed' && isUpcoming;
 
-  const handleCancel = async () => {
-    if (!canCancel) return;
-
-    setIsLoading(true);
-    try {
-      const result = await cancelBooking(booking.id);
-
-      if (result.success) {
-        toast({
-          title: t('cancelSuccess'),
-          description: t('cancelSuccessDescription'),
-        });
-        onBookingUpdate?.();
-      } else {
-        toast({
-          title: t('cancelError'),
-          description: result.error || t('cancelErrorDescription'),
-          variant: 'destructive',
-        });
-      }
-    } catch {
-      toast({
-        title: t('cancelError'),
-        description: t('cancelErrorDescription'),
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // キャンセル処理は詳細画面でのみ実行可能（安全性向上のため一覧画面では削除）
 
   return (
     <Card className="hover:shadow-lg transition-shadow">
@@ -161,39 +125,18 @@ export function BookingCard({ booking, onBookingUpdate }: BookingCardProps) {
 
         {/* アクションボタン */}
         <div className="flex gap-2 pt-2">
-          <Button asChild variant="outline" className="flex-1">
+          <Button asChild variant="outline" className="w-full">
             <a href={`/photo-sessions/${session.id}`}>
               <EyeIcon className="h-4 w-4 mr-2" />
               {t('viewDetails')}
             </a>
           </Button>
-
-          {canCancel && (
-            <Button
-              variant="destructive"
-              onClick={handleCancel}
-              disabled={isLoading}
-              className="flex-1"
-            >
-              {isLoading ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                  {t('cancelling')}
-                </>
-              ) : (
-                <>
-                  <XIcon className="h-4 w-4 mr-2" />
-                  {t('cancel')}
-                </>
-              )}
-            </Button>
-          )}
         </div>
 
-        {/* キャンセル注意事項 */}
+        {/* 詳細画面での操作案内 */}
         {canCancel && (
           <div className="text-xs text-muted-foreground bg-muted/50 p-2 rounded">
-            <p>{t('cancelNote')}</p>
+            <p>{t('detailsNote')}</p>
           </div>
         )}
       </CardContent>

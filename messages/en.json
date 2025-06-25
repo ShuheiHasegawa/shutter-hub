@@ -242,6 +242,7 @@
     "cancelError": "Cancellation Failed",
     "cancelErrorDescription": "Failed to cancel your booking",
     "cancelNote": "Processed according to cancellation policy",
+    "detailsNote": "Cancellation and detailed operations can be performed on the details page",
     "loadError": "Loading Error",
     "loadErrorDescription": "Failed to load booking list",
     "status": {
