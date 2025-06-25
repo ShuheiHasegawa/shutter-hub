@@ -176,8 +176,8 @@ export function OrganizerManagementPanel({
         <Card>
           <CardHeader>
             <div className="mb-6 flex items-center">
-              <Clock className="text-xl mr-3 text-blue-600 h-6 w-6" />
-              <h2 className="text-2xl font-bold">撮影枠別予約状況</h2>
+              <Clock className="mr-3 h-6 w-6" />
+              <h2>撮影枠別予約状況</h2>
             </div>
           </CardHeader>
           <CardContent>
@@ -249,7 +249,9 @@ export function OrganizerManagementPanel({
                             </Badge>
                           </div>
 
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-3">
+                          <div
+                            className={`grid ${showProgress ? 'grid-cols-2 md:grid-cols-4' : 'grid-cols-1 md:grid-cols-3'} gap-4 mt-3`}
+                          >
                             <div>
                               <div className="text-sm text-gray-600">
                                 参加者
@@ -260,14 +262,17 @@ export function OrganizerManagementPanel({
                               </div>
                             </div>
 
-                            <div>
-                              <div className="text-sm text-gray-600">
-                                予約率
+                            {/* 予約率表示（予約可能人数が1人の場合は非表示） */}
+                            {showProgress && (
+                              <div>
+                                <div className="text-sm text-gray-600">
+                                  予約率
+                                </div>
+                                <div className="font-semibold">
+                                  {bookingRate}%
+                                </div>
                               </div>
-                              <div className="font-semibold">
-                                {bookingRate}%
-                              </div>
-                            </div>
+                            )}
 
                             <div>
                               <div className="text-sm text-gray-600">料金</div>
