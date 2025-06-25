@@ -13,7 +13,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { PlusIcon, SearchIcon, Loader2 } from 'lucide-react';
+import {
+  PlusIcon,
+  SearchIcon,
+  Loader2,
+  SidebarClose,
+  Plus,
+} from 'lucide-react';
+import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import type { PhotoSessionWithOrganizer, BookingType } from '@/types/database';
 import { useTranslations } from 'next-intl';
@@ -421,53 +428,83 @@ export function PhotoSessionList({
 
   return (
     <div className="space-y-6">
-      {/* ソート機能 */}
-      <div className="flex justify-end items-center">
+      {/* ヘッダーコントロール */}
+      <div className="flex justify-between items-center">
+        {/* 左側: フィルター閉じるアイコン */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => {
+            /* フィルター閉じる処理 */
+          }}
+          className="h-9 w-9 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          title="フィルターを閉じる"
+          aria-label="フィルターを閉じる"
+        >
+          <SidebarClose className="h-5 w-5" />
+        </Button>
+
+        {/* 右側: 並び順と撮影会作成ボタン */}
         <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground hidden sm:inline">
-            並び順:
-          </span>
-          <Select
-            value={`${sortBy}_${sortOrder}`}
-            onValueChange={value => {
-              const [newSortBy, newSortOrder] = value.split('_') as [
-                (
-                  | 'start_time'
-                  | 'price'
-                  | 'created_at'
-                  | 'popularity'
-                  | 'end_time'
-                ),
-                'asc' | 'desc',
-              ];
-              setSortBy(newSortBy);
-              setSortOrder(newSortOrder);
-            }}
-          >
-            <SelectTrigger className="w-[140px] sm:w-[160px]">
-              <SelectValue placeholder="並び順" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="start_time_asc">
-                開催日時順（早い順）
-              </SelectItem>
-              <SelectItem value="start_time_desc">
-                開催日時順（遅い順）
-              </SelectItem>
-              <SelectItem value="end_time_asc">終了日時順（早い順）</SelectItem>
-              <SelectItem value="end_time_desc">
-                終了日時順（遅い順）
-              </SelectItem>
-              <SelectItem value="price_asc">価格順（安い順）</SelectItem>
-              <SelectItem value="price_desc">価格順（高い順）</SelectItem>
-              <SelectItem value="popularity_desc">人気順（高い順）</SelectItem>
-              <SelectItem value="popularity_asc">人気順（低い順）</SelectItem>
-              <SelectItem value="created_at_desc">
-                新着順（新しい順）
-              </SelectItem>
-              <SelectItem value="created_at_asc">新着順（古い順）</SelectItem>
-            </SelectContent>
-          </Select>
+          {/* 並び順 */}
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground hidden sm:inline">
+              並び順:
+            </span>
+            <Select
+              value={`${sortBy}_${sortOrder}`}
+              onValueChange={value => {
+                const [newSortBy, newSortOrder] = value.split('_') as [
+                  (
+                    | 'start_time'
+                    | 'price'
+                    | 'created_at'
+                    | 'popularity'
+                    | 'end_time'
+                  ),
+                  'asc' | 'desc',
+                ];
+                setSortBy(newSortBy);
+                setSortOrder(newSortOrder);
+              }}
+            >
+              <SelectTrigger className="w-[140px] sm:w-[160px]">
+                <SelectValue placeholder="並び順" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="start_time_asc">
+                  開催日時順（早い順）
+                </SelectItem>
+                <SelectItem value="start_time_desc">
+                  開催日時順（遅い順）
+                </SelectItem>
+                <SelectItem value="end_time_asc">
+                  終了日時順（早い順）
+                </SelectItem>
+                <SelectItem value="end_time_desc">
+                  終了日時順（遅い順）
+                </SelectItem>
+                <SelectItem value="price_asc">価格順（安い順）</SelectItem>
+                <SelectItem value="price_desc">価格順（高い順）</SelectItem>
+                <SelectItem value="popularity_desc">
+                  人気順（高い順）
+                </SelectItem>
+                <SelectItem value="popularity_asc">人気順（低い順）</SelectItem>
+                <SelectItem value="created_at_desc">
+                  新着順（新しい順）
+                </SelectItem>
+                <SelectItem value="created_at_asc">新着順（古い順）</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* 撮影会作成ボタン */}
+          <Button asChild size="sm">
+            <Link href="/photo-sessions/create">
+              <Plus className="h-4 w-4 mr-2" />
+              撮影会を作成
+            </Link>
+          </Button>
         </div>
       </div>
 
