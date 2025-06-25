@@ -117,27 +117,28 @@ export default function PhotoSessionsPage() {
             <p className="text-muted-foreground">{t('list.description')}</p>
           </div>
           <div className="flex items-center gap-4">
-            {/* フィルター切り替えボタン */}
+            {/* フィルター切り替えボタン - Twitchライクなアイコンのみ */}
             <Button
-              variant="outline"
-              size="sm"
+              variant="ghost"
+              size="icon"
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="gap-2"
+              className="h-9 w-9 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              title={
+                sidebarOpen
+                  ? t('sidebar.closeFilters')
+                  : t('sidebar.openFilters')
+              }
+              aria-label={
+                sidebarOpen
+                  ? t('sidebar.closeFilters')
+                  : t('sidebar.openFilters')
+              }
+              aria-expanded={sidebarOpen}
             >
               {sidebarOpen ? (
-                <>
-                  <SidebarClose className="h-4 w-4" />
-                  <span className="hidden sm:inline">
-                    {t('sidebar.closeFilters')}
-                  </span>
-                </>
+                <SidebarClose className="h-5 w-5" />
               ) : (
-                <>
-                  <SidebarOpen className="h-4 w-4" />
-                  <span className="hidden sm:inline">
-                    {t('sidebar.openFilters')}
-                  </span>
-                </>
+                <SidebarOpen className="h-5 w-5" />
               )}
             </Button>
             <Button asChild>
