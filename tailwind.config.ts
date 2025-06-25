@@ -80,6 +80,36 @@ const config: Config = {
           '4': 'hsl(var(--chart-4))',
           '5': 'hsl(var(--chart-5))',
         },
+
+        // ShutterHub セマンティックカラー
+        success: {
+          DEFAULT: 'hsl(var(--success))',
+          foreground: 'hsl(var(--success-foreground))',
+        },
+        warning: {
+          DEFAULT: 'hsl(var(--warning))',
+          foreground: 'hsl(var(--warning-foreground))',
+        },
+        info: {
+          DEFAULT: 'hsl(var(--info))',
+          foreground: 'hsl(var(--info-foreground))',
+        },
+        error: {
+          DEFAULT: 'hsl(var(--error))',
+          foreground: 'hsl(var(--error-foreground))',
+        },
+        available: {
+          DEFAULT: 'hsl(var(--available))',
+          foreground: 'hsl(var(--available-foreground))',
+        },
+        booked: {
+          DEFAULT: 'hsl(var(--booked))',
+          foreground: 'hsl(var(--booked-foreground))',
+        },
+        pending: {
+          DEFAULT: 'hsl(var(--pending))',
+          foreground: 'hsl(var(--pending-foreground))',
+        },
       },
       borderRadius: {
         lg: 'var(--radius)',

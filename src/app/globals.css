@@ -53,6 +53,22 @@
     --chart-5: 27 87% 67%;
 
     --radius: 0.5rem;
+
+    /* ShutterHub セマンティックカラー */
+    --success: 142 71% 45%; /* 予約成功・空きあり（緑系） */
+    --success-foreground: 0 0% 100%;
+    --warning: 43 96% 56%; /* 注意・待機状態（黄系） */
+    --warning-foreground: 0 0% 9%;
+    --info: 217 91% 60%; /* 情報・リンク（青系） */
+    --info-foreground: 0 0% 100%;
+    --error: 0 84% 60%; /* エラー・満席（赤系） */
+    --error-foreground: 0 0% 100%;
+    --available: 142 71% 45%; /* 空きあり状態 */
+    --available-foreground: 0 0% 100%;
+    --booked: 0 84% 60%; /* 満席状態 */
+    --booked-foreground: 0 0% 100%;
+    --pending: 43 96% 56%; /* 待機・保留状態 */
+    --pending-foreground: 0 0% 9%;
   }
   .dark {
     --background: 222.2 84% 4.9%;
@@ -102,6 +118,22 @@
     --chart-4: 280 65% 60%;
 
     --chart-5: 340 75% 55%;
+
+    /* ShutterHub セマンティックカラー（ダークモード） */
+    --success: 142 71% 45%; /* ダークモードでも視認性良好 */
+    --success-foreground: 0 0% 9%;
+    --warning: 43 96% 40%; /* ダークモードで少し暗く */
+    --warning-foreground: 0 0% 100%;
+    --info: 217 91% 55%; /* ダークモードで少し暗く */
+    --info-foreground: 0 0% 100%;
+    --error: 0 84% 55%; /* ダークモードで少し暗く */
+    --error-foreground: 0 0% 100%;
+    --available: 142 71% 45%; /* 空きあり状態 */
+    --available-foreground: 0 0% 9%;
+    --booked: 0 84% 55%; /* 満席状態 */
+    --booked-foreground: 0 0% 100%;
+    --pending: 43 96% 40%; /* 待機・保留状態 */
+    --pending-foreground: 0 0% 100%;
   }
 }
 

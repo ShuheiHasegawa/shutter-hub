@@ -53,9 +53,9 @@ export function OrganizerManagementPanel({
 
   const getStatusColor = () => {
     const rate = getBookingRate();
-    if (rate >= 90) return 'bg-green-500';
-    if (rate >= 70) return 'bg-yellow-500';
-    if (rate >= 50) return 'bg-blue-500';
+    if (rate >= 90) return 'bg-success';
+    if (rate >= 70) return 'bg-warning';
+    if (rate >= 50) return 'bg-info';
     return 'bg-gray-400';
   };
 
@@ -203,7 +203,7 @@ export function OrganizerManagementPanel({
                   <div key={slot.id} className="relative mb-8">
                     <div
                       className={`absolute left-8 top-0 bottom-0 w-0.5 ${
-                        isFullyBooked ? 'bg-rose-400' : 'bg-emerald-400'
+                        isFullyBooked ? 'bg-booked' : 'bg-available'
                       }`}
                       style={{
                         top: '-1rem',
@@ -213,7 +213,7 @@ export function OrganizerManagementPanel({
 
                     <div
                       className={`absolute left-6 top-0 h-4 w-4 rounded-full border-2 border-white ${
-                        isFullyBooked ? 'bg-rose-500' : 'bg-emerald-500'
+                        isFullyBooked ? 'bg-booked' : 'bg-available'
                       }`}
                     ></div>
 
@@ -226,8 +226,8 @@ export function OrganizerManagementPanel({
                                 variant="outline"
                                 className={`mr-2 font-semibold ${
                                   isFullyBooked
-                                    ? 'bg-rose-100 text-rose-700 border-rose-300'
-                                    : 'bg-emerald-100 text-emerald-700 border-emerald-300'
+                                    ? 'bg-booked/10 text-booked border-booked/30'
+                                    : 'bg-available/10 text-available border-available/30'
                                 }`}
                               >
                                 枠 {slot.slot_number}
@@ -241,8 +241,8 @@ export function OrganizerManagementPanel({
                             <Badge
                               className={`${
                                 isFullyBooked
-                                  ? 'bg-rose-600 hover:bg-rose-700'
-                                  : 'bg-emerald-600 hover:bg-emerald-700'
+                                  ? 'bg-booked hover:bg-booked/90'
+                                  : 'bg-available hover:bg-available/90'
                               }`}
                             >
                               {isFullyBooked ? '満席' : '空きあり'}
@@ -288,7 +288,7 @@ export function OrganizerManagementPanel({
                             <div>
                               <div className="text-sm text-gray-600">収益</div>
                               <div
-                                className={`font-semibold ${revenue > 0 ? 'text-green-600' : ''}`}
+                                className={`font-semibold ${revenue > 0 ? 'text-success' : ''}`}
                               >
                                 ¥{revenue.toLocaleString()}
                               </div>
