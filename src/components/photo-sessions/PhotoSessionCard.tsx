@@ -145,7 +145,7 @@ export function PhotoSessionCard({
                     <span>{session.location}</span>
                   </div>
                   <div className="flex items-center text-gray-600 dark:text-gray-300">
-                    <UsersIcon className="w-4 h-4 mr-2 text-purple-500" />
+                    <UsersIcon className="w-4 h-4 mr-2 text-primary" />
                     <span>
                       {session.current_participants}/{session.max_participants}
                       名
@@ -156,7 +156,7 @@ export function PhotoSessionCard({
 
               <div className="flex items-center justify-between mt-4">
                 <div className="flex items-center">
-                  <CircleDollarSignIcon className="w-5 h-5 mr-1 text-orange-500" />
+                  <CircleDollarSignIcon className="w-5 h-5 mr-1 text-warning" />
                   <span className="text-2xl font-bold text-gray-900 dark:text-white">
                     {session.price_per_person === 0 ? (
                       tBooking('free')
@@ -232,7 +232,7 @@ export function PhotoSessionCard({
                   <span>{session.location}</span>
                 </div>
                 <div className="flex items-center text-gray-600 dark:text-gray-300">
-                  <UsersIcon className="w-4 h-4 mr-2 text-purple-500" />
+                  <UsersIcon className="w-4 h-4 mr-2 text-primary" />
                   <span>
                     {session.current_participants}/{session.max_participants}名
                   </span>
@@ -241,7 +241,7 @@ export function PhotoSessionCard({
 
               <div className="flex items-center justify-between pt-2">
                 <div className="flex items-center">
-                  <CircleDollarSignIcon className="w-5 h-5 mr-1 text-orange-500" />
+                  <CircleDollarSignIcon className="w-5 h-5 mr-1 text-warning" />
                   <span className="text-xl font-bold text-gray-900 dark:text-white">
                     {session.price_per_person === 0 ? (
                       tBooking('free')
@@ -336,10 +336,10 @@ export function PhotoSessionCard({
             </div>
 
             {/* 参加者 - バッテリー風デザイン */}
-            <div className="bg-purple-50 p-2.5 rounded-lg min-h-[70px] flex flex-col">
+            <div className="bg-primary/10 p-2.5 rounded-lg min-h-[70px] flex flex-col">
               <div className="flex items-center gap-1.5 mb-1">
-                <UsersIcon className="h-3.5 w-3.5 text-purple-600 flex-shrink-0" />
-                <span className="text-xs font-semibold text-purple-800 truncate">
+                <UsersIcon className="h-3.5 w-3.5 text-primary flex-shrink-0" />
+                <span className="text-xs font-semibold text-primary/80 truncate">
                   {t('card.labels.participants')}
                 </span>
               </div>
@@ -369,10 +369,10 @@ export function PhotoSessionCard({
             </div>
 
             {/* 料金 */}
-            <div className="bg-orange-50 p-2.5 rounded-lg min-h-[70px] flex flex-col">
+            <div className="bg-warning/10 p-2.5 rounded-lg min-h-[70px] flex flex-col">
               <div className="flex items-center gap-1.5 mb-1">
-                <CircleDollarSignIcon className="h-3.5 w-3.5 text-orange-600 flex-shrink-0" />
-                <span className="text-xs font-semibold text-orange-800 truncate">
+                <CircleDollarSignIcon className="h-3.5 w-3.5 text-warning flex-shrink-0" />
+                <span className="text-xs font-semibold text-warning/80 truncate">
                   {t('card.labels.price')}
                 </span>
               </div>
@@ -399,7 +399,7 @@ export function PhotoSessionCard({
                   disabled={
                     session.current_participants >= session.max_participants
                   }
-                  className="w-full h-11 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-md disabled:from-gray-400 disabled:to-gray-500 transition-all duration-200"
+                  className="w-full h-11 bg-gradient-to-r from-info to-primary hover:from-info/90 hover:to-primary/90 text-white shadow-md disabled:from-gray-400 disabled:to-gray-500 transition-all duration-200"
                 >
                   {session.current_participants >= session.max_participants
                     ? tBooking('sessionFull')
@@ -467,8 +467,8 @@ export function PhotoSessionCard({
       <Card className="w-full hover:shadow-lg transition-all duration-300 group border-l-4 border-l-transparent hover:border-l-blue-500 bg-gradient-to-r from-white to-gray-50/30">
         <div className="flex items-stretch p-6">
           {/* 左側: 画像エリア（将来の実装用） */}
-          <div className="w-48 h-32 bg-gradient-to-br from-blue-100 to-purple-100 rounded-xl mr-6 flex-shrink-0 flex items-center justify-center shadow-sm">
-            <CalendarIcon className="h-12 w-12 text-blue-400 opacity-60" />
+          <div className="w-48 h-32 bg-gradient-to-br from-info/10 to-primary/10 rounded-xl mr-6 flex-shrink-0 flex items-center justify-center shadow-sm">
+            <CalendarIcon className="h-12 w-12 text-info/60 opacity-60" />
           </div>
 
           {/* 中央: コンテンツエリア */}
@@ -532,10 +532,10 @@ export function PhotoSessionCard({
               </div>
 
               {/* 参加者 - バッテリー風デザイン */}
-              <div className="bg-purple-50 p-3 rounded-lg min-h-[80px] flex flex-col">
+              <div className="bg-primary/10 p-3 rounded-lg min-h-[80px] flex flex-col">
                 <div className="flex items-center gap-2 mb-2">
-                  <UsersIcon className="h-4 w-4 text-purple-600 flex-shrink-0" />
-                  <span className="text-sm font-semibold text-purple-800">
+                  <UsersIcon className="h-4 w-4 text-primary flex-shrink-0" />
+                  <span className="text-sm font-semibold text-primary/80">
                     {t('card.labels.participants')}
                   </span>
                 </div>
@@ -565,10 +565,10 @@ export function PhotoSessionCard({
               </div>
 
               {/* 料金 */}
-              <div className="bg-orange-50 p-3 rounded-lg min-h-[80px] flex flex-col">
+              <div className="bg-warning/10 p-3 rounded-lg min-h-[80px] flex flex-col">
                 <div className="flex items-center gap-2 mb-2">
-                  <CircleDollarSignIcon className="h-4 w-4 text-orange-600 flex-shrink-0" />
-                  <span className="text-sm font-semibold text-orange-800">
+                  <CircleDollarSignIcon className="h-4 w-4 text-warning flex-shrink-0" />
+                  <span className="text-sm font-semibold text-warning/80">
                     {t('card.labels.price')}
                   </span>
                 </div>
@@ -607,7 +607,7 @@ export function PhotoSessionCard({
                     disabled={
                       session.current_participants >= session.max_participants
                     }
-                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-md disabled:from-gray-400 disabled:to-gray-500"
+                    className="bg-gradient-to-r from-info to-primary hover:from-info/90 hover:to-primary/90 text-white shadow-md disabled:from-gray-400 disabled:to-gray-500"
                   >
                     {session.current_participants >= session.max_participants
                       ? tBooking('sessionFull')
