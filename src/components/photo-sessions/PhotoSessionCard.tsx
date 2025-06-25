@@ -78,7 +78,7 @@ export function PhotoSessionCard({
 
     return (
       <Card
-        className="overflow-hidden hover:shadow-xl hover:border-blue-400 hover:scale-[1.02] transition-all duration-300 group cursor-pointer transform"
+        className="overflow-hidden hover:shadow-xl hover:border-info/50 hover:scale-[1.02] transition-all duration-300 group cursor-pointer transform"
         onClick={() => onViewDetails?.(session.id)}
       >
         <CardContent className="p-0">
@@ -87,8 +87,8 @@ export function PhotoSessionCard({
             {/* Image Section */}
             <div className="w-80 flex-shrink-0 relative overflow-hidden">
               {/* プレースホルダー画像 - 将来的に実際の画像に置き換え */}
-              <div className="w-full h-full bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 flex items-center justify-center">
-                <CalendarIcon className="h-16 w-16 text-blue-400 opacity-60" />
+              <div className="w-full h-full bg-gradient-to-br from-info/10 to-primary/10 dark:from-info/20 dark:to-primary/20 flex items-center justify-center">
+                <CalendarIcon className="h-16 w-16 text-info/60 opacity-60" />
               </div>
               <div className="absolute top-4 right-4">
                 <Badge
@@ -131,13 +131,13 @@ export function PhotoSessionCard({
 
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div className="flex items-center text-gray-600 dark:text-gray-300">
-                    <CalendarIcon className="w-4 h-4 mr-2 text-blue-500" />
+                    <CalendarIcon className="w-4 h-4 mr-2 text-info" />
                     <span>
                       {formatDateLocalized(startDate, locale, 'short')}
                     </span>
                   </div>
                   <div className="flex items-center text-gray-600 dark:text-gray-300">
-                    <Clock className="w-4 h-4 mr-2 text-blue-500" />
+                    <Clock className="w-4 h-4 mr-2 text-info" />
                     <span>{formatTimeLocalized(startDate, locale)}〜</span>
                   </div>
                   <div className="flex items-center text-gray-600 dark:text-gray-300">
@@ -178,8 +178,8 @@ export function PhotoSessionCard({
           <div className="md:hidden">
             {/* Image Section */}
             <div className="relative h-48 overflow-hidden">
-              <div className="w-full h-full bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 flex items-center justify-center">
-                <CalendarIcon className="h-12 w-12 text-blue-400 opacity-60" />
+              <div className="w-full h-full bg-gradient-to-br from-info/10 to-primary/10 dark:from-info/20 dark:to-primary/20 flex items-center justify-center">
+                <CalendarIcon className="h-12 w-12 text-info/60 opacity-60" />
               </div>
               <div className="absolute top-4 right-4">
                 <Badge
@@ -220,11 +220,11 @@ export function PhotoSessionCard({
 
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div className="flex items-center text-gray-600 dark:text-gray-300">
-                  <CalendarIcon className="w-4 h-4 mr-2 text-blue-500" />
+                  <CalendarIcon className="w-4 h-4 mr-2 text-info" />
                   <span>{formatDateLocalized(startDate, locale, 'short')}</span>
                 </div>
                 <div className="flex items-center text-gray-600 dark:text-gray-300">
-                  <Clock className="w-4 h-4 mr-2 text-blue-500" />
+                  <Clock className="w-4 h-4 mr-2 text-info" />
                   <span>{formatTimeLocalized(startDate, locale)}〜</span>
                 </div>
                 <div className="flex items-center text-gray-600 dark:text-gray-300">
@@ -274,12 +274,12 @@ export function PhotoSessionCard({
       if (percentage >= 90) return 'bg-error'; // 満員間近
       if (percentage >= 70) return 'bg-warning'; // 多め
       if (percentage >= 30) return 'bg-success'; // 適度
-      return 'bg-blue-500'; // 余裕あり
+      return 'bg-info'; // 余裕あり
     };
 
     return (
       <Card
-        className="w-full hover:shadow-lg hover:border-blue-400 hover:scale-[1.02] transition-all duration-300 bg-white border border-gray-200 cursor-pointer transform"
+        className="w-full hover:shadow-lg hover:border-info/50 hover:scale-[1.02] transition-all duration-300 bg-white border border-gray-200 cursor-pointer transform"
         onClick={() => onViewDetails?.(session.id)}
       >
         <div className="p-4">
@@ -307,10 +307,10 @@ export function PhotoSessionCard({
           {/* 情報グリッド（2×2）- 等しい横幅 */}
           <div className="grid grid-cols-2 gap-3 mb-4">
             {/* 日時 */}
-            <div className="bg-blue-50 p-2.5 rounded-lg min-h-[70px] flex flex-col">
+            <div className="bg-info/10 p-2.5 rounded-lg min-h-[70px] flex flex-col">
               <div className="flex items-center gap-1.5 mb-1">
-                <CalendarIcon className="h-3.5 w-3.5 text-blue-600 flex-shrink-0" />
-                <span className="text-xs font-semibold text-blue-800 truncate">
+                <CalendarIcon className="h-3.5 w-3.5 text-info flex-shrink-0" />
+                <span className="text-xs font-semibold text-info/80 truncate">
                   {t('card.labels.dateTime')}
                 </span>
               </div>

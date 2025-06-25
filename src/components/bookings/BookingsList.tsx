@@ -162,7 +162,7 @@ export function BookingsList() {
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-blue-600">
+            <div className="text-2xl font-bold text-info">
               {statusCounts.upcoming}
             </div>
             <div className="text-sm text-muted-foreground">

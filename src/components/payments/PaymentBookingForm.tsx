@@ -122,7 +122,7 @@ export function PaymentBookingForm({
       onClick: handleCreateBooking,
       loading: isLoading,
       icon: <CreditCard className="h-4 w-4" />,
-      className: 'bg-blue-600 hover:bg-blue-700',
+      className: 'bg-info hover:bg-info/90',
     },
   ];
 
@@ -200,10 +200,10 @@ export function PaymentBookingForm({
       {/* ステップ表示 */}
       <div className="flex items-center justify-center space-x-4">
         <div
-          className={`flex items-center gap-2 ${step === 'booking' ? 'text-blue-600' : step === 'payment' || step === 'success' ? 'text-success' : 'text-gray-400'}`}
+          className={`flex items-center gap-2 ${step === 'booking' ? 'text-info' : step === 'payment' || step === 'success' ? 'text-success' : 'text-gray-400'}`}
         >
           <div
-            className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${step === 'booking' ? 'bg-blue-100 text-blue-600' : step === 'payment' || step === 'success' ? 'bg-success/10 text-success' : 'bg-gray-100 text-gray-400'}`}
+            className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${step === 'booking' ? 'bg-info/10 text-info' : step === 'payment' || step === 'success' ? 'bg-success/10 text-success' : 'bg-gray-100 text-gray-400'}`}
           >
             {step === 'payment' || step === 'success' ? (
               <CheckCircle className="h-4 w-4" />
@@ -219,10 +219,10 @@ export function PaymentBookingForm({
         />
 
         <div
-          className={`flex items-center gap-2 ${step === 'payment' ? 'text-blue-600' : step === 'success' ? 'text-success' : 'text-gray-400'}`}
+          className={`flex items-center gap-2 ${step === 'payment' ? 'text-info' : step === 'success' ? 'text-success' : 'text-gray-400'}`}
         >
           <div
-            className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${step === 'payment' ? 'bg-blue-100 text-blue-600' : step === 'success' ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}
+            className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${step === 'payment' ? 'bg-info/10 text-info' : step === 'success' ? 'bg-success/10 text-success' : 'bg-gray-100 text-gray-400'}`}
           >
             {step === 'success' ? <CheckCircle className="h-4 w-4" /> : '2'}
           </div>
@@ -256,9 +256,9 @@ export function PaymentBookingForm({
               この撮影会に参加しますか？決済完了後、予約が確定されます。
             </p>
 
-            <div className="bg-blue-50 rounded-lg p-4">
-              <h4 className="font-medium text-blue-900 mb-2">注意事項</h4>
-              <ul className="text-sm text-blue-800 space-y-1">
+            <div className="bg-info/10 rounded-lg p-4">
+              <h4 className="font-medium text-info/90 mb-2">注意事項</h4>
+              <ul className="text-sm text-info/80 space-y-1">
                 <li>
                   •
                   決済完了後のキャンセルは、撮影会のキャンセルポリシーに従います
