@@ -200,10 +200,10 @@ export function PaymentBookingForm({
       {/* ステップ表示 */}
       <div className="flex items-center justify-center space-x-4">
         <div
-          className={`flex items-center gap-2 ${step === 'booking' ? 'text-blue-600' : step === 'payment' || step === 'success' ? 'text-green-600' : 'text-gray-400'}`}
+          className={`flex items-center gap-2 ${step === 'booking' ? 'text-blue-600' : step === 'payment' || step === 'success' ? 'text-success' : 'text-gray-400'}`}
         >
           <div
-            className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${step === 'booking' ? 'bg-blue-100 text-blue-600' : step === 'payment' || step === 'success' ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}
+            className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${step === 'booking' ? 'bg-blue-100 text-blue-600' : step === 'payment' || step === 'success' ? 'bg-success/10 text-success' : 'bg-gray-100 text-gray-400'}`}
           >
             {step === 'payment' || step === 'success' ? (
               <CheckCircle className="h-4 w-4" />
@@ -215,11 +215,11 @@ export function PaymentBookingForm({
         </div>
 
         <div
-          className={`w-8 h-0.5 ${step === 'payment' || step === 'success' ? 'bg-green-600' : 'bg-gray-300'}`}
+          className={`w-8 h-0.5 ${step === 'payment' || step === 'success' ? 'bg-success' : 'bg-gray-300'}`}
         />
 
         <div
-          className={`flex items-center gap-2 ${step === 'payment' ? 'text-blue-600' : step === 'success' ? 'text-green-600' : 'text-gray-400'}`}
+          className={`flex items-center gap-2 ${step === 'payment' ? 'text-blue-600' : step === 'success' ? 'text-success' : 'text-gray-400'}`}
         >
           <div
             className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${step === 'payment' ? 'bg-blue-100 text-blue-600' : step === 'success' ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}

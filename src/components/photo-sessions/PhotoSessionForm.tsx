@@ -32,6 +32,7 @@ import PhotoSessionSlotForm from '@/components/photo-sessions/PhotoSessionSlotFo
 import { Label } from '@/components/ui/label';
 import { FormattedDateTime } from '@/components/ui/formatted-display';
 import { PriceInput } from '@/components/ui/price-input';
+import { Check } from 'lucide-react';
 
 interface PhotoSessionFormProps {
   initialData?: PhotoSessionWithOrganizer;
@@ -457,7 +458,7 @@ export function PhotoSessionForm({
               <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                 <div className="flex items-start space-x-2">
                   <div className="text-blue-600 dark:text-blue-400 mt-0.5">
-                    ℹ️
+                    <Check className="h-5 w-5 text-success" />
                   </div>
                   <div className="text-sm text-blue-700 dark:text-blue-300">
                     <p className="font-medium mb-2">

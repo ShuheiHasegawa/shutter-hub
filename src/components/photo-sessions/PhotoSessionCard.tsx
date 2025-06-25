@@ -141,7 +141,7 @@ export function PhotoSessionCard({
                     <span>{formatTimeLocalized(startDate, locale)}〜</span>
                   </div>
                   <div className="flex items-center text-gray-600 dark:text-gray-300">
-                    <MapPinIcon className="w-4 h-4 mr-2 text-green-500" />
+                    <MapPinIcon className="w-4 h-4 mr-2 text-success" />
                     <span>{session.location}</span>
                   </div>
                   <div className="flex items-center text-gray-600 dark:text-gray-300">
@@ -228,7 +228,7 @@ export function PhotoSessionCard({
                   <span>{formatTimeLocalized(startDate, locale)}〜</span>
                 </div>
                 <div className="flex items-center text-gray-600 dark:text-gray-300">
-                  <MapPinIcon className="w-4 h-4 mr-2 text-green-500" />
+                  <MapPinIcon className="w-4 h-4 mr-2 text-success" />
                   <span>{session.location}</span>
                 </div>
                 <div className="flex items-center text-gray-600 dark:text-gray-300">
@@ -273,7 +273,7 @@ export function PhotoSessionCard({
     const getBatteryColor = (percentage: number) => {
       if (percentage >= 90) return 'bg-red-500'; // 満員間近
       if (percentage >= 70) return 'bg-yellow-500'; // 多め
-      if (percentage >= 30) return 'bg-green-500'; // 適度
+      if (percentage >= 30) return 'bg-success'; // 適度
       return 'bg-blue-500'; // 余裕あり
     };
 
@@ -325,7 +325,7 @@ export function PhotoSessionCard({
             {/* 場所 */}
             <div className="bg-green-50 p-2.5 rounded-lg min-h-[70px] flex flex-col">
               <div className="flex items-center gap-1.5 mb-1">
-                <MapPinIcon className="h-3.5 w-3.5 text-green-600 flex-shrink-0" />
+                <MapPinIcon className="h-3.5 w-3.5 text-success flex-shrink-0" />
                 <span className="text-xs font-semibold text-green-800 truncate">
                   {t('card.labels.location')}
                 </span>
@@ -459,7 +459,7 @@ export function PhotoSessionCard({
     const getBatteryColor = (percentage: number) => {
       if (percentage >= 90) return 'bg-red-500'; // 満員間近
       if (percentage >= 70) return 'bg-yellow-500'; // 多め
-      if (percentage >= 30) return 'bg-green-500'; // 適度
+      if (percentage >= 30) return 'bg-success'; // 適度
       return 'bg-blue-500'; // 余裕あり
     };
 
@@ -521,7 +521,7 @@ export function PhotoSessionCard({
               {/* 場所 */}
               <div className="bg-green-50 p-3 rounded-lg min-h-[80px] flex flex-col">
                 <div className="flex items-center gap-2 mb-2">
-                  <MapPinIcon className="h-4 w-4 text-green-600 flex-shrink-0" />
+                  <MapPinIcon className="h-4 w-4 text-success flex-shrink-0" />
                   <span className="text-sm font-semibold text-green-800">
                     {t('card.labels.location')}
                   </span>
