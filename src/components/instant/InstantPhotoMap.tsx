@@ -1,15 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import {
-  MapContainer,
-  TileLayer,
-  Marker,
-  Popup,
-  Circle,
-  useMap,
-} from 'react-leaflet';
-import { Icon, LatLngBounds } from 'leaflet';
+import dynamic from 'next/dynamic';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -17,8 +9,41 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { MapPin, Camera, Star, Navigation } from 'lucide-react';
 import type { LocationData, NearbyPhotographer } from '@/types/instant-photo';
 
-// Leaflet CSS import (dynamic import to avoid SSR issues)
-import 'leaflet/dist/leaflet.css';
+// Leafletコンポーネントをdynamic importでSSR無効化
+const DynamicMapContainer = dynamic(
+  () => import('react-leaflet').then(mod => mod.MapContainer),
+  { ssr: false }
+);
+const DynamicTileLayer = dynamic(
+  () => import('react-leaflet').then(mod => mod.TileLayer),
+  { ssr: false }
+);
+const DynamicMarker = dynamic(
+  () => import('react-leaflet').then(mod => mod.Marker),
+  { ssr: false }
+);
+const DynamicPopup = dynamic(
+  () => import('react-leaflet').then(mod => mod.Popup),
+  { ssr: false }
+);
+const DynamicCircle = dynamic(
+  () => import('react-leaflet').then(mod => mod.Circle),
+  { ssr: false }
+);
+
+// Leaflet typesとIconをdynamic import
+let LeafletIcon: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+
+if (typeof window !== 'undefined') {
+  import('leaflet').then(L => {
+    LeafletIcon = L.Icon;
+  });
+  // CSS importもクライアントサイドのみ
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  import('leaflet/dist/leaflet.css' as any).catch(() => {
+    // CSS読み込みエラーは無視
+  });
+}
 
 interface InstantPhotoMapProps {
   userLocation: LocationData;
@@ -35,6 +60,8 @@ const createCustomIcon = (
   type: 'user' | 'photographer' | 'selected',
   isOnline?: boolean
 ) => {
+  if (typeof window === 'undefined' || !LeafletIcon) return null;
+
   const iconSize: [number, number] = type === 'user' ? [32, 32] : [28, 28];
 
   let iconUrl = '';
@@ -66,46 +93,13 @@ const createCustomIcon = (
     `);
   }
 
-  return new Icon({
+  return new LeafletIcon({
     iconUrl,
     iconSize,
     iconAnchor: [iconSize[0] / 2, iconSize[1]],
     popupAnchor: [0, -iconSize[1]],
   });
 };
-
-// 地図の境界を自動調整するコンポーネント
-function MapBounds({
-  userLocation,
-  photographers,
-}: {
-  userLocation: LocationData;
-  photographers: NearbyPhotographer[];
-}) {
-  const map = useMap();
-
-  useEffect(() => {
-    const bounds = new LatLngBounds([]);
-
-    // ユーザー位置を追加
-    bounds.extend([userLocation.latitude, userLocation.longitude]);
-
-    // カメラマン位置を追加
-    photographers.forEach(photographer => {
-      bounds.extend([photographer.latitude, photographer.longitude]);
-    });
-
-    // 境界が有効な場合のみ調整
-    if (bounds.isValid()) {
-      map.fitBounds(bounds, {
-        padding: [20, 20],
-        maxZoom: 16,
-      });
-    }
-  }, [map, userLocation, photographers]);
-
-  return null;
-}
 
 export function InstantPhotoMap({
   userLocation,
@@ -138,27 +132,24 @@ export function InstantPhotoMap({
 
   return (
     <div className={`relative ${className}`}>
-      <MapContainer
+      <DynamicMapContainer
         center={[userLocation.latitude, userLocation.longitude]}
         zoom={14}
         className="h-96 w-full rounded-lg z-0"
         zoomControl={true}
         scrollWheelZoom={true}
       >
-        <TileLayer
+        <DynamicTileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
-        {/* 地図境界の自動調整 */}
-        <MapBounds userLocation={userLocation} photographers={photographers} />
-
         {/* ユーザーの現在地 */}
-        <Marker
+        <DynamicMarker
           position={[userLocation.latitude, userLocation.longitude]}
           icon={createCustomIcon('user')}
         >
-          <Popup>
+          <DynamicPopup>
             <div className="text-center p-2">
               <MapPin className="h-4 w-4 text-blue-600 mx-auto mb-1" />
               <p className="font-medium">あなたの現在地</p>
@@ -168,12 +159,12 @@ export function InstantPhotoMap({
                 </p>
               )}
             </div>
-          </Popup>
-        </Marker>
+          </DynamicPopup>
+        </DynamicMarker>
 
         {/* 検索範囲の円 */}
         {showRadius && (
-          <Circle
+          <DynamicCircle
             center={[userLocation.latitude, userLocation.longitude]}
             radius={radiusMeters}
             pathOptions={{
@@ -187,7 +178,7 @@ export function InstantPhotoMap({
 
         {/* カメラマンのマーカー */}
         {photographers.map(photographer => (
-          <Marker
+          <DynamicMarker
             key={photographer.photographer_id}
             position={[photographer.latitude, photographer.longitude]}
             icon={createCustomIcon(
@@ -203,15 +194,15 @@ export function InstantPhotoMap({
               },
             }}
           >
-            <Popup>
+            <DynamicPopup>
               <PhotographerPopup
                 photographer={photographer}
                 onSelect={() => onPhotographerSelect?.(photographer)}
               />
-            </Popup>
-          </Marker>
+            </DynamicPopup>
+          </DynamicMarker>
         ))}
-      </MapContainer>
+      </DynamicMapContainer>
 
       {/* 地図の凡例 */}
       <Card className="absolute top-4 right-4 z-10 bg-white/95 backdrop-blur-sm">

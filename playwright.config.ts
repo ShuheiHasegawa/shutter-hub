@@ -49,7 +49,7 @@ export default defineConfig({
     /* ベースURL - MCP環境対応（動的ポート検出）*/
     baseURL:
       process.env.MCP_ENABLED === 'true'
-        ? process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3002' // MCPモードではポート3002
+        ? process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000' // MCPモードではポート3000
         : process.env.PLAYWRIGHT_BASE_URL ||
           process.env.NEXT_PUBLIC_APP_URL ||
           'http://localhost:3000',
