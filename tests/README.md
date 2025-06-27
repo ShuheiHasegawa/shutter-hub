@@ -1,5 +1,207 @@
 # ShutterHub v2 テストガイド
 
+このドキュメントでは、ShutterHub v2のテスト環境とMCP連携について説明します。
+
+## 📋 テスト概要
+
+ShutterHub v2では以下のテストを実装しています：
+
+- **E2E（End-to-End）テスト**: Playwrightを使用した統合テスト
+- **コンポーネントテスト**: Jestを使用した単体テスト（今後実装予定）
+
+## 🔗 MCP連携について
+
+MCP（Model Context Protocol）連携により、E2Eテストを効率的に実行できます。
+
+### MCP連携の利点
+
+- **Supabaseプロジェクトとの自動連携**
+- **テストデータの自動管理**
+- **テスト環境の自動クリーンアップ**
+- **CI/CD統合の簡素化**
+
+## 🚀 MCP連携でのE2Eテスト実行
+
+### 1. 基本的なMCP連携テスト
+
+```bash
+# 全てのE2Eテストを MCP連携で実行
+npm run test:e2e:mcp
+
+# ヘッドレスモードを無効にして実行（デバッグ用）
+npm run test:e2e:mcp:headed
+
+# デバッグモードで実行
+npm run test:e2e:mcp:debug
+```
+
+### 2. 特定機能のテスト
+
+```bash
+# 認証セットアップのみ実行
+npm run test:e2e:mcp:setup
+
+# 予約システムのテストのみ実行
+npm run test:e2e:mcp:booking
+
+# エスクロー決済のテストのみ実行
+npm run test:e2e:mcp:escrow
+```
+
+### 3. テスト結果の確認
+
+```bash
+# MCP環境でのテスト結果レポート表示
+npm run test:e2e:mcp:report
+```
+
+## ⚙️ MCP環境設定
+
+### 必要な環境変数
+
+MCP連携でのテスト実行には以下の環境変数が必要です：
+
+```bash
+# MCP連携設定
+MCP_ENABLED=true
+MCP_TEST_ENVIRONMENT=true
+MCP_AUTO_CLEANUP=true
+MCP_TEST_DATA_SEED=true
+
+# テスト用Supabase設定
+TEST_SUPABASE_URL=your_test_supabase_url
+TEST_SUPABASE_ANON_KEY=your_test_supabase_anon_key
+TEST_SUPABASE_SERVICE_ROLE_KEY=your_test_service_role_key
+
+# テスト用認証情報
+TEST_USER_EMAIL=test@shutterhub.app
+TEST_USER_PASSWORD=testpassword123
+```
+
+### 環境変数ファイルの設定
+
+1. `tests/e2e/.env.test.example` をコピーして `.env.test` を作成
+2. 実際のテスト環境の値を設定
+3. MCP連携時に自動的に読み込まれます
+
+## 🧪 テストの種類
+
+### 1. 認証テスト (`auth.setup.ts`)
+
+- Google OAuth認証
+- X (Twitter) OAuth認証
+- メール認証
+- 認証状態の保存
+
+### 2. 予約システムテスト (`booking-systems.spec.ts`)
+
+- 先着順予約
+- 抽選予約
+- 優先予約
+- キャンセル待ち
+- 管理者抽選
+
+### 3. エスクロー決済テスト (`escrow-payment.spec.ts`)
+
+- 即座撮影リクエスト
+- 決済処理
+- 写真配信
+- 評価システム
+
+## 🔧 MCP環境での動作
+
+### 自動実行される処理
+
+1. **環境変数の検証**: 必要な設定の確認
+2. **データベースクリーンアップ**: 既存テストデータの削除
+3. **テストデータシード**: 新しいテストデータの作成
+4. **認証状態の確認**: テスト用ユーザーの認証状態確認
+5. **テスト実行**: 各テストケースの実行
+6. **クリーンアップ**: テスト後のデータ削除
+
+### MCP特有の最適化
+
+- **並列実行制御**: MCPモードでは1ワーカーに制限
+- **タイムアウト延長**: MCP環境を考慮した長めの設定
+- **詳細ログ出力**: デバッグしやすい詳細情報
+- **ブラウザ制限**: Chrome中心の効率的なテスト
+
+## 🐛 トラブルシューティング
+
+### よくある問題
+
+#### 1. 認証エラー
+
+```bash
+# 認証設定を再実行
+npm run test:e2e:mcp:setup
+```
+
+#### 2. データベース接続エラー
+
+- `TEST_SUPABASE_URL` と `TEST_SUPABASE_SERVICE_ROLE_KEY` を確認
+- Supabaseプロジェクトのアクセス権限を確認
+
+#### 3. テストタイムアウト
+
+```bash
+# タイムアウト時間を延長
+PLAYWRIGHT_TIMEOUT=60000 npm run test:e2e:mcp
+```
+
+### デバッグ方法
+
+1. **ヘッドレスモード無効化**:
+   ```bash
+   npm run test:e2e:mcp:headed
+   ```
+
+2. **デバッグモード**:
+   ```bash
+   npm run test:e2e:mcp:debug
+   ```
+
+3. **詳細ログ確認**:
+   ```bash
+   TEST_LOG_LEVEL=debug npm run test:e2e:mcp
+   ```
+
+## 📊 テスト結果
+
+### 生成されるレポート
+
+- **HTML レポート**: `test-results/html-report/`
+- **JSON レポート**: `test-results/results.json`
+- **JUnit レポート**: `test-results/results.xml`
+
+### テスト成果物
+
+- **スクリーンショット**: 失敗時のみ
+- **ビデオ録画**: 失敗時のみ
+- **トレース**: 初回リトライ時
+
+## 🚀 CI/CD統合
+
+MCP連携により、CI/CD環境でも同様のテスト環境を構築できます：
+
+```bash
+# CI環境での実行例
+CI=true npm run test:e2e:mcp
+```
+
+## 📝 テスト追加ガイド
+
+新しいテストを追加する場合：
+
+1. `tests/e2e/` ディレクトリに `.spec.ts` ファイルを作成
+2. MCP環境変数を考慮した実装
+3. 適切なクリーンアップ処理の実装
+4. このREADMEの更新
+
+---
+
+**注意**: MCP連携はテスト環境専用です。本番環境では使用しないでください。
+
 ## 🚀 クイックスタート
 
 ```bash
