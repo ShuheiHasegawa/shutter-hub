@@ -73,9 +73,15 @@ TEST_SUPABASE_URL=your_test_supabase_url
 TEST_SUPABASE_ANON_KEY=your_test_supabase_anon_key
 TEST_SUPABASE_SERVICE_ROLE_KEY=your_test_service_role_key
 
-# テスト用認証情報
+# テスト用認証設定（OAuth対応）
+# 注意: ShutterHub v2はOAuth専用（Google/X/Discord）のため、パスワード認証はありません
 TEST_USER_EMAIL=test@shutterhub.app
-TEST_USER_PASSWORD=testpassword123
+# OAuth認証のため、パスワードは不要
+# TEST_USER_PASSWORD=testpassword123  # ← この設定は不要
+
+# テスト用OAuth設定（任意 - モック認証時に使用）
+TEST_OAUTH_PROVIDER=google  # google, twitter, discord
+TEST_OAUTH_MOCK_ENABLED=true
 ```
 
 ### 環境変数ファイルの設定
@@ -90,8 +96,9 @@ TEST_USER_PASSWORD=testpassword123
 
 - Google OAuth認証
 - X (Twitter) OAuth認証
-- メール認証
+- Discord OAuth認証
 - 認証状態の保存
+- **注意**: メール/パスワード認証は実装されていません（OAuth専用）
 
 ### 2. 予約システムテスト (`booking-systems.spec.ts`)
 
@@ -136,6 +143,10 @@ TEST_USER_PASSWORD=testpassword123
 # 認証設定を再実行
 npm run test:e2e:mcp:setup
 ```
+
+**OAuth認証特有の問題**:
+- OAuth認証は外部サービス依存のため、モック認証の使用を推奨
+- 実際のGoogle/X/Discord認証は開発環境でのみ使用
 
 #### 2. データベース接続エラー
 
@@ -200,7 +211,9 @@ CI=true npm run test:e2e:mcp
 
 ---
 
-**注意**: MCP連携はテスト環境専用です。本番環境では使用しないでください。
+**注意**: 
+- MCP連携はテスト環境専用です。本番環境では使用しないでください。
+- ShutterHub v2はOAuth専用認証のため、メール/パスワード認証はサポートしていません。
 
 ## 🚀 クイックスタート
 

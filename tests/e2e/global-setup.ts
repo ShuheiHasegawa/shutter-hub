@@ -120,13 +120,15 @@ async function seedTestData() {
 
 /**
  * MCP環境変数の検証
+ * OAuth専用認証に対応した環境変数をチェック
  */
 async function validateMCPEnvironment() {
   const requiredVars = [
     'TEST_SUPABASE_URL',
     'TEST_SUPABASE_ANON_KEY',
     'TEST_USER_EMAIL',
-    'TEST_USER_PASSWORD',
+    // OAuth認証のため、パスワードは不要
+    // 'TEST_USER_PASSWORD', ← この変数は不要
   ];
 
   const missingVars = requiredVars.filter(varName => !process.env[varName]);
@@ -137,6 +139,13 @@ async function validateMCPEnvironment() {
     );
   }
 
+  // OAuth設定の確認（任意）
+  const oauthProvider = process.env.TEST_OAUTH_PROVIDER || 'google';
+  const mockEnabled = process.env.TEST_OAUTH_MOCK_ENABLED === 'true';
+
+  console.log(
+    `🔗 OAuth設定 - Provider: ${oauthProvider}, Mock: ${mockEnabled}`
+  );
   console.log('✅ MCP環境変数検証完了');
 }
 
@@ -151,7 +160,7 @@ async function validateTestAuthSetup() {
 
     if (!fs.existsSync(authFilePath)) {
       console.log(
-        '🔐 認証設定ファイルが見つかりません。認証セットアップが必要です。'
+        '🔐 認証設定ファイルが見つかりません。OAuth認証セットアップが必要です。'
       );
     } else {
       console.log('✅ 認証設定ファイル確認完了');
