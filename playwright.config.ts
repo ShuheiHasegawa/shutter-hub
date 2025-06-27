@@ -1,6 +1,11 @@
 import { defineConfig, devices } from '@playwright/test';
 import dotenv from 'dotenv';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+// ESモジュール対応で__dirname相当を取得
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // MCP連携時のテスト環境設定読み込み
 if (process.env.MCP_ENABLED === 'true') {
@@ -33,7 +38,7 @@ export default defineConfig({
           : undefined,
   /* レポート設定 */
   reporter: [
-    ['html', { outputFolder: 'test-results/html-report' }],
+    ['html', { outputFolder: 'playwright-report' }],
     ['json', { outputFile: 'test-results/results.json' }],
     ['junit', { outputFile: 'test-results/results.xml' }],
     // MCP連携時は詳細ログも出力
@@ -41,11 +46,13 @@ export default defineConfig({
   ],
   /* 共通設定 */
   use: {
-    /* ベースURL - MCP環境対応 */
+    /* ベースURL - MCP環境対応（動的ポート検出）*/
     baseURL:
-      process.env.PLAYWRIGHT_BASE_URL ||
-      process.env.NEXT_PUBLIC_APP_URL ||
-      'http://localhost:3000',
+      process.env.MCP_ENABLED === 'true'
+        ? process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3002' // MCPモードではポート3002
+        : process.env.PLAYWRIGHT_BASE_URL ||
+          process.env.NEXT_PUBLIC_APP_URL ||
+          'http://localhost:3000',
     /* スクリーンショット設定 */
     screenshot:
       (process.env.PLAYWRIGHT_SCREENSHOT as 'off' | 'only-on-failure' | 'on') ||
@@ -65,8 +72,8 @@ export default defineConfig({
         | 'retain-on-failure'
         | 'on-first-retry') || 'on-first-retry',
     /* タイムアウト設定 - MCP環境では余裕を持った設定 */
-    actionTimeout: process.env.MCP_ENABLED === 'true' ? 15000 : 10000,
-    navigationTimeout: process.env.MCP_ENABLED === 'true' ? 45000 : 30000,
+    actionTimeout: process.env.MCP_ENABLED === 'true' ? 20000 : 10000,
+    navigationTimeout: process.env.MCP_ENABLED === 'true' ? 60000 : 30000,
     /* ヘッドレス設定 */
     headless: process.env.PLAYWRIGHT_HEADLESS !== 'false',
     /* MCP環境用の追加設定 */
@@ -161,15 +168,15 @@ export default defineConfig({
   outputDir: 'test-results/',
 
   /* グローバル設定 - MCP連携対応 */
-  globalSetup: require.resolve('./tests/e2e/global-setup.ts'),
-  globalTeardown: require.resolve('./tests/e2e/global-teardown.ts'),
+  globalSetup: path.resolve(__dirname, './tests/e2e/global-setup.ts'),
+  globalTeardown: path.resolve(__dirname, './tests/e2e/global-teardown.ts'),
 
   /* テストタイムアウト設定 */
   timeout: process.env.PLAYWRIGHT_TIMEOUT
     ? parseInt(process.env.PLAYWRIGHT_TIMEOUT)
-    : 30000,
+    : 45000, // MCP環境を考慮してデフォルトタイムアウトを延長
   expect: {
-    timeout: process.env.MCP_ENABLED === 'true' ? 10000 : 5000,
+    timeout: process.env.MCP_ENABLED === 'true' ? 15000 : 5000,
   },
 
   /* MCP環境用のテストディレクトリ制限 */

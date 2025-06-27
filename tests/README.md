@@ -1,318 +1,268 @@
-# ShutterHub v2 テストガイド
+# ShutterHub v2 E2Eテストガイド
 
-このドキュメントでは、ShutterHub v2のテスト環境とMCP連携について説明します。
+ShutterHub v2のE2Eテストは、Playwrightを使用して複雑な撮影会予約システム、エスクロー決済、リアルタイム機能を自動テストします。MCP連携により、Supabaseプロジェクトとの統合テストが可能です。
 
-## 📋 テスト概要
+## 🚀 クイックスタート（MCP連携）
 
-ShutterHub v2では以下のテストを実装しています：
-
-- **E2E（End-to-End）テスト**: Playwrightを使用した統合テスト
-- **コンポーネントテスト**: Jestを使用した単体テスト（今後実装予定）
-
-## 🔗 MCP連携について
-
-MCP（Model Context Protocol）連携により、E2Eテストを効率的に実行できます。
-
-### MCP連携の利点
-
-- **Supabaseプロジェクトとの自動連携**
-- **テストデータの自動管理**
-- **テスト環境の自動クリーンアップ**
-- **CI/CD統合の簡素化**
-
-## 🚀 MCP連携でのE2Eテスト実行
-
-### 1. 基本的なMCP連携テスト
+### 1. 環境変数設定
 
 ```bash
-# 全てのE2Eテストを MCP連携で実行
+# MCP連携モードを有効化
+export MCP_ENABLED=true
+
+# ベースURL設定（ポート3002対応）
+export PLAYWRIGHT_BASE_URL=http://localhost:3002
+
+# OAuth設定（推奨：モック認証）
+export TEST_OAUTH_PROVIDER=google
+export TEST_OAUTH_MOCK_ENABLED=true
+
+# Supabase設定（MCP経由で自動取得）
+export NEXT_PUBLIC_SUPABASE_URL=https://xxxxx.supabase.co
+export NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJxxxxxxxxxxx
+```
+
+### 2. 基本テスト実行
+
+```bash
+# 推奨：MCP環境での基本テスト（ポート3002）
+PLAYWRIGHT_BASE_URL=http://localhost:3002 npm run test:e2e:mcp
+
+# ヘッドレス無効でブラウザ表示
+PLAYWRIGHT_BASE_URL=http://localhost:3002 npm run test:e2e:mcp:headed
+
+# デバッグモード（詳細ログ + ブラウザ表示）
+PLAYWRIGHT_BASE_URL=http://localhost:3002 npm run test:e2e:mcp:debug
+```
+
+## 📋 テストコマンド一覧
+
+### MCP連携専用コマンド
+
+```bash
+# 基本MCP連携テスト（バックグラウンド）
 npm run test:e2e:mcp
 
-# ヘッドレスモードを無効にして実行（デバッグ用）
+# ブラウザ表示テスト（開発・デバッグ用）
 npm run test:e2e:mcp:headed
 
-# デバッグモードで実行
+# デバッグモード（詳細ログ + ブラウザ表示）
 npm run test:e2e:mcp:debug
-```
 
-### 2. 特定機能のテスト
-
-```bash
-# 認証セットアップのみ実行
+# 認証テストのみ実行
 npm run test:e2e:mcp:setup
 
-# 予約システムのテストのみ実行
+# 予約システムテストのみ実行
 npm run test:e2e:mcp:booking
 
-# エスクロー決済のテストのみ実行
+# エスクロー決済テストのみ実行
 npm run test:e2e:mcp:escrow
-```
 
-### 3. テスト結果の確認
-
-```bash
-# MCP環境でのテスト結果レポート表示
+# レポート生成
 npm run test:e2e:mcp:report
 ```
 
-## ⚙️ MCP環境設定
-
-### 必要な環境変数
-
-MCP連携でのテスト実行には以下の環境変数が必要です：
-
-```bash
-# MCP連携設定
-MCP_ENABLED=true
-MCP_TEST_ENVIRONMENT=true
-MCP_AUTO_CLEANUP=true
-MCP_TEST_DATA_SEED=true
-
-# テスト用Supabase設定
-TEST_SUPABASE_URL=your_test_supabase_url
-TEST_SUPABASE_ANON_KEY=your_test_supabase_anon_key
-TEST_SUPABASE_SERVICE_ROLE_KEY=your_test_service_role_key
-
-# テスト用認証設定（OAuth対応）
-# 注意: ShutterHub v2はOAuth専用（Google/X/Discord）のため、パスワード認証はありません
-TEST_USER_EMAIL=test@shutterhub.app
-# OAuth認証のため、パスワードは不要
-# TEST_USER_PASSWORD=testpassword123  # ← この設定は不要
-
-# テスト用OAuth設定（任意 - モック認証時に使用）
-TEST_OAUTH_PROVIDER=google  # google, twitter, discord
-TEST_OAUTH_MOCK_ENABLED=true
-```
-
-### 環境変数ファイルの設定
-
-1. `tests/e2e/.env.test.example` をコピーして `.env.test` を作成
-2. 実際のテスト環境の値を設定
-3. MCP連携時に自動的に読み込まれます
-
-## 🧪 テストの種類
-
-### 1. 認証テスト (`auth.setup.ts`)
-
-- Google OAuth認証
-- X (Twitter) OAuth認証
-- Discord OAuth認証
-- 認証状態の保存
-- **注意**: メール/パスワード認証は実装されていません（OAuth専用）
-
-### 2. 予約システムテスト (`booking-systems.spec.ts`)
-
-- 先着順予約
-- 抽選予約
-- 優先予約
-- キャンセル待ち
-- 管理者抽選
-
-### 3. エスクロー決済テスト (`escrow-payment.spec.ts`)
-
-- 即座撮影リクエスト
-- 決済処理
-- 写真配信
-- 評価システム
-
-## 🔧 MCP環境での動作
-
-### 自動実行される処理
-
-1. **環境変数の検証**: 必要な設定の確認
-2. **データベースクリーンアップ**: 既存テストデータの削除
-3. **テストデータシード**: 新しいテストデータの作成
-4. **認証状態の確認**: テスト用ユーザーの認証状態確認
-5. **テスト実行**: 各テストケースの実行
-6. **クリーンアップ**: テスト後のデータ削除
-
-### MCP特有の最適化
-
-- **並列実行制御**: MCPモードでは1ワーカーに制限
-- **タイムアウト延長**: MCP環境を考慮した長めの設定
-- **詳細ログ出力**: デバッグしやすい詳細情報
-- **ブラウザ制限**: Chrome中心の効率的なテスト
-
-## 🐛 トラブルシューティング
-
-### よくある問題
-
-#### 1. 認証エラー
-
-```bash
-# 認証設定を再実行
-npm run test:e2e:mcp:setup
-```
-
-**OAuth認証特有の問題**:
-- OAuth認証は外部サービス依存のため、モック認証の使用を推奨
-- 実際のGoogle/X/Discord認証は開発環境でのみ使用
-
-#### 2. データベース接続エラー
-
-- `TEST_SUPABASE_URL` と `TEST_SUPABASE_SERVICE_ROLE_KEY` を確認
-- Supabaseプロジェクトのアクセス権限を確認
-
-#### 3. テストタイムアウト
-
-```bash
-# タイムアウト時間を延長
-PLAYWRIGHT_TIMEOUT=60000 npm run test:e2e:mcp
-```
-
-### デバッグ方法
-
-1. **ヘッドレスモード無効化**:
-   ```bash
-   npm run test:e2e:mcp:headed
-   ```
-
-2. **デバッグモード**:
-   ```bash
-   npm run test:e2e:mcp:debug
-   ```
-
-3. **詳細ログ確認**:
-   ```bash
-   TEST_LOG_LEVEL=debug npm run test:e2e:mcp
-   ```
-
-## 📊 テスト結果
-
-### 生成されるレポート
-
-- **HTML レポート**: `test-results/html-report/`
-- **JSON レポート**: `test-results/results.json`
-- **JUnit レポート**: `test-results/results.xml`
-
-### テスト成果物
-
-- **スクリーンショット**: 失敗時のみ
-- **ビデオ録画**: 失敗時のみ
-- **トレース**: 初回リトライ時
-
-## 🚀 CI/CD統合
-
-MCP連携により、CI/CD環境でも同様のテスト環境を構築できます：
-
-```bash
-# CI環境での実行例
-CI=true npm run test:e2e:mcp
-```
-
-## 📝 テスト追加ガイド
-
-新しいテストを追加する場合：
-
-1. `tests/e2e/` ディレクトリに `.spec.ts` ファイルを作成
-2. MCP環境変数を考慮した実装
-3. 適切なクリーンアップ処理の実装
-4. このREADMEの更新
-
----
-
-**注意**: 
-- MCP連携はテスト環境専用です。本番環境では使用しないでください。
-- ShutterHub v2はOAuth専用認証のため、メール/パスワード認証はサポートしていません。
-
-## 🚀 クイックスタート
+### 標準コマンド（開発環境）
 
 ```bash
 # 全テスト実行
 npm run test:e2e
 
-# デバッグモード（ブラウザ表示）
-npm run test:e2e:ui
-
-# 特定のテストのみ実行
-npm run test:e2e:booking    # 予約システム
-npm run test:e2e:escrow     # エスクロー決済
-```
-
-## 📁 ディレクトリ構成
-
-```
-tests/
-├── e2e/
-│   ├── auth.setup.ts              # 認証セットアップ
-│   ├── global-setup.ts            # テスト環境初期化
-│   ├── global-teardown.ts         # クリーンアップ処理
-│   ├── booking-systems.spec.ts    # 予約システムテスト（455行）
-│   ├── escrow-payment.spec.ts     # エスクロー決済テスト（350行）
-│   ├── utils/
-│   │   └── test-helpers.ts        # テストヘルパー関数
-│   ├── .auth/                     # 認証状態保存（自動生成）
-│   ├── fixtures/                  # テストデータ（自動生成）
-│   └── .gitignore                 # テスト結果除外設定
-└── README.md                      # このファイル
-```
-
-## 🧪 テスト対象
-
-### 予約システム（5種類）
-- **先着順予約**: 基本フロー、同時アクセス競合
-- **抽選予約**: 応募〜結果発表
-- **管理抽選**: 開催者手動選出
-- **優先予約**: ランク別アクセス制御
-- **キャンセル待ち**: 自動繰り上げ処理
-
-### エスクロー決済システム
-- **即座撮影フロー**: リクエスト〜決済〜配信〜確認
-- **争議解決**: 申請〜管理者介入〜解決
-- **決済統合**: Stripe連携、返金処理
-
-## 🔧 よく使うコマンド
-
-```bash
-# 特定のテストケースのみ実行
-npx playwright test -g "先着順予約"
-npx playwright test -g "エスクロー決済"
-
-# 特定のブラウザでテスト
-npx playwright test --project=chromium
-npx playwright test --project=firefox
-
-# ヘッドレスモード無効（ブラウザ表示）
-npx playwright test --headed
-
-# スローモーション実行
-npx playwright test --headed --slowMo=1000
+# ヘッドレス無効
+npm run test:e2e:headed
 
 # デバッグモード
-npx playwright test booking-systems.spec.ts --debug
+npm run test:e2e:debug
+
+# UI モード
+npm run test:e2e:ui
+
+# レポート表示
+npm run test:e2e:report
 ```
 
-## 🔍 トラブルシューティング
+## 🔧 MCP環境設定
 
-### 認証エラー
+### 重要な設定項目
+
 ```bash
-# 認証状態をクリア
-rm -rf tests/e2e/.auth
-npm run test:e2e
+# MCP連携モード
+MCP_ENABLED=true
+
+# ベースURL（開発サーバーのポートに応じて設定）
+PLAYWRIGHT_BASE_URL=http://localhost:3002  # 通常ポート3000が使用されている場合
+# または
+PLAYWRIGHT_BASE_URL=http://localhost:3000  # ポート3000が空いている場合
+
+# OAuth認証設定
+TEST_OAUTH_PROVIDER=google          # google/twitter/discord
+TEST_OAUTH_MOCK_ENABLED=true        # 推奨：モック認証
+
+# テスト実行制御
+PLAYWRIGHT_HEADLESS=false           # ブラウザ表示（デバッグ用）
+PLAYWRIGHT_WORKERS=1                # 並列実行数（MCP環境では1推奨）
+PLAYWRIGHT_RETRIES=2                # リトライ回数
 ```
 
-### タイムアウトエラー
+### ポート自動検出
+
+MCP環境では、開発サーバーが使用するポートが動的に変更される場合があります：
+
 ```bash
-# タイムアウト時間を延長
-npx playwright test --timeout=120000
+# ポート3000が使用されている場合、3002に自動変更
+⚠ Port 3000 is in use, using available port 3002 instead.
+
+# この場合、テスト実行時に正しいポートを指定
+PLAYWRIGHT_BASE_URL=http://localhost:3002 npm run test:e2e:mcp
 ```
 
-### 要素が見つからない
-- 動的コンテンツの読み込み待ちが不足している可能性
-- `waitForSelector`や`waitForLoadState`を使用
+## 🎯 テスト対象機能
 
-## 📊 レポート確認
+### Phase 1: 認証システム
+- OAuth認証フロー（Google/X/Discord）
+- プロフィール設定
+- 認証状態の永続化
+
+### Phase 2: 撮影会管理
+- 撮影会作成・編集
+- 公開/非公開設定
+- 画像アップロード
+
+### Phase 3: 予約システム
+- 先着順予約
+- 抽選予約
+- 管理抽選
+- 優先予約
+- キャンセル待ち
+
+### Phase 4: 即座撮影リクエスト
+- ゲスト機能（認証不要）
+- 位置ベースマッチング
+- リアルタイム通知
+
+### Phase 5: エスクロー決済
+- Stripe決済フロー
+- エスクロー保護
+- 写真配信確認
+
+## 🔍 デバッグ・トラブルシューティング
+
+### よくある問題と解決法
+
+#### 1. ポート接続エラー
+```
+Error: page.goto: net::ERR_ABORTED
+```
+
+**解決法**: 開発サーバーのポートを確認
+```bash
+# 開発サーバーの実際のポートを確認
+npm run dev
+# 表示されたポート（例：3002）をベースURLに設定
+PLAYWRIGHT_BASE_URL=http://localhost:3002 npm run test:e2e:mcp
+```
+
+#### 2. 認証失敗
+```
+OAuth認証セットアップに失敗しました
+```
+
+**解決法**: モック認証を有効化
+```bash
+export TEST_OAUTH_MOCK_ENABLED=true
+npm run test:e2e:mcp:setup
+```
+
+#### 3. タイムアウトエラー
+```
+Test timeout of 30000ms exceeded
+```
+
+**解決法**: MCP環境用タイムアウト延長
+```bash
+export PLAYWRIGHT_TIMEOUT=60000
+npm run test:e2e:mcp
+```
+
+### デバッグ用ツール
+
+```bash
+# 詳細ログ出力
+DEBUG=pw:* npm run test:e2e:mcp
+
+# スクリーンショット付きテスト
+PLAYWRIGHT_SCREENSHOT=on npm run test:e2e:mcp
+
+# ビデオ録画
+PLAYWRIGHT_VIDEO=on npm run test:e2e:mcp
+
+# トレース記録
+PLAYWRIGHT_TRACE=on npm run test:e2e:mcp
+```
+
+### レポート・ログ確認
 
 ```bash
 # HTMLレポート表示
 npm run test:e2e:report
-# ブラウザで test-results/index.html が開く
+
+# 結果ファイル確認
+cat test-results/results.json
+cat test-results/results.xml
+
+# エラー時スクリーンショット
+ls test-results/*.png
 ```
 
-## 📚 詳細ドキュメント
+## 📊 CI/CD統合
 
-詳細な情報は [`docs/e2e-testing.md`](../docs/e2e-testing.md) を参照してください。
+### GitHub Actions設定例
+
+```yaml
+name: E2E Tests
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Install Playwright
+        run: npx playwright install --with-deps
+      
+      - name: Run E2E tests
+        env:
+          MCP_ENABLED: true
+          PLAYWRIGHT_BASE_URL: http://localhost:3000
+          TEST_OAUTH_MOCK_ENABLED: true
+        run: npm run test:e2e:mcp
+      
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+```
+
+## 🏗️ 今後の拡張予定
+
+- [ ] 視覚回帰テスト追加
+- [ ] パフォーマンステスト統合
+- [ ] モバイル端末テスト拡張
+- [ ] アクセシビリティテスト追加
+- [ ] 負荷テスト連携
 
 ---
 
-**最終更新**: 2024年12月1日 
+**最終更新**: 2024年12月
+**対応バージョン**: Playwright 1.47.2, Next.js 15.3.2
+**MCP連携**: 完全対応（自動ポート検出、OAuth専用認証） 

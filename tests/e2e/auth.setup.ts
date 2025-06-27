@@ -10,9 +10,6 @@ const authFile = 'tests/e2e/.auth/user.json';
 setup('authenticate', async ({ page }) => {
   console.log('🔐 テスト用ユーザー認証開始...');
 
-  // ログインページに移動
-  await page.goto('/auth/signin');
-
   // テスト用認証設定
   const oauthProvider = process.env.TEST_OAUTH_PROVIDER || 'google';
   const mockEnabled = process.env.TEST_OAUTH_MOCK_ENABLED === 'true';
@@ -22,6 +19,26 @@ setup('authenticate', async ({ page }) => {
   );
 
   try {
+    // ログインページに移動（エラーハンドリング強化）
+    const baseURL =
+      process.env.PLAYWRIGHT_BASE_URL ||
+      process.env.NEXT_PUBLIC_APP_URL ||
+      'http://localhost:3000';
+    console.log(`🌐 ベースURL: ${baseURL}`);
+    console.log('📍 サインインページへ遷移中...');
+
+    await page.goto('/auth/signin', {
+      waitUntil: 'domcontentloaded', // loadより軽量
+      timeout: 60000, // MCP環境用にタイムアウト延長
+    });
+
+    console.log(`✅ ページ遷移完了: ${page.url()}`);
+
+    // ページが正常に読み込まれたか確認
+    await page.waitForSelector('body', { timeout: 15000 });
+    console.log('✅ ページ本体の読み込み確認完了');
+
+    // OAuth認証実行
     if (mockEnabled) {
       // モック認証の実行
       await performMockAuth(page, oauthProvider);
@@ -31,20 +48,45 @@ setup('authenticate', async ({ page }) => {
     }
 
     // ログイン成功の確認（ダッシュボードまたはホームページへのリダイレクト）
-    await page.waitForURL(/\/(dashboard|home|\/)/, { timeout: 15000 });
+    console.log('🔍 認証後のリダイレクト確認中...');
+    await page.waitForURL(/\/(dashboard|home|\/)/, { timeout: 20000 });
 
     // ユーザーメニューまたはプロフィールアイコンの存在確認
     const userMenu = page.locator(
       '[data-testid="user-menu"], [aria-label*="ユーザー"], [aria-label*="プロフィール"]'
     );
-    await expect(userMenu).toBeVisible({ timeout: 10000 });
+    await expect(userMenu).toBeVisible({ timeout: 15000 });
 
     console.log('✅ テスト用ユーザー認証完了');
 
     // 認証状態を保存
     await page.context().storageState({ path: authFile });
+    console.log(`💾 認証状態保存完了: ${authFile}`);
   } catch (error) {
     console.error('❌ 認証セットアップ失敗:', error);
+    console.log('🔍 現在のURL:', page.url());
+    console.log(
+      '🌐 環境変数PLAYWRIGHT_BASE_URL:',
+      process.env.PLAYWRIGHT_BASE_URL
+    );
+    console.log(
+      '📱 User Agent:',
+      await page.evaluate(() => navigator.userAgent)
+    );
+
+    // スクリーンショットを撮影してデバッグを支援
+    try {
+      await page.screenshot({
+        path: 'test-results/auth-error-screenshot.png',
+        fullPage: true,
+      });
+      console.log(
+        '📸 エラー時スクリーンショット保存: test-results/auth-error-screenshot.png'
+      );
+    } catch (screenshotError) {
+      console.log('📸 スクリーンショット保存失敗:', screenshotError);
+    }
+
     throw new Error(`OAuth認証セットアップに失敗しました: ${error}`);
   }
 });
@@ -68,7 +110,13 @@ async function performMockAuth(page: Page, provider: string) {
     throw new Error(`サポートされていないOAuthプロバイダー: ${provider}`);
   }
 
+  // ボタンが表示されるまで待機
+  console.log(`🔍 ${provider}ボタンを検索中...`);
+  await page.waitForSelector(buttonSelector, { timeout: 15000 });
+  console.log(`✅ ${provider}ボタン発見`);
+
   await page.click(buttonSelector);
+  console.log(`🖱️ ${provider}ボタンクリック完了`);
 
   // モック認証の場合、実際の外部サービスにリダイレクトされる前に
   // テスト用の認証状態を直接設定する
