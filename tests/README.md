@@ -13,7 +13,7 @@ export MCP_ENABLED=true
 # ベースURL設定（ポート3002対応）
 export PLAYWRIGHT_BASE_URL=http://localhost:3002
 
-# OAuth設定（推奨：モック認証）
+# 🎭 推奨：モック認証使用（Google認証スキップ）
 export TEST_OAUTH_PROVIDER=google
 export TEST_OAUTH_MOCK_ENABLED=true
 
@@ -22,17 +22,27 @@ export NEXT_PUBLIC_SUPABASE_URL=https://xxxxx.supabase.co
 export NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJxxxxxxxxxxx
 ```
 
-### 2. 基本テスト実行
+### 2. 基本テスト実行（推奨：モック認証）
 
 ```bash
-# 推奨：MCP環境での基本テスト（ポート3002）
-PLAYWRIGHT_BASE_URL=http://localhost:3002 npm run test:e2e:mcp
+# 🎭 推奨：モック認証でのテスト（Google認証自動スキップ）
+PLAYWRIGHT_BASE_URL=http://localhost:3002 TEST_OAUTH_MOCK_ENABLED=true npm run test:e2e:mcp
 
-# ヘッドレス無効でブラウザ表示
-PLAYWRIGHT_BASE_URL=http://localhost:3002 npm run test:e2e:mcp:headed
+# ヘッドレス無効でブラウザ表示（モック認証）
+PLAYWRIGHT_BASE_URL=http://localhost:3002 TEST_OAUTH_MOCK_ENABLED=true npm run test:e2e:mcp:headed
 
-# デバッグモード（詳細ログ + ブラウザ表示）
-PLAYWRIGHT_BASE_URL=http://localhost:3002 npm run test:e2e:mcp:debug
+# デバッグモード（詳細ログ + ブラウザ表示 + モック認証）
+PLAYWRIGHT_BASE_URL=http://localhost:3002 TEST_OAUTH_MOCK_ENABLED=true npm run test:e2e:mcp:debug
+```
+
+### 3. 実際のOAuth認証を使用する場合（非推奨）
+
+```bash
+# ⚠️ 注意：実際のGoogle認証は手動操作が必要
+PLAYWRIGHT_BASE_URL=http://localhost:3002 TEST_OAUTH_MOCK_ENABLED=false npm run test:e2e:mcp
+
+# 実際のOAuth認証でのデバッグ（手動操作が必要）
+PLAYWRIGHT_BASE_URL=http://localhost:3002 TEST_OAUTH_MOCK_ENABLED=false npm run test:e2e:mcp:debug
 ```
 
 ## 📋 テストコマンド一覧
@@ -40,10 +50,10 @@ PLAYWRIGHT_BASE_URL=http://localhost:3002 npm run test:e2e:mcp:debug
 ### MCP連携専用コマンド
 
 ```bash
-# 基本MCP連携テスト（バックグラウンド）
+# 基本的なE2Eテスト実行
 npm run test:e2e:mcp
 
-# ブラウザ表示テスト（開発・デバッグ用）
+# ヘッドレス無効（ブラウザ表示）
 npm run test:e2e:mcp:headed
 
 # デバッグモード（詳細ログ + ブラウザ表示）
@@ -58,200 +68,218 @@ npm run test:e2e:mcp:booking
 # エスクロー決済テストのみ実行
 npm run test:e2e:mcp:escrow
 
-# レポート生成
+# HTMLレポート生成
 npm run test:e2e:mcp:report
 ```
 
-### 標準コマンド（開発環境）
+### 従来コマンド（MCP非対応）
 
 ```bash
-# 全テスト実行
-npm run test:e2e
+# 通常のPlaywrightテスト
+npx playwright test
 
-# ヘッドレス無効
-npm run test:e2e:headed
-
-# デバッグモード
-npm run test:e2e:debug
-
-# UI モード
-npm run test:e2e:ui
+# UIモード
+npx playwright test --ui
 
 # レポート表示
-npm run test:e2e:report
+npx playwright show-report
 ```
 
-## 🔧 MCP環境設定
+## 🎭 モック認証システム
 
-### 重要な設定項目
+### モック認証の利点
+
+- ✅ **完全自動化**: 手動操作不要
+- ✅ **高速実行**: Google認証画面のスキップ
+- ✅ **信頼性**: 外部サービス依存なし
+- ✅ **デバッグ容易**: 認証状態を直接制御
+
+### モック認証の仕組み
+
+1. **LocalStorageに認証トークン設定**: `supabase.auth.token`
+2. **モックユーザーデータ作成**: テスト用のユーザー情報
+3. **カスタムイベント発火**: 認証状態変更を通知
+4. **ページリロード**: 認証状態を反映
+
+### モック認証設定
 
 ```bash
-# MCP連携モード
-MCP_ENABLED=true
+# モック認証有効化
+export TEST_OAUTH_MOCK_ENABLED=true
 
-# ベースURL（開発サーバーのポートに応じて設定）
-PLAYWRIGHT_BASE_URL=http://localhost:3002  # 通常ポート3000が使用されている場合
-# または
-PLAYWRIGHT_BASE_URL=http://localhost:3000  # ポート3000が空いている場合
-
-# OAuth認証設定
-TEST_OAUTH_PROVIDER=google          # google/twitter/discord
-TEST_OAUTH_MOCK_ENABLED=true        # 推奨：モック認証
-
-# テスト実行制御
-PLAYWRIGHT_HEADLESS=false           # ブラウザ表示（デバッグ用）
-PLAYWRIGHT_WORKERS=1                # 並列実行数（MCP環境では1推奨）
-PLAYWRIGHT_RETRIES=2                # リトライ回数
+# プロバイダー選択（Google/X/Discord）
+export TEST_OAUTH_PROVIDER=google
 ```
 
-### ポート自動検出
+## ⚙️ MCP環境設定
 
-MCP環境では、開発サーバーが使用するポートが動的に変更される場合があります：
+### 必須環境変数
 
 ```bash
-# ポート3000が使用されている場合、3002に自動変更
-⚠ Port 3000 is in use, using available port 3002 instead.
+# MCP連携
+export MCP_ENABLED=true
 
-# この場合、テスト実行時に正しいポートを指定
+# アプリケーション設定（ポート自動検出）
+export PLAYWRIGHT_BASE_URL=http://localhost:3002
+
+# 認証設定（推奨：モック認証）
+export TEST_OAUTH_PROVIDER=google
+export TEST_OAUTH_MOCK_ENABLED=true
+
+# Supabase設定（MCP経由で自動取得可能）
+export NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+export NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+```
+
+### 自動ポート検出
+
+開発サーバーが別のポートで起動している場合の対応：
+
+```bash
+# Next.jsが3002で起動している場合
 PLAYWRIGHT_BASE_URL=http://localhost:3002 npm run test:e2e:mcp
+
+# 他のポートの場合
+PLAYWRIGHT_BASE_URL=http://localhost:XXXX npm run test:e2e:mcp
 ```
 
-## 🎯 テスト対象機能
+## 🧪 テスト対象機能
 
 ### Phase 1: 認証システム
-- OAuth認証フロー（Google/X/Discord）
-- プロフィール設定
-- 認証状態の永続化
 
-### Phase 2: 撮影会管理
-- 撮影会作成・編集
-- 公開/非公開設定
-- 画像アップロード
+- ✅ **モック認証フロー**: LocalStorage認証状態設定
+- ✅ **OAuth認証フロー**: Google/X/Discord認証（手動操作時）
+- ✅ **認証状態永続化**: Storage State保存
+- ✅ **プロフィール設定**: 認証後のプロフィール作成
 
-### Phase 3: 予約システム
-- 先着順予約
-- 抽選予約
-- 管理抽選
-- 優先予約
-- キャンセル待ち
+### Phase 2: 撮影会システム
 
-### Phase 4: 即座撮影リクエスト
-- ゲスト機能（認証不要）
-- 位置ベースマッチング
-- リアルタイム通知
+- [ ] **撮影会作成フロー**: 5種類の予約タイプ対応
+- [ ] **先着順予約**: リアルタイム在庫管理
+- [ ] **抽選予約**: 応募・抽選・結果通知
+- [ ] **管理者抽選**: 手動抽選システム
+- [ ] **優先予約**: ユーザーランク別アクセス
+- [ ] **キャンセル待ち**: 自動繰り上げシステム
 
-### Phase 5: エスクロー決済
-- Stripe決済フロー
-- エスクロー保護
-- 写真配信確認
+### Phase 3: エスクロー決済システム
 
-## 🔍 デバッグ・トラブルシューティング
+- [ ] **エスクロー決済フロー**: 安全な3者間決済
+- [ ] **写真配信システム**: 決済完了後の写真配信
+- [ ] **争議処理**: 管理者による争議解決
+- [ ] **返金処理**: 自動・手動返金
+
+### Phase 4: リアルタイム機能
+
+- [ ] **即座撮影リクエスト**: 位置ベースマッチング
+- [ ] **リアルタイム通知**: Supabase Realtime連携
+- [ ] **チャット機能**: リアルタイムメッセージング
+
+## 🔧 トラブルシューティング
 
 ### よくある問題と解決法
 
 #### 1. ポート接続エラー
-```
-Error: page.goto: net::ERR_ABORTED
-```
 
-**解決法**: 開発サーバーのポートを確認
 ```bash
-# 開発サーバーの実際のポートを確認
-npm run dev
-# 表示されたポート（例：3002）をベースURLに設定
+# エラー: ERR_CONNECTION_REFUSED
+# 解決: ポート番号を確認して修正
 PLAYWRIGHT_BASE_URL=http://localhost:3002 npm run test:e2e:mcp
 ```
 
-#### 2. 認証失敗
-```
-OAuth認証セットアップに失敗しました
-```
-
-**解決法**: モック認証を有効化
-```bash
-export TEST_OAUTH_MOCK_ENABLED=true
-npm run test:e2e:mcp:setup
-```
-
-#### 3. タイムアウトエラー
-```
-Test timeout of 30000ms exceeded
-```
-
-**解決法**: MCP環境用タイムアウト延長
-```bash
-export PLAYWRIGHT_TIMEOUT=60000
-npm run test:e2e:mcp
-```
-
-### デバッグ用ツール
+#### 2. Google認証でテストが止まる
 
 ```bash
-# 詳細ログ出力
-DEBUG=pw:* npm run test:e2e:mcp
-
-# スクリーンショット付きテスト
-PLAYWRIGHT_SCREENSHOT=on npm run test:e2e:mcp
-
-# ビデオ録画
-PLAYWRIGHT_VIDEO=on npm run test:e2e:mcp
-
-# トレース記録
-PLAYWRIGHT_TRACE=on npm run test:e2e:mcp
+# 問題: Google認証画面で手動操作が必要
+# 解決: モック認証を使用
+TEST_OAUTH_MOCK_ENABLED=true npm run test:e2e:mcp
 ```
 
-### レポート・ログ確認
+#### 3. 認証状態が保存されない
 
 ```bash
-# HTMLレポート表示
-npm run test:e2e:report
-
-# 結果ファイル確認
-cat test-results/results.json
-cat test-results/results.xml
-
-# エラー時スクリーンショット
-ls test-results/*.png
+# 原因: 認証フロー未完了
+# 解決: ヘッドレス無効でデバッグ
+npm run test:e2e:mcp:debug
 ```
 
-## 📊 CI/CD統合
+#### 4. Supabase接続エラー
 
-### GitHub Actions設定例
-
-```yaml
-name: E2E Tests
-on: [push, pull_request]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-      
-      - name: Install dependencies
-        run: npm ci
-      
-      - name: Install Playwright
-        run: npx playwright install --with-deps
-      
-      - name: Run E2E tests
-        env:
-          MCP_ENABLED: true
-          PLAYWRIGHT_BASE_URL: http://localhost:3000
-          TEST_OAUTH_MOCK_ENABLED: true
-        run: npm run test:e2e:mcp
-      
-      - name: Upload test results
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: playwright-report
-          path: playwright-report/
+```bash
+# 原因: 環境変数未設定
+# 解決: 正しい環境変数設定
+export NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+export NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 ```
+
+#### 5. MCP環境でのタイムアウト
+
+```bash
+# 原因: MCP環境での処理遅延
+# 解決: タイムアウト延長済み（60秒）
+# デバッグ情報確認
+npm run test:e2e:mcp:debug
+```
+
+### デバッグ情報の確認
+
+1. **スクリーンショット**: `test-results/`フォルダ内
+2. **HTMLレポート**: `npm run test:e2e:mcp:report`
+3. **詳細ログ**: デバッグモード実行時のコンソール出力
+
+## 📊 レポート機能
+
+### HTMLレポート
+
+```bash
+# レポート生成
+npm run test:e2e:mcp:report
+
+# レポート表示
+npx playwright show-report
+```
+
+### スクリーンショット
+
+- **正常時**: 主要ステップのスクリーンショット
+- **エラー時**: `test-results/auth-error.png`等のエラー画面
+- **フルページ**: 問題の詳細確認用
+
+## 🎯 推奨実行手順
+
+### 日常開発での実行
+
+```bash
+# 1. 開発サーバー起動
+npm run dev
+
+# 2. ポート確認（通常3002）
+echo "開発サーバー: http://localhost:3002"
+
+# 3. モック認証でのE2Eテスト実行
+PLAYWRIGHT_BASE_URL=http://localhost:3002 TEST_OAUTH_MOCK_ENABLED=true npm run test:e2e:mcp
+```
+
+### CI/CDでの実行
+
+```bash
+# GitHub Actions等での自動実行
+MCP_ENABLED=true TEST_OAUTH_MOCK_ENABLED=true npm run test:e2e:mcp
+```
+
+### デバッグ時の実行
+
+```bash
+# ブラウザ表示で詳細確認
+PLAYWRIGHT_BASE_URL=http://localhost:3002 TEST_OAUTH_MOCK_ENABLED=true npm run test:e2e:mcp:debug
+```
+
+---
+
+## 📝 まとめ
+
+ShutterHub v2のE2Eテストは、モック認証システムにより完全自動化されたテストを実現しています。MCP連携により、Supabaseプロジェクトとの統合テストが効率的に実行できます。
+
+**推奨設定**: `TEST_OAUTH_MOCK_ENABLED=true` + `PLAYWRIGHT_BASE_URL=http://localhost:3002`
 
 ## 🏗️ 今後の拡張予定
 
