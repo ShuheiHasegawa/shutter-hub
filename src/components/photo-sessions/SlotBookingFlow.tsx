@@ -331,7 +331,7 @@ export function SlotBookingFlow({
   // ステップ1: 時間枠選択
   if (currentStep === 'select') {
     return (
-      <div className="max-w-4xl mx-auto space-y-6">
+      <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         <StepIndicator />
 
         <Card>
@@ -424,7 +424,7 @@ export function SlotBookingFlow({
   // ステップ2: 予約確認
   if (currentStep === 'confirm') {
     return (
-      <div className="max-w-4xl mx-auto space-y-6">
+      <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         <StepIndicator />
 
         <Card>
@@ -435,68 +435,244 @@ export function SlotBookingFlow({
             </p>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <Card className="dark:bg-gray-800 dark:border-gray-700">
-                <CardContent className="pt-6 space-y-3">
-                  <div>
-                    <div className="font-medium text-gray-900 dark:text-white">
-                      撮影会
-                    </div>
-                    <div className="text-gray-600 dark:text-gray-300">
-                      {session.title}
-                    </div>
-                  </div>
-
-                  {selectedSlot && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* 左側: 撮影会情報 */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  撮影会情報
+                </h3>
+                <Card className="dark:bg-gray-800 dark:border-gray-700">
+                  <CardContent className="pt-6 space-y-4">
                     <div>
-                      <div className="font-medium text-gray-900 dark:text-white">
-                        選択した時間枠
+                      <div className="font-medium text-gray-900 dark:text-white mb-1">
+                        撮影会名
                       </div>
                       <div className="text-gray-600 dark:text-gray-300">
-                        枠 {selectedSlot.slot_number}:{' '}
+                        {session.title}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="font-medium text-gray-900 dark:text-white mb-1">
+                        開催日時
+                      </div>
+                      <div className="text-gray-600 dark:text-gray-300">
+                        {formatDateLocalized(
+                          new Date(session.start_time),
+                          'ja',
+                          'long'
+                        )}
+                        <br />
                         {formatTimeLocalized(
-                          new Date(selectedSlot.start_time),
+                          new Date(session.start_time),
                           'ja'
                         )}{' '}
                         -{' '}
-                        {formatTimeLocalized(
-                          new Date(selectedSlot.end_time),
-                          'ja'
+                        {formatTimeLocalized(new Date(session.end_time), 'ja')}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="font-medium text-gray-900 dark:text-white mb-1">
+                        場所
+                      </div>
+                      <div className="text-gray-600 dark:text-gray-300">
+                        {session.location}
+                        {session.address && (
+                          <>
+                            <br />
+                            <span className="text-sm">{session.address}</span>
+                          </>
                         )}
                       </div>
                     </div>
-                  )}
 
-                  <div>
-                    <div className="font-medium text-gray-900 dark:text-white">
-                      料金
+                    <div>
+                      <div className="font-medium text-gray-900 dark:text-white mb-1">
+                        主催者
+                      </div>
+                      <div className="text-gray-600 dark:text-gray-300">
+                        {session.organizer?.display_name ||
+                          session.organizer?.email}
+                      </div>
                     </div>
-                    <div className="text-gray-600 dark:text-gray-300">
-                      {(selectedSlot?.price_per_person ||
-                        session.price_per_person) === 0
-                        ? '無料'
-                        : `¥${(selectedSlot?.price_per_person || session.price_per_person).toLocaleString()}`}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </div>
 
-              <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
-                <div>• 予約のキャンセルは撮影会開始の24時間前まで可能です</div>
-                <div>• 遅刻される場合は主催者にご連絡ください</div>
-                <div>• 体調不良の場合は無理をせず参加をお控えください</div>
+              {/* 右側: 予約詳細 */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  予約詳細
+                </h3>
+                <Card className="dark:bg-gray-800 dark:border-gray-700">
+                  <CardContent className="pt-6 space-y-4">
+                    {/* 複数選択の場合 */}
+                    {allowMultiple && selectedSlots.length > 0 && (
+                      <div>
+                        <div className="font-medium text-gray-900 dark:text-white mb-2">
+                          選択した時間枠（{selectedSlots.length}件）
+                        </div>
+                        <div className="space-y-3">
+                          {selectedSlots.map(slot => (
+                            <div
+                              key={slot.id}
+                              className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800"
+                            >
+                              <div className="flex justify-between items-start">
+                                <div>
+                                  <div className="font-medium text-blue-900 dark:text-blue-100">
+                                    枠 {slot.slot_number}
+                                  </div>
+                                  <div className="text-sm text-blue-700 dark:text-blue-300">
+                                    {formatTimeLocalized(
+                                      new Date(slot.start_time),
+                                      'ja'
+                                    )}{' '}
+                                    -{' '}
+                                    {formatTimeLocalized(
+                                      new Date(slot.end_time),
+                                      'ja'
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="text-right">
+                                  <div className="text-sm text-blue-700 dark:text-blue-300">
+                                    料金
+                                  </div>
+                                  <div className="font-medium text-blue-900 dark:text-blue-100">
+                                    {slot.price_per_person === 0
+                                      ? '無料'
+                                      : `¥${slot.price_per_person.toLocaleString()}`}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 単一選択の場合 */}
+                    {!allowMultiple && selectedSlot && (
+                      <div>
+                        <div className="font-medium text-gray-900 dark:text-white mb-2">
+                          選択した時間枠
+                        </div>
+                        <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <div className="font-medium text-blue-900 dark:text-blue-100">
+                                枠 {selectedSlot.slot_number}
+                              </div>
+                              <div className="text-sm text-blue-700 dark:text-blue-300">
+                                {formatTimeLocalized(
+                                  new Date(selectedSlot.start_time),
+                                  'ja'
+                                )}{' '}
+                                -{' '}
+                                {formatTimeLocalized(
+                                  new Date(selectedSlot.end_time),
+                                  'ja'
+                                )}
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-sm text-blue-700 dark:text-blue-300">
+                                料金
+                              </div>
+                              <div className="font-medium text-blue-900 dark:text-blue-100">
+                                {selectedSlot.price_per_person === 0
+                                  ? '無料'
+                                  : `¥${selectedSlot.price_per_person.toLocaleString()}`}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 通常の撮影会の場合 */}
+                    {!hasSlots && (
+                      <div>
+                        <div className="font-medium text-gray-900 dark:text-white mb-2">
+                          参加料金
+                        </div>
+                        <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border border-green-200 dark:border-green-800">
+                          <div className="text-center">
+                            <div className="text-2xl font-bold text-green-900 dark:text-green-100">
+                              {session.price_per_person === 0
+                                ? '無料'
+                                : `¥${session.price_per_person.toLocaleString()}`}
+                            </div>
+                            <div className="text-sm text-green-700 dark:text-green-300">
+                              参加費
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 合計料金表示 */}
+                    <div className="border-t pt-4">
+                      <div className="flex justify-between items-center">
+                        <span className="text-lg font-semibold text-gray-900 dark:text-white">
+                          合計料金
+                        </span>
+                        <span className="text-2xl font-bold text-gray-900 dark:text-white">
+                          {allowMultiple && selectedSlots.length > 0
+                            ? selectedSlots.reduce(
+                                (sum, slot) => sum + slot.price_per_person,
+                                0
+                              ) === 0
+                              ? '無料'
+                              : `¥${selectedSlots.reduce((sum, slot) => sum + slot.price_per_person, 0).toLocaleString()}`
+                            : (selectedSlot?.price_per_person ||
+                                  session.price_per_person) === 0
+                              ? '無料'
+                              : `¥${(selectedSlot?.price_per_person || session.price_per_person).toLocaleString()}`}
+                        </span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             </div>
 
+            {/* 注意事項 */}
+            <Card className="mt-6 bg-yellow-50 dark:bg-yellow-900/10 border-yellow-200 dark:border-yellow-800">
+              <CardContent className="pt-4">
+                <h4 className="font-medium text-yellow-800 dark:text-yellow-200 mb-2">
+                  ご注意事項
+                </h4>
+                <div className="text-sm text-yellow-700 dark:text-yellow-300 space-y-1">
+                  <div>
+                    • 予約のキャンセルは撮影会開始の24時間前まで可能です
+                  </div>
+                  <div>• 遅刻される場合は主催者にご連絡ください</div>
+                  <div>• 体調不良の場合は無理をせず参加をお控えください</div>
+                  {hasSlots && (
+                    <div>
+                      • 撮影枠制撮影会では、予約した時間枠以外の参加はできません
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
             <div className="flex justify-between mt-6">
-              <Button variant="outline" onClick={handleBack}>
+              <Button
+                variant="outline"
+                onClick={handleBack}
+                className="min-w-[120px]"
+              >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 戻る
               </Button>
               <Button
                 onClick={handleBooking}
                 disabled={isBooking}
-                className="bg-blue-600 hover:bg-blue-700"
+                className="bg-blue-600 hover:bg-blue-700 min-w-[160px]"
               >
                 {isBooking ? (
                   <>
@@ -517,7 +693,7 @@ export function SlotBookingFlow({
   // ステップ3: 完了
   if (currentStep === 'complete') {
     return (
-      <div className="max-w-4xl mx-auto space-y-6">
+      <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         <StepIndicator />
 
         <Card>
@@ -599,7 +775,7 @@ function SlotCard({
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-4 text-sm">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
         <div className="text-center">
           <div className="flex items-center justify-center gap-1 text-gray-600 dark:text-gray-400 mb-1">
             <Clock className="h-4 w-4" />
