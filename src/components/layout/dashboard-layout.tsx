@@ -34,7 +34,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <div className="flex h-screen bg-background">
       <Sidebar />
-      <div>
+      <div className="w-full">
         <DashboardTopbar />
         <main className="flex-1 overflow-y-auto p-6">{children}</main>
       </div>
