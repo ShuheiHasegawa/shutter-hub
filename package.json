@@ -25,7 +25,14 @@
     "test:e2e:install": "playwright install",
     "test:booking": "playwright test tests/e2e/booking-systems.spec.ts",
     "test:escrow": "playwright test tests/e2e/escrow-payment.spec.ts",
-    "test:ci": "playwright test --reporter=junit"
+    "test:ci": "playwright test --reporter=junit",
+    "test:e2e:mcp": "MCP_ENABLED=true MCP_TEST_ENVIRONMENT=true MCP_AUTO_CLEANUP=true MCP_TEST_DATA_SEED=true playwright test",
+    "test:e2e:mcp:headed": "MCP_ENABLED=true MCP_TEST_ENVIRONMENT=true PLAYWRIGHT_HEADLESS=false playwright test --headed",
+    "test:e2e:mcp:debug": "MCP_ENABLED=true MCP_TEST_ENVIRONMENT=true PLAYWRIGHT_HEADLESS=false playwright test --debug",
+    "test:e2e:mcp:setup": "MCP_ENABLED=true playwright test tests/e2e/auth.setup.ts",
+    "test:e2e:mcp:booking": "MCP_ENABLED=true MCP_TEST_ENVIRONMENT=true playwright test tests/e2e/booking-systems.spec.ts",
+    "test:e2e:mcp:escrow": "MCP_ENABLED=true MCP_TEST_ENVIRONMENT=true playwright test tests/e2e/escrow-payment.spec.ts",
+    "test:e2e:mcp:report": "MCP_ENABLED=true playwright show-report"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
@@ -91,6 +98,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv": "^16.7.0",
     "eslint": "^9",
     "eslint-config-next": "15.1.8",
     "eslint-config-prettier": "^10.1.5",

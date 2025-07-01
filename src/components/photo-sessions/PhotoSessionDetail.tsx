@@ -270,7 +270,7 @@ export function PhotoSessionDetail({
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
       {/* 開催者ヘッダー（主催者の場合、最上部に表示） */}
       {isOrganizer && (
         <Card className="border-blue-200 bg-blue-50/50">
@@ -323,13 +323,13 @@ export function PhotoSessionDetail({
             {session.description && (
               <div>
                 <h3 className="font-semibold mb-2">撮影会について</h3>
-                <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                <p className="leading-relaxed whitespace-pre-wrap">
                   {session.description}
                 </p>
               </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="space-y-4">
                 <h3 className="font-semibold">開催詳細</h3>
                 <div className="space-y-3">
@@ -404,7 +404,7 @@ export function PhotoSessionDetail({
             {session.image_urls && session.image_urls.length > 0 && (
               <div>
                 <h3 className="font-semibold mb-3">撮影会画像</h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {session.image_urls.map((image: string, index: number) => (
                     <div
                       key={index}
@@ -455,13 +455,13 @@ export function PhotoSessionDetail({
             {session.description && (
               <div>
                 <h3 className="font-semibold mb-2">撮影会について</h3>
-                <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                <p className="leading-relaxed whitespace-pre-wrap">
                   {session.description}
                 </p>
               </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="space-y-4">
                 <h3 className="font-semibold">開催詳細</h3>
                 <div className="space-y-3">
@@ -547,7 +547,7 @@ export function PhotoSessionDetail({
             {session.image_urls && session.image_urls.length > 0 && (
               <div>
                 <h3 className="font-semibold mb-3">撮影会画像</h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {session.image_urls.map((image: string, index: number) => (
                     <div
                       key={index}
@@ -589,7 +589,7 @@ export function PhotoSessionDetail({
                 return (
                   <div
                     key={slot.id}
-                    className={`w-full p-6 rounded-lg border-2 transition-all duration-200 ${
+                    className={`w-full p-4 sm:p-6 rounded-lg border-2 transition-all duration-200 ${
                       isSlotFull
                         ? 'border-error/20 bg-error/5 dark:border-error/80 dark:bg-error/20'
                         : participationRate >= 70
@@ -620,14 +620,14 @@ export function PhotoSessionDetail({
                     </div>
 
                     {/* 詳細情報グリッド */}
-                    <div className="grid grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
                       {/* 参加者数 */}
                       <div className="text-center">
                         <div className="flex items-center justify-center gap-2 text-gray-600 dark:text-gray-400 mb-1">
                           <UsersIcon className="h-4 w-4" />
                           <span className="text-sm font-medium">参加者</span>
                         </div>
-                        <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                        <div className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
                           {slot.current_participants}
                           <span className="text-lg text-gray-500 dark:text-gray-400">
                             /{slot.max_participants}
@@ -640,7 +640,7 @@ export function PhotoSessionDetail({
                         <div className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
                           時間
                         </div>
-                        <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                        <div className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white break-words">
                           {formatTimeLocalized(slotStartTime, 'ja')} -{' '}
                           {formatTimeLocalized(slotEndTime, 'ja')}
                         </div>
@@ -652,7 +652,7 @@ export function PhotoSessionDetail({
                           <CircleDollarSignIcon className="h-4 w-4" />
                           <span className="text-sm font-medium">料金</span>
                         </div>
-                        <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                        <div className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
                           {slot.price_per_person === 0
                             ? '無料'
                             : `¥${slot.price_per_person.toLocaleString()}`}
