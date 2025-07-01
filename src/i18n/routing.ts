@@ -44,6 +44,10 @@ export const routing = defineRouting({
       ja: '/studios',
       en: '/studios',
     },
+    '/login': {
+      ja: '/login',
+      en: '/login',
+    },
     '/auth/signin': {
       ja: '/auth/signin',
       en: '/auth/signin',
