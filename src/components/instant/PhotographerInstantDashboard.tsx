@@ -198,12 +198,12 @@ export function PhotographerInstantDashboard({
         </CardHeader>
         <CardContent className="space-y-4">
           {/* 位置情報状態 */}
-          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
             <div className="flex items-center gap-3">
-              <Navigation className="h-5 w-5 text-blue-600" />
+              <Navigation className="h-5 w-5 text-info" />
               <div>
                 <div className="font-medium">位置情報</div>
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-muted-foreground">
                   {locationLoading
                     ? '取得中...'
                     : locationError
@@ -225,7 +225,7 @@ export function PhotographerInstantDashboard({
               <Label htmlFor="online-status" className="text-base font-medium">
                 即座撮影リクエストを受け付ける
               </Label>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-muted-foreground">
                 オンラインにすると近くのゲストからリクエストが届きます
               </p>
             </div>
@@ -289,9 +289,11 @@ export function PhotographerInstantDashboard({
             </div>
           ) : requests.length === 0 ? (
             <div className="text-center py-8">
-              <Camera className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-600">現在リクエストはありません</p>
-              <p className="text-sm text-gray-500 mt-1">
+              <Camera className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground">
+                現在リクエストはありません
+              </p>
+              <p className="text-sm text-muted-foreground/60 mt-1">
                 オンライン状態にして新しいリクエストを受け取りましょう
               </p>
             </div>
@@ -333,10 +335,10 @@ export function PhotographerInstantDashboard({
                       </div>
 
                       <div className="text-right">
-                        <div className="text-lg font-medium text-green-600">
+                        <div className="text-lg font-medium text-success">
                           ¥{request.budget.toLocaleString()}
                         </div>
-                        <div className="text-sm text-gray-600">
+                        <div className="text-sm text-muted-foreground">
                           {request.duration}分
                         </div>
                       </div>
@@ -380,17 +382,17 @@ export function PhotographerInstantDashboard({
                     </div>
 
                     {request.special_requests && (
-                      <div className="bg-gray-50 p-3 rounded mb-4">
+                      <div className="bg-muted p-3 rounded mb-4">
                         <h5 className="font-medium text-sm mb-1">
                           特別なリクエスト
                         </h5>
-                        <p className="text-sm text-gray-700">
+                        <p className="text-sm text-muted-foreground">
                           {request.special_requests}
                         </p>
                       </div>
                     )}
 
-                    <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
                       <Phone className="h-4 w-4" />
                       <span>{request.guest_phone}</span>
                       {request.guest_email && (
@@ -457,12 +459,12 @@ export function PhotographerInstantDashboard({
                       {request.status === 'completed' &&
                         request.matched_photographer_id === userId && (
                           <div className="flex gap-2 w-full">
-                            <div className="flex-1 bg-green-50 border border-green-200 rounded-lg p-3">
-                              <div className="flex items-center gap-2 text-green-800">
+                            <div className="flex-1 bg-success/10 border border-success/20 rounded-lg p-3">
+                              <div className="flex items-center gap-2 text-success">
                                 <CheckCircle className="h-4 w-4" />
                                 <span className="font-medium">撮影完了</span>
                               </div>
-                              <p className="text-sm text-green-700 mt-1">
+                              <p className="text-sm text-success/80 mt-1">
                                 写真を配信して収益を受け取りましょう
                               </p>
                             </div>
@@ -482,18 +484,20 @@ export function PhotographerInstantDashboard({
 
                     {/* 収益情報 */}
                     {request.matched_photographer_id === userId && (
-                      <div className="mt-4 pt-4 border-t border-gray-200">
+                      <div className="mt-4 pt-4 border-t border-border">
                         <div className="flex items-center justify-between text-sm">
-                          <span className="text-gray-600">予想収益:</span>
+                          <span className="text-muted-foreground">
+                            予想収益:
+                          </span>
                           <div className="flex items-center gap-2">
-                            <DollarSign className="h-4 w-4 text-green-600" />
-                            <span className="font-medium text-green-600">
+                            <DollarSign className="h-4 w-4 text-success" />
+                            <span className="font-medium text-success">
                               ¥
                               {Math.round(
                                 request.budget * 0.8
                               ).toLocaleString()}
                             </span>
-                            <span className="text-gray-500 text-xs">
+                            <span className="text-muted-foreground/60 text-xs">
                               (プラットフォーム手数料20%控除後)
                             </span>
                           </div>

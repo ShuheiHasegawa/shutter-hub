@@ -462,7 +462,7 @@ export function PhotoSessionForm({
                   </div>
                   <div className="text-sm text-blue-700 dark:text-blue-300">
                     <p className="font-medium mb-2">
-                      撮影枠から自動計算されています
+                      撮影枠から自動計算されます
                     </p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
