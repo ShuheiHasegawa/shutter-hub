@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
@@ -67,40 +67,57 @@ export default function UserProfilePage() {
   const userId = params.userId as string;
   const isOwnProfile = user?.id === userId;
 
-  // フォロー状態を更新する関数
-  const updateFollowStats = async () => {
+  // フォロー状態を更新する関数をuseCallbackでメモ化
+  const updateFollowStats = useCallback(async () => {
     if (!user || isOwnProfile) return;
 
     try {
       const supabase = createClient();
 
       // フォロー数を取得
-      const { data: followersData } = await supabase
+      const { data: followersData, error: followersError } = await supabase
         .from('follows')
         .select('id')
         .eq('following_id', userId)
         .eq('status', 'accepted');
 
-      const { data: followingData } = await supabase
+      if (followersError) {
+        console.warn('Followers fetch error:', followersError);
+      }
+
+      const { data: followingData, error: followingError } = await supabase
         .from('follows')
         .select('id')
         .eq('follower_id', userId)
         .eq('status', 'accepted');
 
-      // 現在のフォロー関係を確認
-      const { data: followRelation } = await supabase
-        .from('follows')
-        .select('status')
-        .eq('follower_id', user.id)
-        .eq('following_id', userId)
-        .single();
+      if (followingError) {
+        console.warn('Following fetch error:', followingError);
+      }
 
-      const { data: mutualFollow } = await supabase
+      // 現在のフォロー関係を確認
+      const { data: followRelation, error: followRelationError } =
+        await supabase
+          .from('follows')
+          .select('status')
+          .eq('follower_id', user.id)
+          .eq('following_id', userId)
+          .maybeSingle(); // singleの代わりにmaybeSingleを使用
+
+      if (followRelationError) {
+        console.warn('Follow relation fetch error:', followRelationError);
+      }
+
+      const { data: mutualFollow, error: mutualFollowError } = await supabase
         .from('follows')
         .select('status')
         .eq('follower_id', userId)
         .eq('following_id', user.id)
-        .single();
+        .maybeSingle(); // singleの代わりにmaybeSingleを使用
+
+      if (mutualFollowError) {
+        console.warn('Mutual follow fetch error:', mutualFollowError);
+      }
 
       setFollowStats({
         followers_count: followersData?.length || 0,
@@ -116,8 +133,16 @@ export default function UserProfilePage() {
       });
     } catch (error) {
       console.error('Follow stats update error:', error);
+      // エラーが発生してもフォロー機能を無効にしない
+      setFollowStats({
+        followers_count: 0,
+        following_count: 0,
+        is_following: false,
+        follow_status: undefined,
+        is_mutual_follow: false,
+      });
     }
-  };
+  }, [user, userId, isOwnProfile]);
 
   useEffect(() => {
     const loadProfileData = async () => {
