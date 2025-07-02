@@ -96,7 +96,7 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 ## 7. 動作確認
 
 1. Next.jsアプリを起動: `npm run dev`
-2. ブラウザで http://localhost:3000 にアクセス
+2. ブラウザで http://localhost:8888 にアクセス
 3. 認証機能が正常に動作することを確認
 
 ## トラブルシューティング

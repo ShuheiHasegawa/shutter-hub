@@ -166,7 +166,7 @@ export default function TestPaymentPage() {
             <div className="space-y-2">
               <h4 className="font-medium">1. Stripe CLIでWebhookリスニング</h4>
               <div className="bg-gray-900 text-green-400 rounded-lg p-3 text-sm font-mono">
-                stripe listen --forward-to localhost:3000/api/webhooks/stripe
+                stripe listen --forward-to localhost:8888/api/webhooks/stripe
               </div>
             </div>
 

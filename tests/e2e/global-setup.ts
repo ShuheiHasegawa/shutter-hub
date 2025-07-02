@@ -30,7 +30,7 @@ async function globalSetup(config: FullConfig) {
     try {
       // アプリケーションの起動確認
       const baseURL =
-        config.projects[0].use?.baseURL || 'http://localhost:3000';
+        config.projects[0].use?.baseURL || 'http://localhost:8888';
       console.log(`🌐 アプリケーション接続確認: ${baseURL}`);
 
       await page.goto(baseURL);

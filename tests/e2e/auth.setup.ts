@@ -71,7 +71,7 @@ setup('authenticate', async ({ page }) => {
       const baseURL =
         process.env.PLAYWRIGHT_BASE_URL ||
         process.env.NEXT_PUBLIC_APP_URL ||
-        'http://localhost:3000';
+        'http://localhost:8888';
       console.log(`🌐 ベースURL: ${baseURL}`);
       console.log('📍 サインインページへ遷移中...');
 

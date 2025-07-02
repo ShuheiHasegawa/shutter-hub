@@ -49,10 +49,10 @@ export default defineConfig({
     /* ベースURL - MCP環境対応（動的ポート検出）*/
     baseURL:
       process.env.MCP_ENABLED === 'true'
-        ? process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000' // MCPモードではポート3000
+        ? process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:8888' // MCPモードではポート8888
         : process.env.PLAYWRIGHT_BASE_URL ||
           process.env.NEXT_PUBLIC_APP_URL ||
-          'http://localhost:3000',
+          'http://localhost:8888',
     /* スクリーンショット設定 */
     screenshot:
       (process.env.PLAYWRIGHT_SCREENSHOT as 'off' | 'only-on-failure' | 'on') ||
@@ -159,7 +159,7 @@ export default defineConfig({
       ? undefined
       : {
           command: 'npm run dev',
-          url: 'http://localhost:3000',
+          url: 'http://localhost:8888',
           reuseExistingServer: !process.env.CI,
           timeout: 120000,
         },

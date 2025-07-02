@@ -7,10 +7,11 @@ import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { UserProfileDisplay } from '@/components/ui/user-profile-display';
 import {
   Search,
   ArrowLeft,
@@ -274,35 +275,30 @@ function UserList({
             key={userData.id}
             className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors"
           >
-            <div className="flex items-center space-x-3">
-              <Avatar className="h-10 w-10">
-                <AvatarImage src={userData.avatar_url || undefined} />
-                <AvatarFallback>
-                  {userData.display_name?.charAt(0).toUpperCase() || 'U'}
-                </AvatarFallback>
-              </Avatar>
+            <div className="flex-1 min-w-0">
+              <UserProfileDisplay
+                user={{
+                  id: userData.id,
+                  display_name: userData.display_name,
+                  avatar_url: userData.avatar_url,
+                  user_type: userData.user_type,
+                  is_verified: userData.is_verified,
+                }}
+                size="md"
+                showRole={true}
+                showVerified={true}
+                clickable={true}
+                className="flex-1"
+              />
 
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <p className="font-medium truncate">
-                    {userData.display_name || 'Unknown User'}
-                  </p>
-
-                  {/* ユーザータイプバッジ */}
-                  <Badge variant="secondary" className="text-xs">
-                    {userData.user_type === 'model' && 'モデル'}
-                    {userData.user_type === 'photographer' &&
-                      'フォトグラファー'}
-                    {userData.user_type === 'organizer' && '主催者'}
+              {/* 追加情報 */}
+              <div className="ml-13 mt-1 space-y-1">
+                {/* 相互フォローバッジ */}
+                {userData.is_following && userData.is_followed_by && (
+                  <Badge variant="outline" className="text-xs">
+                    相互フォロー
                   </Badge>
-
-                  {/* 相互フォローバッジ */}
-                  {userData.is_following && userData.is_followed_by && (
-                    <Badge variant="outline" className="text-xs">
-                      相互フォロー
-                    </Badge>
-                  )}
-                </div>
+                )}
 
                 {userData.bio && (
                   <p className="text-sm text-muted-foreground truncate">
