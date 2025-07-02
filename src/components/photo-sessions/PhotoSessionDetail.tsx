@@ -5,8 +5,8 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { UserProfileDisplay } from '@/components/ui/user-profile-display';
 import {
   ActionBar,
   ActionBarButton,
@@ -380,23 +380,19 @@ export function PhotoSessionDetail({
 
               <div className="space-y-4">
                 <h3 className="font-semibold">主催者情報</h3>
-                <div className="flex items-start gap-3">
-                  <Avatar className="h-12 w-12">
-                    <AvatarImage
-                      src={session.organizer?.avatar_url || ''}
-                      alt={session.organizer?.display_name || ''}
-                    />
-                    <AvatarFallback>
-                      {session.organizer?.display_name?.charAt(0) || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <div className="font-medium">
-                      {session.organizer?.display_name}
-                    </div>
-                    <div className="text-sm text-muted-foreground">主催者</div>
-                  </div>
-                </div>
+                <UserProfileDisplay
+                  user={{
+                    id: session.organizer.id,
+                    display_name: session.organizer.display_name,
+                    avatar_url: session.organizer.avatar_url,
+                    user_type: session.organizer.user_type,
+                    is_verified: session.organizer.is_verified,
+                  }}
+                  size="md"
+                  showRole={true}
+                  showVerified={true}
+                  clickable={true}
+                />
               </div>
             </div>
 
@@ -523,23 +519,19 @@ export function PhotoSessionDetail({
 
               <div className="space-y-4">
                 <h3 className="font-semibold">主催者情報</h3>
-                <div className="flex items-start gap-3">
-                  <Avatar className="h-12 w-12">
-                    <AvatarImage
-                      src={session.organizer?.avatar_url || ''}
-                      alt={session.organizer?.display_name || ''}
-                    />
-                    <AvatarFallback>
-                      {session.organizer?.display_name?.charAt(0) || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <div className="font-medium">
-                      {session.organizer?.display_name}
-                    </div>
-                    <div className="text-sm text-muted-foreground">主催者</div>
-                  </div>
-                </div>
+                <UserProfileDisplay
+                  user={{
+                    id: session.organizer.id,
+                    display_name: session.organizer.display_name,
+                    avatar_url: session.organizer.avatar_url,
+                    user_type: session.organizer.user_type,
+                    is_verified: session.organizer.is_verified,
+                  }}
+                  size="md"
+                  showRole={true}
+                  showVerified={true}
+                  clickable={true}
+                />
               </div>
             </div>
 
