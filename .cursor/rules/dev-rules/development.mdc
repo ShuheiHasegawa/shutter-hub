@@ -1,8 +1,9 @@
 ---
-description: 
-globs: 
+description:
+globs:
 alwaysApply: true
 ---
+
 # ShutterHub v2 開発ルール
 
 **最終更新**: 2024年12月1日（Next.js 15型定義ルール・コミット自動化追加）
@@ -24,101 +25,107 @@ alwaysApply: true
 以下のUI/UXデザイン要素は、**明示的な変更依頼がない限り絶対に変更してはいけません**：
 
 #### **禁止される変更項目**
+
 ```yaml
 layout_changes:
-  - grid_structure: "グリッドレイアウトの列数・行数変更"
-  - spacing: "マージン・パディング・gap値の変更"
-  - positioning: "absolute・relative・fixed配置の変更"
-  - flexbox: "flex方向・justify・align設定の変更"
+  - grid_structure: 'グリッドレイアウトの列数・行数変更'
+  - spacing: 'マージン・パディング・gap値の変更'
+  - positioning: 'absolute・relative・fixed配置の変更'
+  - flexbox: 'flex方向・justify・align設定の変更'
 
 visual_design:
-  - colors: "背景色・テキスト色・ボーダー色の変更"
-  - typography: "フォントサイズ・ウェイト・行間の変更"
-  - borders: "ボーダー幅・スタイル・角丸の変更"
-  - shadows: "シャドウ・elevation効果の変更"
+  - colors: '背景色・テキスト色・ボーダー色の変更'
+  - typography: 'フォントサイズ・ウェイト・行間の変更'
+  - borders: 'ボーダー幅・スタイル・角丸の変更'
+  - shadows: 'シャドウ・elevation効果の変更'
 
 components:
-  - card_layout: "カードコンポーネントの内部レイアウト変更"
-  - button_styles: "ボタンサイズ・variant・色の変更"
-  - navigation: "ナビゲーション構造・位置の変更"
-  - forms: "フォームレイアウト・入力フィールド配置変更"
+  - card_layout: 'カードコンポーネントの内部レイアウト変更'
+  - button_styles: 'ボタンサイズ・variant・色の変更'
+  - navigation: 'ナビゲーション構造・位置の変更'
+  - forms: 'フォームレイアウト・入力フィールド配置変更'
 
 responsive:
-  - breakpoints: "レスポンシブブレイクポイントの変更"
-  - mobile_layout: "モバイル専用レイアウトの変更"
-  - desktop_layout: "デスクトップ専用レイアウトの変更"
+  - breakpoints: 'レスポンシブブレイクポイントの変更'
+  - mobile_layout: 'モバイル専用レイアウトの変更'
+  - desktop_layout: 'デスクトップ専用レイアウトの変更'
 ```
 
 #### **変更許可が必要な場合**
+
 ```yaml
 required_approval:
-  explicit_request: 
-    - "ユーザーから「レイアウトを変更してください」等の明示的依頼"
-    - "「デザインを修正してください」等の具体的指示"
-    - "「色を変更してください」等の明確な要求"
-  
+  explicit_request:
+    - 'ユーザーから「レイアウトを変更してください」等の明示的依頼'
+    - '「デザインを修正してください」等の具体的指示'
+    - '「色を変更してください」等の明確な要求'
+
   approval_process:
-    1: "変更理由を明確に説明"
-    2: "変更前後の比較を提示"
-    3: "ユーザーの承認を得てから実装"
-    4: "変更範囲を最小限に限定"
+    1: '変更理由を明確に説明'
+    2: '変更前後の比較を提示'
+    3: 'ユーザーの承認を得てから実装'
+    4: '変更範囲を最小限に限定'
 ```
 
 #### **例外的に許可される変更**
+
 ```yaml
 allowed_changes:
   bug_fixes:
-    - "表示崩れの修正（元のデザインへの復元）"
-    - "レスポンシブ対応の不具合修正"
-    - "ダークモード対応の不整合修正"
-  
+    - '表示崩れの修正（元のデザインへの復元）'
+    - 'レスポンシブ対応の不具合修正'
+    - 'ダークモード対応の不整合修正'
+
   accessibility:
-    - "色のコントラスト不足の修正"
-    - "フォーカス表示の改善"
-    - "スクリーンリーダー対応"
-  
+    - '色のコントラスト不足の修正'
+    - 'フォーカス表示の改善'
+    - 'スクリーンリーダー対応'
+
   performance:
-    - "CSS最適化（見た目は維持）"
-    - "不要なスタイルの削除"
+    - 'CSS最適化（見た目は維持）'
+    - '不要なスタイルの削除'
 ```
 
 #### **実装時の必須チェック**
+
 ```yaml
 pre_implementation_check:
   question_yourself:
-    - "この変更はユーザーから明示的に依頼されたか？"
-    - "レイアウト・デザインに影響する変更はないか？"
-    - "既存の見た目を維持できているか？"
-    - "本当にこの変更が必要か？"
-  
+    - 'この変更はユーザーから明示的に依頼されたか？'
+    - 'レイアウト・デザインに影響する変更はないか？'
+    - '既存の見た目を維持できているか？'
+    - '本当にこの変更が必要か？'
+
   if_uncertain:
-    - "変更が必要な理由を明確に説明する"
-    - "ユーザーに変更の許可を求める"
-    - "実装を停止して確認を取る"
+    - '変更が必要な理由を明確に説明する'
+    - 'ユーザーに変更の許可を求める'
+    - '実装を停止して確認を取る'
 ```
 
 #### **違反時の対応**
+
 ```yaml
 violation_response:
   immediate_action:
-    - "変更を即座に元に戻す"
-    - "なぜ変更したかを報告する"
-    - "再発防止策を検討する"
-  
+    - '変更を即座に元に戻す'
+    - 'なぜ変更したかを報告する'
+    - '再発防止策を検討する'
+
   prevention:
-    - "実装前に必ずこのルールを確認"
-    - "迷った場合は必ず質問する"
-    - "機能実装とデザイン変更を分離して考える"
+    - '実装前に必ずこのルールを確認'
+    - '迷った場合は必ず質問する'
+    - '機能実装とデザイン変更を分離して考える'
 ```
 
 ### **成功例・失敗例**
 
 #### ✅ **正しい対応例**
+
 ```typescript
 // ユーザー: "機能を追加してください"
 // → デザインは既存のまま、機能のみ追加
 
-// ユーザー: "バグを修正してください" 
+// ユーザー: "バグを修正してください"
 // → 表示崩れを元のデザインに戻す
 
 // ユーザー: "レスポンシブ対応してください"
@@ -126,6 +133,7 @@ violation_response:
 ```
 
 #### ❌ **違反例**
+
 ```typescript
 // ユーザー: "検索機能を追加してください"
 // → 勝手にレイアウトを変更、色を変更、間隔を調整 ← 禁止
@@ -133,11 +141,12 @@ violation_response:
 // ユーザー: "バグを修正してください"
 // → ついでにデザインを「改善」 ← 禁止
 
-// ユーザー: "パフォーマンスを向上してください"  
+// ユーザー: "パフォーマンスを向上してください"
 // → UIの配置を「最適化」 ← 禁止
 ```
 
 ### **このルールの重要性**
+
 - **一貫性の維持**: 予期しないデザイン変更を防ぐ
 - **ユーザー体験**: 慣れ親しんだUIを保持
 - **開発効率**: 不要な見た目の議論を回避
@@ -194,6 +203,7 @@ rules/                   # 開発ルール・プロンプト
 ## コンポーネント設計
 
 ### Server Components（デフォルト）
+
 ```typescript
 // app/events/page.tsx
 import { createClient } from '@/lib/supabase/server';
@@ -209,6 +219,7 @@ export default async function EventsPage() {
 ```
 
 ### Client Components（必要時のみ）
+
 ```typescript
 // components/features/EventForm.tsx
 'use client';
@@ -221,12 +232,196 @@ export function EventForm() {
 }
 ```
 
+## 🚨 プロフィール表示統一ルール
+
+### **【重要】UserProfileDisplayコンポーネント必須使用**
+
+プロフィール表示（アバター + 名前 + 役割）を行う場合は、**必ず`UserProfileDisplay`コンポーネントを使用する**こと。個別実装は禁止。
+
+#### **必須使用コンポーネント**
+
+```typescript
+import { UserProfileDisplay } from '@/components/ui/user-profile-display';
+```
+
+#### **✅ 正しい実装例**
+
+```typescript
+// ✅ UserProfileDisplayコンポーネントを使用
+<UserProfileDisplay
+  user={{
+    id: user.id,
+    display_name: user.display_name,
+    avatar_url: user.avatar_url,
+    user_type: user.user_type,
+    is_verified: user.is_verified,
+  }}
+  size="md"
+  showRole={true}
+  showVerified={true}
+  clickable={true}
+  className="hover:bg-muted/50"
+/>
+```
+
+#### **❌ 禁止される実装例**
+
+```typescript
+// ❌ 個別のAvatar + 名前 + 役割実装は禁止
+<div className="flex items-center gap-3">
+  <Avatar className="h-10 w-10">
+    <AvatarImage src={user.avatar_url} />
+    <AvatarFallback>{user.display_name?.[0]}</AvatarFallback>
+  </Avatar>
+  <div>
+    <p className="font-medium">{user.display_name}</p>
+    <Badge variant="secondary">{user.user_type}</Badge>
+  </div>
+</div>
+
+// ❌ 部分的な実装も禁止
+<Avatar>...</Avatar>
+<span>{user.display_name}</span>
+```
+
+### **適用対象箇所**
+
+以下の箇所では必ず`UserProfileDisplay`を使用すること：
+
+#### **必須適用箇所**
+
+- 投稿カード（PostCard）の投稿者情報
+- 撮影会詳細（PhotoSessionDetail）の主催者情報
+- ユーザー検索結果（UserSearchResults）
+- チャット・メッセージの送信者情報
+- コメント・レビューの投稿者情報
+- フォロワー・フォロー中リスト
+- 参加者リスト
+- ダッシュボードのユーザー情報表示
+
+#### **例外的に個別実装が許可される場合**
+
+```yaml
+exceptions:
+  special_layouts:
+    - 'ユーザープロフィール詳細ページのメイン表示'
+    - '認証フォームのアカウント作成'
+    - '管理画面の特殊なユーザー管理UI'
+
+  approval_required:
+    - '例外実装前に必ず理由を説明'
+    - 'UserProfileDisplayでは対応できない特殊要件の明示'
+    - '代替案の検討と却下理由の記載'
+```
+
+### **コンポーネント仕様**
+
+#### **基本プロパティ**
+
+```typescript
+interface UserProfileDisplayProps {
+  user: {
+    id: string; // 必須：プロフィールページ遷移用
+    display_name: string | null; // 必須：表示名
+    avatar_url: string | null; // 必須：アバター画像URL
+    user_type?: string; // オプション：photographer/model/organizer
+    is_verified?: boolean; // オプション：認証済みマーク
+  };
+  size?: 'sm' | 'md' | 'lg'; // サイズ（デフォルト: md）
+  showRole?: boolean; // 役割表示（デフォルト: true）
+  showVerified?: boolean; // 認証マーク表示（デフォルト: true）
+  clickable?: boolean; // クリック可能（デフォルト: true）
+  className?: string; // 追加スタイル
+}
+```
+
+#### **サイズバリエーション**
+
+```typescript
+// 小サイズ（リスト・チャット用）
+<UserProfileDisplay user={user} size="sm" />
+
+// 中サイズ（標準・カード用）
+<UserProfileDisplay user={user} size="md" />
+
+// 大サイズ（ヘッダー・重要表示用）
+<UserProfileDisplay user={user} size="lg" />
+```
+
+#### **表示制御オプション**
+
+```typescript
+// 役割非表示（シンプル表示）
+<UserProfileDisplay user={user} showRole={false} />
+
+// クリック無効（静的表示）
+<UserProfileDisplay user={user} clickable={false} />
+
+// 認証マーク非表示
+<UserProfileDisplay user={user} showVerified={false} />
+```
+
+### **実装時の必須チェックリスト**
+
+- [ ] プロフィール表示でUserProfileDisplayコンポーネントを使用しているか
+- [ ] 個別のAvatar + 名前 + 役割実装をしていないか
+- [ ] 適切なサイズ（sm/md/lg）を選択しているか
+- [ ] クリック遷移が必要な場合にclickable={true}を設定しているか
+- [ ] 不要な表示要素（役割・認証マーク）を適切に制御しているか
+
+### **移行ガイドライン**
+
+#### **既存コードの段階的置き換え**
+
+1. **高頻度使用箇所**: 投稿カード、撮影会詳細、ユーザー検索（優先度：高）
+2. **中頻度使用箇所**: チャット、コメント、参加者リスト（優先度：中）
+3. **低頻度使用箇所**: 管理画面、特殊表示（優先度：低）
+
+#### **置き換え作業手順**
+
+```typescript
+// 1. 既存の個別実装を特定
+grep -r "Avatar.*display_name" src/components/
+
+// 2. UserProfileDisplayインポート追加
+import { UserProfileDisplay } from '@/components/ui/user-profile-display';
+
+// 3. 個別実装をコンポーネントに置き換え
+// 4. 不要なインポート削除（Avatar, Badge等）
+// 5. 動作確認・テスト実行
+```
+
+### **違反時の対応**
+
+```yaml
+violation_response:
+  immediate_action:
+    - '個別実装を即座にUserProfileDisplayに置き換え'
+    - 'なぜ個別実装したかを報告'
+    - '再発防止策を検討'
+
+  prevention:
+    - '実装前に必ずこのルールを確認'
+    - 'プロフィール表示 = UserProfileDisplay使用を徹底'
+    - '迷った場合は必ず質問する'
+```
+
+### **このルールの重要性**
+
+- **一貫性の維持**: 全画面で統一されたプロフィール表示
+- **保守性向上**: 一箇所の修正で全体に反映
+- **機能統一**: クリック遷移、サイズ対応、アクセシビリティの統一
+- **開発効率**: プロフィール表示実装時間の大幅短縮
+- **品質保証**: テスト済みコンポーネントによる安定性確保
+
 ## Next.js 15 型定義ルール
 
 ### ページコンポーネントの型定義（必須）
+
 Next.js 15では、`params`と`searchParams`は**Promise型**として定義する必要があります。
 
 #### 正しい型定義
+
 ```typescript
 // ✅ 正しい記述方法（Next.js 15準拠）
 interface PageProps {
@@ -243,13 +438,14 @@ interface PageProps {
 export default async function Page({ params, searchParams }: PageProps) {
   const resolvedParams = await params;
   const resolvedSearchParams = await searchParams;
-  
+
   // resolvedParams.id を使用
   // resolvedSearchParams.view を使用
 }
 ```
 
 #### 間違った型定義（使用禁止）
+
 ```typescript
 // ❌ 古い記述方法（Next.js 14以前）
 interface PageProps {
@@ -264,16 +460,19 @@ interface PageProps {
 ```
 
 #### generateMetadata関数でも同様
+
 ```typescript
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
   const resolvedParams = await params;
-  
+
   const { data } = await supabase
     .from('table')
     .select('title')
     .eq('id', resolvedParams.id)
     .single();
-    
+
   return {
     title: data?.title || 'Default Title',
   };
@@ -281,6 +480,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 ```
 
 ### 実装時の注意点
+
 1. **必ずawaitで解決**: `params`と`searchParams`は使用前に必ずawaitする
 2. **型エラーの早期発見**: TypeScriptエラーが出た場合は即座にPromise型に修正
 3. **一貫性の維持**: プロジェクト全体でNext.js 15の型定義に統一
@@ -288,28 +488,28 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 ## スタイリング
 
 ### 優先順位
+
 1. **Tailwind CSS**: 基本スタイリング
 2. **cn()ユーティリティ**: 条件付きクラス
 3. **CSS Variables**: テーマカスタマイズ
 
 ### 実装例
+
 ```tsx
-import { cn } from "@/lib/utils/cn";
+import { cn } from '@/lib/utils/cn';
 
 <Button
-  className={cn(
-    "w-full",
-    isLoading && "opacity-50 cursor-not-allowed"
-  )}
+  className={cn('w-full', isLoading && 'opacity-50 cursor-not-allowed')}
   disabled={isLoading}
 >
-  {isLoading ? "処理中..." : "送信"}
-</Button>
+  {isLoading ? '処理中...' : '送信'}
+</Button>;
 ```
 
 ## デザインシステム・カラーパレット
 
 ### 基本原則
+
 - **定義済みカラーパレットの使用**: `src/constants/colors.ts`に定義されたカラーを使用
 - **シンプルで一貫性のある配色**: 過度なグラデーションや複雑な配色は避ける
 - **ダークモード対応必須**: すべてのコンポーネントでライト/ダークモード対応
@@ -317,13 +517,15 @@ import { cn } from "@/lib/utils/cn";
 ### カラーパレット使用ガイド
 
 #### ブランドカラー
+
 ```typescript
 // src/constants/colors.ts より
-primary: '#6F5091'      // プライマリー（紫）
-secondary: '#101820'    // セカンダリー（ダークグレー）
+primary: '#6F5091'; // プライマリー（紫）
+secondary: '#101820'; // セカンダリー（ダークグレー）
 ```
 
 #### テキストカラー
+
 ```tsx
 // ライトモード
 text-gray-900           // 見出し・重要なテキスト
@@ -338,6 +540,7 @@ text-gray-600 dark:text-gray-400   // 補助（使用を避ける）
 ```
 
 #### 背景色
+
 ```tsx
 // カード・コンテナ
 bg-white dark:bg-gray-800          // 標準的なカード
@@ -351,6 +554,7 @@ bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-
 ### 実装ルール
 
 #### 1. コントラストの確保
+
 ```tsx
 // ❌ 悪い例: 薄い背景に薄いテキスト
 <div className="bg-gray-100">
@@ -364,6 +568,7 @@ bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-
 ```
 
 #### 2. アイコンカラー
+
 ```tsx
 // セマンティックカラー
 <MapPin className="h-6 w-6 text-blue-600" />      // 位置情報
@@ -373,6 +578,7 @@ bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-
 ```
 
 #### 3. ステータスカラー
+
 ```tsx
 // 成功・エラー・警告
 text-green-600 dark:text-green-400   // 成功
@@ -382,12 +588,14 @@ text-blue-600 dark:text-blue-400     // 情報
 ```
 
 ### 禁止事項
+
 1. **text-gray-600の単独使用**: 必ずダークモード対応を追加
 2. **複雑なグラデーション**: 3色以上のグラデーションは避ける
 3. **インラインでの色指定**: Tailwindクラスを使用
 4. **不透明度の過度な使用**: 読みやすさを優先
 
 ### チェックリスト
+
 - [ ] すべてのテキストにダークモード対応クラスがあるか
 - [ ] カードやコンテナに背景色のダークモード対応があるか
 - [ ] コントラスト比は十分か（WCAG AA基準）
@@ -396,6 +604,7 @@ text-blue-600 dark:text-blue-400     // 情報
 ## データ操作
 
 ### Server Actions
+
 ```typescript
 // app/actions/event.ts
 'use server';
@@ -405,23 +614,22 @@ import { revalidatePath } from 'next/cache';
 
 export async function createEvent(formData: FormData) {
   const supabase = createClient();
-  
+
   // バリデーション
   const validatedData = eventSchema.parse({
     title: formData.get('title'),
   });
-  
+
   // データ作成
-  const { error } = await supabase
-    .from('events')
-    .insert(validatedData);
-    
+  const { error } = await supabase.from('events').insert(validatedData);
+
   if (error) throw error;
   revalidatePath('/events');
 }
 ```
 
 ### クライアントサイドフェッチ（SWR）
+
 ```typescript
 // hooks/useEvents.ts
 import useSWR from 'swr';
@@ -436,6 +644,7 @@ export function useEvents() {
 ## エラーハンドリング
 
 ### エラーバウンダリ
+
 ```typescript
 // app/error.tsx
 'use client';
@@ -451,6 +660,7 @@ export default function Error({ error, reset }) {
 ```
 
 ### トースト通知
+
 ```typescript
 import { toast } from 'sonner';
 
@@ -493,6 +703,7 @@ const form = useForm({
 ## テスト
 
 ### 単体テスト
+
 ```typescript
 // __tests__/utils/formatDate.test.ts
 import { formatDate } from '@/lib/utils/formatDate';
@@ -506,6 +717,7 @@ describe('formatDate', () => {
 ```
 
 ### コンポーネントテスト
+
 ```typescript
 // __tests__/components/EventCard.test.tsx
 import { render, screen } from '@testing-library/react';
@@ -520,6 +732,7 @@ describe('EventCard', () => {
 ```
 
 ### テスト実行・報告
+
 - テスト完了後は実行報告書を作成
 - カバレッジ80%以上を目標
 - 失敗時は原因特定と修正を実施
@@ -527,11 +740,13 @@ describe('EventCard', () => {
 ## セキュリティ
 
 ### 認証・認可
+
 - すべての保護ルートでセッション確認
 - Row Level Security (RLS) の適切な設定
 - サーバーサイドでの権限チェック
 
 ### 入力検証
+
 ```typescript
 // Zodスキーマによる検証
 const eventSchema = z.object({
@@ -546,6 +761,7 @@ const validated = eventSchema.parse(input);
 ## パフォーマンス
 
 ### 画像最適化
+
 ```tsx
 import Image from 'next/image';
 
@@ -555,10 +771,11 @@ import Image from 'next/image';
   width={800}
   height={600}
   loading="lazy"
-/>
+/>;
 ```
 
 ### コード分割
+
 ```typescript
 import dynamic from 'next/dynamic';
 
@@ -571,17 +788,19 @@ const HeavyComponent = dynamic(
 ## Git コミット規則
 
 ### 基本原則
+
 - **コミット文は必ず日本語で記述する**
 - **プレフィックス付きのシンプルな実装要約とする**
 - **英語でのコミット文は禁止**
 
 ### コミット文フォーマット
+
 ```
 <type>: <実装内容の要約>
 
 タイプ一覧:
 feat: 新機能追加
-fix: バグ修正  
+fix: バグ修正
 docs: ドキュメント更新
 style: コードスタイル修正
 refactor: リファクタリング
@@ -599,6 +818,7 @@ chore: 依存関係を更新してセキュリティを強化
 ```
 
 ### コミット文ルール詳細
+
 1. **必ず日本語**: 英語でのコミット文は一切禁止
 2. **簡潔性**: 1行で実装内容が理解できる長さ
 3. **具体性**: 何を実装・修正したかを明確に記述
@@ -607,6 +827,7 @@ chore: 依存関係を更新してセキュリティを強化
 ## 依存関係管理ルール
 
 ### 基本原則
+
 - **依存関係の追加・更新時は必ず互換性を確認**
 - **Vercelデプロイエラーを防ぐための事前チェック必須**
 - **ピア依存関係の競合は事前に解決**
@@ -614,6 +835,7 @@ chore: 依存関係を更新してセキュリティを強化
 ### 必須手順
 
 #### 1. 新しい依存関係の追加時
+
 ```bash
 # 1. 依存関係の互換性確認
 npm info [package-name] peerDependencies
@@ -629,6 +851,7 @@ npm run build
 ```
 
 #### 2. 依存関係更新時
+
 ```bash
 # 1. 段階的更新（一度に全て更新しない）
 npm update [specific-package]
@@ -640,21 +863,25 @@ npm run build
 ```
 
 #### 3. 競合解決の優先順位
+
 1. **バージョン調整**: 互換性のあるバージョンに変更
 2. **--legacy-peer-deps**: .npmrcファイルで設定
 3. **代替パッケージ**: 競合が解決できない場合は代替を検討
 
 ### .npmrcファイルの管理
+
 ```
 legacy-peer-deps=true
 auto-install-peers=true
 ```
+
 - **必須設定**: Vercelデプロイ時の競合回避
 - **プロジェクトルートに配置**: 全環境で統一設定
 
 ### よくある競合パターンと解決法
 
 #### React バージョン競合
+
 ```bash
 # 問題: React 19 vs パッケージがReact 18を要求
 # 解決: --legacy-peer-deps で回避
@@ -662,6 +889,7 @@ npm install --legacy-peer-deps
 ```
 
 #### date-fns バージョン競合
+
 ```bash
 # 問題: date-fns v4 vs react-day-picker が v3を要求
 # 解決: date-fnsをダウングレード
@@ -669,6 +897,7 @@ npm install date-fns@^3.6.0 --legacy-peer-deps
 ```
 
 #### TypeScript バージョン競合
+
 ```bash
 # 問題: TypeScript v5 vs パッケージがv4を要求
 # 解決: 段階的更新または代替パッケージ検討
@@ -677,6 +906,7 @@ npm install date-fns@^3.6.0 --legacy-peer-deps
 ### API変更への対応
 
 #### react-day-picker API変更例
+
 ```tsx
 // 旧API (v8.x)
 components={{
@@ -694,12 +924,14 @@ components={{
 ```
 
 ### 禁止事項
+
 1. **依存関係の無計画な一括更新**
 2. **ビルドテストなしでの依存関係変更**
 3. **競合エラーの放置**
 4. **--force フラグの安易な使用**
 
 ### 必須チェックリスト
+
 - [ ] 新規依存関係追加時の互換性確認
 - [ ] ビルドテスト実行
 - [ ] .npmrcファイルの適切な設定
@@ -719,33 +951,141 @@ components={{
    - **条件分岐テキストのハードコード禁止**（`condition ? '日本語' : '日本語'`）
    - **データベースフィールドに基づく表示テキストのハードコード禁止**
 8. **🚨【絶対禁止】明示的依頼なしのUI/UXデザイン変更**
+9. **🎨【新規追加】Tailwind色クラス直接使用禁止**（カラーシステム統一必須）
+
+### 🎨 **カラーシステム統一ルール（新規追加）**
+
+#### **絶対禁止事項**
+
+```yaml
+prohibited_color_usage:
+  tailwind_colors:
+    - 'green-500, green-600, green-700等のTailwind色直接使用'
+    - 'blue-500, blue-600, blue-700等のTailwind色直接使用'
+    - 'red-500, red-600, red-700等のTailwind色直接使用'
+    - 'yellow-500, yellow-600, yellow-700等のTailwind色直接使用'
+    - 'purple-500, purple-600, purple-700等のTailwind色直接使用'
+
+  hardcoded_hex:
+    - '#FF0000, #00FF00, #0000FF等のHEX色直接指定'
+    - 'rgb(255, 0, 0), hsl(120, 100%, 50%)等の色直接指定'
+```
+
+#### **必須使用クラス**
+
+```yaml
+required_semantic_classes:
+  status_colors:
+    - 'text-success, bg-success': 成功・空きあり・承認済み等
+    - 'text-warning, bg-warning': 注意・待機・保留等
+    - 'text-info, bg-info': 情報・リンク・詳細等
+    - 'text-error, bg-error': エラー・満席・拒否等
+    - 'text-available, bg-available': 空きあり状態
+    - 'text-booked, bg-booked': 満席・予約済み状態
+    - 'text-pending, bg-pending': 待機・保留状態
+
+  component_usage:
+    - 'Badge, Button等のvariant属性を優先使用'
+    - 'Shadcn/ui標準のprimary, secondary, destructive等を活用'
+```
+
+#### **新規実装時の必須手順**
+
+```yaml
+implementation_checklist:
+  before_coding:
+    - [ ] "セマンティック色で表現可能か確認"
+    - [ ] "Shadcn/uiのvariantで対応可能か確認"
+    - [ ] "新しい色が必要な場合はCSS Variables追加を検討"
+
+  during_coding:
+    - [ ] "green-500等のTailwind色を使用していないか確認"
+    - [ ] "条件分岐で色を切り替える場合もセマンティック色使用"
+    - [ ] "ダークモード対応が自動的に機能するか確認"
+
+  before_commit:
+    - [ ] "grep検索でTailwind色使用をチェック"
+    - [ ] "ビルドテストでエラーがないか確認"
+    - [ ] "ダークモード切り替えで色が適切に変わるか確認"
+```
+
+#### **検出・修正方法**
+
+```bash
+# 新規実装でのTailwind色使用検出
+grep -r "green-[0-9]\|blue-[0-9]\|red-[0-9]\|yellow-[0-9]" src/components/
+
+# セマンティック色への置き換え例
+# green-500 → text-success または bg-success
+# blue-600 → text-info または bg-info
+# red-500 → text-error または bg-error
+# yellow-500 → text-warning または bg-warning
+```
+
+#### **例外的に許可される使用**
+
+```yaml
+allowed_exceptions:
+  gray_colors:
+    - 'text-gray-500, bg-gray-100等のグレー系は継続使用可能'
+    - '白黒系（white, black）は継続使用可能'
+
+  brand_colors:
+    - '既存のshutter-primary, shutter-secondary等は継続使用可能'
+    - 'CSS Variablesで定義された色は推奨'
+```
+
+#### **違反時の対応**
+
+```yaml
+violation_response:
+  immediate_action:
+    - 'Tailwind色使用箇所を即座にセマンティック色に置き換え'
+    - 'なぜセマンティック色を使用しなかったかを報告'
+    - '再発防止策を検討'
+
+  prevention:
+    - '実装前に必ずこのルールを確認'
+    - '迷った場合は必ずセマンティック色を使用'
+    - '新しい色が必要な場合はCSS Variables追加を提案'
+```
+
+#### **このルールの重要性**
+
+- **ダークモード自動対応**: CSS Variablesによる自動テーマ切り替え
+- **ブランド統一**: 一貫した色使用によるデザイン品質向上
+- **保守性向上**: 一箇所の変更で全体配色変更可能
+- **将来拡張性**: カスタムテーマ機能への対応準備
+- **開発効率**: 色選択の迷いを排除し、統一されたシステム使用
 
 ### 🚨 **UI/UXデザイン変更の絶対禁止（重要）**
 
 以下の行為は**明示的な変更依頼がない限り絶対に禁止**です：
 
 #### **絶対禁止事項**
+
 ```yaml
 layout_modifications:
-  - "グリッドレイアウトの列数・行数変更"
-  - "マージン・パディング・gap値の変更"
-  - "flexbox設定（justify・align・direction）の変更"
-  - "カードコンポーネント内部レイアウトの変更"
+  - 'グリッドレイアウトの列数・行数変更'
+  - 'マージン・パディング・gap値の変更'
+  - 'flexbox設定（justify・align・direction）の変更'
+  - 'カードコンポーネント内部レイアウトの変更'
 
 visual_modifications:
-  - "背景色・テキスト色・ボーダー色の変更"
-  - "フォントサイズ・ウェイト・行間の変更"
-  - "ボーダー幅・スタイル・角丸の変更"
-  - "シャドウ・elevation効果の変更"
+  - '背景色・テキスト色・ボーダー色の変更'
+  - 'フォントサイズ・ウェイト・行間の変更'
+  - 'ボーダー幅・スタイル・角丸の変更'
+  - 'シャドウ・elevation効果の変更'
 
 component_modifications:
-  - "ボタンサイズ・variant・色の変更"
-  - "ナビゲーション構造・位置の変更"
-  - "フォームレイアウト・入力フィールド配置変更"
-  - "アイコンサイズ・色・配置の変更"
+  - 'ボタンサイズ・variant・色の変更'
+  - 'ナビゲーション構造・位置の変更'
+  - 'フォームレイアウト・入力フィールド配置変更'
+  - 'アイコンサイズ・色・配置の変更'
 ```
 
 #### **違反例（禁止）**
+
 ```typescript
 // ❌ 明示的依頼なしでの変更例
 // ユーザー: "検索機能を追加してください"
@@ -760,41 +1100,44 @@ component_modifications:
 ```
 
 #### **許可される場合の条件**
+
 ```yaml
 explicit_user_request:
   required_phrases:
-    - "レイアウトを変更してください"
-    - "デザインを修正してください"
-    - "色を変更してください"
-    - "間隔を調整してください"
-    - "見た目を変更してください"
-  
-  approval_process:
-    1. "変更理由を明確に説明する"
+    - 'レイアウトを変更してください'
+    - 'デザインを修正してください'
+    - '色を変更してください'
+    - '間隔を調整してください'
+    - '見た目を変更してください'
+
+  approval_process: 1. "変更理由を明確に説明する"
     2. "変更前後の比較を提示する"
     3. "ユーザーの明示的承認を得る"
     4. "変更範囲を最小限に限定する"
 ```
 
 #### **例外的に許可される変更**
+
 ```yaml
 bug_fixes:
-  - "表示崩れの修正（元のデザインへの復元）"
-  - "レスポンシブ対応の不具合修正"
-  - "ダークモード対応の不整合修正"
+  - '表示崩れの修正（元のデザインへの復元）'
+  - 'レスポンシブ対応の不具合修正'
+  - 'ダークモード対応の不整合修正'
 
 accessibility:
-  - "色のコントラスト不足の修正"
-  - "フォーカス表示の改善"
-  - "スクリーンリーダー対応"
-  
+  - '色のコントラスト不足の修正'
+  - 'フォーカス表示の改善'
+  - 'スクリーンリーダー対応'
+
 performance:
-  - "CSS最適化（見た目は完全に維持）"
-  - "不要なスタイルの削除"
+  - 'CSS最適化（見た目は完全に維持）'
+  - '不要なスタイルの削除'
 ```
 
 #### **実装前の必須チェック**
+
 **実装開始前に以下を必ず自問してください：**
+
 1. **"この変更はユーザーから明示的に依頼されたか？"**
 2. **"レイアウト・デザインに影響する変更はないか？"**
 3. **"既存の見た目を完全に維持できているか？"**
@@ -812,6 +1155,7 @@ performance:
 ## 多言語化ルール
 
 ### 基本原則
+
 - **すべてのユーザー向けテキストは多言語化対応必須**
 - **ハードコードされた日本語・英語テキストは禁止**
 - **next-intl を使用した統一的な多言語化**
@@ -819,6 +1163,7 @@ performance:
 ### 実装ルール
 
 #### 1. テキストの多言語化
+
 ```tsx
 // ❌ 悪い例
 <Button>予約する</Button>
@@ -833,6 +1178,7 @@ const t = useTranslations('booking');
 ```
 
 #### 2. エラーメッセージの多言語化
+
 ```tsx
 // ❌ 悪い例
 toast({
@@ -851,6 +1197,7 @@ toast({
 ```
 
 #### 3. 日付・時刻の多言語化
+
 ```tsx
 // ❌ 悪い例
 const options = { locale: 'ja-JP' };
@@ -862,10 +1209,13 @@ const options = { locale };
 ```
 
 #### 4. 条件付きテキストの多言語化
+
 ```tsx
 // ❌ 悪い例: 条件分岐でのハードコードテキスト
 const status = isActive ? '有効' : '無効';
-const restriction = session.allow_multiple_bookings ? '複数予約可能' : '1人1枠まで';
+const restriction = session.allow_multiple_bookings
+  ? '複数予約可能'
+  : '1人1枠まで';
 const bookingType = session.booking_type === 'lottery' ? '抽選' : '先着順';
 
 // ✅ 良い例: 条件分岐も多言語化対応
@@ -873,11 +1223,15 @@ const t = useTranslations('status');
 const status = isActive ? t('active') : t('inactive');
 
 const t = useTranslations('booking');
-const restriction = session.allow_multiple_bookings ? t('multipleAllowed') : t('singleOnly');
-const bookingType = session.booking_type === 'lottery' ? t('lottery') : t('firstCome');
+const restriction = session.allow_multiple_bookings
+  ? t('multipleAllowed')
+  : t('singleOnly');
+const bookingType =
+  session.booking_type === 'lottery' ? t('lottery') : t('firstCome');
 ```
 
 #### 5. データベースフィールドに基づく表示テキストの多言語化
+
 ```tsx
 // ❌ 悪い例: データベース値に基づくハードコードテキスト
 <span>予約制限: 制限なし</span>
@@ -892,6 +1246,7 @@ const t = useTranslations('photoSessions');
 ```
 
 #### 6. ハードコードテキスト検出方法
+
 ```bash
 # 日本語ハードコードの検出
 grep -r "['\"]\s*[あ-ん\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]" src/components/
@@ -905,6 +1260,7 @@ grep -r "複数予約可能\|1人1枠まで\|制限なし\|開催中\|終了" sr
 ```
 
 ### 多言語化レビューチェックリスト
+
 - [ ] ハードコードされた日本語・英語がないか確認
 - [ ] すべてのユーザー向けテキストが翻訳されているか
 - [ ] 動的な値を含むテキストが適切に処理されているか
@@ -916,7 +1272,9 @@ grep -r "複数予約可能\|1人1枠まで\|制限なし\|開催中\|終了" sr
 - [ ] 数値フォーマットがロケールに対応しているか
 
 ### ハードコードテキスト自動検出
+
 実装前・実装後に以下のコマンドでハードコードテキストを検出：
+
 ```bash
 # 日本語ハードコード全般検出
 grep -r "['\"]\s*[あ-ん\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]" src/components/
@@ -928,21 +1286,25 @@ grep -r "複数予約可能\|1人1枠まで\|制限なし\|開催中\|終了\|�
 ## メッセージファイル開発ルール
 
 ### 概要
+
 `messages/ja.json`などの多言語対応ファイルを編集する際の開発ルールです。
 
 ### 1. キーの重複禁止
 
 #### ルール
+
 - 同じキーを複数回定義してはいけません
 - 新しいキーを追加する前に、既存のキーを検索して重複がないか確認してください
 
 #### 確認方法
+
 ```bash
 # キーの重複を確認
 grep -n '"keyName"' messages/ja.json
 ```
 
 #### 悪い例
+
 ```json
 {
   "bookingType": { ... },
@@ -954,6 +1316,7 @@ grep -n '"keyName"' messages/ja.json
 ### 2. キーの並び順
 
 #### ルール
+
 同一階層のキーは以下の順序で並べてください：
 
 1. **数字で始まるキー**（0-9）
@@ -962,6 +1325,7 @@ grep -n '"keyName"' messages/ja.json
 4. **各グループ内ではアルファベット順**
 
 #### 良い例
+
 ```json
 {
   "404": "ページが見つかりません",
@@ -976,11 +1340,13 @@ grep -n '"keyName"' messages/ja.json
 ### 3. 階層構造
 
 #### ルール
+
 - 最大5階層までに制限
 - 関連する項目は適切にグループ化
 - 深すぎる階層は避ける
 
 #### 良い例
+
 ```json
 {
   "photoSessions": {
@@ -996,6 +1362,7 @@ grep -n '"keyName"' messages/ja.json
 ### 4. 命名規則
 
 #### 基本ルール
+
 - **camelCase**を使用（例：`bookingType`）
 - 動詞は**現在形**を使用（例：`save`、`cancel`）
 - 複数形は適切に使用（例：`bookings`、`sessions`）
@@ -1003,6 +1370,7 @@ grep -n '"keyName"' messages/ja.json
 #### カテゴリ別命名規則
 
 ##### アクション系
+
 ```json
 {
   "save": "保存",
@@ -1013,6 +1381,7 @@ grep -n '"keyName"' messages/ja.json
 ```
 
 ##### 状態系
+
 ```json
 {
   "loading": "読み込み中...",
@@ -1023,6 +1392,7 @@ grep -n '"keyName"' messages/ja.json
 ```
 
 ##### バリデーション系
+
 ```json
 {
   "validation": {
@@ -1036,15 +1406,18 @@ grep -n '"keyName"' messages/ja.json
 ### 5. 値の記述ルール
 
 #### 日本語テキスト
+
 - 敬語は「です・ます」調で統一
 - 句読点は「、」「。」を使用
 - 半角英数字を使用
 
 #### プレースホルダー
+
 - 変数は`{variableName}`形式
 - 複数形は`{count}件`のように使用
 
 #### 例
+
 ```json
 {
   "welcome": "ようこそ、{userName}さん",
@@ -1073,6 +1446,7 @@ JSONファイルにはコメントを記述できないため、以下の方法�
 ### 8. バージョン管理
 
 #### コミットメッセージ
+
 ```
 feat(i18n): 予約機能の翻訳を追加
 fix(i18n): 重複キーを修正
@@ -1080,17 +1454,20 @@ refactor(i18n): メッセージをアルファベット順に整理
 ```
 
 #### プルリクエスト
+
 - 変更内容を明確に記載
 - 大きな変更は事前にissueで議論
 
 ### 9. ツール
 
 #### 推奨ツール
+
 - JSONフォーマッター
 - JSONバリデーター
 - 重複キー検出ツール
 
 #### VSCode拡張機能
+
 - Sort JSON objects
 - JSON Tools
 - Prettier
@@ -1098,14 +1475,16 @@ refactor(i18n): メッセージをアルファベット順に整理
 ### 10. よくある間違い
 
 #### 1. 末尾カンマ
+
 ```json
 {
   "key1": "value1",
-  "key2": "value2", // ❌ 最後の要素にカンマ
+  "key2": "value2" // ❌ 最後の要素にカンマ
 }
 ```
 
 #### 2. 不適切な階層
+
 ```json
 {
   "user": {
@@ -1123,17 +1502,19 @@ refactor(i18n): メッセージをアルファベット順に整理
 ```
 
 #### 3. 一貫性のない命名
+
 ```json
 {
-  "user_name": "ユーザー名",     // ❌ snake_case
-  "UserEmail": "メールアドレス",  // ❌ PascalCase
-  "phoneNumber": "電話番号"       // ✅ camelCase
+  "user_name": "ユーザー名", // ❌ snake_case
+  "UserEmail": "メールアドレス", // ❌ PascalCase
+  "phoneNumber": "電話番号" // ✅ camelCase
 }
 ```
 
 ## 日付ユーティリティルール
 
 ### 基本原則
+
 - **ネイティブ JavaScript Date API を使用**
 - **外部ライブラリ（date-fns等）は使用禁止**
 - **タイムゾーンは Asia/Tokyo 固定**
@@ -1142,18 +1523,20 @@ refactor(i18n): メッセージをアルファベット順に整理
 ### 実装ルール
 
 #### 1. 日付フォーマット関数の使用
+
 ```tsx
 // ✅ 推奨: src/lib/utils/date.ts の関数を使用
 import { formatDate, formatTime, formatDateTime } from '@/lib/utils/date';
 
 // 基本的な日付表示
-formatDate(date, 'short')  // 2024/1/1
-formatDate(date, 'long')   // 2024年1月1日月曜日
-formatTime(date)           // 14:30
-formatDateTime(date)       // 2024年1月1日月曜日 14:30
+formatDate(date, 'short'); // 2024/1/1
+formatDate(date, 'long'); // 2024年1月1日月曜日
+formatTime(date); // 14:30
+formatDateTime(date); // 2024年1月1日月曜日 14:30
 ```
 
 #### 2. 多言語対応の日付フォーマット
+
 ```tsx
 import { useLocale } from 'next-intl';
 import { formatDateLocalized } from '@/lib/utils/date';
@@ -1163,6 +1546,7 @@ const formattedDate = formatDateLocalized(date, locale, 'long');
 ```
 
 #### 3. 日付計算
+
 ```tsx
 import { addDays, addHours, differenceInHours } from '@/lib/utils/date';
 
@@ -1173,12 +1557,14 @@ const hoursUntil = differenceInHours(startTime, new Date());
 ```
 
 ### 禁止事項
+
 - `date-fns` の使用
 - `moment.js` の使用
 - ハードコードされたロケール指定
 - タイムゾーンの直接指定（Asia/Tokyo以外）
 
 ### 必須実装
+
 - すべての日付表示は多言語化対応
 - ユーザーのロケール設定に基づく表示
 - 一貫したタイムゾーン処理
@@ -1188,6 +1574,7 @@ const hoursUntil = differenceInHours(startTime, new Date());
 **重要**: 適切なファイル分類により、プロジェクト管理の混乱を防ぐ
 
 ### **1. todo.mdcファイルの厳格な制限**
+
 ```yaml
 記載可能内容:
   - [ ] 未完了タスクリスト（チェックボックス形式）
@@ -1206,6 +1593,7 @@ const hoursUntil = differenceInHours(startTime, new Date());
 ```
 
 ### **2. 専門ファイル分類基準**
+
 ```yaml
 技術仕様関連:
   - techstack.mdc: 技術スタック・ライブラリ・フレームワーク
@@ -1224,21 +1612,21 @@ const hoursUntil = differenceInHours(startTime, new Date());
 ```
 
 ### **3. ファイル作成時のチェックリスト**
+
 ```yaml
-新規ファイル作成前:
-  1. 既存の専門ファイルで適切な場所があるか確認
+新規ファイル作成前: 1. 既存の専門ファイルで適切な場所があるか確認
   2. todo.mdcに技術詳細を書こうとしていないか確認
   3. 内容が純粋なタスク管理かプログラム実装か判別
   4. 適切なファイル分類・命名規則に従っているか確認
 
-実装完了時:
-  1. todo.mdcのチェックボックス更新のみ（[ ] → [x]）
+実装完了時: 1. todo.mdcのチェックボックス更新のみ（[ ] → [x]）
   2. 技術詳細は適切な専門ファイルに記録
   3. コミットメッセージに実装内容明記
   4. 次期タスクの優先度見直し
 ```
 
 ### **4. 混乱防止の自動化ルール**
+
 ```yaml
 コミット時チェック:
   - todo.mdcファイル変更時に技術詳細混入チェック
@@ -1254,6 +1642,7 @@ const hoursUntil = differenceInHours(startTime, new Date());
 ## 自動化ルール
 
 ### 機能実装完了時の自動処理
+
 機能実装が完了した際は、以下の手順を**自動的に実行**してください：
 
 1. **ビルドチェック**: `npm run build` でエラーがないことを確認
@@ -1277,28 +1666,30 @@ const hoursUntil = differenceInHours(startTime, new Date());
 ### **🔍 調査段階のコミット不要ルール**
 
 #### **基本原則**
+
 - **調査・デバッグ目的のコードはコミット不要**
 - **問題解決後は調査コードを削除して本来の実装にクリーンアップ**
 - **調査段階と本実装を明確に分離**
 
 #### **調査段階の対象コード**
+
 ```yaml
 debug_investigation:
   temporary_logs:
     - console.log("調査用ログ")
     - console.error("デバッグ詳細", error)
     - alert("テスト確認")
-  
+
   detailed_error_output:
     - JSON.stringify(error, null, 2)
     - エラーコード・スタックトレース出力
     - 詳細なペイロード確認
-  
+
   individual_processing:
     - for文での個別エラー取得
     - 一括処理を個別に分解
     - ステップ毎の状態確認
-    
+
   temporary_modifications:
     - 一時的なデータ構造変更
     - テスト用の条件分岐
@@ -1306,18 +1697,19 @@ debug_investigation:
 ```
 
 #### **調査完了後の必須作業**
+
 ```yaml
 cleanup_process:
   1_remove_debug_code:
     - 調査用console.logの完全削除
     - テスト用alertの削除
     - 詳細エラー出力の削除
-  
+
   2_restore_clean_implementation:
     - 本来のシンプルな実装に復元
     - パフォーマンス重視の処理に戻す
     - 一括処理の復活
-  
+
   3_commit_clean_version:
     - クリーンアップ後の実装をコミット
     - 調査コードなしの状態で記録
@@ -1325,6 +1717,7 @@ cleanup_process:
 ```
 
 #### **実装例**
+
 ```typescript
 // 🔍 調査段階（コミット不要）
 console.log('Creating group with members:', uniqueMemberIds);
@@ -1344,25 +1737,28 @@ const { error } = await supabase.from('table').insert(memberInserts);
 ```
 
 #### **調査段階の判定基準**
+
 ```yaml
 investigation_indicators:
   temporary_nature:
-    - "エラー原因の特定が目的"
-    - "詳細ログによる状況把握"
-    - "個別処理での問題切り分け"
-  
+    - 'エラー原因の特定が目的'
+    - '詳細ログによる状況把握'
+    - '個別処理での問題切り分け'
+
   clean_implementation_exists:
-    - "本来のシンプルな実装方法が明確"
-    - "調査完了後の理想的な形が決まっている"
-    - "パフォーマンス重視の実装に戻せる"
+    - '本来のシンプルな実装方法が明確'
+    - '調査完了後の理想的な形が決まっている'
+    - 'パフォーマンス重視の実装に戻せる'
 ```
 
 #### **このルールの効果**
+
 - **ログ汚染防止**: 本番環境に調査用コードが混入しない
 - **コード品質維持**: 常にクリーンな実装状態を保持
 - **効率的な問題解決**: 調査と実装を分離して集中
 
 ### コミット・プッシュ自動化ルール
+
 機能実装とTODO更新が完了したら、**必ず以下のコマンドを実行**してください：
 
 ```bash
@@ -1377,12 +1773,14 @@ git push origin main
 ```
 
 #### コミット・プッシュのタイミング
+
 - **機能実装完了時**: 必ずコミット・プッシュ
 - **TODO更新完了時**: 同時にコミット・プッシュ
 - **バグ修正完了時**: 必ずコミット・プッシュ
 - **型エラー修正完了時**: 必ずコミット・プッシュ
 
 ### TODO更新の自動化強化
+
 ```yaml
 必須実行条件:
   - 任意の機能実装完了時
@@ -1405,6 +1803,7 @@ git push origin main
 ```
 
 ### マイグレーション管理の自動化
+
 1. **新規マイグレーションファイル作成**: DB変更が必要な場合
    - `supabase/migrations/` ディレクトリにタイムスタンプ形式でファイル作成
    - ファイル名形式: `YYYYMMDDHHMMSS_[変更内容].sql`
@@ -1422,6 +1821,7 @@ git push origin main
    - ロールバック手順を明確化
 
 ### マイグレーションファイル命名規則
+
 ```
 supabase/migrations/
 ├── 20241201000001_initial_schema.sql           # 初期スキーマ
@@ -1437,28 +1837,30 @@ supabase/migrations/
 ### **🔧 MCP連携によるマイグレーション管理ルール**
 
 #### **基本原則**
+
 - **MCP連携のみ使用**: npxコマンドは使用禁止
 - **Supabase MCP連携**: 直接データベース操作・マイグレーション適用
 - **確実な適用**: マイグレーションファイル作成後は必ずMCP連携で適用
 
 #### **MCP連携必須手順**
+
 ```yaml
 migration_workflow:
   1_create_migration_file:
     - supabase/migrations/ にSQLファイル作成
     - タイムスタンプ形式の命名（YYYYMMDDHHMMSS_description.sql）
     - 適切なコメント・説明を記載
-  
+
   2_mcp_application:
     - MCP連携でSupabaseプロジェクトに直接適用
     - npxコマンドは使用禁止
     - 適用完了の確認必須
-  
+
   3_verification:
     - データベーススキーマの変更確認
     - 新しいテーブル・カラム・ポリシーの動作確認
     - アプリケーションでの動作テスト
-  
+
   4_commit_process:
     - マイグレーションファイルをコミット
     - 関連するTypeScript型定義も更新・コミット
@@ -1466,18 +1868,19 @@ migration_workflow:
 ```
 
 #### **MCP連携の利点**
+
 ```yaml
 mcp_advantages:
   direct_application:
     - Supabaseプロジェクトへの直接適用
     - 認証・設定不要
     - 確実な適用保証
-  
+
   real_time_feedback:
     - 即座の結果確認
     - エラー時の詳細情報取得
     - デバッグ情報の充実
-  
+
   consistency:
     - 開発環境とプロダクション環境の一致
     - 手動ミスの防止
@@ -1485,19 +1888,21 @@ mcp_advantages:
 ```
 
 #### **禁止事項**
+
 ```yaml
 prohibited_commands:
-  - "supabase db push"        # ❌ npxコマンド使用禁止
-  - "supabase migration up"   # ❌ npxコマンド使用禁止
-  - "supabase db reset"       # ❌ npxコマンド使用禁止
-  - "supabase link"           # ❌ npxコマンド使用禁止
+  - 'supabase db push' # ❌ npxコマンド使用禁止
+  - 'supabase migration up' # ❌ npxコマンド使用禁止
+  - 'supabase db reset' # ❌ npxコマンド使用禁止
+  - 'supabase link' # ❌ npxコマンド使用禁止
 
 required_method:
-  - "MCP連携のみ使用"         # ✅ 必須方法
-  - "Supabase MCP直接操作"    # ✅ 推奨方法
+  - 'MCP連携のみ使用' # ✅ 必須方法
+  - 'Supabase MCP直接操作' # ✅ 推奨方法
 ```
 
 ### DB変更時の必須手順
+
 1. **マイグレーションファイル作成**: `supabase/migrations/` に追加
 2. **【必須】MCP連携実行**: Supabaseプロジェクトに変更を適用（npxコマンド禁止）
 3. **型定義更新**: 必要に応じてTypeScript型を更新
@@ -1505,6 +1910,7 @@ required_method:
 5. **コミット**: マイグレーションファイルと関連変更をコミット
 
 ### コミットメッセージ規則
+
 ```
 feat: [機能名] - [簡潔な説明]
 fix: [修正内容]
@@ -1515,6 +1921,7 @@ migration: [マイグレーション追加・更新]
 ```
 
 ### 実行条件
+
 - ユーザーが「次へ進みましょう」「コミット＆プッシュ」等の指示をした場合
 - 機能実装が一区切りついた場合
 - ビルドエラーがない場合のみ実行
@@ -1530,10 +1937,11 @@ migration: [マイグレーション追加・更新]
 ### TODO更新の必須チェックリスト
 
 #### 機能実装完了時の必須作業
+
 ```yaml
 実装完了後の必須手順:
   1. ビルドチェック: "npm run build" でエラー確認
-  2. 【必須】TODO更新: 
+  2. 【必須】TODO更新:
      - .cursor/rules/dev-rules/todo.mdc を開く
      - 完了した機能を [ ] → [x] に変更
      - 実装時間・技術成果を記録
@@ -1551,6 +1959,7 @@ migration: [マイグレーション追加・更新]
 ```
 
 #### TODO更新漏れ防止策
+
 ```yaml
 自動化チェック:
   実装完了判定:
@@ -1559,7 +1968,7 @@ migration: [マイグレーション追加・更新]
     - ページルート作成完了
     - データベースマイグレーション適用完了
     - 型定義更新完了
-    
+
   更新必須タイミング:
     - Phase完了時（Phase 1 → Phase 2等）
     - 機能実装完了時
@@ -1574,27 +1983,32 @@ migration: [マイグレーション追加・更新]
 ```
 
 #### 実装報告テンプレート
+
 ```markdown
 # 実装完了報告
 
 ## 完了したタスク
+
 - **タスクID**: t0-XXX
 - **タスク名**: [機能名]
 - **実装時間**: X時間
 - **完了フェーズ**: Phase X
 
 ## 技術成果
+
 - [実装した主要機能]
 - [作成したコンポーネント・ファイル]
 - [データベース変更]
 - [型定義追加・修正]
 
 ## TODO更新状況
+
 - [x] todo.mdcファイル更新完了
 - [x] 次期タスク優先度調整完了
 - [x] 依存関係確認完了
 
 ## 次のアクション
+
 - 次期優先タスク: t0-XXX
 - 見積時間: X時間
 - 開始可能時期: 即座/調整後
@@ -1603,6 +2017,7 @@ migration: [マイグレーション追加・更新]
 ## 実装前の曖昧さ解消・確認プロセス
 
 ### 基本原則
+
 - **実装開始前に必ず仕様の明確化を行う**
 - **曖昧な要件・不明点は必ず質問する**
 - **想定ベースでの実装を避け、正確な仕様確認を優先**
@@ -1610,6 +2025,7 @@ migration: [マイグレーション追加・更新]
 ### 必須確認項目チェックリスト
 
 #### 🎯 **機能仕様の確認**
+
 ```yaml
 必須質問項目:
   - [ ] この機能の主要な目的・ゴールは何か？
@@ -1621,6 +2037,7 @@ migration: [マイグレーション追加・更新]
 ```
 
 #### 🎨 **UI/UX設計の確認**
+
 ```yaml
 デザイン関連質問:
   - [ ] レイアウト・デザインの参考となるページはあるか？
@@ -1632,6 +2049,7 @@ migration: [マイグレーション追加・更新]
 ```
 
 #### 📊 **データ設計の確認**
+
 ```yaml
 データベース関連質問:
   - [ ] 新しいテーブル・カラムは必要か？
@@ -1643,6 +2061,7 @@ migration: [マイグレーション追加・更新]
 ```
 
 #### 🔒 **セキュリティ・権限の確認**
+
 ```yaml
 セキュリティ関連質問:
   - [ ] 認証が必要な機能か？認証なしでもアクセス可能か？
@@ -1654,6 +2073,7 @@ migration: [マイグレーション追加・更新]
 ```
 
 #### 🌐 **技術実装の確認**
+
 ```yaml
 技術仕様質問:
   - [ ] リアルタイム機能は必要か？
@@ -1667,6 +2087,7 @@ migration: [マイグレーション追加・更新]
 ### 質問のタイミングと方法
 
 #### 1. **実装前の必須質問**
+
 ```typescript
 // 質問テンプレート例
 "実装を開始する前に以下の点を確認させてください：
@@ -1687,6 +2108,7 @@ migration: [マイグレーション追加・更新]
 ```
 
 #### 2. **実装中の確認質問**
+
 ```typescript
 // 実装中に疑問が生じた場合
 "実装中に以下の点で判断に迷いました：
@@ -1705,6 +2127,7 @@ migration: [マイグレーション追加・更新]
 ```
 
 #### 3. **技術的制約の説明**
+
 ```typescript
 // 技術的制約がある場合
 "以下の技術的制約により、仕様の調整が必要かもしれません：
@@ -1722,18 +2145,19 @@ migration: [マイグレーション追加・更新]
 ### 実装優先度の再確認
 
 #### 優先度判断の質問
+
 ```yaml
 優先度確認質問:
   緊急度:
     - [ ] この機能はリリースブロッカーか？
     - [ ] 他の機能への依存関係はあるか？
     - [ ] ユーザーからの要望度・重要度は？
-  
+
   実装コスト:
     - [ ] 実装期間の見積もりは適切か？
     - [ ] 技術的リスクはあるか？
     - [ ] 他の開発作業への影響は？
-  
+
   ビジネス価値:
     - [ ] ROI（投資対効果）は十分か？
     - [ ] ユーザー体験の改善効果は？
@@ -1743,13 +2167,15 @@ migration: [マイグレーション追加・更新]
 ### 曖昧さ解消の成功例
 
 #### ❌ **悪い例：想定ベース実装**
+
 ```typescript
 // 質問なしで実装開始
-"フォトブック機能を実装します"
+'フォトブック機能を実装します';
 // → 仕様が曖昧で手戻り発生
 ```
 
 #### ✅ **良い例：事前確認**
+
 ```typescript
 "フォトブック機能の実装前に確認させてください：
 
@@ -1771,15 +2197,18 @@ migration: [マイグレーション追加・更新]
 ### エスカレーション（判断依頼）ルール
 
 #### Level 1: 軽微な仕様確認
+
 - 即座に質問・確認を行う
 - 実装は確認後に開始
 
 #### Level 2: 重要な技術判断
+
 - 複数の選択肢を提示
 - メリット・デメリットを明示
 - 推奨案を理由と共に提示
 
 #### Level 3: 仕様変更が必要
+
 - 技術的制約を詳細に説明
 - 代替案を複数提示
 - 工数・スケジュール影響を明示
@@ -1787,6 +2216,7 @@ migration: [マイグレーション追加・更新]
 ### 実装開始の判定基準
 
 #### 実装開始OK条件
+
 - [ ] 主要な仕様・要件が明確
 - [ ] UI/UXの方向性が決定
 - [ ] データ設計の骨子が固定
@@ -1794,6 +2224,7 @@ migration: [マイグレーション追加・更新]
 - [ ] 技術的制約が解決済み
 
 #### 実装待機条件
+
 - [ ] 重要な仕様が未決定
 - [ ] 技術的制約で実現困難
 - [ ] 他機能との依存関係が未解決
@@ -1804,11 +2235,13 @@ migration: [マイグレーション追加・更新]
 ## 日時・価格表示統一ルール
 
 ### **基本原則**
+
 - **日時・価格表示は必ず共通コンポーネントを使用する**
 - **個別の`toLocaleString`、`toLocaleDateString`、`toLocaleTimeString`の使用を禁止**
 - **表記の統一性とメンテナンス性を最優先**
 
 ### **必須使用コンポーネント**
+
 ```typescript
 // 日時表示
 import { FormattedDateTime, DateTime } from '@/components/ui/formatted-display';
@@ -1820,6 +2253,7 @@ import { FormattedPrice, Price } from '@/components/ui/formatted-display';
 ### **日時表示ルール**
 
 #### **✅ 正しい使用例**
+
 ```typescript
 // 基本的な日時表示
 <FormattedDateTime value={new Date()} format="datetime-long" />
@@ -1834,20 +2268,32 @@ import { FormattedPrice, Price } from '@/components/ui/formatted-display';
 ```
 
 #### **❌ 禁止される使用例**
+
 ```typescript
 // これらの使用は禁止
-{new Date().toLocaleString()}
-{new Date().toLocaleDateString('ja-JP')}
-{new Date().toLocaleTimeString()}
-{startDate.toLocaleString('ja-JP', { year: 'numeric', month: 'long' })}
+{
+  new Date().toLocaleString();
+}
+{
+  new Date().toLocaleDateString('ja-JP');
+}
+{
+  new Date().toLocaleTimeString();
+}
+{
+  startDate.toLocaleString('ja-JP', { year: 'numeric', month: 'long' });
+}
 
 // date-fnsの直接使用も避ける
-{format(new Date(), 'PPP', { locale: ja })}
+{
+  format(new Date(), 'PPP', { locale: ja });
+}
 ```
 
 ### **価格表示ルール**
 
 #### **✅ 正しい使用例**
+
 ```typescript
 // 基本的な価格表示
 <FormattedPrice value={5000} format="simple" />
@@ -1862,6 +2308,7 @@ import { FormattedPrice, Price } from '@/components/ui/formatted-display';
 ```
 
 #### **❌ 禁止される使用例**
+
 ```typescript
 // これらの使用は禁止
 ¥{price.toLocaleString()}
@@ -1875,51 +2322,56 @@ import { FormattedPrice, Price } from '@/components/ui/formatted-display';
 ### **フォーマット種類一覧**
 
 #### **日時フォーマット**
+
 ```typescript
-type DateTimeFormat = 
-  | 'date-short'        // 2024/12/1
-  | 'date-long'         // 2024年12月1日日曜日
-  | 'time'              // 14:30
-  | 'datetime-short'    // 2024/12/1 14:30
-  | 'datetime-long'     // 2024年12月1日日曜日 14:30
-  | 'date-only'         // 12月1日
-  | 'time-range'        // 14:30-16:00
-  | 'relative'          // 3時間前
-  | 'weekday'           // 日曜日
+type DateTimeFormat =
+  | 'date-short' // 2024/12/1
+  | 'date-long' // 2024年12月1日日曜日
+  | 'time' // 14:30
+  | 'datetime-short' // 2024/12/1 14:30
+  | 'datetime-long' // 2024年12月1日日曜日 14:30
+  | 'date-only' // 12月1日
+  | 'time-range' // 14:30-16:00
+  | 'relative' // 3時間前
+  | 'weekday'; // 日曜日
 ```
 
 #### **価格フォーマット**
+
 ```typescript
-type PriceFormat = 
-  | 'simple'            // ¥5,000
-  | 'with-unit'         // ¥5,000/人
-  | 'range'             // ¥3,000-¥8,000
-  | 'breakdown'         // ¥5,000 (税込)
+type PriceFormat =
+  | 'simple' // ¥5,000
+  | 'with-unit' // ¥5,000/人
+  | 'range' // ¥3,000-¥8,000
+  | 'breakdown'; // ¥5,000 (税込)
 ```
 
 ### **実装時の必須チェック**
+
 ```yaml
 pre_implementation_check:
   question_yourself:
-    - "日時・価格表示でtoLocaleStringを使用していないか？"
-    - "FormattedDateTime/FormattedPriceコンポーネントを使用しているか？"
-    - "適切なフォーマットを選択しているか？"
-    - "多言語対応が考慮されているか？"
-  
+    - '日時・価格表示でtoLocaleStringを使用していないか？'
+    - 'FormattedDateTime/FormattedPriceコンポーネントを使用しているか？'
+    - '適切なフォーマットを選択しているか？'
+    - '多言語対応が考慮されているか？'
+
   if_uncertain:
-    - "共通コンポーネントの使用を最優先する"
-    - "新しいフォーマットが必要な場合は共通コンポーネントに追加"
-    - "既存の個別実装は見つけ次第共通コンポーネントに置き換える"
+    - '共通コンポーネントの使用を最優先する'
+    - '新しいフォーマットが必要な場合は共通コンポーネントに追加'
+    - '既存の個別実装は見つけ次第共通コンポーネントに置き換える'
 ```
 
 ### **移行ガイドライン**
 
 #### **段階的移行手順**
+
 1. **新規実装**: 必ず共通コンポーネントを使用
 2. **既存修正時**: 見つけ次第共通コンポーネントに置き換え
 3. **一括置換**: 時間がある時に既存箇所を一括で置き換え
 
 #### **移行例**
+
 ```typescript
 // Before (禁止)
 {new Date(session.start_time).toLocaleString('ja-JP', {
@@ -1942,6 +2394,7 @@ pre_implementation_check:
 ```
 
 ### **利点**
+
 - **表記統一**: 全画面で一貫した日時・価格表示
 - **メンテナンス性**: 一箇所の修正で全体に反映
 - **多言語対応**: 自動的なロケール対応
@@ -1950,17 +2403,18 @@ pre_implementation_check:
 - **バグ防止**: 個別実装によるフォーマット不整合を防止
 
 ### **違反時の対応**
+
 ```yaml
 violation_response:
   immediate_action:
-    - "個別のtoLocaleString使用を即座に共通コンポーネントに置き換え"
-    - "なぜ共通コンポーネントを使用しなかったかを報告"
-    - "再発防止策を検討"
-  
+    - '個別のtoLocaleString使用を即座に共通コンポーネントに置き換え'
+    - 'なぜ共通コンポーネントを使用しなかったかを報告'
+    - '再発防止策を検討'
+
   prevention:
-    - "実装前に必ずこのルールを確認"
-    - "迷った場合は必ず共通コンポーネントを使用"
-    - "新しいフォーマットが必要な場合は共通コンポーネントに追加提案"
+    - '実装前に必ずこのルールを確認'
+    - '迷った場合は必ず共通コンポーネントを使用'
+    - '新しいフォーマットが必要な場合は共通コンポーネントに追加提案'
 ```
 
 この統一ルールにより、プロジェクト全体で一貫した日時・価格表示を実現し、メンテナンス性とユーザビリティを大幅に向上させます。
@@ -1968,6 +2422,7 @@ violation_response:
 ## 日付・時刻フォーマット
 
 ### 基本原則
+
 - **従来のフォーマット関数を優先使用**: `formatDateLocalized`, `formatTimeLocalized` を使用
 - **DateTime コンポーネントの使用禁止**: `RangeError: Invalid time value` エラーの原因となるため使用禁止
 - **日時値の事前検証**: フォーマット前に必ず有効性をチェック
@@ -1975,6 +2430,7 @@ violation_response:
 ### 🚨 DateTime コンポーネント使用禁止
 
 #### 問題のあるコンポーネント（使用禁止）
+
 ```typescript
 // ❌ 使用禁止: DateTime コンポーネント
 import { DateTime } from '@/components/ui/formatted-display';
@@ -1985,6 +2441,7 @@ import { DateTime } from '@/components/ui/formatted-display';
 ```
 
 #### 問題の原因
+
 - `session.start_time` や `session.end_time` が null、undefined、空文字列の場合
 - `new Intl.DateTimeFormat().format()` が無効な日時値を処理できない
 - エラーが発生するとページ全体がクラッシュする
@@ -1992,6 +2449,7 @@ import { DateTime } from '@/components/ui/formatted-display';
 ### ✅ 推奨される実装方法
 
 #### 1. 従来のフォーマット関数を使用
+
 ```typescript
 import { formatDateLocalized, formatTimeLocalized } from '@/lib/utils/date';
 
@@ -2009,6 +2467,7 @@ const endDate = new Date(session.end_time);
 ```
 
 #### 2. 日時値の事前検証
+
 ```typescript
 // 有効性チェック関数
 const isValidDate = (dateValue: string | Date | null | undefined): boolean => {
@@ -2018,17 +2477,20 @@ const isValidDate = (dateValue: string | Date | null | undefined): boolean => {
 };
 
 // 安全なフォーマット
-{isValidDate(session.start_time) ? (
-  formatDateLocalized(new Date(session.start_time), 'ja', 'long')
-) : (
-  '日時未設定'
-)}
+{
+  isValidDate(session.start_time)
+    ? formatDateLocalized(new Date(session.start_time), 'ja', 'long')
+    : '日時未設定';
+}
 ```
 
 #### 3. フォールバック表示
+
 ```typescript
 // エラー耐性のある実装
-const formatSafeDate = (dateValue: string | Date | null | undefined): string => {
+const formatSafeDate = (
+  dateValue: string | Date | null | undefined
+): string => {
   try {
     if (!dateValue) return '日時未設定';
     const date = new Date(dateValue);
@@ -2044,6 +2506,7 @@ const formatSafeDate = (dateValue: string | Date | null | undefined): string => 
 ### 利用可能なフォーマット関数
 
 #### 基本的なフォーマット関数
+
 ```typescript
 // 日付フォーマット
 formatDate(date: Date, format: 'short' | 'long' | 'time'): string
@@ -2062,27 +2525,29 @@ formatDateRange(startDate: Date, endDate: Date): string
 ```
 
 #### 使用例
+
 ```typescript
 const startDate = new Date('2024-12-01T14:30:00');
 const endDate = new Date('2024-12-01T16:00:00');
 
 // 短い日付: "2024/12/1"
-formatDateLocalized(startDate, 'ja', 'short')
+formatDateLocalized(startDate, 'ja', 'short');
 
 // 長い日付: "2024年12月1日日曜日"
-formatDateLocalized(startDate, 'ja', 'long')
+formatDateLocalized(startDate, 'ja', 'long');
 
 // 時刻: "14:30"
-formatTimeLocalized(startDate, 'ja')
+formatTimeLocalized(startDate, 'ja');
 
 // 日時: "2024年12月1日日曜日 14:30"
-formatDateTimeLocalized(startDate, 'ja')
+formatDateTimeLocalized(startDate, 'ja');
 
 // 範囲: "2024年12月1日日曜日 14:30 - 16:00"
-formatDateRange(startDate, endDate)
+formatDateRange(startDate, endDate);
 ```
 
 ### 実装時のチェックリスト
+
 - [ ] DateTime コンポーネントを使用していないか
 - [ ] 日時値の有効性チェックを行っているか
 - [ ] エラー時のフォールバック表示を用意しているか
@@ -2090,6 +2555,7 @@ formatDateRange(startDate, endDate)
 - [ ] try-catch でエラーハンドリングを行っているか
 
 ### 移行ガイド（既存コードの修正）
+
 ```typescript
 // 修正前（問題のあるコード）
 <DateTime value={session.start_time} format="date-long" />
@@ -2101,6 +2567,7 @@ formatDateRange(startDate, endDate)
 ```
 
 ### このルールの重要性
+
 - **エラー防止**: `RangeError: Invalid time value` エラーの完全回避
 - **安定性**: 無効な日時値に対する堅牢な処理
 - **一貫性**: プロジェクト全体で統一されたフォーマット関数使用
