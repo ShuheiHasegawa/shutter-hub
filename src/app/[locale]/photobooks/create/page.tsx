@@ -5,6 +5,8 @@ import { createClient } from '@/lib/supabase/server';
 import Photobook from '@/components/photobook/Photobook';
 import { samplePhotobook } from '@/constants/samplePhotobookData';
 import { getUserSubscriptionPlan } from '@/app/actions/subscription';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'フォトブック作成 | ShutterHub',
@@ -77,12 +79,14 @@ export default async function PhotobookCreatePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
-              <button
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => window.history.back()}
-                className="text-gray-600 hover:text-gray-900 transition-colors"
+                aria-label="フォトブック一覧に戻る"
               >
-                ← 戻る
-              </button>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
               <div>
                 <h1 className="text-xl font-bold text-gray-900">
                   フォトブック作成

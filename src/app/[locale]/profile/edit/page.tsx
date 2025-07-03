@@ -5,9 +5,8 @@ import { useRequireAuth } from '@/hooks/useAuth';
 import { createClient } from '@/lib/supabase/client';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { ProfileEditForm } from '@/components/profile/ProfileEditForm';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft, User } from 'lucide-react';
-import { Link } from '@/i18n/routing';
+import { BackButton } from '@/components/ui/back-button';
+import { User } from 'lucide-react';
 import type { Profile } from '@/types/database';
 
 export default function ProfileEditPage() {
@@ -78,12 +77,7 @@ export default function ProfileEditPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" asChild>
-              <Link href="/profile">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                プロフィールに戻る
-              </Link>
-            </Button>
+            <BackButton href="/profile" ariaLabel="プロフィールに戻る" />
             <h1 className="text-3xl font-bold flex items-center gap-2">
               <User className="h-8 w-8" />
               プロフィール編集
