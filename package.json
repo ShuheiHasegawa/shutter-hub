@@ -5,6 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "next dev --turbopack --port 8888",
+    "dev:stop": "lsof -ti:8888 | xargs kill -9 || true",
+    "dev:clean": "npm run dev:stop && npm run dev",
+    "commit:safe": "npm run dev:stop && npm run build && git add . && echo 'Ready for commit - please run: git commit -m \"your message\"'",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",

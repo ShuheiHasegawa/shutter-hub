@@ -1779,6 +1779,90 @@ git push origin main
 - **バグ修正完了時**: 必ずコミット・プッシュ
 - **型エラー修正完了時**: 必ずコミット・プッシュ
 
+### 🔧 **開発サーバープロセス管理ルール**
+
+#### **基本原則**
+
+- **コミット前に必ず開発サーバーを停止する**
+- **動作確認後は即座にプロセス終了**
+- **タブの無制限増加を防止**
+
+#### **必須手順**
+
+```yaml
+development_server_management:
+  before_implementation: 1. "既存のnpm run devプロセスがないか確認"
+    2. "ポート競合を避けるため事前停止"
+
+  during_testing: 1. "動作確認のため一時的にサーバー起動"
+    2. "確認完了後は必ず停止"
+    3. "バックグラウンド実行時は停止忘れ注意"
+
+  before_commit: 1. "【必須】全ての開発サーバープロセスを停止"
+    2. "ポート使用状況の確認"
+    3. "プロセス停止後にコミット・プッシュ実行"
+```
+
+#### **プロセス管理コマンド**
+
+```bash
+# 現在のポート使用状況確認
+lsof -ti:8888
+
+# 開発サーバープロセス停止（推奨）
+lsof -ti:8888 | xargs kill -9
+
+# 特定プロセスID停止（個別対応時）
+kill -9 [プロセスID]
+
+# npm run dev起動（動作確認時のみ）
+npm run dev
+
+# 【重要】動作確認完了後の停止
+lsof -ti:8888 | xargs kill -9
+```
+
+#### **コミット前チェックリスト**
+
+```yaml
+pre_commit_checklist:
+  process_management:
+    - [ ] "npm run devプロセスが停止されているか"
+    - [ ] "ポート8888が解放されているか"
+    - [ ] "バックグラウンドプロセスが残っていないか"
+
+  code_quality:
+    - [ ] "ビルドテスト（npm run build）が成功するか"
+    - [ ] "TODO.mdcが更新されているか"
+    - [ ] "実装時間・技術成果が記録されているか"
+
+  commit_process:
+    - [ ] "適切なコミットメッセージが準備されているか"
+    - [ ] "git add . でステージングされているか"
+    - [ ] "git push準備が完了しているか"
+```
+
+#### **自動化スクリプト提案**
+
+package.jsonに以下のスクリプトを追加することを推奨：
+
+```json
+{
+  "scripts": {
+    "dev:stop": "lsof -ti:8888 | xargs kill -9 || true",
+    "dev:clean": "npm run dev:stop && npm run dev",
+    "commit:safe": "npm run dev:stop && npm run build && git add . && echo 'Ready for commit - please run: git commit -m \"your message\"'"
+  }
+}
+```
+
+#### **タブ増加防止効果**
+
+- **明確な停止手順**: コミット前の必須チェックリスト
+- **自動化**: 一括停止コマンドで確実な終了
+- **習慣化**: 開発フローへの組み込み
+- **効率化**: 不要なプロセス蓄積を防止
+
 ### TODO更新の自動化強化
 
 ```yaml
