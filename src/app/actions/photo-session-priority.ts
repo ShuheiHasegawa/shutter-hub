@@ -247,9 +247,7 @@ export async function getUserRank(
 }
 
 // ユーザーランクの計算・更新
-export async function calculateUserRank(
-  userId?: string
-): Promise<{
+export async function calculateUserRank(userId?: string): Promise<{
   success: boolean;
   error?: string;
   data?: { new_rank: string; points_earned: number; rank_changed: boolean };

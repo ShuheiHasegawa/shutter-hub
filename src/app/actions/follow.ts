@@ -16,9 +16,7 @@ import {
 } from '@/types/social';
 
 // フォロー中のユーザー一覧を取得
-export async function getFollowingUsers(
-  userId: string
-): Promise<{
+export async function getFollowingUsers(userId: string): Promise<{
   success: boolean;
   data?: UserWithFollowInfo[];
   message?: string;
@@ -107,9 +105,7 @@ export async function getFollowingUsers(
 }
 
 // フォロワーユーザー一覧を取得
-export async function getFollowerUsers(
-  userId: string
-): Promise<{
+export async function getFollowerUsers(userId: string): Promise<{
   success: boolean;
   data?: UserWithFollowInfo[];
   message?: string;

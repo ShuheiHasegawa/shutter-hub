@@ -76,7 +76,10 @@ export async function createPost(
 
     if (postError) {
       console.error('投稿作成エラー詳細:', postError);
-      return { success: false, message: `ポストの作成に失敗しました: ${postError.message}` };
+      return {
+        success: false,
+        message: `ポストの作成に失敗しました: ${postError.message}`,
+      };
     }
 
     // ハッシュタグとの関連を作成
@@ -137,7 +140,10 @@ export async function createPost(
   } catch (error) {
     console.error('投稿作成エラー:', error);
     console.error('投稿データ:', postData);
-    return { success: false, message: `投稿の作成に失敗しました: ${error instanceof Error ? error.message : 'Unknown error'}` };
+    return {
+      success: false,
+      message: `投稿の作成に失敗しました: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    };
   }
 }
 
@@ -172,22 +178,28 @@ export async function likePost(
         .eq('id', existingLike.id);
 
       if (error) {
-        return { success: false, isLiked: true, message: 'いいねの削除に失敗しました' };
+        return {
+          success: false,
+          isLiked: true,
+          message: 'いいねの削除に失敗しました',
+        };
       }
 
       revalidatePath('/timeline');
       return { success: true, isLiked: false };
     } else {
       // いいねを追加
-      const { error } = await supabase
-        .from('sns_post_likes')
-        .insert({
-          post_id: postId,
-          user_id: user.id,
-        });
+      const { error } = await supabase.from('sns_post_likes').insert({
+        post_id: postId,
+        user_id: user.id,
+      });
 
       if (error) {
-        return { success: false, isLiked: false, message: 'いいねの追加に失敗しました' };
+        return {
+          success: false,
+          isLiked: false,
+          message: 'いいねの追加に失敗しました',
+        };
       }
 
       revalidatePath('/timeline');
@@ -195,7 +207,11 @@ export async function likePost(
     }
   } catch (error) {
     console.error('いいね処理エラー:', error);
-    return { success: false, isLiked: false, message: 'いいね処理に失敗しました' };
+    return {
+      success: false,
+      isLiked: false,
+      message: 'いいね処理に失敗しました',
+    };
   }
 }
 
@@ -365,18 +381,23 @@ export async function getTimelinePosts(
       .range(offset, offset + limit - 1);
 
     if (error) {
-      return { success: false, message: `タイムラインの取得に失敗しました: ${error.message}` };
+      return {
+        success: false,
+        message: `タイムラインの取得に失敗しました: ${error.message}`,
+      };
     }
 
     // ユーザー情報を別途取得
     const userIds = [...new Set(posts.map(post => post.user_id))];
-    
+
     const { data: profiles } = await supabase
       .from('profiles')
       .select('id, display_name, avatar_url, user_type, is_verified')
       .in('id', userIds);
 
-    const profilesMap = new Map(profiles?.map(profile => [profile.id, profile]) || []);
+    const profilesMap = new Map(
+      profiles?.map(profile => [profile.id, profile]) || []
+    );
 
     const timelinePosts: TimelinePost[] = posts.map(post => ({
       ...post,
@@ -410,9 +431,7 @@ export async function searchPosts(
     const supabase = await createClient();
     const offset = (page - 1) * limit;
 
-    let query = supabase
-      .from('sns_posts')
-      .select(`
+    let query = supabase.from('sns_posts').select(`
         *,
         photo_sessions (
           id,
@@ -467,7 +486,10 @@ export async function searchPosts(
         query = query.order('created_at', { ascending: false });
     }
 
-    const { data: posts, error } = await query.range(offset, offset + limit - 1);
+    const { data: posts, error } = await query.range(
+      offset,
+      offset + limit - 1
+    );
 
     if (error) {
       return { success: false, message: '投稿の検索に失敗しました' };
@@ -480,7 +502,9 @@ export async function searchPosts(
       .select('id, display_name, avatar_url, user_type, is_verified')
       .in('id', userIds);
 
-    const profilesMap = new Map(profiles?.map(profile => [profile.id, profile]) || []);
+    const profilesMap = new Map(
+      profiles?.map(profile => [profile.id, profile]) || []
+    );
 
     const postsWithUser: PostWithUser[] = posts.map(post => ({
       ...post,
@@ -616,7 +640,10 @@ export async function deletePost(
       return { success: false, message: '削除権限がありません' };
     }
 
-    const { error } = await supabase.from('sns_posts').delete().eq('id', postId);
+    const { error } = await supabase
+      .from('sns_posts')
+      .delete()
+      .eq('id', postId);
 
     if (error) {
       return { success: false, message: '投稿の削除に失敗しました' };
@@ -630,4 +657,4 @@ export async function deletePost(
     console.error('投稿削除エラー:', error);
     return { success: false, message: '投稿の削除に失敗しました' };
   }
-} 
+}
