@@ -32,6 +32,25 @@ export const metadata: Metadata = {
     telephone: false,
   },
   metadataBase: new URL('https://shutterhub.app'),
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/images/favicon/apple-touch-icon.png',
+    other: [
+      {
+        rel: 'icon',
+        type: 'image/png',
+        sizes: '32x32',
+        url: '/images/favicon/favicon-32x32.png',
+      },
+      {
+        rel: 'icon',
+        type: 'image/png',
+        sizes: '16x16',
+        url: '/images/favicon/favicon-16x16.png',
+      },
+    ],
+  },
   openGraph: {
     title: 'ShutterHub v2 - 撮影業界をつなぐプラットフォーム',
     description:
