@@ -571,6 +571,8 @@
         "loading": "Loading...",
         "error": "An error occurred",
         "noPhotos": "No photos",
+        "noLayoutSet": "No layout set",
+        "addPhoto": "Add Photo",
         "fullscreen": "Fullscreen",
         "exitFullscreen": "Exit Fullscreen",
         "zoomIn": "Zoom In",
