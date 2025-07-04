@@ -257,10 +257,12 @@
     },
     "stats": {
       "total": "Total Bookings",
-      "upcoming": "Upcoming",
       "confirmed": "Confirmed",
-      "past": "Past",
-      "cancelled": "Cancelled"
+      "cancelled": "Cancelled",
+      "completed": "Completed",
+      "ongoing": "Ongoing",
+      "upcoming": "Upcoming",
+      "past": "Past"
     },
     "filter": {
       "title": "Filter",
@@ -269,17 +271,27 @@
       "confirmed": "Confirmed",
       "past": "Past",
       "cancelled": "Cancelled",
+      "waitlist": "Waitlist",
       "results": "results"
     },
+    "filters": {
+      "all": "All",
+      "upcoming": "Upcoming",
+      "confirmed": "Confirmed",
+      "past": "Past",
+      "cancelled": "Cancelled",
+      "waitlist": "Waitlist"
+    },
     "empty": {
-      "title": "No Bookings",
-      "description": "You haven't booked any photo sessions yet. Let's find some sessions!",
+      "title": "No bookings",
+      "description": "You haven't booked any photo sessions yet. Let's find some sessions.",
       "browseButton": "Browse Sessions"
     },
     "error": {
       "loadFailed": "Load Failed",
       "unexpected": "An unexpected error occurred"
-    }
+    },
+    "waitlistPosition": "Queue position: #{position}"
   },
   "photoSessions": {
     "title": "Photo Sessions",
@@ -301,7 +313,6 @@
     "form": {
       "createTitle": "Create Photo Session",
       "editTitle": "Edit Photo Session",
-      "duplicateTitle": "Duplicate Photo Session",
       "createDescription": "Please create a new photo session",
       "editDescription": "Please edit the photo session information",
       "duplicateDescription": "Create a new photo session based on an existing one",
@@ -400,23 +411,6 @@
       "participantsMax": "Max Participants",
       "options": "Other Options",
       "onlyAvailable": "Available sessions only"
-    },
-    "imageUpload": {
-      "selectImages": "Select Images",
-      "uploading": "Uploading...",
-      "uploadProgress": "Upload Progress",
-      "uploadSuccess": "Successfully uploaded {count} images",
-      "uploadPartialFailure": "Failed to upload {failed} images",
-      "uploadError": "Failed to upload images",
-      "deleteSuccess": "Image deleted successfully",
-      "deleteError": "Failed to delete image",
-      "maxImagesExceeded": "You can select up to {max} images",
-      "imageAlt": "Image {index}",
-      "mainImage": "Main Image",
-      "noImages": "No images uploaded",
-      "supportedFormats": "Supported formats: JPEG, PNG, WebP, GIF",
-      "maxFileSize": "Maximum file size: 10MB",
-      "firstImageIsMain": "The first image will be displayed as the main image"
     },
     "bookingType": {
       "title": "Booking Type",
@@ -555,7 +549,19 @@
         "invalidFileTypeDescription": "Only JPEG, PNG, WebP, and GIF files are supported",
         "uploadFailed": "Upload failed",
         "uploadFailedDescription": "Failed to upload images. Please try again."
-      }
+      },
+      "selectImages": "Select Images",
+      "uploadProgress": "Upload Progress",
+      "uploadSuccess": "Successfully uploaded {count} images",
+      "uploadPartialFailure": "Failed to upload {failed} images",
+      "uploadError": "Failed to upload images",
+      "deleteSuccess": "Image deleted successfully",
+      "deleteError": "Failed to delete image",
+      "maxImagesExceeded": "You can select up to {max} images",
+      "imageAlt": "Image {index}",
+      "noImages": "No images uploaded",
+      "maxFileSize": "Maximum file size: 10MB",
+      "firstImageIsMain": "The first image will be displayed as the main image"
     },
     "groupChat": {
       "photoSessionGroupChat": "Photo Session Group Chat",

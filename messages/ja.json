@@ -249,14 +249,16 @@
       "completed": "完了",
       "ongoing": "開催中",
       "upcoming": "予定",
-      "past": "過去"
+      "past": "過去",
+      "waitlist": "キャンセル待ち"
     },
     "stats": {
       "total": "総予約数",
       "upcoming": "予定",
       "confirmed": "確定",
       "past": "過去",
-      "cancelled": "キャンセル"
+      "cancelled": "キャンセル",
+      "waitlist": "キャンセル待ち"
     },
     "filter": {
       "title": "フィルター",
@@ -265,7 +267,16 @@
       "confirmed": "確定",
       "past": "過去",
       "cancelled": "キャンセル",
+      "waitlist": "キャンセル待ち",
       "results": "件"
+    },
+    "filters": {
+      "all": "すべて",
+      "upcoming": "予定",
+      "confirmed": "確定",
+      "past": "過去",
+      "cancelled": "キャンセル",
+      "waitlist": "キャンセル待ち"
     },
     "empty": {
       "title": "予約がありません",
@@ -275,7 +286,8 @@
     "error": {
       "loadFailed": "読み込み失敗",
       "unexpected": "予期しないエラーが発生しました"
-    }
+    },
+    "waitlistPosition": "待ち順位: {position}番目"
   },
   "photoSessions": {
     "title": "撮影会",
@@ -297,7 +309,6 @@
     "form": {
       "createTitle": "撮影会作成",
       "editTitle": "撮影会編集",
-      "duplicateTitle": "撮影会複製",
       "createDescription": "新しい撮影会を作成してください",
       "editDescription": "撮影会の情報を編集してください",
       "duplicateDescription": "既存の撮影会を元に新しい撮影会を作成します",
@@ -407,23 +418,6 @@
         "participants": "参加者",
         "price": "料金"
       }
-    },
-    "imageUpload": {
-      "selectImages": "画像を選択",
-      "uploading": "アップロード中...",
-      "uploadProgress": "アップロード進行状況",
-      "uploadSuccess": "{count}枚の画像をアップロードしました",
-      "uploadPartialFailure": "{failed}枚の画像のアップロードに失敗しました",
-      "uploadError": "画像のアップロードに失敗しました",
-      "deleteSuccess": "画像を削除しました",
-      "deleteError": "画像の削除に失敗しました",
-      "maxImagesExceeded": "最大{max}枚まで選択できます",
-      "imageAlt": "画像 {index}",
-      "mainImage": "メイン画像",
-      "noImages": "画像がアップロードされていません",
-      "supportedFormats": "対応形式: JPEG、PNG、WebP、GIF",
-      "maxFileSize": "最大ファイルサイズ: 10MB",
-      "firstImageIsMain": "最初の画像がメイン画像として表示されます"
     },
     "bookingType": {
       "title": "予約方式",
@@ -563,7 +557,19 @@
         "invalidFileTypeDescription": "JPEG、PNG、WebP、GIFファイルのみ対応しています",
         "uploadFailed": "アップロードに失敗しました",
         "uploadFailedDescription": "画像のアップロードに失敗しました。再度お試しください。"
-      }
+      },
+      "selectImages": "画像を選択",
+      "uploadProgress": "アップロード進行状況",
+      "uploadSuccess": "{count}枚の画像をアップロードしました",
+      "uploadPartialFailure": "{failed}枚の画像のアップロードに失敗しました",
+      "uploadError": "画像のアップロードに失敗しました",
+      "deleteSuccess": "画像を削除しました",
+      "deleteError": "画像の削除に失敗しました",
+      "maxImagesExceeded": "最大{max}枚まで選択できます",
+      "imageAlt": "画像 {index}",
+      "noImages": "画像がアップロードされていません",
+      "maxFileSize": "最大ファイルサイズ: 10MB",
+      "firstImageIsMain": "最初の画像がメイン画像として表示されます"
     },
     "groupChat": {
       "photoSessionGroupChat": "撮影会グループチャット",

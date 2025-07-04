@@ -278,6 +278,29 @@ export interface CreateBookingData {
   photo_session_id: string;
 }
 
+// キャンセル待ち関連の型定義
+export interface WaitlistEntry {
+  id: string;
+  photo_session_id: string;
+  user_id: string;
+  queue_position: number;
+  status: 'waiting' | 'promoted' | 'expired' | 'cancelled';
+  auto_promote: boolean;
+  notification_sent: boolean;
+  promotion_deadline?: string;
+  message?: string;
+  promotion_reason?: string;
+  created_at: string;
+  promoted_at?: string;
+  expired_at?: string;
+  cancelled_at?: string;
+}
+
+// キャンセル待ちエントリーと撮影会の結合型
+export interface WaitlistEntryWithPhotoSession extends WaitlistEntry {
+  photo_session: PhotoSessionWithOrganizer;
+}
+
 // Supabase Database型定義
 export interface Database {
   public: {

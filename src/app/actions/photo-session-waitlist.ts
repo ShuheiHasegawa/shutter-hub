@@ -556,3 +556,86 @@ export async function expireWaitlistPromotions(): Promise<{
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
+
+// ユーザーのキャンセル待ち一覧を取得
+export async function getUserWaitlistEntries(userId?: string): Promise<{
+  success: boolean;
+  error?: string;
+  data?: (WaitlistEntry & {
+    photo_session: {
+      id: string;
+      title: string;
+      description: string | null;
+      location: string;
+      address: string | null;
+      latitude: number | null;
+      longitude: number | null;
+      start_time: string;
+      end_time: string;
+      max_participants: number;
+      current_participants: number;
+      price_per_person: number;
+      image_urls: string[] | null;
+      booking_type: string;
+      allow_multiple_bookings: boolean;
+      is_published: boolean;
+      created_at: string;
+      updated_at: string;
+      organizer_id: string;
+      organizer?: {
+        id: string;
+        email: string;
+        display_name: string | null;
+        avatar_url: string | null;
+      };
+    };
+  })[];
+}> {
+  try {
+    const supabase = await createClient();
+
+    let targetUserId = userId;
+    if (!targetUserId) {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        return { success: false, error: '認証が必要です' };
+      }
+      targetUserId = user.id;
+    }
+
+    const { data, error } = await supabase
+      .from('waitlist_entries')
+      .select(
+        `
+        *,
+        photo_session:photo_sessions(
+          *,
+          organizer:organizer_id(
+            id,
+            email,
+            display_name,
+            avatar_url
+          )
+        )
+      `
+      )
+      .eq('user_id', targetUserId)
+      .in('status', ['waiting', 'promoted'])
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('ユーザーキャンセル待ち一覧取得エラー:', error);
+      return {
+        success: false,
+        error: 'キャンセル待ち一覧の取得に失敗しました',
+      };
+    }
+
+    return { success: true, data: data || [] };
+  } catch (error) {
+    console.error('ユーザーキャンセル待ち一覧取得エラー:', error);
+    return { success: false, error: '予期しないエラーが発生しました' };
+  }
+}
