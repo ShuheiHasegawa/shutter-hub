@@ -33,7 +33,7 @@
     "instant": "即座撮影",
     "profile": "プロフィール",
     "photoSessions": "撮影会",
-    "photobooks": "フォトブック",
+    "photobook": "フォトブック",
     "photobookView": "フォトブック表示",
     "photobookEdit": "フォトブック編集",
     "studios": "スタジオ",
@@ -225,6 +225,7 @@
   },
   "bookings": {
     "title": "予約一覧",
+    "description": "予約済みの撮影会を確認・管理できます",
     "refresh": "更新",
     "participants": "名",
     "perPerson": "/ 人",
@@ -241,12 +242,14 @@
     "detailsNote": "キャンセルや詳細な操作は詳細画面で行えます",
     "loadError": "読み込みエラー",
     "loadErrorDescription": "予約一覧の読み込みに失敗しました",
+    "noBookings": "予約がありません",
     "status": {
       "confirmed": "確定",
       "cancelled": "キャンセル済み",
       "completed": "完了",
       "ongoing": "開催中",
-      "upcoming": "予定"
+      "upcoming": "予定",
+      "past": "過去"
     },
     "stats": {
       "total": "総予約数",
@@ -268,6 +271,10 @@
       "title": "予約がありません",
       "description": "まだ予約した撮影会がありません。撮影会を探してみましょう。",
       "browseButton": "撮影会を探す"
+    },
+    "error": {
+      "loadFailed": "読み込み失敗",
+      "unexpected": "予期しないエラーが発生しました"
     }
   },
   "photoSessions": {

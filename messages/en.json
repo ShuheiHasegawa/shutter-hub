@@ -229,6 +229,7 @@
   },
   "bookings": {
     "title": "My Bookings",
+    "description": "View and manage your booked photo sessions",
     "refresh": "Refresh",
     "participants": "people",
     "perPerson": "/ person",
@@ -245,12 +246,14 @@
     "detailsNote": "Cancellation and detailed operations can be performed on the details page",
     "loadError": "Loading Error",
     "loadErrorDescription": "Failed to load booking list",
+    "noBookings": "No bookings found",
     "status": {
       "confirmed": "Confirmed",
       "cancelled": "Cancelled",
       "completed": "Completed",
       "ongoing": "Ongoing",
-      "upcoming": "Upcoming"
+      "upcoming": "Upcoming",
+      "past": "Past"
     },
     "stats": {
       "total": "Total Bookings",
@@ -272,6 +275,10 @@
       "title": "No Bookings",
       "description": "You haven't booked any photo sessions yet. Let's find some sessions!",
       "browseButton": "Browse Sessions"
+    },
+    "error": {
+      "loadFailed": "Load Failed",
+      "unexpected": "An unexpected error occurred"
     }
   },
   "photoSessions": {
