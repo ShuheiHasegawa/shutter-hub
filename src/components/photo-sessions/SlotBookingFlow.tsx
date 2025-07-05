@@ -1,24 +1,26 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { BackButton } from '@/components/ui/back-button';
 import {
-  UsersIcon,
-  CircleDollarSignIcon,
+  ArrowRight,
   CheckCircle,
   Clock,
-  ArrowLeft,
-  ArrowRight,
+  Users as UsersIcon,
+  CircleDollarSign as CircleDollarSignIcon,
 } from 'lucide-react';
-import { PhotoSessionSlot } from '@/types/photo-session';
-import { PhotoSessionWithOrganizer } from '@/types/database';
-import { formatTimeLocalized, formatDateLocalized } from '@/lib/utils/date';
+import {
+  PhotoSessionWithOrganizer,
+  PhotoSessionSlot,
+} from '@/types/photo-session';
+import { formatDateLocalized, formatTimeLocalized } from '@/lib/utils/date';
 import { createSlotBooking } from '@/lib/photo-sessions/slots';
 import { createPhotoSessionBooking } from '@/app/actions/photo-session-booking';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface SlotBookingFlowProps {
   session: PhotoSessionWithOrganizer;
@@ -35,7 +37,6 @@ export function SlotBookingFlow({
 }: SlotBookingFlowProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { toast } = useToast();
 
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
   const [selectedSlotIds, setSelectedSlotIds] = useState<string[]>([]);
@@ -80,31 +81,6 @@ export function SlotBookingFlow({
     [router, searchParams, allowMultiple]
   );
 
-  // 戻るボタンの処理
-  const handleBack = useCallback(() => {
-    if (currentStep === 'confirm') {
-      navigateToStep(
-        'select',
-        allowMultiple ? selectedSlotIds : selectedSlotId
-      );
-    } else {
-      // 予約フローから撮影会詳細に戻る
-      const params = new URLSearchParams(searchParams);
-      params.delete('step');
-      params.delete('slotId');
-      params.delete('slotIds');
-      router.push(`?${params.toString()}`, { scroll: false });
-    }
-  }, [
-    currentStep,
-    navigateToStep,
-    selectedSlotId,
-    selectedSlotIds,
-    allowMultiple,
-    router,
-    searchParams,
-  ]);
-
   // スロット選択ハンドラー（単一選択）
   const handleSlotSelect = useCallback(
     (slotId: string) => {
@@ -127,15 +103,11 @@ export function SlotBookingFlow({
   // 複数選択での確認画面への遷移
   const handleMultipleSlotConfirm = useCallback(() => {
     if (selectedSlotIds.length === 0) {
-      toast({
-        title: 'エラー',
-        description: '少なくとも1つの時間枠を選択してください',
-        variant: 'destructive',
-      });
+      toast.error('少なくとも1つの時間枠を選択してください');
       return;
     }
     navigateToStep('confirm', selectedSlotIds);
-  }, [selectedSlotIds, navigateToStep, toast]);
+  }, [selectedSlotIds, navigateToStep]);
 
   // 予約処理
   const handleBooking = async () => {
@@ -332,7 +304,11 @@ export function SlotBookingFlow({
   if (currentStep === 'select') {
     return (
       <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-        <StepIndicator />
+        {/* 上部戻るボタン */}
+        <div className="flex items-center justify-between">
+          <BackButton href={`/ja/photo-sessions/${session.id}`} />
+          <StepIndicator />
+        </div>
 
         <Card>
           <CardHeader>
@@ -394,13 +370,14 @@ export function SlotBookingFlow({
               <SessionInfoDisplay session={session} />
             )}
 
-            <div className="flex justify-between mt-6">
-              <Button variant="outline" onClick={handleBack}>
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                戻る
-              </Button>
+            {/* 下部フルワイド次へボタン */}
+            <div className="mt-6">
               {!hasSlots && (
-                <Button onClick={() => navigateToStep('confirm')}>
+                <Button
+                  onClick={() => navigateToStep('confirm')}
+                  className="w-full"
+                  size="lg"
+                >
                   次へ
                   <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
@@ -409,6 +386,8 @@ export function SlotBookingFlow({
                 <Button
                   onClick={handleMultipleSlotConfirm}
                   disabled={selectedSlotIds.length === 0}
+                  className="w-full"
+                  size="lg"
                 >
                   確認画面へ（{selectedSlotIds.length}件選択中）
                   <ArrowRight className="h-4 w-4 ml-2" />
@@ -425,7 +404,13 @@ export function SlotBookingFlow({
   if (currentStep === 'confirm') {
     return (
       <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-        <StepIndicator />
+        {/* 上部戻るボタン */}
+        <div className="flex items-center justify-between">
+          <BackButton
+            href={`/ja/photo-sessions/${session.id}?step=select${allowMultiple && selectedSlotIds.length > 0 ? `&slotIds=${selectedSlotIds.join(',')}` : !allowMultiple && selectedSlotId ? `&slotId=${selectedSlotId}` : ''}`}
+          />
+          <StepIndicator />
+        </div>
 
         <Card>
           <CardHeader>
@@ -660,19 +645,13 @@ export function SlotBookingFlow({
               </CardContent>
             </Card>
 
-            <div className="flex justify-between mt-6">
-              <Button
-                variant="outline"
-                onClick={handleBack}
-                className="min-w-[120px]"
-              >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                戻る
-              </Button>
+            {/* 下部フルワイド予約確定ボタン */}
+            <div className="mt-6">
               <Button
                 onClick={handleBooking}
                 disabled={isBooking}
-                className="bg-blue-600 hover:bg-blue-700 min-w-[160px]"
+                className="w-full bg-blue-600 hover:bg-blue-700"
+                size="lg"
               >
                 {isBooking ? (
                   <>
