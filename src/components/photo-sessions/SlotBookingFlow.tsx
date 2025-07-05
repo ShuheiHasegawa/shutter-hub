@@ -13,10 +13,8 @@ import {
   Users as UsersIcon,
   CircleDollarSign as CircleDollarSignIcon,
 } from 'lucide-react';
-import {
-  PhotoSessionWithOrganizer,
-  PhotoSessionSlot,
-} from '@/types/photo-session';
+import { PhotoSessionSlot } from '@/types/photo-session';
+import { PhotoSessionWithOrganizer } from '@/types/database';
 import { formatDateLocalized, formatTimeLocalized } from '@/lib/utils/date';
 import { createSlotBooking } from '@/lib/photo-sessions/slots';
 import { createPhotoSessionBooking } from '@/app/actions/photo-session-booking';
@@ -275,9 +273,9 @@ export function SlotBookingFlow({
             <div
               className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors ${
                 isCompleted
-                  ? 'bg-green-500 text-white dark:bg-green-600'
+                  ? 'bg-success text-success-foreground'
                   : isActive
-                    ? 'bg-blue-500 text-white dark:bg-blue-600'
+                    ? 'bg-info text-info-foreground'
                     : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
               }`}
             >
@@ -286,9 +284,9 @@ export function SlotBookingFlow({
             <span
               className={`text-sm font-medium ${
                 isActive
-                  ? 'text-blue-600 dark:text-blue-400'
+                  ? 'text-info'
                   : isCompleted
-                    ? 'text-green-600 dark:text-green-400'
+                    ? 'text-success'
                     : 'text-gray-500 dark:text-gray-400'
               }`}
             >
@@ -325,8 +323,8 @@ export function SlotBookingFlow({
             {hasSlots ? (
               <div className="space-y-3">
                 {allowMultiple && (
-                  <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                    <p className="text-sm text-blue-700 dark:text-blue-300">
+                  <div className="mb-4 p-3 bg-info/10 rounded-lg">
+                    <p className="text-sm text-info">
                       💡
                       この撮影会では複数の時間枠を選択できます。お好みの枠を複数選んでください。
                     </p>
@@ -353,7 +351,7 @@ export function SlotBookingFlow({
                     <p className="text-sm text-gray-600 dark:text-gray-400">
                       選択中: {selectedSlotIds.length}件の時間枠
                       {selectedSlotIds.length > 0 && (
-                        <span className="ml-2 text-blue-600 dark:text-blue-400">
+                        <span className="ml-2 text-info">
                           （合計料金: ¥
                           {selectedSlots
                             .reduce(
@@ -506,14 +504,14 @@ export function SlotBookingFlow({
                           {selectedSlots.map(slot => (
                             <div
                               key={slot.id}
-                              className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800"
+                              className="bg-info/10 p-3 rounded-lg border border-info/20"
                             >
                               <div className="flex justify-between items-start">
                                 <div>
-                                  <div className="font-medium text-blue-900 dark:text-blue-100">
+                                  <div className="font-medium text-info">
                                     枠 {slot.slot_number}
                                   </div>
-                                  <div className="text-sm text-blue-700 dark:text-blue-300">
+                                  <div className="text-sm text-info/70">
                                     {formatTimeLocalized(
                                       new Date(slot.start_time),
                                       'ja'
@@ -526,10 +524,10 @@ export function SlotBookingFlow({
                                   </div>
                                 </div>
                                 <div className="text-right">
-                                  <div className="text-sm text-blue-700 dark:text-blue-300">
+                                  <div className="text-sm text-info/70">
                                     料金
                                   </div>
-                                  <div className="font-medium text-blue-900 dark:text-blue-100">
+                                  <div className="font-medium text-info">
                                     {slot.price_per_person === 0
                                       ? '無料'
                                       : `¥${slot.price_per_person.toLocaleString()}`}
@@ -548,13 +546,13 @@ export function SlotBookingFlow({
                         <div className="font-medium text-gray-900 dark:text-white mb-2">
                           選択した時間枠
                         </div>
-                        <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+                        <div className="bg-info/10 p-3 rounded-lg border border-info/20">
                           <div className="flex justify-between items-start">
                             <div>
-                              <div className="font-medium text-blue-900 dark:text-blue-100">
+                              <div className="font-medium text-info">
                                 枠 {selectedSlot.slot_number}
                               </div>
-                              <div className="text-sm text-blue-700 dark:text-blue-300">
+                              <div className="text-sm text-info/70">
                                 {formatTimeLocalized(
                                   new Date(selectedSlot.start_time),
                                   'ja'
@@ -567,10 +565,8 @@ export function SlotBookingFlow({
                               </div>
                             </div>
                             <div className="text-right">
-                              <div className="text-sm text-blue-700 dark:text-blue-300">
-                                料金
-                              </div>
-                              <div className="font-medium text-blue-900 dark:text-blue-100">
+                              <div className="text-sm text-info/70">料金</div>
+                              <div className="font-medium text-info">
                                 {selectedSlot.price_per_person === 0
                                   ? '無料'
                                   : `¥${selectedSlot.price_per_person.toLocaleString()}`}
@@ -587,16 +583,14 @@ export function SlotBookingFlow({
                         <div className="font-medium text-gray-900 dark:text-white mb-2">
                           参加料金
                         </div>
-                        <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border border-green-200 dark:border-green-800">
+                        <div className="bg-info/10 p-3 rounded-lg border border-info/20">
                           <div className="text-center">
-                            <div className="text-2xl font-bold text-green-900 dark:text-green-100">
+                            <div className="text-2xl font-bold text-info">
                               {session.price_per_person === 0
                                 ? '無料'
                                 : `¥${session.price_per_person.toLocaleString()}`}
                             </div>
-                            <div className="text-sm text-green-700 dark:text-green-300">
-                              参加費
-                            </div>
+                            <div className="text-sm text-info/70">参加費</div>
                           </div>
                         </div>
                       </div>
@@ -629,12 +623,10 @@ export function SlotBookingFlow({
             </div>
 
             {/* 注意事項 */}
-            <Card className="mt-6 bg-yellow-50 dark:bg-yellow-900/10 border-yellow-200 dark:border-yellow-800">
+            <Card className="mt-6 bg-warning/10 border-warning/20">
               <CardContent className="pt-4">
-                <h4 className="font-medium text-yellow-800 dark:text-yellow-200 mb-2">
-                  ご注意事項
-                </h4>
-                <div className="text-sm text-yellow-700 dark:text-yellow-300 space-y-1">
+                <h4 className="font-medium text-warning mb-2">ご注意事項</h4>
+                <div className="text-sm text-warning/70 space-y-1">
                   <div>
                     • 予約のキャンセルは撮影会開始の24時間前まで可能です
                   </div>
@@ -682,8 +674,8 @@ export function SlotBookingFlow({
         <Card>
           <CardContent className="pt-6">
             <div className="text-center space-y-4">
-              <div className="w-16 h-16 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center mx-auto">
-                <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
+              <div className="w-16 h-16 bg-success/10 rounded-full flex items-center justify-center mx-auto">
+                <CheckCircle className="h-8 w-8 text-success" />
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -695,7 +687,7 @@ export function SlotBookingFlow({
               </div>
               <Button
                 onClick={handleComplete}
-                className="w-full bg-green-600 hover:bg-green-700"
+                className="w-full bg-success hover:bg-success/90"
               >
                 完了
               </Button>
@@ -733,8 +725,8 @@ function SlotCard({
         isSlotFull
           ? 'bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:border-gray-600'
           : allowMultiple && isSelected
-            ? 'bg-blue-50 border-blue-400 dark:bg-blue-900/20 dark:border-blue-400 cursor-pointer'
-            : 'bg-white border-gray-200 hover:border-blue-300 hover:bg-blue-50/50 dark:bg-gray-800 dark:border-gray-600 dark:hover:border-blue-400 dark:hover:bg-blue-900/10 cursor-pointer'
+            ? 'bg-info/10 border-info cursor-pointer'
+            : 'bg-white border-gray-200 hover:border-info hover:bg-info/5 dark:bg-gray-800 dark:border-gray-600 dark:hover:border-info dark:hover:bg-info/5 cursor-pointer'
       }`}
       onClick={onSelect}
       disabled={isSlotFull}
@@ -745,7 +737,7 @@ function SlotCard({
         </h4>
         <div className="flex items-center gap-2">
           {allowMultiple && isSelected && (
-            <Badge variant="default" className="bg-blue-600 text-white">
+            <Badge variant="default" className="bg-info text-info-foreground">
               選択中
             </Badge>
           )}
