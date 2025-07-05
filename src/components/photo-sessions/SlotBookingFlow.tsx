@@ -305,10 +305,12 @@ export function SlotBookingFlow({
     return (
       <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         {/* 上部戻るボタン */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center">
           <BackButton href={`/ja/photo-sessions/${session.id}`} />
-          <StepIndicator />
         </div>
+
+        {/* ステップインジケーター */}
+        <StepIndicator />
 
         <Card>
           <CardHeader>
@@ -405,12 +407,14 @@ export function SlotBookingFlow({
     return (
       <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         {/* 上部戻るボタン */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center">
           <BackButton
             href={`/ja/photo-sessions/${session.id}?step=select${allowMultiple && selectedSlotIds.length > 0 ? `&slotIds=${selectedSlotIds.join(',')}` : !allowMultiple && selectedSlotId ? `&slotId=${selectedSlotId}` : ''}`}
           />
-          <StepIndicator />
         </div>
+
+        {/* ステップインジケーター */}
+        <StepIndicator />
 
         <Card>
           <CardHeader>
