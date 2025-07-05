@@ -430,7 +430,7 @@ export function SlotBookingFlow({
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                   撮影会情報
                 </h3>
-                <Card className="dark:bg-gray-800 dark:border-gray-700">
+                <Card className="dark:bg-gray-800 dark:border-gray-700 h-fit">
                   <CardContent className="pt-6 space-y-4">
                     <div>
                       <div className="font-medium text-gray-900 dark:text-white mb-1">
@@ -494,7 +494,7 @@ export function SlotBookingFlow({
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                   予約詳細
                 </h3>
-                <Card className="dark:bg-gray-800 dark:border-gray-700">
+                <Card className="dark:bg-gray-800 dark:border-gray-700 h-fit">
                   <CardContent className="pt-6 space-y-4">
                     {/* 複数選択の場合 */}
                     {allowMultiple && selectedSlots.length > 0 && (
@@ -654,7 +654,7 @@ export function SlotBookingFlow({
               <Button
                 onClick={handleBooking}
                 disabled={isBooking}
-                className="w-full bg-blue-600 hover:bg-blue-700"
+                className="w-full"
                 size="lg"
               >
                 {isBooking ? (
