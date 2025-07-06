@@ -636,6 +636,39 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
+        {/* 開発者向け機能 */}
+        {process.env.NODE_ENV === 'development' && (
+          <Card className="border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-orange-700 dark:text-orange-300">
+                <AlertTriangle className="h-5 w-5" />
+                開発者向け機能
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Alert className="border-orange-200 bg-orange-100 dark:border-orange-800 dark:bg-orange-900">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription className="text-orange-800 dark:text-orange-200">
+                  これらの機能は開発環境でのみ利用可能です
+                </AlertDescription>
+              </Alert>
+              <div className="flex flex-col gap-4">
+                <Button
+                  variant="outline"
+                  onClick={() => window.open('/ja/dev/test-login', '_blank')}
+                  className="w-full border-orange-300 text-orange-700 hover:bg-orange-100 dark:border-orange-700 dark:text-orange-300 dark:hover:bg-orange-900"
+                >
+                  <User className="h-4 w-4 mr-2" />
+                  テストアカウントログイン
+                </Button>
+                <p className="text-sm text-orange-600 dark:text-orange-400">
+                  蜷川実花（カメラマン）、小日向ゆか（モデル）、ことり撮影会（運営者）のテストアカウントでログインできます。
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* データ管理 */}
         <Card>
           <CardHeader>

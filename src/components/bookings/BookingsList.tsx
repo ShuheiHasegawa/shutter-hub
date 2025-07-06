@@ -72,7 +72,7 @@ export function BookingsList() {
           ...entry,
           id: entry.id || '',
           created_at: entry.created_at || '',
-        }));
+        })) as WaitlistEntryWithPhotoSession[];
         setWaitlistEntries(waitlistData);
       } else if (waitlistResult.error) {
         toast({

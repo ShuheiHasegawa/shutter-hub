@@ -133,6 +133,10 @@ export function PhotoSessionList({
           if (authUser?.id) {
             query = query.neq('organizer_id', authUser.id);
           }
+
+          // 過去の撮影会を除外：現在日時より後の撮影会のみ表示
+          const now = new Date().toISOString();
+          query = query.gte('start_time', now);
         }
 
         // サイドバーフィルターを優先、なければ従来のフィルターを使用
@@ -260,7 +264,7 @@ export function PhotoSessionList({
         isLoadingRef.current = false;
       }
     },
-    [organizerId, searchQuery, locationFilter, sortBy, sortOrder, page]
+    [organizerId, searchQuery, locationFilter, sortBy, sortOrder, page, filters]
   );
 
   // 明示的な検索実行関数
