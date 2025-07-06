@@ -5,7 +5,6 @@ import { getProfile } from '@/lib/auth/profile';
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { PhotographerInstantDashboard } from '@/components/instant/PhotographerInstantDashboard';
@@ -141,40 +140,6 @@ export default function DashboardPage() {
                 <p className="text-muted-foreground">{profile.bio}</p>
               </div>
             )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>クイックアクション</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {profile.user_type === 'organizer' && (
-                <Button
-                  onClick={() =>
-                    router.push(`/${locale}/photo-sessions/create`)
-                  }
-                  className="h-12"
-                >
-                  撮影会を作成
-                </Button>
-              )}
-              <Button
-                variant="outline"
-                onClick={() => router.push(`/${locale}/photo-sessions`)}
-                className="h-12"
-              >
-                撮影会を検索
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => router.push(`/${locale}/profile`)}
-                className="h-12"
-              >
-                プロフィール編集
-              </Button>
-            </div>
           </CardContent>
         </Card>
 
