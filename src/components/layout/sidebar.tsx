@@ -139,7 +139,7 @@ export function Sidebar({ className }: SidebarProps) {
     },
     {
       title: '統計',
-      href: '/dashboard/analytics',
+      href: '/analytics',
       icon: BarChart3,
     },
     {
@@ -344,7 +344,7 @@ export function MobileSidebarTrigger() {
     },
     {
       title: '統計',
-      href: '/dashboard/analytics',
+      href: '/analytics',
       icon: BarChart3,
     },
     {
