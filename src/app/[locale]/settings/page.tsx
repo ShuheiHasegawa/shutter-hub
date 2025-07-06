@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/hooks/useAuth';
 import { getProfile } from '@/lib/auth/profile';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -120,7 +120,25 @@ export default function SettingsPage() {
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [settings, setSettings] = useState<UserSettings>(defaultSettings);
-  const [saving, setSaving] = useState(false);
+
+  const loadProfile = useCallback(async () => {
+    if (!user) return;
+
+    try {
+      const { data: profileData, error: profileError } = await getProfile(
+        user.id
+      );
+
+      if (profileError) {
+        console.error('プロフィール取得エラー:', profileError);
+        return;
+      }
+
+      setProfile(profileData);
+    } catch (error) {
+      console.error('プロフィール取得エラー:', error);
+    }
+  }, [user]);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -131,60 +149,45 @@ export default function SettingsPage() {
     if (user) {
       loadProfile();
     }
-  }, [user, loading, router, locale]);
+  }, [user, loading, router, locale, loadProfile]);
 
-  const loadProfile = async () => {
-    if (!user) return;
-
-    try {
-      const { data: profileData, error } = await getProfile(user.id);
-      if (error) {
-        console.error('プロフィール取得エラー:', error);
-        return;
-      }
-      setProfile(profileData);
-    } catch (error) {
-      console.error('データ取得エラー:', error);
-    }
-  };
-
-  const handleSettingChange = (key: keyof UserSettings, value: any) => {
+  const handleSettingChange = (
+    key: keyof UserSettings,
+    value: string | number | boolean
+  ) => {
     setSettings(prev => ({
       ...prev,
       [key]: value,
     }));
   };
 
-  const saveSettings = async () => {
-    setSaving(true);
+  const handleSave = async () => {
     try {
-      // 実際の実装では、ここでSupabaseに設定を保存
-      await new Promise(resolve => setTimeout(resolve, 1000)); // 仮の保存処理
+      // 実際の保存処理はここに実装
+      await new Promise(resolve => setTimeout(resolve, 1000));
       toast.success('設定を保存しました');
-    } catch (error) {
+    } catch {
       toast.error('設定の保存に失敗しました');
-    } finally {
-      setSaving(false);
     }
   };
 
-  const exportData = async () => {
+  const handleExport = async () => {
     try {
-      // 実際の実装では、ユーザーデータをエクスポート
-      toast.success('データのエクスポートを開始しました');
-    } catch (error) {
-      toast.error('データのエクスポートに失敗しました');
+      // 実際のエクスポート処理はここに実装
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      toast.success('データをエクスポートしました');
+    } catch {
+      toast.error('エクスポートに失敗しました');
     }
   };
 
-  const deleteAccount = async () => {
-    if (confirm('本当にアカウントを削除しますか？この操作は取り消せません。')) {
-      try {
-        // 実際の実装では、アカウント削除処理
-        toast.success('アカウント削除処理を開始しました');
-      } catch (error) {
-        toast.error('アカウント削除に失敗しました');
-      }
+  const handleDelete = async () => {
+    try {
+      // 実際の削除処理はここに実装
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      toast.success('アカウントを削除しました');
+    } catch {
+      toast.error('削除に失敗しました');
     }
   };
 
@@ -366,7 +369,7 @@ export default function SettingsPage() {
                 <Label>プロフィール表示</Label>
                 <Select
                   value={settings.profileVisibility}
-                  onValueChange={(value: any) =>
+                  onValueChange={(value: string) =>
                     handleSettingChange('profileVisibility', value)
                   }
                 >
@@ -418,7 +421,8 @@ export default function SettingsPage() {
 
         {/* 撮影関連設定 */}
         {(profile.user_type === 'photographer' ||
-          profile.user_type === 'model') && (
+          profile.user_type === 'model' ||
+          profile.user_type === 'organizer') && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -443,7 +447,7 @@ export default function SettingsPage() {
                     <Label>最大移動距離（km）</Label>
                     <Select
                       value={settings.maxTravelDistance.toString()}
-                      onValueChange={value =>
+                      onValueChange={(value: string) =>
                         handleSettingChange(
                           'maxTravelDistance',
                           parseInt(value)
@@ -566,7 +570,7 @@ export default function SettingsPage() {
                 <Label>通貨</Label>
                 <Select
                   value={settings.currency}
-                  onValueChange={value =>
+                  onValueChange={(value: string) =>
                     handleSettingChange('currency', value)
                   }
                 >
@@ -642,13 +646,17 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button variant="outline" onClick={exportData} className="flex-1">
+              <Button
+                variant="outline"
+                onClick={handleExport}
+                className="flex-1"
+              >
                 <Download className="h-4 w-4 mr-2" />
                 データをエクスポート
               </Button>
               <Button
                 variant="destructive"
-                onClick={deleteAccount}
+                onClick={handleDelete}
                 className="flex-1"
               >
                 <Trash2 className="h-4 w-4 mr-2" />
@@ -664,9 +672,7 @@ export default function SettingsPage() {
 
         {/* 保存ボタン */}
         <div className="flex justify-end">
-          <Button onClick={saveSettings} disabled={saving}>
-            {saving ? '保存中...' : '設定を保存'}
-          </Button>
+          <Button onClick={handleSave}>設定を保存</Button>
         </div>
       </div>
     </DashboardLayout>

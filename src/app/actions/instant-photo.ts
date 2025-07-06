@@ -353,8 +353,9 @@ export async function togglePhotographerOnlineStatusWithLocation(
           photographer_id: user.id,
           latitude,
           longitude,
-          is_available: true,
-          last_updated: new Date().toISOString(),
+          is_online: true,
+          accepting_requests: true,
+          updated_at: new Date().toISOString(),
         })
         .select()
         .single();
