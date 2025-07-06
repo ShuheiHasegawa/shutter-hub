@@ -5,8 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { BackButton } from '@/components/ui/back-button';
 import {
+  ArrowLeft,
   ArrowRight,
   CheckCircle,
   Clock,
@@ -116,11 +116,7 @@ export function SlotBookingFlow({
         if (allowMultiple) {
           // 複数選択の場合
           if (selectedSlotIds.length === 0) {
-            toast({
-              title: 'エラー',
-              description: '時間枠を選択してください',
-              variant: 'destructive',
-            });
+            toast.error('時間枠を選択してください');
             setIsBooking(false);
             return;
           }
@@ -149,27 +145,14 @@ export function SlotBookingFlow({
 
           if (successCount > 0) {
             navigateToStep('complete');
-            toast({
-              title: '予約が完了しました！',
-              description: `${successCount}件の時間枠での参加が確定しました${
-                errors.length > 0 ? `（${errors.length}件失敗）` : ''
-              }`,
-            });
+            toast.success(`${successCount}件の時間枠での参加が確定しました`);
           } else {
-            toast({
-              title: 'エラー',
-              description: `予約に失敗しました: ${errors.join(', ')}`,
-              variant: 'destructive',
-            });
+            toast.error(`予約に失敗しました: ${errors.join(', ')}`);
           }
         } else {
           // 単一選択の場合
           if (!selectedSlotId) {
-            toast({
-              title: 'エラー',
-              description: '時間枠を選択してください',
-              variant: 'destructive',
-            });
+            toast.error('時間枠を選択してください');
             setIsBooking(false);
             return;
           }
@@ -178,16 +161,9 @@ export function SlotBookingFlow({
             const result = await createSlotBooking(selectedSlotId);
             if (result.success) {
               navigateToStep('complete');
-              toast({
-                title: '予約が完了しました！',
-                description: '選択した時間枠での参加が確定しました',
-              });
+              toast.success('選択した時間枠での参加が確定しました');
             } else {
-              toast({
-                title: 'エラー',
-                description: result.message || '予約に失敗しました',
-                variant: 'destructive',
-              });
+              toast.error(result.message || '予約に失敗しました');
             }
           } catch (err) {
             console.error('スロット予約エラー:', err);
@@ -195,11 +171,7 @@ export function SlotBookingFlow({
               err instanceof Error
                 ? err.message
                 : '予期しないエラーが発生しました';
-            toast({
-              title: 'エラー',
-              description: errorMessage,
-              variant: 'destructive',
-            });
+            toast.error(errorMessage);
           }
         }
       } else {
@@ -208,25 +180,14 @@ export function SlotBookingFlow({
 
         if (result.success) {
           navigateToStep('complete');
-          toast({
-            title: '予約が完了しました！',
-            description: '撮影会への参加が確定しました',
-          });
+          toast.success('撮影会への参加が確定しました');
         } else {
-          toast({
-            title: 'エラー',
-            description: result.error || '予約に失敗しました',
-            variant: 'destructive',
-          });
+          toast.error(result.error || '予約に失敗しました');
         }
       }
     } catch (error) {
       console.error('予約エラー:', error);
-      toast({
-        title: 'エラー',
-        description: '予期しないエラーが発生しました',
-        variant: 'destructive',
-      });
+      toast.error('予期しないエラーが発生しました');
     } finally {
       setIsBooking(false);
     }
@@ -304,7 +265,14 @@ export function SlotBookingFlow({
       <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         {/* 上部戻るボタン */}
         <div className="flex items-center">
-          <BackButton href={`/ja/photo-sessions/${session.id}`} />
+          <Button
+            onClick={() => router.push(`/ja/photo-sessions/${session.id}`)}
+            variant="ghost"
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            戻る
+          </Button>
         </div>
 
         {/* ステップインジケーター */}
@@ -406,9 +374,19 @@ export function SlotBookingFlow({
       <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         {/* 上部戻るボタン */}
         <div className="flex items-center">
-          <BackButton
-            href={`/ja/photo-sessions/${session.id}?step=select${allowMultiple && selectedSlotIds.length > 0 ? `&slotIds=${selectedSlotIds.join(',')}` : !allowMultiple && selectedSlotId ? `&slotId=${selectedSlotId}` : ''}`}
-          />
+          <Button
+            onClick={() =>
+              navigateToStep(
+                'select',
+                allowMultiple ? selectedSlotIds : selectedSlotId
+              )
+            }
+            variant="ghost"
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            戻る
+          </Button>
         </div>
 
         {/* ステップインジケーター */}
