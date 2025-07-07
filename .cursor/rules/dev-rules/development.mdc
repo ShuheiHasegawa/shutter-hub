@@ -941,7 +941,7 @@ components={{
 ## 禁止事項
 
 1. **any型の使用**（unknown を使用）
-2. **console.log の本番環境への混入**
+2. **🚨【重要】console.log の直接使用禁止**（Logger使用必須）
 3. **ハードコードされた秘密情報**
 4. **インラインスタイルの過度な使用**
 5. **適切なローディング表示なしの非同期処理**
@@ -952,6 +952,107 @@ components={{
    - **データベースフィールドに基づく表示テキストのハードコード禁止**
 8. **🚨【絶対禁止】明示的依頼なしのUI/UXデザイン変更**
 9. **🎨【新規追加】Tailwind色クラス直接使用禁止**（カラーシステム統一必須）
+
+### 🚨 **Logger使用必須ルール（重要）**
+
+#### **console.log直接使用の絶対禁止**
+
+```yaml
+prohibited_logging:
+  direct_console_usage:
+    - 'console.log() の直接使用'
+    - 'console.error() の直接使用'
+    - 'console.warn() の直接使用'
+    - 'console.info() の直接使用'
+    - 'console.debug() の直接使用'
+
+  exceptions:
+    - '一時的なデバッグ時は許可（コミット前に必ず削除）'
+    - 'Logger機能自体の実装・テスト時は例外'
+```
+
+#### **必須Logger使用パターン**
+
+```typescript
+// ✅ 正しい使用方法
+import { logger } from '@/lib/utils/logger';
+
+// 基本ログ
+logger.debug('デバッグ情報', { userId, action });
+logger.info('処理完了', { result });
+logger.warn('注意事項', { details });
+logger.error('エラー発生', error);
+
+// グループログ
+logger.group('撮影会作成処理');
+logger.debug('バリデーション開始');
+logger.info('データベース更新');
+logger.groupEnd();
+
+// 時間測定
+logger.time('API呼び出し');
+// 処理実行
+logger.timeEnd('API呼び出し');
+```
+
+#### **❌ 禁止されるパターン**
+
+```typescript
+// ❌ 絶対禁止
+console.log('ユーザー情報:', user);
+console.error('エラー:', error);
+console.warn('警告:', warning);
+
+// ❌ 本番環境混入リスク
+if (process.env.NODE_ENV === 'development') {
+  console.log('デバッグ情報'); // 条件付きでも禁止
+}
+```
+
+#### **移行ガイドライン**
+
+```yaml
+migration_steps:
+  1_immediate:
+    - '新規実装では必ずLoggerを使用'
+    - 'console.log発見時は即座にLoggerに置き換え'
+
+  2_gradual:
+    - '既存のconsole.logを段階的にLoggerに移行'
+    - 'コードレビュー時にconsole.log使用をチェック'
+
+  3_enforcement:
+    - 'ESLintルールでconsole.log使用を検出'
+    - 'コミット前フックでconsole.log使用をブロック'
+```
+
+#### **Logger設定（環境変数）**
+
+```bash
+# 開発環境設定
+NEXT_PUBLIC_ENABLE_DEBUG_LOGGING=true
+NEXT_PUBLIC_LOG_LEVEL=debug
+
+# 本番環境設定（自動無効化）
+NEXT_PUBLIC_ENABLE_DEBUG_LOGGING=false
+# または設定しない（デフォルトでfalse）
+```
+
+#### **利点**
+
+- **🔒 本番環境安全**: 環境変数制御による完全な無効化
+- **🚀 開発効率**: 詳細なデバッグ情報とグループ化
+- **📊 パフォーマンス**: 実行時間測定機能
+- **🛠️ 保守性**: 一元化されたログ管理
+- **🎯 問題解決**: 構造化されたエラー情報
+
+#### **実装チェックリスト**
+
+- [ ] console.logの代わりにlogger.debug()を使用
+- [ ] エラーログにはlogger.error()を使用
+- [ ] 重要な処理にはlogger.group()でグループ化
+- [ ] 性能測定にはlogger.time()/timeEnd()を使用
+- [ ] 環境変数でログ出力制御を設定
 
 ### 🎨 **カラーシステム統一ルール（新規追加）**
 
