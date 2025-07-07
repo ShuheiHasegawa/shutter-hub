@@ -24,8 +24,6 @@ import {
   AtSign,
   X,
   Plus,
-  Camera,
-  FileText,
   Users,
   Lock,
   Globe,
@@ -41,12 +39,6 @@ interface CreatePostFormProps {
   photoSessionId?: string; // 撮影会関連投稿の場合
   className?: string;
 }
-
-const POST_TYPE_OPTIONS = [
-  { value: 'text' as PostType, label: 'テキスト', icon: FileText },
-  { value: 'image' as PostType, label: '画像', icon: ImageIcon },
-  { value: 'photo_session' as PostType, label: '撮影会', icon: Camera },
-];
 
 const VISIBILITY_OPTIONS = [
   {
@@ -85,9 +77,6 @@ export function CreatePostForm({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [content, setContent] = useState('');
-  const [postType, setPostType] = useState<PostType>(
-    photoSessionId ? 'photo_session' : 'text'
-  );
   const [visibility, setVisibility] = useState<PostVisibility>('public');
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [hashtags, setHashtags] = useState<string[]>([]);
@@ -123,9 +112,6 @@ export function CreatePostForm({
     }
 
     setSelectedFiles(prev => [...prev, ...imageFiles]);
-    if (imageFiles.length > 0 && postType === 'text') {
-      setPostType('image');
-    }
   };
 
   const handleRemoveFile = (index: number) => {
@@ -182,6 +168,13 @@ export function CreatePostForm({
       const allHashtags = [...new Set([...hashtags, ...contentHashtags])];
       const allMentions = [...new Set([...mentions, ...contentMentions])];
 
+      // 投稿タイプを自動判定
+      const postType: PostType = photoSessionId
+        ? 'photo_session'
+        : selectedFiles.length > 0
+          ? 'image'
+          : 'text';
+
       const postData: CreatePostData = {
         content,
         post_type: postType,
@@ -203,7 +196,6 @@ export function CreatePostForm({
         setHashtags([]);
         setMentions([]);
         setLocation('');
-        setPostType(photoSessionId ? 'photo_session' : 'text');
 
         if (onSuccess) {
           onSuccess();
@@ -226,6 +218,22 @@ export function CreatePostForm({
     option => option.value === visibility
   );
 
+  // 投稿タイプを自動判定
+  const postType = photoSessionId
+    ? 'photo_session'
+    : selectedFiles.length > 0
+      ? 'image'
+      : 'text';
+
+  // 現在の投稿タイプを表示用に取得
+  const currentPostType = postType;
+  const postTypeLabel =
+    currentPostType === 'photo_session'
+      ? '撮影会投稿'
+      : currentPostType === 'image'
+        ? '画像投稿'
+        : 'テキスト投稿';
+
   return (
     <Card className={className}>
       <CardHeader>
@@ -239,7 +247,7 @@ export function CreatePostForm({
           <div className="flex-1">
             <CardTitle className="text-lg">新しい投稿</CardTitle>
             <p className="text-sm text-muted-foreground">
-              {user.user_metadata?.display_name || user.email}
+              {user.user_metadata?.display_name || user.email} • {postTypeLabel}
             </p>
           </div>
         </div>
@@ -265,24 +273,6 @@ export function CreatePostForm({
           </TabsList>
 
           <TabsContent value="settings" className="space-y-4 mt-4">
-            {/* 投稿タイプ */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">投稿タイプ</label>
-              <div className="grid grid-cols-3 gap-2">
-                {POST_TYPE_OPTIONS.map(option => (
-                  <Button
-                    key={option.value}
-                    variant={postType === option.value ? 'default' : 'outline'}
-                    onClick={() => setPostType(option.value)}
-                    className="h-12 flex-col gap-1"
-                  >
-                    <option.icon className="h-4 w-4" />
-                    <span className="text-xs">{option.label}</span>
-                  </Button>
-                ))}
-              </div>
-            </div>
-
             {/* 公開範囲 */}
             <div className="space-y-2">
               <label className="text-sm font-medium">公開範囲</label>

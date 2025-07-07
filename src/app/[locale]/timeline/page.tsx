@@ -31,7 +31,6 @@ import {
   Search,
   Filter,
   Loader2,
-  RefreshCw,
   Plus,
   Hash,
   Users,
@@ -55,7 +54,6 @@ export default function TimelinePage() {
     'timeline' | 'trending' | 'search'
   >('timeline');
   const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchFilters, setSearchFilters] = useState<PostSearchFilters>({});
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
@@ -102,10 +100,8 @@ export default function TimelinePage() {
   };
 
   const handleRefresh = async () => {
-    setIsRefreshing(true);
     await loadInitialData();
     await loadTrendingHashtags();
-    setIsRefreshing(false);
     toast.success('タイムラインを更新しました');
   };
 
@@ -166,7 +162,6 @@ export default function TimelinePage() {
     return (
       <DashboardLayout>
         <div className="text-center py-12">
-          <h1 className="text-2xl font-bold mb-4">タイムライン</h1>
           <p className="text-muted-foreground">
             タイムラインを見るにはログインが必要です
           </p>
@@ -178,46 +173,26 @@ export default function TimelinePage() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">タイムライン</h1>
-            <p className="text-muted-foreground">
-              フォローしているユーザーの最新投稿
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handleRefresh}
-              disabled={isRefreshing}
-            >
-              <RefreshCw
-                className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`}
+        <div className="flex items-center justify-end">
+          <Dialog open={isCreatePostOpen} onOpenChange={setIsCreatePostOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                投稿作成
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>新しい投稿</DialogTitle>
+              </DialogHeader>
+              <CreatePostForm
+                onSuccess={() => {
+                  setIsCreatePostOpen(false);
+                  handleRefresh();
+                }}
               />
-            </Button>
-
-            <Dialog open={isCreatePostOpen} onOpenChange={setIsCreatePostOpen}>
-              <DialogTrigger asChild>
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  投稿作成
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl">
-                <DialogHeader>
-                  <DialogTitle>新しい投稿</DialogTitle>
-                </DialogHeader>
-                <CreatePostForm
-                  onSuccess={() => {
-                    setIsCreatePostOpen(false);
-                    handleRefresh();
-                  }}
-                />
-              </DialogContent>
-            </Dialog>
-          </div>
+            </DialogContent>
+          </Dialog>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
