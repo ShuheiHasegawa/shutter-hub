@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Dialog,
   DialogContent,
@@ -40,7 +41,12 @@ import {
   Verified,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { likePost, repostPost, deletePost } from '@/app/actions/posts';
+import {
+  likePost,
+  repostPost,
+  deletePost,
+  commentOnPost,
+} from '@/app/actions/posts';
 import { PostWithUser } from '@/types/social';
 import Link from 'next/link';
 
@@ -71,6 +77,16 @@ export function PostCard({
   const [isLiking, setIsLiking] = useState(false);
   const [isReposting, setIsReposting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // 返信機能の状態
+  const [isReplyDialogOpen, setIsReplyDialogOpen] = useState(false);
+  const [replyContent, setReplyContent] = useState('');
+  const [isReplying, setIsReplying] = useState(false);
+
+  // 引用リポスト機能の状態
+  const [isQuoteDialogOpen, setIsQuoteDialogOpen] = useState(false);
+  const [quoteContent, setQuoteContent] = useState('');
+  const [isQuoting, setIsQuoting] = useState(false);
 
   const isOwner = user?.id === post.user_id;
   const isRepost = post.post_type === 'repost';
@@ -157,6 +173,48 @@ export function PostCard({
       } catch {
         toast.error('コピーに失敗しました');
       }
+    }
+  };
+
+  const handleReply = async () => {
+    if (!user || isReplying || !replyContent.trim()) return;
+
+    setIsReplying(true);
+    try {
+      const result = await commentOnPost(displayPost.id, replyContent.trim());
+      if (result.success) {
+        toast.success('返信を投稿しました');
+        setReplyContent('');
+        setIsReplyDialogOpen(false);
+        if (onUpdate) onUpdate();
+      } else {
+        toast.error(result.message || '返信の投稿に失敗しました');
+      }
+    } catch {
+      toast.error('返信の投稿に失敗しました');
+    } finally {
+      setIsReplying(false);
+    }
+  };
+
+  const handleQuoteRepost = async () => {
+    if (!user || isQuoting || !quoteContent.trim()) return;
+
+    setIsQuoting(true);
+    try {
+      const result = await repostPost(displayPost.id, quoteContent.trim());
+      if (result.success) {
+        toast.success('引用リポストしました');
+        setQuoteContent('');
+        setIsQuoteDialogOpen(false);
+        if (onUpdate) onUpdate();
+      } else {
+        toast.error(result.message || '引用リポストに失敗しました');
+      }
+    } catch {
+      toast.error('引用リポストに失敗しました');
+    } finally {
+      setIsQuoting(false);
     }
   };
 
@@ -468,30 +526,105 @@ export function PostCard({
                 <span>{likesCount}</span>
               </Button>
 
-              <Button
-                variant="ghost"
-                size="sm"
-                className="flex items-center gap-2 text-muted-foreground"
+              <Dialog
+                open={isReplyDialogOpen}
+                onOpenChange={setIsReplyDialogOpen}
               >
-                <MessageCircle className="h-4 w-4" />
-                <span>{displayPost.comments_count}</span>
-              </Button>
+                <DialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="flex items-center gap-2 text-muted-foreground hover:text-blue-500"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                    <span>{displayPost.comments_count}</span>
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-lg">
+                  <DialogHeader>
+                    <DialogTitle>返信する</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    {/* 元の投稿を表示 */}
+                    <div className="p-3 border rounded-lg bg-muted/50">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Avatar className="h-6 w-6">
+                          <AvatarImage
+                            src={displayPost.user.avatar_url || undefined}
+                          />
+                          <AvatarFallback className="text-xs">
+                            {displayPost.user.display_name?.[0] || 'U'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="font-medium text-sm">
+                          {displayPost.user.display_name}
+                        </span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {displayPost.content.length > 100
+                          ? `${displayPost.content.substring(0, 100)}...`
+                          : displayPost.content}
+                      </p>
+                    </div>
+
+                    {/* 返信入力 */}
+                    <Textarea
+                      placeholder="返信を入力..."
+                      value={replyContent}
+                      onChange={e => setReplyContent(e.target.value)}
+                      className="min-h-[100px]"
+                    />
+
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => setIsReplyDialogOpen(false)}
+                      >
+                        キャンセル
+                      </Button>
+                      <Button
+                        onClick={handleReply}
+                        disabled={isReplying || !replyContent.trim()}
+                      >
+                        {isReplying ? '投稿中...' : '返信'}
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
 
               {!isRepost && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleRepost}
-                  disabled={isReposting}
-                  className={`flex items-center gap-2 ${
-                    isReposted
-                      ? 'text-green-500 hover:text-green-600'
-                      : 'text-muted-foreground'
-                  }`}
-                >
-                  <Repeat2 className="h-4 w-4" />
-                  <span>{repostsCount}</span>
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className={`flex items-center gap-2 ${
+                        isReposted
+                          ? 'text-green-500 hover:text-green-600'
+                          : 'text-muted-foreground hover:text-green-500'
+                      }`}
+                    >
+                      <Repeat2 className="h-4 w-4" />
+                      <span>{repostsCount}</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem
+                      onClick={handleRepost}
+                      disabled={isReposting}
+                    >
+                      <Repeat2 className="h-4 w-4 mr-2" />
+                      リポスト
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => setIsQuoteDialogOpen(true)}
+                    >
+                      <Edit className="h-4 w-4 mr-2" />
+                      引用リポスト
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               )}
             </div>
 
@@ -505,6 +638,61 @@ export function PostCard({
             </Button>
           </div>
         )}
+
+        {/* 引用リポストダイアログ */}
+        <Dialog open={isQuoteDialogOpen} onOpenChange={setIsQuoteDialogOpen}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>引用リポスト</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              {/* 引用コメント入力 */}
+              <Textarea
+                placeholder="コメントを追加..."
+                value={quoteContent}
+                onChange={e => setQuoteContent(e.target.value)}
+                className="min-h-[100px]"
+              />
+
+              {/* 元の投稿を表示 */}
+              <div className="p-3 border rounded-lg bg-muted/50">
+                <div className="flex items-center gap-2 mb-2">
+                  <Avatar className="h-6 w-6">
+                    <AvatarImage
+                      src={displayPost.user.avatar_url || undefined}
+                    />
+                    <AvatarFallback className="text-xs">
+                      {displayPost.user.display_name?.[0] || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="font-medium text-sm">
+                    {displayPost.user.display_name}
+                  </span>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {displayPost.content.length > 100
+                    ? `${displayPost.content.substring(0, 100)}...`
+                    : displayPost.content}
+                </p>
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsQuoteDialogOpen(false)}
+                >
+                  キャンセル
+                </Button>
+                <Button
+                  onClick={handleQuoteRepost}
+                  disabled={isQuoting || !quoteContent.trim()}
+                >
+                  {isQuoting ? '投稿中...' : '引用リポスト'}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* 最近のいいね */}
         {displayPost.recent_likes && displayPost.recent_likes.length > 0 && (

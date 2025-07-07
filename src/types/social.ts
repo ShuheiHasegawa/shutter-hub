@@ -8,6 +8,27 @@ export type ProfileVisibility = 'public' | 'followers_only' | 'private';
 
 export type ActivityVisibility = 'public' | 'followers_only' | 'private';
 
+// 基本的なユーザープロフィール型（SNS機能用の簡略版）
+export interface SimpleUserProfile {
+  id: string;
+  display_name: string | null;
+  avatar_url: string | null;
+  user_type: string;
+  is_verified: boolean;
+}
+
+// Supabaseクエリ結果用の型定義
+export interface SupabaseLikeWithProfile {
+  post_id: string;
+  profiles: SimpleUserProfile;
+}
+
+// PostCardの最近のいいね表示用
+export interface RecentLikesData {
+  post_id: string;
+  recent_likes: SimpleUserProfile[];
+}
+
 // フォロー関係
 export interface Follow {
   id: string;
@@ -299,10 +320,19 @@ export interface RealtimeMessageEvent {
 // Phase 6: SNS拡張機能の型定義
 
 // 投稿タイプ（sns_post_type ENUMに対応）
-export type PostType = 'text' | 'image' | 'multiple_images' | 'photo_session' | 'repost';
+export type PostType =
+  | 'text'
+  | 'image'
+  | 'multiple_images'
+  | 'photo_session'
+  | 'repost';
 
 // 投稿の可視性（sns_post_visibility ENUMに対応）
-export type PostVisibility = 'public' | 'followers' | 'mutual_follows' | 'private';
+export type PostVisibility =
+  | 'public'
+  | 'followers'
+  | 'mutual_follows'
+  | 'private';
 
 // 投稿（つぶやき・写真投稿）
 export interface Post {
@@ -311,31 +341,31 @@ export interface Post {
   content: string;
   post_type: PostType;
   visibility: PostVisibility;
-  
+
   // 画像関連
   image_urls?: string[];
   image_count?: number;
-  
+
   // 撮影会関連投稿の場合
   photo_session_id?: string;
-  
+
   // リポスト関連
   original_post_id?: string;
   repost_comment?: string;
-  
+
   // 統計
   likes_count: number;
   comments_count: number;
   reposts_count: number;
   views_count: number;
-  
+
   // ハッシュタグ・メンション
   hashtags?: string[];
   mentions?: string[];
-  
+
   // 位置情報
   location?: string;
-  
+
   is_pinned: boolean;
   is_edited: boolean;
   edited_at?: string;
@@ -501,7 +531,12 @@ export interface PostSearchFilters {
 
 // フィード設定
 export interface FeedType {
-  type: 'timeline' | 'trending' | 'following_activity' | 'hashtag' | 'user_posts';
+  type:
+    | 'timeline'
+    | 'trending'
+    | 'following_activity'
+    | 'hashtag'
+    | 'user_posts';
   hashtag?: string; // ハッシュタグフィードの場合
   user_id?: string; // ユーザーの投稿フィードの場合
 }
@@ -510,7 +545,14 @@ export interface FeedType {
 export interface PostNotification {
   id: string;
   user_id: string;
-  type: 'post_like' | 'post_comment' | 'post_repost' | 'comment_like' | 'comment_reply' | 'mention' | 'hashtag_trending';
+  type:
+    | 'post_like'
+    | 'post_comment'
+    | 'post_repost'
+    | 'comment_like'
+    | 'comment_reply'
+    | 'mention'
+    | 'hashtag_trending';
   post_id?: string;
   comment_id?: string;
   from_user_id: string;

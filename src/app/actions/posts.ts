@@ -6,11 +6,21 @@ import {
   CreatePostData,
   PostWithUser,
   PostSearchFilters,
-  PostStats,
-  TrendingTopic,
   TimelinePost,
   CommentWithUser,
+  TrendingTopic,
 } from '@/types/social';
+
+// PostStats型を追加定義
+interface PostStats {
+  total_posts: number;
+  total_likes: number;
+  total_comments: number;
+  total_reposts: number;
+  average_engagement: number;
+  top_hashtags: { hashtag: string; count: number }[];
+  most_liked_post?: PostWithUser;
+}
 
 // 投稿を作成
 export async function createPost(
@@ -371,7 +381,7 @@ export async function getTimelinePosts(
 
     const offset = (page - 1) * limit;
 
-    // 全てのパブリック投稿を取得（簡素化版）
+    // シンプルな投稿情報を取得（まずはbasic queryでテスト）
     const { data: posts, error } = await supabase
       .from('sns_posts')
       .select('*')
@@ -380,15 +390,21 @@ export async function getTimelinePosts(
       .range(offset, offset + limit - 1);
 
     if (error) {
+      console.error('タイムライン取得エラー:', error);
       return {
         success: false,
         message: `タイムラインの取得に失敗しました: ${error.message}`,
       };
     }
 
+    console.log('取得された投稿数:', posts?.length || 0);
+
+    if (!posts || posts.length === 0) {
+      return { success: true, data: [] };
+    }
+
     // ユーザー情報を別途取得
     const userIds = [...new Set(posts.map(post => post.user_id))];
-
     const { data: profiles } = await supabase
       .from('profiles')
       .select('id, display_name, avatar_url, user_type, is_verified')
@@ -398,21 +414,103 @@ export async function getTimelinePosts(
       profiles?.map(profile => [profile.id, profile]) || []
     );
 
-    const timelinePosts: TimelinePost[] = posts.map(post => ({
-      ...post,
-      user: profilesMap.get(post.user_id) || {
-        id: post.user_id,
-        display_name: 'Unknown User',
-        avatar_url: null,
-        user_type: 'model' as const,
-        is_verified: false,
-      },
-      is_liked_by_current_user: false, // 簡素化
-      is_reposted_by_current_user: false,
-      original_post: undefined, // 簡素化
-      photo_session: undefined, // 簡素化
-    }));
+    // リポストの元投稿情報を取得
+    const originalPostIds = posts
+      .filter(post => post.post_type === 'repost' && post.original_post_id)
+      .map(post => post.original_post_id)
+      .filter(Boolean);
 
+    const originalPostsMap = new Map();
+    if (originalPostIds.length > 0) {
+      const { data: originalPosts } = await supabase
+        .from('sns_posts')
+        .select('*')
+        .in('id', originalPostIds);
+
+      if (originalPosts) {
+        // 元投稿のユーザー情報も取得
+        const originalUserIds = [
+          ...new Set(originalPosts.map(post => post.user_id)),
+        ];
+        const { data: originalProfiles } = await supabase
+          .from('profiles')
+          .select('id, display_name, avatar_url, user_type, is_verified')
+          .in('id', originalUserIds);
+
+        const originalProfilesMap = new Map(
+          originalProfiles?.map(profile => [profile.id, profile]) || []
+        );
+
+        originalPosts.forEach(post => {
+          originalPostsMap.set(post.id, {
+            ...post,
+            user: originalProfilesMap.get(post.user_id) || {
+              id: post.user_id,
+              display_name: 'Unknown User',
+              avatar_url: null,
+              user_type: 'model' as const,
+              is_verified: false,
+            },
+          });
+        });
+      }
+    }
+
+    // 投稿IDを取得して、いいね状態とリポスト状態を確認
+    const postIds = posts.map(post => post.id);
+
+    // 現在のユーザーがいいねした投稿を取得
+    const { data: userLikes } = await supabase
+      .from('sns_post_likes')
+      .select('post_id')
+      .eq('user_id', user.id)
+      .in('post_id', postIds);
+
+    const likedPostIds = new Set(userLikes?.map(like => like.post_id) || []);
+
+    // 現在のユーザーがリポストした投稿を取得
+    const { data: userReposts } = await supabase
+      .from('sns_posts')
+      .select('original_post_id')
+      .eq('user_id', user.id)
+      .eq('post_type', 'repost')
+      .in('original_post_id', postIds.filter(Boolean));
+
+    const repostedPostIds = new Set(
+      userReposts?.map(repost => repost.original_post_id) || []
+    );
+
+    const timelinePosts: TimelinePost[] = posts.map(post => {
+      const displayPost =
+        post.post_type === 'repost'
+          ? originalPostsMap.get(post.original_post_id) || post
+          : post;
+
+      return {
+        ...post,
+        user: profilesMap.get(post.user_id) || {
+          id: post.user_id,
+          display_name: 'Unknown User',
+          avatar_url: null,
+          user_type: 'model' as const,
+          is_verified: false,
+        },
+        is_liked_by_current_user: displayPost
+          ? likedPostIds.has(displayPost.id)
+          : false,
+        is_reposted_by_current_user: displayPost
+          ? repostedPostIds.has(displayPost.id)
+          : false,
+        original_post:
+          post.post_type === 'repost' && post.original_post_id
+            ? originalPostsMap.get(post.original_post_id) || undefined
+            : undefined,
+        photo_session: undefined, // 一時的に簡略化
+        recent_likes: [],
+      };
+    });
+
+    console.log('処理された投稿数:', timelinePosts.length);
     return { success: true, data: timelinePosts };
   } catch (error) {
     console.error('タイムライン取得エラー:', error);
