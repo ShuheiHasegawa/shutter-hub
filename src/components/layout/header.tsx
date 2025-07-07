@@ -35,10 +35,10 @@ import { useAuth } from '@/hooks/useAuth';
 
 export function Header() {
   const t = useTranslations('navigation');
-  const { user, signOut } = useAuth();
+  const { user, logout } = useAuth();
 
   const handleSignOut = async () => {
-    await signOut();
+    await logout();
   };
 
   return (

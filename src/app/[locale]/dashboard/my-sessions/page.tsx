@@ -2,39 +2,48 @@
 
 import { PhotoSessionList } from '@/components/photo-sessions/PhotoSessionList';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
-import { useRequireAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/useAuth';
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 export default function MySessionsPage() {
+  const { user, loading } = useAuth();
+  const router = useRouter();
   const t = useTranslations('dashboard');
-  const { user, loading } = useRequireAuth();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/ja/auth/signin');
+    }
+  }, [user, loading, router]);
 
   if (loading) {
     return (
-      <DashboardLayout>
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">{t('loading')}</p>
-          </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p>読み込み中...</p>
         </div>
-      </DashboardLayout>
+      </div>
     );
+  }
+
+  if (!user) {
+    return null;
   }
 
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">{t('mySessions.title')}</h1>
-          <p className="text-muted-foreground">{t('mySessions.description')}</p>
+        <div>
+          <h1 className="text-3xl font-bold">{t('mySessions')}</h1>
+          <p className="text-muted-foreground mt-1">
+            あなたが参加・主催する撮影会の一覧
+          </p>
         </div>
 
-        <PhotoSessionList
-          organizerId={user?.id}
-          showCreateButton={true}
-          title={t('mySessions.title')}
-        />
+        <PhotoSessionList organizerId={user.id} />
       </div>
     </DashboardLayout>
   );

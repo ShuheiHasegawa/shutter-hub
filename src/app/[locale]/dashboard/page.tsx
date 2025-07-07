@@ -38,7 +38,7 @@ export default function DashboardPage() {
       if (error) {
         console.error('プロフィール取得エラー:', error);
         // プロフィールが存在しない場合は設定ページにリダイレクト
-        if (error.code === 'PGRST116') {
+        if (error.code === 'PGRST116' || error.code === 'PROFILE_NOT_FOUND') {
           router.push(`/${locale}/auth/setup-profile`);
           return;
         }

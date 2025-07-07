@@ -176,18 +176,18 @@ CREATE TRIGGER follows_stats_trigger
   FOR EACH ROW EXECUTE FUNCTION trigger_update_follow_stats();
 
 -- ユーザー設定の初期化関数
-CREATE OR REPLACE FUNCTION initialize_user_preferences(user_id UUID)
+CREATE OR REPLACE FUNCTION initialize_user_preferences(target_user_id UUID)
 RETURNS VOID
 LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 BEGIN
   INSERT INTO user_preferences (user_id)
-  VALUES (user_id)
+  VALUES (target_user_id)
   ON CONFLICT (user_id) DO NOTHING;
   
   INSERT INTO user_follow_stats (user_id)
-  VALUES (user_id)
+  VALUES (target_user_id)
   ON CONFLICT (user_id) DO NOTHING;
 END;
 $$;

@@ -7,6 +7,11 @@ import { NextRequest } from 'next/server';
 const intlMiddleware = createIntlMiddleware(routing);
 
 export async function middleware(request: NextRequest) {
+  // Skip internationalization for API routes
+  if (request.nextUrl.pathname.startsWith('/api/')) {
+    return await updateSession(request);
+  }
+
   // Handle internationalization first
   const intlResponse = intlMiddleware(request);
 
@@ -20,7 +25,7 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // Match only internationalized pathnames and auth callback
+  // Match only internationalized pathnames and auth callback, exclude API routes
   matcher: [
     // Enable a redirect to a matching locale at the root
     '/',
@@ -31,7 +36,8 @@ export const config = {
 
     // Enable redirects that add missing locales
     // (e.g. `/pathnames` -> `/en/pathnames`)
-    '/((?!_next|_vercel|.*\\..*).*)',
+    // Exclude API routes, _next, _vercel, and files with extensions
+    '/((?!api|_next|_vercel|.*\\..*).*)',
 
     // Auth callback
     '/auth/callback',

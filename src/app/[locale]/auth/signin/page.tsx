@@ -1,4 +1,5 @@
 import { OAuthButtons } from '@/components/auth/OAuthButtons';
+import { EmailPasswordForm } from '@/components/auth/EmailPasswordForm';
 import Link from 'next/link';
 
 export default async function SignInPage({
@@ -25,6 +26,20 @@ export default async function SignInPage({
                 アカウントにサインイン
               </h3>
 
+              {/* メール＆パスワード認証フォーム */}
+              <EmailPasswordForm />
+
+              {/* 区切り線 */}
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-gray-300" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-white px-2 text-gray-500">または</span>
+                </div>
+              </div>
+
+              {/* OAuth認証ボタン */}
               <OAuthButtons />
             </div>
 

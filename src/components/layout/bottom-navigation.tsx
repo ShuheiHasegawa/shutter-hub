@@ -21,32 +21,38 @@ export function BottomNavigation() {
     {
       icon: Home,
       label: t('home'),
-      href: '/' as const,
+      href: '/',
+      key: 'home',
     },
     {
       icon: Search,
       label: t('search'),
-      href: '/search' as const,
+      href: '/search',
+      key: 'search',
     },
     {
       icon: Hash,
       label: 'Timeline',
-      href: '/photo-sessions' as const,
+      href: '/photo-sessions',
+      key: 'timeline',
     },
     {
       icon: MessageCircle,
       label: 'Messages',
-      href: '/profile' as const,
+      href: '/messages',
+      key: 'messages',
     },
     {
       icon: Calendar,
       label: t('bookings'),
-      href: '/bookings' as const,
+      href: '/bookings',
+      key: 'bookings',
     },
     {
       icon: User,
       label: t('profile'),
-      href: '/profile' as const,
+      href: '/profile',
+      key: 'profile',
     },
   ];
 
@@ -59,8 +65,9 @@ export function BottomNavigation() {
 
           return (
             <Link
-              key={item.href}
-              href={item.href}
+              key={item.key}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              href={item.href as any}
               className={cn(
                 'flex flex-col items-center justify-center space-y-1 text-xs transition-colors',
                 isActive

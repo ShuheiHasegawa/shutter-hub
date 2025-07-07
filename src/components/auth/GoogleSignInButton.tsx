@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useState } from 'react';
 import { useParams } from 'next/navigation';
 
-type Provider = 'google' | 'twitter' | 'discord';
+type Provider = 'google' | 'twitter';
 
 interface OAuthButtonProps {
   provider: Provider;

@@ -1,7 +1,8 @@
 'use client';
 
+import { useAuth } from '@/hooks/useAuth';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { useRequireAuth } from '@/hooks/useAuth';
 import { createClient } from '@/lib/supabase/client';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
@@ -31,7 +32,8 @@ interface UserStats {
 
 export default function ProfilePage() {
   const t = useTranslations('pages.profile');
-  const { user, loading: authLoading } = useRequireAuth();
+  const { user, loading } = useAuth();
+  const router = useRouter();
   const [profile, setProfile] = useState<Profile | null>(null);
   // const [ratingStats, setRatingStats] = useState<unknown>(null);
   const [userStats, setUserStats] = useState<UserStats>({
@@ -40,13 +42,17 @@ export default function ProfilePage() {
     receivedReviews: 0,
     sessionReviews: 0,
   });
-  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/ja/auth/signin');
+    }
+  }, [user, loading, router]);
 
   useEffect(() => {
     if (!user) return;
 
     const loadProfileData = async () => {
-      setLoading(true);
       try {
         const supabase = createClient();
 
@@ -55,10 +61,18 @@ export default function ProfilePage() {
           .from('profiles')
           .select('*')
           .eq('id', user.id)
-          .single();
+          .maybeSingle();
 
         if (profileError) {
           console.error('プロフィール取得エラー:', profileError);
+          return;
+        }
+
+        if (!profileData) {
+          console.log(
+            'プロフィールが見つかりません。設定ページにリダイレクトします。'
+          );
+          router.push('/ja/auth/setup-profile');
           return;
         }
 
@@ -101,7 +115,10 @@ export default function ProfilePage() {
           // 撮影会レビューの数（主催者として）
           supabase
             .from('photo_session_reviews')
-            .select('photo_sessions!inner(*)', { count: 'exact', head: true })
+            .select(
+              'photo_sessions!photo_session_reviews_photo_session_id_fkey(*)',
+              { count: 'exact', head: true }
+            )
             .eq('photo_sessions.organizer_id', user.id)
             .eq('status', 'published'),
         ]);
@@ -114,39 +131,25 @@ export default function ProfilePage() {
         });
       } catch (error) {
         console.error('プロフィールデータ取得エラー:', error);
-      } finally {
-        setLoading(false);
       }
     };
 
     loadProfileData();
   }, [user]);
 
-  if (authLoading || loading) {
+  if (loading) {
     return (
-      <DashboardLayout>
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">プロフィールを読み込み中...</p>
-          </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p>読み込み中...</p>
         </div>
-      </DashboardLayout>
+      </div>
     );
   }
 
-  if (!profile) {
-    return (
-      <DashboardLayout>
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <p className="text-muted-foreground">
-              プロフィールが見つかりません
-            </p>
-          </div>
-        </div>
-      </DashboardLayout>
-    );
+  if (!user) {
+    return null;
   }
 
   return (
@@ -162,7 +165,7 @@ export default function ProfilePage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* プロフィール情報 */}
           <div className="lg:col-span-1 space-y-6">
-            <UserProfileCard profile={profile} />
+            {profile && <UserProfileCard profile={profile} />}
 
             {/* 活動統計 */}
             <Card>

@@ -171,9 +171,15 @@ export default function UserProfilePage() {
           `
           )
           .eq('id', userId)
-          .single();
+          .maybeSingle();
 
-        if (error || !profile) {
+        if (error) {
+          console.error('プロフィール取得エラー:', error);
+          toast.error('プロフィールの読み込みに失敗しました');
+          return;
+        }
+
+        if (!profile) {
           toast.error('プロフィールが見つかりません');
           return;
         }

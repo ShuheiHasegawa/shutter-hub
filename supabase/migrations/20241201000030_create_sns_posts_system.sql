@@ -272,14 +272,14 @@ CREATE TRIGGER hashtag_usage_trigger
   FOR EACH ROW EXECUTE FUNCTION update_hashtag_usage();
 
 -- タイムライン設定初期化関数
-CREATE OR REPLACE FUNCTION initialize_timeline_preferences(user_id UUID)
+CREATE OR REPLACE FUNCTION initialize_timeline_preferences(target_user_id UUID)
 RETURNS VOID
 LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 BEGIN
   INSERT INTO timeline_preferences (user_id)
-  VALUES (user_id)
+  VALUES (target_user_id)
   ON CONFLICT (user_id) DO NOTHING;
 END;
 $$;

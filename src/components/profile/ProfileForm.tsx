@@ -26,7 +26,7 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { createProfile, updateProfile } from '@/lib/auth/profile';
+import { updateProfile } from '@/lib/auth/profile';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
@@ -113,7 +113,38 @@ export function ProfileForm({
       if (isEditing) {
         result = await updateProfile(user.id, data);
       } else {
-        result = await createProfile(user, data);
+        console.log('サーバーサイドAPIでプロフィールを作成します:', data);
+
+        const response = await fetch('/api/profile/create', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userId: user.id,
+            profileData: {
+              email: user.email,
+              display_name: data.display_name,
+              user_type: data.user_type,
+              bio: data.bio,
+              location: data.location,
+              website: data.website,
+              instagram_handle: data.instagram_handle,
+              twitter_handle: data.twitter_handle,
+              phone: data.phone,
+            },
+          }),
+        });
+
+        const apiResult = await response.json();
+
+        if (!response.ok || !apiResult.success) {
+          console.error('サーバーサイドAPI エラー:', apiResult);
+          result = { error: apiResult.error || 'API call failed' };
+        } else {
+          console.log('サーバーサイドAPI 成功:', apiResult);
+          result = { data: apiResult.data, error: null };
+        }
       }
 
       if (result.error) {
