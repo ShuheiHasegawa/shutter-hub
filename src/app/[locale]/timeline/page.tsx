@@ -34,9 +34,9 @@ import {
   Plus,
   Hash,
   Users,
-  Globe,
   Star,
   Calendar,
+  Edit3,
 } from 'lucide-react';
 import {
   getTimelinePosts,
@@ -173,7 +173,8 @@ export default function TimelinePage() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-end">
+        {/* デスクトップ用投稿作成ボタン */}
+        <div className="hidden md:flex items-center justify-end">
           <Dialog open={isCreatePostOpen} onOpenChange={setIsCreatePostOpen}>
             <DialogTrigger asChild>
               <Button>
@@ -182,6 +183,31 @@ export default function TimelinePage() {
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>新しい投稿</DialogTitle>
+              </DialogHeader>
+              <CreatePostForm
+                onSuccess={() => {
+                  setIsCreatePostOpen(false);
+                  handleRefresh();
+                }}
+              />
+            </DialogContent>
+          </Dialog>
+        </div>
+
+        {/* モバイル用フローティング投稿作成ボタン */}
+        <div className="md:hidden fixed bottom-20 right-4 z-50">
+          <Dialog open={isCreatePostOpen} onOpenChange={setIsCreatePostOpen}>
+            <DialogTrigger asChild>
+              <Button
+                size="lg"
+                className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 bg-primary hover:bg-primary/90"
+              >
+                <Edit3 className="h-6 w-6" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-[95vw] max-h-[95vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>新しい投稿</DialogTitle>
               </DialogHeader>
@@ -205,28 +231,28 @@ export default function TimelinePage() {
                 handleTabChange(value as 'timeline' | 'trending' | 'search')
               }
             >
-              <div className="flex items-center justify-between">
-                <TabsList>
+              <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
+                <TabsList className="w-full md:w-auto">
                   <TabsTrigger
                     value="timeline"
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 flex-1 md:flex-initial"
                   >
                     <Users className="h-4 w-4" />
-                    タイムライン
+                    <span className="hidden sm:inline">タイムライン</span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="trending"
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 flex-1 md:flex-initial"
                   >
                     <TrendingUp className="h-4 w-4" />
-                    トレンド
+                    <span className="hidden sm:inline">トレンド</span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="search"
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 flex-1 md:flex-initial"
                   >
                     <Search className="h-4 w-4" />
-                    検索
+                    <span className="hidden sm:inline">検索</span>
                   </TabsTrigger>
                 </TabsList>
 
@@ -237,7 +263,7 @@ export default function TimelinePage() {
                       value={searchQuery}
                       onChange={e => setSearchQuery(e.target.value)}
                       onKeyPress={e => e.key === 'Enter' && handleSearch()}
-                      className="w-64"
+                      className="w-full md:w-64"
                     />
                     <Button onClick={handleSearch} size="sm">
                       <Search className="h-4 w-4" />
@@ -247,8 +273,8 @@ export default function TimelinePage() {
               </div>
 
               <TabsContent value="timeline" className="space-y-4">
-                {/* 投稿作成フォーム（コンパクト版） */}
-                <Card>
+                {/* 投稿作成フォーム（コンパクト版） - デスクトップのみ */}
+                <Card className="hidden md:block">
                   <CardContent className="p-4">
                     <Button
                       variant="outline"
@@ -261,53 +287,51 @@ export default function TimelinePage() {
                 </Card>
 
                 {/* 投稿リスト */}
-                {isLoading && posts.length === 0 ? (
-                  <div className="text-center py-12">
-                    <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-                    <p className="text-muted-foreground">読み込み中...</p>
-                  </div>
-                ) : posts.length === 0 ? (
-                  <div className="text-center py-12">
-                    <Globe className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                    <h3 className="text-lg font-semibold mb-2">
-                      投稿がありません
-                    </h3>
-                    <p className="text-muted-foreground mb-4">
-                      まだフォローしているユーザーの投稿がないか、投稿がありません
-                    </p>
-                    <Button onClick={() => setIsCreatePostOpen(true)}>
-                      最初の投稿を作成
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {posts.map(post => (
+                <div className="space-y-4 sm:space-y-6">
+                  {isLoading ? (
+                    <div className="flex justify-center py-8">
+                      <Loader2 className="h-6 w-6 animate-spin" />
+                    </div>
+                  ) : posts.length === 0 ? (
+                    <Card>
+                      <CardContent className="py-8 text-center">
+                        <p className="text-muted-foreground">
+                          まだ投稿がありません
+                        </p>
+                        <p className="text-sm text-muted-foreground mt-2">
+                          フォローしているユーザーの投稿がここに表示されます
+                        </p>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    posts.map(post => (
                       <PostCard
                         key={post.id}
                         post={post}
                         onUpdate={handleRefresh}
+                        className="mx-2 sm:mx-0"
                       />
-                    ))}
+                    ))
+                  )}
+                </div>
 
-                    {/* さらに読み込みボタン */}
-                    {hasNextPage && (
-                      <div className="text-center">
-                        <Button
-                          variant="outline"
-                          onClick={handleLoadMore}
-                          disabled={isLoading}
-                        >
-                          {isLoading ? (
-                            <>
-                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                              読み込み中...
-                            </>
-                          ) : (
-                            'さらに読み込む'
-                          )}
-                        </Button>
-                      </div>
-                    )}
+                {/* さらに読み込みボタン */}
+                {hasNextPage && (
+                  <div className="text-center">
+                    <Button
+                      variant="outline"
+                      onClick={handleLoadMore}
+                      disabled={isLoading}
+                    >
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          読み込み中...
+                        </>
+                      ) : (
+                        'さらに読み込む'
+                      )}
+                    </Button>
                   </div>
                 )}
               </TabsContent>
@@ -445,8 +469,8 @@ export default function TimelinePage() {
             </Tabs>
           </div>
 
-          {/* サイドバー */}
-          <div className="space-y-6">
+          {/* サイドバー - デスクトップのみ */}
+          <div className="hidden lg:block space-y-6">
             {/* トレンドハッシュタグ */}
             <Card>
               <CardHeader>

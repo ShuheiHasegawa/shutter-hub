@@ -194,11 +194,16 @@ export function PostCard({
       userType === 'photographer' ? 'フォトグラファー' : 'モデル';
 
     return (
-      <div className="flex items-center gap-1">
-        <Badge variant={badgeVariant} className="text-xs">
-          {badgeText}
+      <div className="flex items-center gap-1 flex-shrink-0">
+        <Badge variant={badgeVariant} className="text-xs px-2 py-0.5">
+          <span className="hidden sm:inline">{badgeText}</span>
+          <span className="sm:hidden">
+            {userType === 'photographer' ? 'カメラマン' : 'モデル'}
+          </span>
         </Badge>
-        {isVerified && <Verified className="h-4 w-4 text-blue-500" />}
+        {isVerified && (
+          <Verified className="h-3 w-3 sm:h-4 sm:w-4 text-blue-500 flex-shrink-0" />
+        )}
       </div>
     );
   };
@@ -231,38 +236,40 @@ export function PostCard({
       )}
 
       <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-start gap-3 min-w-0 flex-1">
             <Link href={`/profile/${displayPost.user.id}`}>
-              <Avatar className="h-12 w-12 cursor-pointer hover:opacity-80 transition-opacity">
+              <Avatar className="h-10 w-10 sm:h-12 sm:w-12 cursor-pointer hover:opacity-80 transition-opacity flex-shrink-0">
                 <AvatarImage src={displayPost.user.avatar_url || undefined} />
                 <AvatarFallback>
                   {displayPost.user.display_name?.[0] || 'U'}
                 </AvatarFallback>
               </Avatar>
             </Link>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-start gap-2 mb-1">
                 <Link href={`/profile/${displayPost.user.id}`}>
-                  <h3 className="font-semibold truncate hover:text-primary transition-colors cursor-pointer">
+                  <h3 className="font-semibold text-sm sm:text-base truncate hover:text-primary transition-colors cursor-pointer">
                     {displayPost.user.display_name || 'Unknown User'}
                   </h3>
                 </Link>
+              </div>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
                 {renderUserBadge(
                   displayPost.user.user_type,
                   displayPost.user.is_verified
                 )}
-              </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <span>
-                  {formatDistanceToNow(new Date(displayPost.created_at), {
-                    addSuffix: true,
-                    locale: ja,
-                  })}
-                </span>
-                {displayPost.is_edited && (
-                  <span className="text-xs">(編集済み)</span>
-                )}
+                <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
+                  <span>
+                    {formatDistanceToNow(new Date(displayPost.created_at), {
+                      addSuffix: true,
+                      locale: ja,
+                    })}
+                  </span>
+                  {displayPost.is_edited && (
+                    <span className="text-xs">(編集済み)</span>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -271,7 +278,11 @@ export function PostCard({
           {showActions && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 flex-shrink-0"
+                >
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
