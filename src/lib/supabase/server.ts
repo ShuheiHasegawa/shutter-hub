@@ -13,7 +13,7 @@ export async function createClient() {
     );
   }
 
-  return createServerClient(supabaseUrl, supabaseAnonKey, {
+  const client = createServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
       getAll() {
         return cookieStore.getAll();
@@ -31,4 +31,6 @@ export async function createClient() {
       },
     },
   });
+
+  return client;
 }

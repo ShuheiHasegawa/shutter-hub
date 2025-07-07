@@ -81,7 +81,10 @@ export function UserReviewList({ userId }: UserReviewListProps) {
     try {
       // ユーザーレビューを取得
       const userReviewsResult = await getUserReviews(userId);
-      if (userReviewsResult.data) {
+
+      if (userReviewsResult.error) {
+        console.error('ユーザーレビュー取得エラー:', userReviewsResult.error);
+      } else if (userReviewsResult.data) {
         setUserReviews(userReviewsResult.data);
       }
 

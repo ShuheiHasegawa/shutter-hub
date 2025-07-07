@@ -460,13 +460,16 @@ export async function getUserReviews(userId: string) {
 
     if (error) {
       console.error('ユーザーレビュー取得エラー:', error);
-      return { error: 'Failed to fetch user reviews' };
+      return { data: null, error: error.message };
     }
 
-    return { data: reviews };
+    return { data: reviews || [], error: null };
   } catch (error) {
-    console.error('予期しないエラー:', error);
-    return { error: 'Unexpected error occurred' };
+    console.error('getUserReviews実行エラー:', error);
+    return {
+      data: null,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
   }
 }
 
