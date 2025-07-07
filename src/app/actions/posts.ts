@@ -754,3 +754,180 @@ export async function deletePost(
     return { success: false, message: '投稿の削除に失敗しました' };
   }
 }
+
+// トレンド投稿を取得
+export async function getTrendingPosts(
+  period: '24h' | '7d' | '30d' = '24h',
+  page = 1,
+  limit = 20
+): Promise<{ success: boolean; data?: TimelinePost[]; message?: string }> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return { success: false, message: 'ログインが必要です' };
+    }
+
+    const offset = (page - 1) * limit;
+
+    // 期間を計算
+    const now = new Date();
+    const dateFrom = (() => {
+      const date = new Date();
+      switch (period) {
+        case '24h':
+          date.setDate(now.getDate() - 1);
+          return date;
+        case '7d':
+          date.setDate(now.getDate() - 7);
+          return date;
+        case '30d':
+          date.setDate(now.getDate() - 30);
+          return date;
+        default:
+          date.setDate(now.getDate() - 1);
+          return date;
+      }
+    })();
+
+    // エンゲージメント（いいね+コメント数）の高い投稿を取得
+    const { data: posts, error } = await supabase
+      .from('sns_posts')
+      .select('*')
+      .eq('visibility', 'public')
+      .gte('created_at', dateFrom.toISOString())
+      .order('likes_count', { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    if (error) {
+      console.error('トレンド投稿取得エラー:', error);
+      return {
+        success: false,
+        message: `トレンド投稿の取得に失敗しました: ${error.message}`,
+      };
+    }
+
+    console.log(`取得されたトレンド投稿数(${period}):`, posts?.length || 0);
+
+    if (!posts || posts.length === 0) {
+      return { success: true, data: [] };
+    }
+
+    // ユーザー情報を別途取得
+    const userIds = [...new Set(posts.map(post => post.user_id))];
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, display_name, avatar_url, user_type, is_verified')
+      .in('id', userIds);
+
+    const profilesMap = new Map(
+      profiles?.map(profile => [profile.id, profile]) || []
+    );
+
+    // リポストの元投稿情報を取得
+    const originalPostIds = posts
+      .filter(post => post.post_type === 'repost' && post.original_post_id)
+      .map(post => post.original_post_id)
+      .filter(Boolean);
+
+    const originalPostsMap = new Map();
+    if (originalPostIds.length > 0) {
+      const { data: originalPosts } = await supabase
+        .from('sns_posts')
+        .select('*')
+        .in('id', originalPostIds);
+
+      if (originalPosts) {
+        // 元投稿のユーザー情報も取得
+        const originalUserIds = [
+          ...new Set(originalPosts.map(post => post.user_id)),
+        ];
+        const { data: originalProfiles } = await supabase
+          .from('profiles')
+          .select('id, display_name, avatar_url, user_type, is_verified')
+          .in('id', originalUserIds);
+
+        const originalProfilesMap = new Map(
+          originalProfiles?.map(profile => [profile.id, profile]) || []
+        );
+
+        originalPosts.forEach(post => {
+          originalPostsMap.set(post.id, {
+            ...post,
+            user: originalProfilesMap.get(post.user_id) || {
+              id: post.user_id,
+              display_name: 'Unknown User',
+              avatar_url: null,
+              user_type: 'model' as const,
+              is_verified: false,
+            },
+          });
+        });
+      }
+    }
+
+    // 投稿IDを取得して、いいね状態とリポスト状態を確認
+    const postIds = posts.map(post => post.id);
+
+    // 現在のユーザーがいいねした投稿を取得
+    const { data: userLikes } = await supabase
+      .from('sns_post_likes')
+      .select('post_id')
+      .eq('user_id', user.id)
+      .in('post_id', postIds);
+
+    const likedPostIds = new Set(userLikes?.map(like => like.post_id) || []);
+
+    // 現在のユーザーがリポストした投稿を取得
+    const { data: userReposts } = await supabase
+      .from('sns_posts')
+      .select('original_post_id')
+      .eq('user_id', user.id)
+      .eq('post_type', 'repost')
+      .in('original_post_id', postIds.filter(Boolean));
+
+    const repostedPostIds = new Set(
+      userReposts?.map(repost => repost.original_post_id) || []
+    );
+
+    const trendingPosts: TimelinePost[] = posts.map(post => {
+      const displayPost =
+        post.post_type === 'repost'
+          ? originalPostsMap.get(post.original_post_id) || post
+          : post;
+
+      return {
+        ...post,
+        user: profilesMap.get(post.user_id) || {
+          id: post.user_id,
+          display_name: 'Unknown User',
+          avatar_url: null,
+          user_type: 'model' as const,
+          is_verified: false,
+        },
+        is_liked_by_current_user: displayPost
+          ? likedPostIds.has(displayPost.id)
+          : false,
+        is_reposted_by_current_user: displayPost
+          ? repostedPostIds.has(displayPost.id)
+          : false,
+        original_post:
+          post.post_type === 'repost' && post.original_post_id
+            ? originalPostsMap.get(post.original_post_id) || undefined
+            : undefined,
+        photo_session: undefined, // 一時的に簡略化
+        recent_likes: [],
+      };
+    });
+
+    console.log(`処理されたトレンド投稿数(${period}):`, trendingPosts.length);
+    return { success: true, data: trendingPosts };
+  } catch (error) {
+    console.error('トレンド投稿取得エラー:', error);
+    return { success: false, message: 'トレンド投稿の取得に失敗しました' };
+  }
+}

@@ -42,6 +42,7 @@ import {
   getTimelinePosts,
   searchPosts,
   getTrendingHashtags,
+  getTrendingPosts,
 } from '@/app/actions/posts';
 import { TimelinePost, TrendingTopic, PostSearchFilters } from '@/types/social';
 import { toast } from 'sonner';
@@ -50,6 +51,10 @@ export default function TimelinePage() {
   const { user } = useAuth();
   const [posts, setPosts] = useState<TimelinePost[]>([]);
   const [trendingHashtags, setTrendingHashtags] = useState<TrendingTopic[]>([]);
+  const [trendingPosts, setTrendingPosts] = useState<TimelinePost[]>([]);
+  const [trendingPeriod, setTrendingPeriod] = useState<'24h' | '7d' | '30d'>(
+    '24h'
+  );
   const [currentTab, setCurrentTab] = useState<
     'timeline' | 'trending' | 'search'
   >('timeline');
@@ -67,6 +72,13 @@ export default function TimelinePage() {
       loadTrendingHashtags();
     }
   }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // トレンド期間変更時にトレンド投稿を再読み込み
+  useEffect(() => {
+    if (user && currentTab === 'trending') {
+      loadTrendingPosts();
+    }
+  }, [trendingPeriod]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadInitialData = async () => {
     if (!user) return;
@@ -99,9 +111,21 @@ export default function TimelinePage() {
     }
   };
 
+  const loadTrendingPosts = async () => {
+    try {
+      const result = await getTrendingPosts(trendingPeriod, 1, 20);
+      if (result.success && result.data) {
+        setTrendingPosts(result.data);
+      }
+    } catch {
+      toast.error('トレンド投稿の読み込みに失敗しました');
+    }
+  };
+
   const handleRefresh = async () => {
     await loadInitialData();
     await loadTrendingHashtags();
+    await loadTrendingPosts();
     toast.success('タイムラインを更新しました');
   };
 
@@ -153,8 +177,7 @@ export default function TimelinePage() {
     if (tab === 'timeline') {
       await loadInitialData();
     } else if (tab === 'trending') {
-      // TODO: トレンド投稿の実装
-      await loadInitialData();
+      await loadTrendingPosts();
     }
   };
 
@@ -337,10 +360,75 @@ export default function TimelinePage() {
               </TabsContent>
 
               <TabsContent value="trending" className="space-y-4">
-                <div className="text-center py-12">
-                  <TrendingUp className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                  <h3 className="text-lg font-semibold mb-2">トレンド投稿</h3>
-                  <p className="text-muted-foreground">実装予定の機能です</p>
+                {/* トレンド期間選択 */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <TrendingUp className="h-5 w-5" />
+                      期間選択
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex gap-2">
+                      <Button
+                        variant={
+                          trendingPeriod === '24h' ? 'default' : 'outline'
+                        }
+                        onClick={() => setTrendingPeriod('24h')}
+                        size="sm"
+                      >
+                        24時間
+                      </Button>
+                      <Button
+                        variant={
+                          trendingPeriod === '7d' ? 'default' : 'outline'
+                        }
+                        onClick={() => setTrendingPeriod('7d')}
+                        size="sm"
+                      >
+                        7日間
+                      </Button>
+                      <Button
+                        variant={
+                          trendingPeriod === '30d' ? 'default' : 'outline'
+                        }
+                        onClick={() => setTrendingPeriod('30d')}
+                        size="sm"
+                      >
+                        30日間
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* トレンド投稿リスト */}
+                <div className="space-y-4 sm:space-y-6">
+                  {isLoading ? (
+                    <div className="flex justify-center py-8">
+                      <Loader2 className="h-6 w-6 animate-spin" />
+                    </div>
+                  ) : trendingPosts.length === 0 ? (
+                    <Card>
+                      <CardContent className="py-8 text-center">
+                        <TrendingUp className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                        <h3 className="text-lg font-semibold mb-2">
+                          トレンド投稿がありません
+                        </h3>
+                        <p className="text-muted-foreground">
+                          選択した期間にはトレンドになっている投稿がありません
+                        </p>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    trendingPosts.map(post => (
+                      <PostCard
+                        key={post.id}
+                        post={post}
+                        onUpdate={loadTrendingPosts}
+                        className="mx-2 sm:mx-0"
+                      />
+                    ))
+                  )}
                 </div>
               </TabsContent>
 
