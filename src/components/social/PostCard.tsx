@@ -34,7 +34,6 @@ import {
   Edit,
   Trash2,
   Flag,
-  ExternalLink,
   ChevronLeft,
   ChevronRight,
   Camera,
@@ -146,7 +145,6 @@ export function PostCard({
         await navigator.share({
           title: `${displayPost.user.display_name}さんの投稿`,
           text: displayPost.content,
-          url: `${window.location.origin}/posts/${displayPost.id}`,
         });
       } catch {
         // ユーザーがキャンセルした場合など
@@ -154,12 +152,10 @@ export function PostCard({
     } else {
       // フォールバック: クリップボードにコピー
       try {
-        await navigator.clipboard.writeText(
-          `${window.location.origin}/posts/${displayPost.id}`
-        );
-        toast.success('URLをコピーしました');
+        await navigator.clipboard.writeText(displayPost.content);
+        toast.success('投稿内容をコピーしました');
       } catch {
-        toast.error('URLのコピーに失敗しました');
+        toast.error('コピーに失敗しました');
       }
     }
   };
@@ -287,10 +283,6 @@ export function PostCard({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem>
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  投稿を開く
-                </DropdownMenuItem>
                 {isOwner ? (
                   <>
                     <DropdownMenuItem>

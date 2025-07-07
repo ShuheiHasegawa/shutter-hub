@@ -255,7 +255,6 @@ export async function commentOnPost(
       .single();
 
     revalidatePath('/timeline');
-    revalidatePath(`/posts/${postId}`);
 
     return {
       success: true,
@@ -650,7 +649,6 @@ export async function deletePost(
     }
 
     revalidatePath('/timeline');
-    revalidatePath('/posts');
 
     return { success: true };
   } catch (error) {
