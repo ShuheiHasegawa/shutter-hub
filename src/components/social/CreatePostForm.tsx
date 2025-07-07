@@ -85,6 +85,7 @@ export function CreatePostForm({
   const [newHashtag, setNewHashtag] = useState('');
   const [newMention, setNewMention] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [activeTab, setActiveTab] = useState('settings');
 
   if (!user) {
     return (
@@ -255,16 +256,25 @@ export function CreatePostForm({
 
       <CardContent className="space-y-4">
         {/* 投稿内容 */}
-        <Textarea
-          placeholder="今何をしていますか？"
-          value={content}
-          onChange={e => setContent(e.target.value)}
-          rows={4}
-          className="min-h-[100px] resize-none"
-        />
+        <div className="space-y-2">
+          <Textarea
+            placeholder="今何をしていますか？"
+            value={content}
+            onChange={e => setContent(e.target.value)}
+            rows={4}
+            className="min-h-[100px] resize-none"
+          />
+          <div className="flex justify-end">
+            <span
+              className={`text-sm ${content.length > 1800 ? 'text-red-500' : 'text-muted-foreground'}`}
+            >
+              {content.length}/2000文字
+            </span>
+          </div>
+        </div>
 
         {/* 投稿設定 */}
-        <Tabs value="settings" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="settings">設定</TabsTrigger>
             <TabsTrigger value="media">メディア</TabsTrigger>
@@ -273,6 +283,10 @@ export function CreatePostForm({
           </TabsList>
 
           <TabsContent value="settings" className="space-y-4 mt-4">
+            <div className="text-sm text-muted-foreground mb-3">
+              投稿の公開範囲と位置情報を設定できます
+            </div>
+
             {/* 公開範囲 */}
             <div className="space-y-2">
               <label className="text-sm font-medium">公開範囲</label>
@@ -326,6 +340,10 @@ export function CreatePostForm({
           </TabsContent>
 
           <TabsContent value="media" className="space-y-4 mt-4">
+            <div className="text-sm text-muted-foreground mb-3">
+              投稿に画像を添付できます（最大10枚）
+            </div>
+
             {/* 画像アップロード */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
@@ -381,6 +399,10 @@ export function CreatePostForm({
           </TabsContent>
 
           <TabsContent value="hashtags" className="space-y-4 mt-4">
+            <div className="text-sm text-muted-foreground mb-3">
+              投稿にハッシュタグを追加して、関連する投稿と繋がりやすくできます。投稿本文に「#」を付けても自動で追加されます。
+            </div>
+
             {/* ハッシュタグ */}
             <div className="space-y-2">
               <label className="text-sm font-medium flex items-center gap-2">
@@ -423,6 +445,10 @@ export function CreatePostForm({
           </TabsContent>
 
           <TabsContent value="mentions" className="space-y-4 mt-4">
+            <div className="text-sm text-muted-foreground mb-3">
+              他のユーザーをメンションして通知を送ることができます。投稿本文に「@」を付けても自動で追加されます。
+            </div>
+
             {/* メンション */}
             <div className="space-y-2">
               <label className="text-sm font-medium flex items-center gap-2">
@@ -466,10 +492,7 @@ export function CreatePostForm({
         </Tabs>
 
         {/* 投稿ボタン */}
-        <div className="flex justify-between items-center pt-4 border-t">
-          <div className="text-sm text-muted-foreground">
-            {content.length}/2000文字
-          </div>
+        <div className="flex justify-end pt-4 border-t">
           <Button
             onClick={handleSubmit}
             disabled={
