@@ -16,13 +16,6 @@ export default function MessagesPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">メッセージ</h1>
-          <p className="text-muted-foreground">
-            会話を管理し、新しい会話を開始します
-          </p>
-        </div>
-
         <div className="h-[calc(100vh-16rem)] border rounded-lg bg-card">
           <ConversationList />
         </div>

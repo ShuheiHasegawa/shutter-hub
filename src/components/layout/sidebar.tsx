@@ -16,7 +16,6 @@ import {
   BarChart3,
   Plus,
   List,
-  Clock,
   Menu,
   ChevronDown,
   ChevronRight,
@@ -92,19 +91,8 @@ export function Sidebar({ className }: SidebarProps) {
     },
     {
       title: t('bookings'),
+      href: '/bookings',
       icon: Calendar,
-      children: [
-        {
-          title: '予約一覧',
-          href: '/bookings',
-          icon: Calendar,
-        },
-        {
-          title: 'キャンセル待ち',
-          href: '/bookings/waitlist',
-          icon: Clock,
-        },
-      ],
     },
     {
       title: t('profile'),
@@ -297,19 +285,8 @@ export function MobileSidebarTrigger() {
     },
     {
       title: t('bookings'),
+      href: '/bookings',
       icon: Calendar,
-      children: [
-        {
-          title: '予約一覧',
-          href: '/bookings',
-          icon: Calendar,
-        },
-        {
-          title: 'キャンセル待ち',
-          href: '/bookings/waitlist',
-          icon: Clock,
-        },
-      ],
     },
     {
       title: t('profile'),

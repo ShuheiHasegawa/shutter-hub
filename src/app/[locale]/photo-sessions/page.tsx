@@ -108,15 +108,7 @@ export default function PhotoSessionsPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        {/* ヘッダー */}
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold">{t('list.title')}</h1>
-            <p className="text-muted-foreground">{t('list.description')}</p>
-          </div>
-        </div>
-
+      <div>
         {/* スマホ・タブレット用コンパクトフィルター（XL画面未満のみ） */}
         <div className="xl:hidden">
           <CompactFilterBar

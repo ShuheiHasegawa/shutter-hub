@@ -29,7 +29,7 @@
     "home": "ホーム",
     "dashboard": "ダッシュボード",
     "search": "検索",
-    "bookings": "予約",
+    "bookings": "予約一覧",
     "instant": "即座撮影",
     "profile": "プロフィール",
     "photoSessions": "撮影会",
@@ -309,7 +309,7 @@
     "form": {
       "createTitle": "撮影会作成",
       "editTitle": "撮影会編集",
-      "createDescription": "新しい撮影会を作成してください",
+      "createDescription": "新しい撮影会を企画・開催しましょう",
       "editDescription": "撮影会の情報を編集してください",
       "duplicateDescription": "既存の撮影会を元に新しい撮影会を作成します",
       "editPageTitle": "撮影会を編集",

@@ -23,7 +23,7 @@ const getPageTitle = (pathname: string): string => {
 
   const titleMap: Record<string, string> = {
     '/dashboard': 'ダッシュボード',
-    '/dashboard/my-sessions': 'マイ撮影会',
+    '/dashboard/my-sessions': '自分の撮影会',
     '/photo-sessions': '撮影会一覧',
     '/photo-sessions/create': '撮影会作成',
     '/bookings': '予約管理',

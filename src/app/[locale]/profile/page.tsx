@@ -4,7 +4,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { UserProfileCard } from '@/components/profile/UserProfileCard';
 // import { UserRatingStats } from '@/components/profile/UserRatingStats';
@@ -13,7 +12,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import {
-  User,
   Star,
   Calendar,
   Camera,
@@ -31,7 +29,6 @@ interface UserStats {
 }
 
 export default function ProfilePage() {
-  const t = useTranslations('pages.profile');
   const { user, loading } = useAuth();
   const router = useRouter();
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -155,13 +152,6 @@ export default function ProfilePage() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <User className="h-8 w-8" />
-            {t('title')}
-          </h1>
-        </div>
-
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* プロフィール情報 */}
           <div className="lg:col-span-1 space-y-6">
