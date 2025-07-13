@@ -36,7 +36,8 @@
     "test:e2e:mcp:booking": "MCP_ENABLED=true MCP_TEST_ENVIRONMENT=true playwright test tests/e2e/booking-systems.spec.ts",
     "test:e2e:mcp:escrow": "MCP_ENABLED=true MCP_TEST_ENVIRONMENT=true playwright test tests/e2e/escrow-payment.spec.ts",
     "test:e2e:mcp:report": "MCP_ENABLED=true playwright show-report",
-    "figma:export": "node scripts/figma-tokens-export.js"
+    "figma:export": "node scripts/figma-tokens-export.js",
+    "figma:palette": "node scripts/generate-color-palette-svg.js"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [

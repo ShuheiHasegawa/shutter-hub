@@ -29,6 +29,7 @@ import {
   respondToRequest,
   updateRequestStatus,
 } from '@/app/actions/instant-photo';
+import { createClient } from '@/lib/supabase/client';
 import { useGeolocation } from '@/hooks/useGeolocation';
 import { NotificationCenter } from '@/components/instant/NotificationCenter';
 import { useRouter } from 'next/navigation';
@@ -155,8 +156,27 @@ export function PhotographerInstantDashboard({
   };
 
   // 撮影完了後の配信ページ遷移
-  const handleProceedToDelivery = (bookingId: string) => {
-    router.push(`/instant/deliver/${bookingId}`);
+  const handleProceedToDelivery = async (requestId: string) => {
+    try {
+      const supabase = createClient();
+
+      // リクエストIDからbooking IDを取得
+      const { data: booking, error } = await supabase
+        .from('instant_bookings')
+        .select('id')
+        .eq('request_id', requestId)
+        .single();
+
+      if (error || !booking) {
+        setError('予約情報の取得に失敗しました');
+        return;
+      }
+
+      router.push(`/instant/deliver/${booking.id}`);
+    } catch (error) {
+      console.error('予約情報取得エラー:', error);
+      setError('予期しないエラーが発生しました');
+    }
   };
 
   // 撮影完了処理の改善
@@ -392,17 +412,32 @@ export function PhotographerInstantDashboard({
                     )}
 
                     <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-                      <Phone className="h-4 w-4" />
-                      <span>{request.guest_phone}</span>
-                      {request.guest_email && (
+                      {['matched', 'in_progress', 'completed'].includes(
+                        request.status
+                      ) && request.matched_photographer_id === userId ? (
+                        // マッチング成立後：連絡先を表示
                         <>
-                          <Mail className="h-4 w-4 ml-2" />
-                          <span>{request.guest_email}</span>
+                          <Phone className="h-4 w-4" />
+                          <span>{request.guest_phone}</span>
+                          {request.guest_email && (
+                            <>
+                              <Mail className="h-4 w-4 ml-2" />
+                              <span>{request.guest_email}</span>
+                            </>
+                          )}
+                        </>
+                      ) : (
+                        // マッチング前：プライバシー保護メッセージ
+                        <>
+                          <Phone className="h-4 w-4" />
+                          <span className="text-muted-foreground/60">
+                            連絡先は受注後に表示されます
+                          </span>
                         </>
                       )}
                     </div>
 
-                    <div className="flex gap-2">
+                    <div className="flex flex-col gap-2">
                       {request.status === 'pending' && (
                         <>
                           <Button
@@ -457,27 +492,35 @@ export function PhotographerInstantDashboard({
 
                       {request.status === 'completed' &&
                         request.matched_photographer_id === userId && (
-                          <div className="flex gap-2 w-full">
-                            <div className="flex-1 bg-success/10 border border-success/20 rounded-lg p-3">
-                              <div className="flex items-center gap-2 text-success">
-                                <CheckCircle className="h-4 w-4" />
-                                <span className="font-medium">撮影完了</span>
+                          <>
+                            {/* 1行目: 撮影完了メッセージ */}
+                            <div className="flex gap-2 w-full">
+                              <div className="flex-1 bg-success/10 border border-success/20 rounded-lg p-3">
+                                {/* 撮影完了メッセージ */}
+                                <div className="flex items-center gap-2 text-success">
+                                  <CheckCircle className="h-4 w-4" />
+                                  <span className="font-medium">撮影完了</span>
+                                </div>
+                                <p className="text-sm text-success/80 mt-1">
+                                  写真を配信して収益を受け取りましょう
+                                </p>
                               </div>
-                              <p className="text-sm text-success/80 mt-1">
-                                写真を配信して収益を受け取りましょう
-                              </p>
                             </div>
-                            <Button
-                              onClick={() =>
-                                handleProceedToDelivery(request.id)
-                              }
-                              className="bg-blue-600 hover:bg-blue-700"
-                            >
-                              <Upload className="h-4 w-4 mr-2" />
-                              写真配信
-                              <ArrowRight className="h-4 w-4 ml-2" />
-                            </Button>
-                          </div>
+
+                            {/* 2行目: 写真配信ボタン */}
+                            <div className="flex gap-2 w-full mt-4">
+                              <Button
+                                onClick={() =>
+                                  handleProceedToDelivery(request.id)
+                                }
+                                className="w-full"
+                              >
+                                <Upload className="h-4 w-4 mr-2" />
+                                写真配信
+                                <ArrowRight className="h-4 w-4 ml-2" />
+                              </Button>
+                            </div>
+                          </>
                         )}
                     </div>
                   </CardContent>

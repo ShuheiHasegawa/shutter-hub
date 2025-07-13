@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="600" viewBox="0 0 800 600" 
+     xmlns="http://www.w3.org/2000/svg">
+  
+  <!-- Background -->
+  <rect width="800" height="600" fill="#FFFFFF"/>
+  
+  <!-- Title -->
+  <text x="40" y="30" 
+        font-family="Inter, system-ui, sans-serif" 
+        font-size="24" font-weight="800"
+        fill="#1F2937">ShutterHub v2 Color Palette</text>
+
+    <text x="40" y="80" 
+          font-family="Inter, system-ui, sans-serif" 
+          font-size="18" font-weight="700"
+          fill="#1F2937">Brand Colors</text>
+
+    <!-- Primary Color Sample -->
+    <g>
+      <rect x="40" y="120" width="120" height="120" 
+            fill="#6F5091" stroke="#E5E7EB" stroke-width="1" rx="8"/>
+      <text x="100" y="172" 
+            font-family="Inter, system-ui, sans-serif" 
+            font-size="12" font-weight="600"
+            fill="#FFFFFF" text-anchor="middle">Primary</text>
+      <text x="100" y="188" 
+            font-family="Inter, system-ui, sans-serif" 
+            font-size="10" 
+            fill="#FFFFFF" text-anchor="middle">#6F5091</text>
+      <text x="100" y="204" 
+            font-family="Inter, system-ui, sans-serif" 
+            font-size="9" 
+            fill="#FFFFFF" text-anchor="middle" opacity="0.8">メインパープル</text>
+    </g>
+
+    <!-- Primary Light Color Sample -->
+    <g>
+      <rect x="180" y="120" width="120" height="120" 
+            fill="#8B6BB1" stroke="#E5E7EB" stroke-width="1" rx="8"/>
+      <text x="240" y="172" 
+            font-family="Inter, system-ui, sans-serif" 
+            font-size="12" font-weight="600"
+            fill="#FFFFFF" text-anchor="middle">Primary Light</text>
+      <text x="240" y="188" 
+            font-family="Inter, system-ui, sans-serif" 
+            font-size="10" 
+            fill="#FFFFFF" text-anchor="middle">#8B6BB1</text>
+      <text x="240" y="204" 
+            font-family="Inter, system-ui, sans-serif" 
+            font-size="9" 
+            fill="#FFFFFF" text-anchor="middle" opacity="0.8">ライトパープル</text>
+    </g>
+
+    <!-- Primary Dark Color Sample -->
+    <g>
+      <rect x="320" y="120" width="120" height="120" 
+            fill="#5A4073" stroke="#E5E7EB" stroke-width="1" rx="8"/>
+      <text x="380" y="172" 
+            font-family="Inter, system-ui, sans-serif" 
+            font-size="12" font-weight="600"
+            fill="#FFFFFF" text-anchor="middle">Primary Dark</text>
+      <text x="380" y="188" 
+            font-family="Inter, system-ui, sans-serif" 
+            font-size="10" 
+            fill="#FFFFFF" text-anchor="middle">#5A4073</text>
+      <text x="380" y="204" 
+            font-family="Inter, system-ui, sans-serif" 
+            font-size="9" 
+            fill="#FFFFFF" text-anchor="middle" opacity="0.8">ダークパープル</text>
+    </g>
+
+    <!-- Secondary Color Sample -->
+    <g>
+      <rect x="40" y="260" width="120" height="120" 
+            fill="#101820" stroke="#E5E7EB" stroke-width="1" rx="8"/>
+      <text x="100" y="312" 
+            font-family="Inter, system-ui, sans-serif" 
+            font-size="12" font-weight="600"
+            fill="#FFFFFF" text-anchor="middle">Secondary</text>
+      <text x="100" y="328" 
+            font-family="Inter, system-ui, sans-serif" 
+            font-size="10" 
+            fill="#FFFFFF" text-anchor="middle">#101820</text>
+      <text x="100" y="344" 
+            font-family="Inter, system-ui, sans-serif" 
+            font-size="9" 
+            fill="#FFFFFF" text-anchor="middle" opacity="0.8">ダークグレー</text>
+    </g>
+
+    <!-- Secondary Light Color Sample -->
+    <g>
+      <rect x="180" y="260" width="120" height="120" 
+            fill="#2A2A2A" stroke="#E5E7EB" stroke-width="1" rx="8"/>
+      <text x="240" y="312" 
+            font-family="Inter, system-ui, sans-serif" 
+            font-size="12" font-weight="600"
+            fill="#FFFFFF" text-anchor="middle">Secondary Light</text>
+      <text x="240" y="328" 
+            font-family="Inter, system-ui, sans-serif" 
+            font-size="10" 
+            fill="#FFFFFF" text-anchor="middle">#2A2A2A</text>
+      <text x="240" y="344" 
+            font-family="Inter, system-ui, sans-serif" 
+            font-size="9" 
+            fill="#FFFFFF" text-anchor="middle" opacity="0.8">ライトグレー</text>
+    </g>
+
+    <text x="40" y="320" 
+          font-family="Inter, system-ui, sans-serif" 
+          font-size="18" font-weight="700"
+          fill="#1F2937">Semantic Colors</text>
+
+    <!-- Success Color Sample -->
+    <g>
+      <rect x="40" y="360" width="120" height="120" 
+            fill="#21c45d" stroke="#E5E7EB" stroke-width="1" rx="8"/>
+      <text x="100" y="412" 
+            font-family="Inter, system-ui, sans-serif" 
+            font-size="12" font-weight="600"
+            fill="#000000" text-anchor="middle">Success</text>
+      <text x="100" y="428" 
+            font-family="Inter, system-ui, sans-serif" 
+            font-size="10" 
+            fill="#000000" text-anchor="middle">#21c45d</text>
+      <text x="100" y="444" 
+            font-family="Inter, system-ui, sans-serif" 
+            font-size="9" 
+            fill="#000000" text-anchor="middle" opacity="0.8">成功・空きあり</text>
+    </g>
+
+    <!-- Warning Color Sample -->
+    <g>
+      <rect x="180" y="360" width="120" height="120" 
+            fill="#fbbd23" stroke="#E5E7EB" stroke-width="1" rx="8"/>
+      <text x="240" y="412" 
+            font-family="Inter, system-ui, sans-serif" 
+            font-size="12" font-weight="600"
+            fill="#000000" text-anchor="middle">Warning</text>
+      <text x="240" y="428" 
+            font-family="Inter, system-ui, sans-serif" 
+            font-size="10" 
+            fill="#000000" text-anchor="middle">#fbbd23</text>
+      <text x="240" y="444" 
+            font-family="Inter, system-ui, sans-serif" 
+            font-size="9" 
+            fill="#000000" text-anchor="middle" opacity="0.8">注意・待機</text>
+    </g>
+
+    <!-- Info Color Sample -->
+    <g>
+      <rect x="320" y="360" width="120" height="120" 
+            fill="#3c83f6" stroke="#E5E7EB" stroke-width="1" rx="8"/>
+      <text x="380" y="412" 
+            font-family="Inter, system-ui, sans-serif" 
+            font-size="12" font-weight="600"
+            fill="#FFFFFF" text-anchor="middle">Info</text>
+      <text x="380" y="428" 
+            font-family="Inter, system-ui, sans-serif" 
+            font-size="10" 
+            fill="#FFFFFF" text-anchor="middle">#3c83f6</text>
+      <text x="380" y="444" 
+            font-family="Inter, system-ui, sans-serif" 
+            font-size="9" 
+            fill="#FFFFFF" text-anchor="middle" opacity="0.8">情報・リンク</text>
+    </g>
+
+    <!-- Error Color Sample -->
+    <g>
+      <rect x="460" y="360" width="120" height="120" 
+            fill="#ef4343" stroke="#E5E7EB" stroke-width="1" rx="8"/>
+      <text x="520" y="412" 
+            font-family="Inter, system-ui, sans-serif" 
+            font-size="12" font-weight="600"
+            fill="#FFFFFF" text-anchor="middle">Error</text>
+      <text x="520" y="428" 
+            font-family="Inter, system-ui, sans-serif" 
+            font-size="10" 
+            fill="#FFFFFF" text-anchor="middle">#ef4343</text>
+      <text x="520" y="444" 
+            font-family="Inter, system-ui, sans-serif" 
+            font-size="9" 
+            fill="#FFFFFF" text-anchor="middle" opacity="0.8">エラー・満席</text>
+    </g>
+
+    <text x="40" y="540" 
+          font-family="Inter, system-ui, sans-serif" 
+          font-size="18" font-weight="700"
+          fill="#1F2937">State Colors</text>
+
+    <!-- Available Color Sample -->
+    <g>
+      <rect x="40" y="580" width="120" height="120" 
+            fill="#21c45d" stroke="#E5E7EB" stroke-width="1" rx="8"/>
+      <text x="100" y="632" 
+            font-family="Inter, system-ui, sans-serif" 
+            font-size="12" font-weight="600"
+            fill="#000000" text-anchor="middle">Available</text>
+      <text x="100" y="648" 
+            font-family="Inter, system-ui, sans-serif" 
+            font-size="10" 
+            fill="#000000" text-anchor="middle">#21c45d</text>
+      <text x="100" y="664" 
+            font-family="Inter, system-ui, sans-serif" 
+            font-size="9" 
+            fill="#000000" text-anchor="middle" opacity="0.8">空きあり状態</text>
+    </g>
+
+    <!-- Booked Color Sample -->
+    <g>
+      <rect x="180" y="580" width="120" height="120" 
+            fill="#ef4343" stroke="#E5E7EB" stroke-width="1" rx="8"/>
+      <text x="240" y="632" 
+            font-family="Inter, system-ui, sans-serif" 
+            font-size="12" font-weight="600"
+            fill="#FFFFFF" text-anchor="middle">Booked</text>
+      <text x="240" y="648" 
+            font-family="Inter, system-ui, sans-serif" 
+            font-size="10" 
+            fill="#FFFFFF" text-anchor="middle">#ef4343</text>
+      <text x="240" y="664" 
+            font-family="Inter, system-ui, sans-serif" 
+            font-size="9" 
+            fill="#FFFFFF" text-anchor="middle" opacity="0.8">満席状態</text>
+    </g>
+
+    <!-- Pending Color Sample -->
+    <g>
+      <rect x="320" y="580" width="120" height="120" 
+            fill="#fbbd23" stroke="#E5E7EB" stroke-width="1" rx="8"/>
+      <text x="380" y="632" 
+            font-family="Inter, system-ui, sans-serif" 
+            font-size="12" font-weight="600"
+            fill="#000000" text-anchor="middle">Pending</text>
+      <text x="380" y="648" 
+            font-family="Inter, system-ui, sans-serif" 
+            font-size="10" 
+            fill="#000000" text-anchor="middle">#fbbd23</text>
+      <text x="380" y="664" 
+            font-family="Inter, system-ui, sans-serif" 
+            font-size="9" 
+            fill="#000000" text-anchor="middle" opacity="0.8">待機・保留状態</text>
+    </g>
+</svg>

@@ -502,19 +502,59 @@ export async function updateRequestStatus(
       return { success: false, error: '認証が必要です' };
     }
 
+    // リクエスト情報を取得
+    const { data: request, error: requestError } = await supabase
+      .from('instant_photo_requests')
+      .select('*')
+      .eq('id', requestId)
+      .eq('matched_photographer_id', user.id)
+      .single();
+
+    if (requestError || !request) {
+      return { success: false, error: 'リクエストが見つかりません' };
+    }
+
     // リクエストのステータスを更新
-    const { error } = await supabase
+    const { error: updateError } = await supabase
       .from('instant_photo_requests')
       .update({
         status,
         updated_at: new Date().toISOString(),
+        completed_at: status === 'completed' ? new Date().toISOString() : null,
       })
       .eq('id', requestId)
-      .eq('matched_photographer_id', user.id); // 自分がマッチしたリクエストのみ更新可能
+      .eq('matched_photographer_id', user.id);
 
-    if (error) {
-      console.error('ステータス更新エラー:', error);
+    if (updateError) {
+      console.error('ステータス更新エラー:', updateError);
       return { success: false, error: 'ステータスの更新に失敗しました' };
+    }
+
+    // 撮影完了時に予約レコードを作成
+    if (status === 'completed') {
+      const platformFeeRate = 0.1; // 10%のプラットフォーム手数料
+      const platformFee = Math.floor(request.budget * platformFeeRate);
+      const photographerEarnings = request.budget - platformFee;
+
+      const { error: bookingError } = await supabase
+        .from('instant_bookings')
+        .insert({
+          request_id: requestId,
+          photographer_id: user.id,
+          total_amount: request.budget,
+          platform_fee: platformFee,
+          photographer_earnings: photographerEarnings,
+          payment_status: 'pending',
+          start_time: new Date().toISOString(), // 撮影開始時刻（現在時刻で仮設定）
+        });
+
+      if (bookingError) {
+        console.error('予約レコード作成エラー:', bookingError);
+        // ステータス更新は成功しているので、警告として処理
+        console.warn(
+          '予約レコードの作成に失敗しましたが、ステータス更新は完了しました'
+        );
+      }
     }
 
     return { success: true, data: undefined };

@@ -43,8 +43,6 @@ import type {
 
 interface PhotoDeliveryFormProps {
   booking: InstantBooking;
-  onSuccess?: () => void;
-  onError?: (error: string) => void;
 }
 
 // 外部サービス自動検出
@@ -123,11 +121,7 @@ function detectExternalService(url: string): {
   }
 }
 
-export function PhotoDeliveryForm({
-  booking,
-  onSuccess,
-  onError,
-}: PhotoDeliveryFormProps) {
+export function PhotoDeliveryForm({ booking }: PhotoDeliveryFormProps) {
   const [deliveryMethod, setDeliveryMethod] =
     useState<DeliveryMethod>('external_url');
   const [formData, setFormData] = useState({
@@ -246,16 +240,17 @@ export function PhotoDeliveryForm({
 
       if (result.success) {
         setSubmitStatus('success');
-        onSuccess?.();
+        // 配信成功時の処理
+        setTimeout(() => {
+          window.location.href = `/dashboard?success=${encodeURIComponent('写真配信が完了しました')}`;
+        }, 2000); // 2秒後にリダイレクト
       } else {
         setSubmitStatus('error');
         setErrorMessage(result.error || '写真配信に失敗しました');
-        onError?.(result.error || '写真配信に失敗しました');
       }
     } catch (error) {
       setSubmitStatus('error');
       setErrorMessage('予期しないエラーが発生しました');
-      onError?.('予期しないエラーが発生しました');
       console.error('写真配信エラー:', error);
     } finally {
       setIsSubmitting(false);
@@ -270,7 +265,7 @@ export function PhotoDeliveryForm({
   };
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
+    <Card className="w-full max-w-4xl mx-auto">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Upload className="h-5 w-5" />
@@ -309,7 +304,7 @@ export function PhotoDeliveryForm({
               }
               className="space-y-3"
             >
-              <div className="flex items-start space-x-3 p-3 border rounded-lg hover:bg-gray-50">
+              <div className="flex items-start space-x-3 p-3 border rounded-lg">
                 <RadioGroupItem
                   value="external_url"
                   id="external"
@@ -339,7 +334,7 @@ export function PhotoDeliveryForm({
                 </div>
               </div>
 
-              <div className="flex items-start space-x-3 p-3 border rounded-lg hover:bg-gray-50 opacity-60">
+              <div className="flex items-start space-x-3 p-3 border rounded-lg opacity-60">
                 <RadioGroupItem
                   value="direct_upload"
                   id="direct"

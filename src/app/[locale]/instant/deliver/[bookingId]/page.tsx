@@ -109,16 +109,7 @@ export default async function PhotoDeliveryPage({ params }: PageProps) {
       </Card>
 
       {/* 写真配信フォーム */}
-      <PhotoDeliveryForm
-        booking={booking}
-        onSuccess={() => {
-          // 配信成功時の処理
-          window.location.href = `/dashboard?success=${encodeURIComponent('写真配信が完了しました')}`;
-        }}
-        onError={(error: string) => {
-          console.error('配信エラー:', error);
-        }}
-      />
+      <PhotoDeliveryForm booking={booking} />
     </div>
   );
 }
