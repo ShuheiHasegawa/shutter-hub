@@ -204,15 +204,6 @@ export function PhotographerInstantDashboard({
     loadRequests();
   }, []);
 
-  // 定期的なデータ更新（30秒間隔）
-  useEffect(() => {
-    const interval = setInterval(() => {
-      loadRequests();
-    }, 30000); // 30秒間隔
-
-    return () => clearInterval(interval);
-  }, []);
-
   return (
     <div className="space-y-6">
       {/* オンライン状態管理 */}
@@ -301,15 +292,9 @@ export function PhotographerInstantDashboard({
               disabled={requestsLoading}
             >
               {requestsLoading ? (
-                <>
-                  <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                  更新中
-                </>
+                <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <>
-                  <RefreshCw className="h-3 w-3 mr-1" />
-                  更新
-                </>
+                <RefreshCw className="h-4 w-4" />
               )}
             </Button>
           </div>
@@ -335,12 +320,6 @@ export function PhotographerInstantDashboard({
               {requests.map(request => (
                 <Card key={request.id} className="border-l-4 border-blue-500">
                   <CardContent className="p-4">
-                    {/* デバッグ情報 - 開発時のみ表示 */}
-                    {process.env.NODE_ENV === 'development' && (
-                      <div className="mb-2 text-xs text-gray-500 bg-gray-100 p-1 rounded">
-                        Status: {request.status} | ID: {request.id}
-                      </div>
-                    )}
                     <div className="flex items-start justify-between mb-3">
                       <div>
                         <h4 className="font-medium text-lg">
