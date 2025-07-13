@@ -23,6 +23,7 @@ import {
   Upload,
   ArrowRight,
   Send,
+  RefreshCw,
 } from 'lucide-react';
 import {
   togglePhotographerOnlineStatusWithLocation,
@@ -203,6 +204,15 @@ export function PhotographerInstantDashboard({
     loadRequests();
   }, []);
 
+  // 定期的なデータ更新（30秒間隔）
+  useEffect(() => {
+    const interval = setInterval(() => {
+      loadRequests();
+    }, 30000); // 30秒間隔
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="space-y-6">
       {/* オンライン状態管理 */}
@@ -296,7 +306,10 @@ export function PhotographerInstantDashboard({
                   更新中
                 </>
               ) : (
-                '更新'
+                <>
+                  <RefreshCw className="h-3 w-3 mr-1" />
+                  更新
+                </>
               )}
             </Button>
           </div>

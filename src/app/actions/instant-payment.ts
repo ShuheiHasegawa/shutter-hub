@@ -246,20 +246,41 @@ export async function deliverPhotos(
       .eq('id', data.booking_id);
 
     // リクエストのステータスを 'delivered' に更新
-    const { data: bookingData } = await supabase
+    const { data: bookingData, error: bookingSelectError } = await supabase
       .from('instant_bookings')
       .select('request_id')
       .eq('id', data.booking_id)
       .single();
 
+    console.log('Booking data for status update:', {
+      bookingData,
+      bookingSelectError,
+      booking_id: data.booking_id,
+    });
+
+    if (bookingSelectError) {
+      console.error('booking取得エラー:', bookingSelectError);
+    }
+
     if (bookingData?.request_id) {
-      await supabase
+      const { error: statusUpdateError } = await supabase
         .from('instant_photo_requests')
         .update({
           status: 'delivered',
           updated_at: new Date().toISOString(),
         })
         .eq('id', bookingData.request_id);
+
+      console.log('Status update result:', {
+        request_id: bookingData.request_id,
+        statusUpdateError,
+      });
+
+      if (statusUpdateError) {
+        console.error('ステータス更新エラー:', statusUpdateError);
+      }
+    } else {
+      console.error('request_idが見つかりません:', { bookingData });
     }
 
     revalidatePath('/instant');
