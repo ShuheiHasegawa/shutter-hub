@@ -527,8 +527,21 @@ export function PhotographerInstantDashboard({
                       {request.status === 'delivered' &&
                         request.matched_photographer_id === userId && (
                           <>
-                            {/* 1行目: 配信完了メッセージ */}
+                            {/* 1行目: 撮影完了メッセージ */}
                             <div className="flex gap-2 w-full">
+                              <div className="flex-1 bg-success/10 border border-success/20 rounded-lg p-3">
+                                <div className="flex items-center gap-2 text-success">
+                                  <CheckCircle className="h-4 w-4" />
+                                  <span className="font-medium">撮影完了</span>
+                                </div>
+                                <p className="text-sm text-success/80 mt-1">
+                                  撮影が完了しました
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* 2行目: 配信完了メッセージ */}
+                            <div className="flex gap-2 w-full mt-3">
                               <div className="flex-1 bg-blue-50 border border-blue-200 rounded-lg p-3">
                                 <div className="flex items-center gap-2 text-blue-600">
                                   <Send className="h-4 w-4" />
@@ -548,7 +561,7 @@ export function PhotographerInstantDashboard({
                               </div>
                             </div>
 
-                            {/* 2行目: 再配信ボタン */}
+                            {/* 3行目: 再配信ボタン */}
                             <div className="flex gap-2 w-full mt-4">
                               <Button
                                 onClick={() =>
