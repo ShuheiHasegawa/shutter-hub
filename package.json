@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "next dev --turbopack --port 8888",
+    "dev": "next dev --port 8888",
     "dev:stop": "lsof -ti:8888 | xargs kill -9 || true",
     "dev:clean": "npm run dev:stop && npm run dev",
     "commit:safe": "npm run dev:stop && npm run build && git add . && echo 'Ready for commit - please run: git commit -m \"your message\"'",
@@ -35,7 +35,8 @@
     "test:e2e:mcp:setup": "MCP_ENABLED=true playwright test tests/e2e/auth.setup.ts",
     "test:e2e:mcp:booking": "MCP_ENABLED=true MCP_TEST_ENVIRONMENT=true playwright test tests/e2e/booking-systems.spec.ts",
     "test:e2e:mcp:escrow": "MCP_ENABLED=true MCP_TEST_ENVIRONMENT=true playwright test tests/e2e/escrow-payment.spec.ts",
-    "test:e2e:mcp:report": "MCP_ENABLED=true playwright show-report"
+    "test:e2e:mcp:report": "MCP_ENABLED=true playwright show-report",
+    "figma:export": "node scripts/figma-tokens-export.js"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [

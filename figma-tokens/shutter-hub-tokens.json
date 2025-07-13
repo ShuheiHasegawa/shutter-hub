@@ -1,0 +1,223 @@
+{
+  "global": {
+    "brand": {
+      "primary": {
+        "value": "#6F5091",
+        "type": "color",
+        "description": "ShutterHub brand color: primary"
+      },
+      "primary-light": {
+        "value": "#8B6BB1",
+        "type": "color",
+        "description": "ShutterHub brand color: primary-light"
+      },
+      "primary-dark": {
+        "value": "#5A4073",
+        "type": "color",
+        "description": "ShutterHub brand color: primary-dark"
+      },
+      "secondary": {
+        "value": "#101820",
+        "type": "color",
+        "description": "ShutterHub brand color: secondary"
+      },
+      "secondary-light": {
+        "value": "#2A2A2A",
+        "type": "color",
+        "description": "ShutterHub brand color: secondary-light"
+      }
+    },
+    "semantic": {
+      "light": {
+        "success": {
+          "value": "#21c45d",
+          "type": "color",
+          "description": "Semantic color for success in light mode"
+        },
+        "warning": {
+          "value": "#fbbd23",
+          "type": "color",
+          "description": "Semantic color for warning in light mode"
+        },
+        "info": {
+          "value": "#3c83f6",
+          "type": "color",
+          "description": "Semantic color for info in light mode"
+        },
+        "error": {
+          "value": "#ef4343",
+          "type": "color",
+          "description": "Semantic color for error in light mode"
+        },
+        "available": {
+          "value": "#21c45d",
+          "type": "color",
+          "description": "Semantic color for available in light mode"
+        },
+        "booked": {
+          "value": "#ef4343",
+          "type": "color",
+          "description": "Semantic color for booked in light mode"
+        },
+        "pending": {
+          "value": "#fbbd23",
+          "type": "color",
+          "description": "Semantic color for pending in light mode"
+        }
+      },
+      "dark": {
+        "success": {
+          "value": "#21c45d",
+          "type": "color",
+          "description": "Semantic color for success in dark mode"
+        },
+        "warning": {
+          "value": "#c89004",
+          "type": "color",
+          "description": "Semantic color for warning in dark mode"
+        },
+        "info": {
+          "value": "#2474f5",
+          "type": "color",
+          "description": "Semantic color for info in dark mode"
+        },
+        "error": {
+          "value": "#ed2c2c",
+          "type": "color",
+          "description": "Semantic color for error in dark mode"
+        },
+        "available": {
+          "value": "#21c45d",
+          "type": "color",
+          "description": "Semantic color for available in dark mode"
+        },
+        "booked": {
+          "value": "#ed2c2c",
+          "type": "color",
+          "description": "Semantic color for booked in dark mode"
+        },
+        "pending": {
+          "value": "#c89004",
+          "type": "color",
+          "description": "Semantic color for pending in dark mode"
+        }
+      }
+    },
+    "system": {
+      "light": {
+        "background": {
+          "value": "#ffffff",
+          "type": "color",
+          "description": "System color for background in light mode"
+        },
+        "foreground": {
+          "value": "#020817",
+          "type": "color",
+          "description": "System color for foreground in light mode"
+        },
+        "card": {
+          "value": "#ffffff",
+          "type": "color",
+          "description": "System color for card in light mode"
+        },
+        "card-foreground": {
+          "value": "#020817",
+          "type": "color",
+          "description": "System color for card-foreground in light mode"
+        },
+        "primary": {
+          "value": "#0f172a",
+          "type": "color",
+          "description": "System color for primary in light mode"
+        },
+        "primary-foreground": {
+          "value": "#f8fafc",
+          "type": "color",
+          "description": "System color for primary-foreground in light mode"
+        },
+        "secondary": {
+          "value": "#f1f5f9",
+          "type": "color",
+          "description": "System color for secondary in light mode"
+        },
+        "secondary-foreground": {
+          "value": "#0f172a",
+          "type": "color",
+          "description": "System color for secondary-foreground in light mode"
+        },
+        "muted": {
+          "value": "#f1f5f9",
+          "type": "color",
+          "description": "System color for muted in light mode"
+        },
+        "muted-foreground": {
+          "value": "#64748b",
+          "type": "color",
+          "description": "System color for muted-foreground in light mode"
+        },
+        "border": {
+          "value": "#e2e8f0",
+          "type": "color",
+          "description": "System color for border in light mode"
+        }
+      },
+      "dark": {
+        "background": {
+          "value": "#020817",
+          "type": "color",
+          "description": "System color for background in dark mode"
+        },
+        "foreground": {
+          "value": "#f8fafc",
+          "type": "color",
+          "description": "System color for foreground in dark mode"
+        },
+        "card": {
+          "value": "#020817",
+          "type": "color",
+          "description": "System color for card in dark mode"
+        },
+        "card-foreground": {
+          "value": "#f8fafc",
+          "type": "color",
+          "description": "System color for card-foreground in dark mode"
+        },
+        "primary": {
+          "value": "#f8fafc",
+          "type": "color",
+          "description": "System color for primary in dark mode"
+        },
+        "primary-foreground": {
+          "value": "#0f172a",
+          "type": "color",
+          "description": "System color for primary-foreground in dark mode"
+        },
+        "secondary": {
+          "value": "#1e293b",
+          "type": "color",
+          "description": "System color for secondary in dark mode"
+        },
+        "secondary-foreground": {
+          "value": "#f8fafc",
+          "type": "color",
+          "description": "System color for secondary-foreground in dark mode"
+        },
+        "muted": {
+          "value": "#1e293b",
+          "type": "color",
+          "description": "System color for muted in dark mode"
+        },
+        "muted-foreground": {
+          "value": "#94a3b8",
+          "type": "color",
+          "description": "System color for muted-foreground in dark mode"
+        },
+        "border": {
+          "value": "#1e293b",
+          "type": "color",
+          "description": "System color for border in dark mode"
+        }
+      }
+    }
+  }
+}

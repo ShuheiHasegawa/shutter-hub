@@ -22,7 +22,6 @@ import {
   Zap,
   Upload,
   ArrowRight,
-  DollarSign,
 } from 'lucide-react';
 import {
   togglePhotographerOnlineStatusWithLocation,
@@ -481,29 +480,6 @@ export function PhotographerInstantDashboard({
                           </div>
                         )}
                     </div>
-
-                    {/* 収益情報 */}
-                    {request.matched_photographer_id === userId && (
-                      <div className="mt-4 pt-4 border-t border-border">
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-muted-foreground">
-                            予想収益:
-                          </span>
-                          <div className="flex items-center gap-2">
-                            <DollarSign className="h-4 w-4 text-success" />
-                            <span className="font-medium text-success">
-                              ¥
-                              {Math.round(
-                                request.budget * 0.8
-                              ).toLocaleString()}
-                            </span>
-                            <span className="text-muted-foreground/60 text-xs">
-                              (プラットフォーム手数料20%控除後)
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    )}
                   </CardContent>
                 </Card>
               ))}
