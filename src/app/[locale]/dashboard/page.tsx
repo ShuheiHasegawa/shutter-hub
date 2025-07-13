@@ -3,11 +3,14 @@
 import { useAuth } from '@/hooks/useAuth';
 import { getProfile } from '@/lib/auth/profile';
 import { useEffect, useState, useCallback } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { PhotographerInstantDashboard } from '@/components/instant/PhotographerInstantDashboard';
+import { CheckCircle, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 
 interface Profile {
@@ -25,9 +28,11 @@ export default function DashboardPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
   const locale = params.locale || 'ja';
   const [profile, setProfile] = useState<Profile | null>(null);
   const [profileLoading, setProfileLoading] = useState(true);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const loadProfile = useCallback(async () => {
     if (!user) return;
@@ -51,6 +56,18 @@ export default function DashboardPage() {
       setProfileLoading(false);
     }
   }, [user, router, locale]);
+
+  // URLクエリパラメータから成功メッセージを取得
+  useEffect(() => {
+    const success = searchParams.get('success');
+    if (success) {
+      setSuccessMessage(decodeURIComponent(success));
+      // URLから成功メッセージを除去
+      const url = new URL(window.location.href);
+      url.searchParams.delete('success');
+      window.history.replaceState({}, '', url.toString());
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -94,6 +111,24 @@ export default function DashboardPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
+        {/* 成功メッセージアラート */}
+        {successMessage && (
+          <Alert className="border-green-200 bg-green-50">
+            <CheckCircle className="h-4 w-4 text-green-600" />
+            <AlertDescription className="text-green-800 flex items-center justify-between">
+              <span>{successMessage}</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSuccessMessage(null)}
+                className="h-auto p-1 text-green-600 hover:text-green-800"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+
         <Card>
           <CardHeader>
             <CardTitle>プロフィール</CardTitle>
