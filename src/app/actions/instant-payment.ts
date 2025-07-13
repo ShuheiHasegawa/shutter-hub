@@ -210,9 +210,12 @@ export async function deliverPhotos(
       delivered_at: new Date().toISOString(),
     };
 
+    // 上書き配信対応（upsert使用）
     const { data: photoDelivery, error: deliveryError } = await supabase
       .from('photo_deliveries')
-      .insert(deliveryData)
+      .upsert(deliveryData, {
+        onConflict: 'booking_id', // booking_idで重複時は上書き
+      })
       .select()
       .single();
 
@@ -241,6 +244,23 @@ export async function deliverPhotos(
         updated_at: new Date().toISOString(),
       })
       .eq('id', data.booking_id);
+
+    // リクエストのステータスを 'delivered' に更新
+    const { data: bookingData } = await supabase
+      .from('instant_bookings')
+      .select('request_id')
+      .eq('id', data.booking_id)
+      .single();
+
+    if (bookingData?.request_id) {
+      await supabase
+        .from('instant_photo_requests')
+        .update({
+          status: 'delivered',
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', bookingData.request_id);
+    }
 
     revalidatePath('/instant');
     return { success: true, data: photoDelivery };

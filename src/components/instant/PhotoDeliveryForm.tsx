@@ -11,15 +11,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
   Upload,
-  Image as ImageIcon,
   Send,
   CheckCircle,
   AlertTriangle,
@@ -125,12 +117,12 @@ export function PhotoDeliveryForm({ booking }: PhotoDeliveryFormProps) {
   const [deliveryMethod, setDeliveryMethod] =
     useState<DeliveryMethod>('external_url');
   const [formData, setFormData] = useState({
-    photoCount: 10,
+    photoCount: 10, // 将来のサブスク制限用（デフォルト値）
     totalSizeMb: 50,
     externalUrl: '',
     externalPassword: '',
     externalExpiresAt: '',
-    resolution: 'high' as 'high' | 'medium' | 'web',
+    resolution: 'high' as 'high' | 'medium' | 'web', // 将来の機能拡張用（デフォルト値）
     formats: ['jpg'],
     photographerMessage: '',
   });
@@ -203,10 +195,7 @@ export function PhotoDeliveryForm({ booking }: PhotoDeliveryFormProps) {
       return;
     }
 
-    if (formData.photoCount <= 0) {
-      setErrorMessage('写真枚数を入力してください');
-      return;
-    }
+    // 写真枚数は自動設定のため、バリデーション不要
 
     setIsSubmitting(true);
     setErrorMessage('');
@@ -242,7 +231,7 @@ export function PhotoDeliveryForm({ booking }: PhotoDeliveryFormProps) {
         setSubmitStatus('success');
         // 配信成功時の処理
         setTimeout(() => {
-          window.location.href = `/dashboard?success=${encodeURIComponent('写真配信が完了しました')}`;
+          window.location.href = `/dashboard?success=${encodeURIComponent('写真配信が完了しました。再配信が必要な場合はダッシュボードから行えます。')}`;
         }, 2000); // 2秒後にリダイレクト
       } else {
         setSubmitStatus('error');
@@ -361,7 +350,7 @@ export function PhotoDeliveryForm({ booking }: PhotoDeliveryFormProps) {
 
           {/* 外部URL配信フォーム */}
           {deliveryMethod === 'external_url' && (
-            <div className="space-y-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="space-y-4 p-4 border border-blue-200 rounded-lg">
               <div className="space-y-2">
                 <Label
                   htmlFor="externalUrl"
@@ -386,7 +375,7 @@ export function PhotoDeliveryForm({ booking }: PhotoDeliveryFormProps) {
 
                 {/* 自動検出結果表示 */}
                 {detectedService && (
-                  <div className="flex items-center justify-between p-2 bg-white border rounded">
+                  <div className="flex items-center justify-between p-2 border rounded">
                     <div className="flex items-center gap-2">
                       <span className="text-lg">{detectedService.icon}</span>
                       <span className="text-sm font-medium">
@@ -474,74 +463,52 @@ export function PhotoDeliveryForm({ booking }: PhotoDeliveryFormProps) {
             </div>
           )}
 
-          {/* 写真詳細情報 */}
-          <div className="space-y-4">
-            <h4 className="font-medium flex items-center gap-2">
-              <ImageIcon className="h-4 w-4" />
-              写真詳細
-            </h4>
+          {/* 写真詳細情報 - 将来のサブスク機能用（現在は非表示） */}
+          <div className="hidden">
+            {/* 写真枚数: 将来のサブスク制限機能用に保持 */}
+            <input
+              type="hidden"
+              value={formData.photoCount}
+              onChange={e =>
+                setFormData(prev => ({
+                  ...prev,
+                  photoCount: parseInt(e.target.value) || 10,
+                }))
+              }
+            />
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="photoCount">写真枚数 *</Label>
-                <Input
-                  id="photoCount"
-                  type="number"
-                  min="1"
-                  max="100"
-                  value={formData.photoCount}
-                  onChange={e =>
-                    setFormData(prev => ({
-                      ...prev,
-                      photoCount: parseInt(e.target.value) || 0,
-                    }))
-                  }
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="resolution">画質</Label>
-                <Select
-                  value={formData.resolution}
-                  onValueChange={value =>
-                    setFormData(prev => ({
-                      ...prev,
-                      resolution: value as 'high' | 'medium' | 'web',
-                    }))
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="high">高画質（原寸）</SelectItem>
-                    <SelectItem value="medium">中画質（SNS用）</SelectItem>
-                    <SelectItem value="web">Web用（軽量）</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {deliveryMethod === 'direct_upload' && (
-              <div className="space-y-2">
-                <Label htmlFor="totalSize">総ファイルサイズ (MB)</Label>
-                <Input
-                  id="totalSize"
-                  type="number"
-                  min="1"
-                  max="1000"
-                  value={formData.totalSizeMb}
-                  onChange={e =>
-                    setFormData(prev => ({
-                      ...prev,
-                      totalSizeMb: parseFloat(e.target.value) || 0,
-                    }))
-                  }
-                />
-              </div>
-            )}
+            {/* 画質: 将来の機能拡張用に保持 */}
+            <input
+              type="hidden"
+              value={formData.resolution}
+              onChange={e =>
+                setFormData(prev => ({
+                  ...prev,
+                  resolution: e.target.value as 'high' | 'medium' | 'web',
+                }))
+              }
+            />
           </div>
+
+          {/* 直接アップロード用の総ファイルサイズ（将来機能） */}
+          {deliveryMethod === 'direct_upload' && (
+            <div className="space-y-2">
+              <Label htmlFor="totalSize">総ファイルサイズ (MB)</Label>
+              <Input
+                id="totalSize"
+                type="number"
+                min="1"
+                max="1000"
+                value={formData.totalSizeMb}
+                onChange={e =>
+                  setFormData(prev => ({
+                    ...prev,
+                    totalSizeMb: parseFloat(e.target.value) || 0,
+                  }))
+                }
+              />
+            </div>
+          )}
 
           {/* カメラマンからのメッセージ */}
           <div className="space-y-2">
@@ -563,28 +530,12 @@ export function PhotoDeliveryForm({ booking }: PhotoDeliveryFormProps) {
           <Separator />
 
           {/* 配信確認と送信 */}
-          <div className="bg-gray-50 p-4 rounded-lg space-y-3">
-            <h5 className="font-medium text-gray-900">配信内容確認</h5>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <span className="text-gray-600">写真枚数:</span>
-                <span className="ml-2 font-medium">
-                  {formData.photoCount}枚
-                </span>
-              </div>
-              <div>
-                <span className="text-gray-600">画質:</span>
-                <span className="ml-2 font-medium">
-                  {formData.resolution === 'high'
-                    ? '高画質'
-                    : formData.resolution === 'medium'
-                      ? '中画質'
-                      : 'Web用'}
-                </span>
-              </div>
+          <div className="p-4 rounded-lg space-y-3">
+            <h5 className="font-medium">配信内容確認</h5>
+            <div className="text-sm">
               {deliveryMethod === 'external_url' && detectedService && (
-                <div className="col-span-2">
-                  <span className="text-gray-600">配信方法:</span>
+                <div>
+                  <span>配信方法:</span>
                   <span className="ml-2 font-medium">
                     {detectedService.icon} {detectedService.serviceName}
                   </span>

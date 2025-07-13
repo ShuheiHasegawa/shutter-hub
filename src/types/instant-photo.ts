@@ -21,6 +21,7 @@ export type RequestStatus =
   | 'matched'
   | 'in_progress'
   | 'completed'
+  | 'delivered'
   | 'cancelled'
   | 'expired';
 export type PaymentStatus = 'pending' | 'paid' | 'refunded' | 'failed';

@@ -22,6 +22,7 @@ import {
   Zap,
   Upload,
   ArrowRight,
+  Send,
 } from 'lucide-react';
 import {
   togglePhotographerOnlineStatusWithLocation,
@@ -517,6 +518,47 @@ export function PhotographerInstantDashboard({
                               >
                                 <Upload className="h-4 w-4 mr-2" />
                                 写真配信
+                                <ArrowRight className="h-4 w-4 ml-2" />
+                              </Button>
+                            </div>
+                          </>
+                        )}
+
+                      {request.status === 'delivered' &&
+                        request.matched_photographer_id === userId && (
+                          <>
+                            {/* 1行目: 配信完了メッセージ */}
+                            <div className="flex gap-2 w-full">
+                              <div className="flex-1 bg-blue-50 border border-blue-200 rounded-lg p-3">
+                                <div className="flex items-center gap-2 text-blue-600">
+                                  <Send className="h-4 w-4" />
+                                  <span className="font-medium">
+                                    写真配信済み
+                                  </span>
+                                  <Badge
+                                    variant="secondary"
+                                    className="text-xs"
+                                  >
+                                    配信完了
+                                  </Badge>
+                                </div>
+                                <p className="text-sm text-blue-700 mt-1">
+                                  配信完了しました。ゲストの受取確認をお待ちください
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* 2行目: 再配信ボタン */}
+                            <div className="flex gap-2 w-full mt-4">
+                              <Button
+                                onClick={() =>
+                                  handleProceedToDelivery(request.id)
+                                }
+                                variant="outline"
+                                className="w-full"
+                              >
+                                <Upload className="h-4 w-4 mr-2" />
+                                再配信（上書き）
                                 <ArrowRight className="h-4 w-4 ml-2" />
                               </Button>
                             </div>
