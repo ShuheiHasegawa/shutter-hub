@@ -24,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ActionSheet, ActionButton } from '@/components/ui/action-sheet';
 import { updateProfile } from '@/lib/auth/profile';
@@ -183,16 +183,7 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <User className="h-5 w-5" />
-          プロフィール編集
-        </CardTitle>
-        <p className="text-muted-foreground">
-          あなたのプロフィール情報を更新してください。
-        </p>
-      </CardHeader>
-      <CardContent>
+      <CardContent className="p-6">
         <div className="flex justify-center mb-6">
           <Avatar className="h-24 w-24">
             <AvatarImage src={profile.avatar_url || undefined} />
