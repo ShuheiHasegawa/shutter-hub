@@ -12,6 +12,7 @@ export interface CreateProfileData {
   instagram_handle?: string;
   twitter_handle?: string;
   phone?: string;
+  avatar_url?: string;
 }
 
 export async function createProfile(
@@ -225,6 +226,7 @@ export async function updateProfile(
         instagram_handle: profileData.instagram_handle,
         twitter_handle: profileData.twitter_handle,
         phone: profileData.phone,
+        avatar_url: profileData.avatar_url,
         updated_at: new Date().toISOString(),
       })
       .eq('id', userId)

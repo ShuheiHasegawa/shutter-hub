@@ -29,7 +29,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ActionSheet, ActionButton } from '@/components/ui/action-sheet';
 import { updateProfile } from '@/lib/auth/profile';
 import { useToast } from '@/hooks/use-toast';
-import { User, Save, X } from 'lucide-react';
+import {
+  uploadProfileImage,
+  validateProfileImageFile,
+} from '@/lib/storage/profile-images';
+import { User, Save, X, Camera, Upload } from 'lucide-react';
 
 const profileEditSchema = z.object({
   user_type: z.enum(['model', 'photographer', 'organizer']),
@@ -89,6 +93,8 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [showActionSheet, setShowActionSheet] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [currentAvatarUrl, setCurrentAvatarUrl] = useState(profile.avatar_url);
 
   const form = useForm<ProfileEditValues>({
     resolver: zodResolver(profileEditSchema),
@@ -106,10 +112,64 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
     },
   });
 
+  const handleImageUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // ファイルバリデーション
+    const validation = validateProfileImageFile(file);
+    if (!validation.valid) {
+      toast({
+        title: 'エラー',
+        description: validation.error,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setUploadingImage(true);
+    try {
+      const { url, error } = await uploadProfileImage(file, profile.id);
+
+      if (error) {
+        toast({
+          title: 'エラー',
+          description: error,
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      if (url) {
+        setCurrentAvatarUrl(url);
+        toast({
+          title: '成功',
+          description: 'プロフィール画像をアップロードしました',
+        });
+      }
+    } catch (error) {
+      console.error('画像アップロードエラー:', error);
+      toast({
+        title: 'エラー',
+        description: '画像のアップロードに失敗しました',
+        variant: 'destructive',
+      });
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
   const onSubmit = async (data: ProfileEditValues) => {
     setIsLoading(true);
     try {
-      const result = await updateProfile(profile.id, data);
+      const updateData = {
+        ...data,
+        avatar_url: currentAvatarUrl || undefined,
+      };
+
+      const result = await updateProfile(profile.id, updateData);
 
       if (result.error) {
         console.error('プロフィール更新エラー:', result.error);
@@ -184,17 +244,44 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
   return (
     <Card>
       <CardContent className="p-6">
-        <div className="flex justify-center mb-6">
-          <Avatar className="h-24 w-24">
-            <AvatarImage src={profile.avatar_url || undefined} />
-            <AvatarFallback className="text-lg">
-              {profile.display_name ? (
-                getInitials(profile.display_name)
-              ) : (
-                <User className="h-8 w-8" />
-              )}
-            </AvatarFallback>
-          </Avatar>
+        <div className="flex flex-col items-center mb-6">
+          <div className="relative group">
+            <Avatar className="h-24 w-24">
+              <AvatarImage src={currentAvatarUrl || undefined} />
+              <AvatarFallback className="text-lg">
+                {profile.display_name ? (
+                  getInitials(profile.display_name)
+                ) : (
+                  <User className="h-8 w-8" />
+                )}
+              </AvatarFallback>
+            </Avatar>
+
+            {/* アップロードボタンのオーバーレイ */}
+            <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+              <label htmlFor="avatar-upload" className="cursor-pointer">
+                {uploadingImage ? (
+                  <Upload className="h-6 w-6 text-white animate-spin" />
+                ) : (
+                  <Camera className="h-6 w-6 text-white" />
+                )}
+              </label>
+            </div>
+
+            {/* 隠しファイル入力 */}
+            <input
+              id="avatar-upload"
+              type="file"
+              accept="image/jpeg,image/jpg,image/png,image/webp"
+              onChange={handleImageUpload}
+              disabled={uploadingImage}
+              className="hidden"
+            />
+          </div>
+
+          <p className="text-sm text-muted-foreground mt-2 text-center">
+            画像をクリックして変更
+          </p>
         </div>
 
         <Form {...form}>
