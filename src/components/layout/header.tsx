@@ -32,10 +32,12 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Link } from '@/i18n/routing';
 import { useAuth } from '@/hooks/useAuth';
+import { useProfile } from '@/hooks/useProfile';
 
 export function Header() {
   const t = useTranslations('navigation');
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
+  const { user, avatarUrl, displayName } = useProfile();
 
   const handleSignOut = async () => {
     await logout();
@@ -135,10 +137,7 @@ export function Header() {
                     className="relative h-8 w-8 rounded-full"
                   >
                     <Avatar className="h-8 w-8">
-                      <AvatarImage
-                        src={user.user_metadata?.avatar_url || ''}
-                        alt={user.user_metadata?.full_name || user.email || ''}
-                      />
+                      <AvatarImage src={avatarUrl || ''} alt={displayName} />
                       <AvatarFallback>
                         <User className="h-4 w-4" />
                       </AvatarFallback>
@@ -148,13 +147,9 @@ export function Header() {
                 <DropdownMenuContent className="w-56" align="end" forceMount>
                   <div className="flex items-center justify-start gap-2 p-2">
                     <div className="flex flex-col space-y-1 leading-none">
-                      {user.user_metadata?.full_name && (
-                        <p className="font-medium">
-                          {user.user_metadata.full_name}
-                        </p>
-                      )}
+                      <p className="font-medium">{displayName}</p>
                       <p className="w-[200px] truncate text-sm text-muted-foreground">
-                        {user.email}
+                        {user?.email}
                       </p>
                     </div>
                   </div>

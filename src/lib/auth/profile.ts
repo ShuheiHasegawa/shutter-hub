@@ -187,10 +187,11 @@ export async function getProfile(userId: string) {
   const { data, error } = await supabase
     .from('profiles')
     .select('*')
-    .eq('id', userId);
+    .eq('id', userId)
+    .single();
 
-  // プロフィールが存在しない場合
-  if (!error && (!data || data.length === 0)) {
+  // プロフィールが存在しない場合は error が設定される（.single()使用時）
+  if (error && error.code === 'PGRST116') {
     return {
       data: null,
       error: {
