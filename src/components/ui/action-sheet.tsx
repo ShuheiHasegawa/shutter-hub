@@ -63,12 +63,17 @@ export function ActionSheet({
       <SheetTrigger asChild>{trigger}</SheetTrigger>
       <SheetContent
         side="bottom"
-        className={cn('max-h-[80vh] rounded-t-[10px]', contentClassName)}
+        className={cn(
+          'max-h-[80vh] rounded-t-[10px] bg-background border-border',
+          contentClassName
+        )}
       >
         {(title || description) && (
           <SheetHeader className="text-center pb-4">
             {title && (
-              <SheetTitle className="text-lg font-semibold">{title}</SheetTitle>
+              <SheetTitle className="text-lg font-semibold text-foreground">
+                {title}
+              </SheetTitle>
             )}
             {description && (
               <p className="text-sm text-muted-foreground mt-2">
@@ -95,19 +100,19 @@ export function ActionSheet({
               onClick={action.onClick}
               disabled={action.disabled || action.loading}
               className={cn(
-                'w-full h-12 text-base font-medium',
+                'w-full h-12 text-base font-medium transition-colors',
                 action.className
               )}
             >
               {action.loading ? (
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                  <span>処理中...</span>
+                  <span className="text-current">処理中...</span>
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
                   {action.icon}
-                  <span>{action.label}</span>
+                  <span className="text-current">{action.label}</span>
                 </div>
               )}
             </Button>

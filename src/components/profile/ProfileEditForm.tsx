@@ -249,7 +249,8 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
       variant: 'outline',
       onClick: handleCancel,
       icon: <X className="h-4 w-4" />,
-      className: 'border-gray-300 text-gray-700 hover:bg-gray-50',
+      className:
+        'border-muted-foreground/20 text-muted-foreground hover:bg-muted/50',
     },
     {
       id: 'save',
@@ -258,7 +259,7 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
       onClick: handleSaveClick,
       loading: isLoading,
       icon: <Save className="h-4 w-4" />,
-      className: 'bg-blue-600 hover:bg-blue-700',
+      className: 'bg-primary hover:bg-primary/90 text-primary-foreground',
     },
   ];
 
