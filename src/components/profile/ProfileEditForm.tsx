@@ -216,13 +216,21 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
         return;
       }
 
+      logger.info('プロフィール更新成功', {
+        profileId: profile.id,
+        newAvatarUrl: avatarUrl,
+        updateResult: result,
+      });
+
       toast({
         title: '成功',
         description: 'プロフィールを更新しました',
       });
 
       // プロフィール更新をグローバルに通知（キャッシュクリア）
+      logger.debug('プロフィール更新通知開始');
       notifyProfileUpdate();
+      logger.debug('プロフィール更新通知完了');
 
       // プレビューURLのクリーンアップ
       if (previewUrl) {
@@ -230,6 +238,11 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
         setPreviewUrl(null);
       }
       setSelectedImageFile(null);
+
+      // 短時間待機してから遷移（プロフィール更新を確実に反映させるため）
+      logger.debug('プロフィール反映待機開始（1秒）');
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      logger.debug('プロフィール反映待機完了、画面遷移開始');
 
       // プロフィールページに戻る
       setShowActionSheet(false);

@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/client';
 import { User } from '@supabase/supabase-js';
+import { logger } from '@/lib/utils/logger';
 
 export type UserType = 'model' | 'photographer' | 'organizer';
 
@@ -216,27 +217,58 @@ export async function updateProfile(
   const supabase = createClient();
 
   try {
+    logger.debug('プロフィール更新開始（データベース）', {
+      userId,
+      profileData,
+      avatarUrl: profileData.avatar_url,
+    });
+
+    const updateData = {
+      display_name: profileData.display_name,
+      user_type: profileData.user_type,
+      bio: profileData.bio,
+      location: profileData.location,
+      website: profileData.website,
+      instagram_handle: profileData.instagram_handle,
+      twitter_handle: profileData.twitter_handle,
+      phone: profileData.phone,
+      avatar_url: profileData.avatar_url,
+      updated_at: new Date().toISOString(),
+    };
+
+    logger.debug('データベース更新実行', { userId, updateData });
+
     const { data, error } = await supabase
       .from('profiles')
-      .update({
-        display_name: profileData.display_name,
-        user_type: profileData.user_type,
-        bio: profileData.bio,
-        location: profileData.location,
-        website: profileData.website,
-        instagram_handle: profileData.instagram_handle,
-        twitter_handle: profileData.twitter_handle,
-        phone: profileData.phone,
-        avatar_url: profileData.avatar_url,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq('id', userId)
       .select()
       .single();
 
+    if (error) {
+      logger.error('データベース更新エラー', {
+        userId,
+        error,
+        updateData,
+        avatarUrl: profileData.avatar_url,
+      });
+      return { data, error };
+    }
+
+    logger.info('データベース更新成功', {
+      userId,
+      updatedProfile: data,
+      newAvatarUrl: data?.avatar_url,
+      updatedAt: data?.updated_at,
+    });
+
     return { data, error };
   } catch (error) {
-    console.error('プロフィール更新中に予期しないエラー:', error);
+    logger.error('プロフィール更新中に予期しないエラー', {
+      error,
+      userId,
+      profileData,
+    });
     return { data: null, error };
   }
 }
