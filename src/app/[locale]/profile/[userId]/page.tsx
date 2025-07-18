@@ -11,13 +11,13 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { BackButton } from '@/components/ui/back-button';
 import { FollowButton } from '@/components/social/FollowButton';
 import {
   User,
   Calendar,
   MapPin,
   Loader2,
-  ArrowLeft,
   UserX,
   Camera,
   Verified,
@@ -260,12 +260,7 @@ export default function UserProfilePage() {
           <p className="text-muted-foreground mb-6">
             指定されたユーザーは存在しないか、削除されています。
           </p>
-          <Button asChild>
-            <Link href="/timeline">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              タイムラインに戻る
-            </Link>
-          </Button>
+          <BackButton href="/" variant="outline" ariaLabel="ホームに戻る" />
         </div>
       </DashboardLayout>
     );
@@ -277,12 +272,7 @@ export default function UserProfilePage() {
         {/* ヘッダー */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Button variant="outline" size="sm" asChild>
-              <Link href="/timeline">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                戻る
-              </Link>
-            </Button>
+            <BackButton href="/" variant="outline" ariaLabel="ホームに戻る" />
             <div>
               <h1 className="text-3xl font-bold">
                 {profile.display_name || 'ユーザー'}
