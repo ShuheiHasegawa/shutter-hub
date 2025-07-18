@@ -35,6 +35,7 @@ import {
   validateProfileImageFile,
 } from '@/lib/storage/profile-images';
 import { notifyProfileUpdate } from '@/hooks/useProfile';
+import { logger } from '@/lib/utils/logger';
 import { User, Save, X, Camera } from 'lucide-react';
 
 const profileEditSchema = z.object({
@@ -158,12 +159,19 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
 
       // 新しい画像が選択されている場合のみアップロード
       if (selectedImageFile) {
+        logger.debug('画像アップロード開始', {
+          fileName: selectedImageFile.name,
+          fileSize: selectedImageFile.size,
+          userId: profile.id,
+        });
+
         const { url, error } = await uploadProfileImage(
           selectedImageFile,
           profile.id
         );
 
         if (error) {
+          logger.error('画像アップロード失敗', error);
           toast({
             title: 'エラー',
             description: error,
@@ -173,8 +181,15 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
         }
 
         if (url) {
+          logger.info('画像アップロード成功', { url });
           avatarUrl = url;
+        } else {
+          logger.warn('画像アップロード完了だがURLが空', { url });
         }
+      } else {
+        logger.debug('画像選択なし、既存のavatar_urlを使用', {
+          avatarUrl: profile.avatar_url,
+        });
       }
 
       // プロフィール更新
@@ -183,10 +198,16 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
         avatar_url: avatarUrl || undefined,
       };
 
+      logger.debug('プロフィール更新開始', {
+        profileId: profile.id,
+        updateData,
+        avatarUrl,
+      });
+
       const result = await updateProfile(profile.id, updateData);
 
       if (result.error) {
-        console.error('プロフィール更新エラー:', result.error);
+        logger.error('プロフィール更新エラー', result.error);
         toast({
           title: 'エラー',
           description: 'プロフィールの更新に失敗しました',
@@ -215,7 +236,7 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
       router.push('/profile');
       router.refresh();
     } catch (error) {
-      console.error('予期しないエラー:', error);
+      logger.error('予期しないエラー', error);
       toast({
         title: 'エラー',
         description: '予期しないエラーが発生しました',

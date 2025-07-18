@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/client';
+import { logger } from '@/lib/utils/logger';
 
 /**
  * プロフィール画像をアップロードしてURLを返す
@@ -9,16 +10,30 @@ export async function uploadProfileImage(
   userId: string
 ): Promise<{ url: string | null; error: string | null }> {
   try {
+    logger.group('プロフィール画像アップロード');
+    logger.debug('uploadProfileImage開始', { fileName: file.name, userId });
+
     const supabase = createClient();
 
     // 新しいディレクトリ構造：[userId]/profile/avatar.[ext]
     const fileExt = file.name.split('.').pop();
     const fileName = `${userId}/profile/avatar.${fileExt}`;
 
+    logger.debug('アップロードファイル名', { fileName });
+
     // 既存のプロフィール画像を削除
-    await deleteProfileImage(userId);
+    logger.debug('既存画像削除開始');
+    const deleteResult = await deleteProfileImage(userId);
+    if (deleteResult.error) {
+      logger.warn('既存画像削除でエラー（継続）', deleteResult.error);
+    } else {
+      logger.debug('既存画像削除完了');
+    }
 
     // 新しい画像をアップロード
+    logger.debug('新しい画像アップロード開始');
+    logger.time('画像アップロード処理');
+
     const { data, error } = await supabase.storage
       .from('user-storage')
       .upload(fileName, file, {
@@ -26,22 +41,31 @@ export async function uploadProfileImage(
         upsert: true, // 同名ファイルを上書き
       });
 
+    logger.timeEnd('画像アップロード処理');
+
     if (error) {
-      console.error('プロフィール画像アップロードエラー:', error);
+      logger.error('Supabase Storage アップロードエラー', error);
+      logger.groupEnd();
       return {
         url: null,
         error: 'プロフィール画像のアップロードに失敗しました',
       };
     }
 
+    logger.info('Supabase Storage アップロード成功', data);
+
     // 公開URLを取得
     const { data: urlData } = supabase.storage
       .from('user-storage')
       .getPublicUrl(data.path);
 
+    logger.info('公開URL取得完了', { publicUrl: urlData.publicUrl });
+    logger.groupEnd();
+
     return { url: urlData.publicUrl, error: null };
   } catch (error) {
-    console.error('プロフィール画像アップロード処理でエラー:', error);
+    logger.error('プロフィール画像アップロード処理でエラー', error);
+    logger.groupEnd();
     return { url: null, error: '予期しないエラーが発生しました' };
   }
 }
@@ -72,14 +96,14 @@ export async function deleteProfileImage(
         .remove(filePaths);
 
       if (error) {
-        console.error('既存プロフィール画像削除エラー:', error);
+        logger.error('既存プロフィール画像削除エラー', error);
         return { error: '既存の画像の削除に失敗しました' };
       }
     }
 
     return { error: null };
   } catch (error) {
-    console.error('プロフィール画像削除処理でエラー:', error);
+    logger.error('プロフィール画像削除処理でエラー', error);
     return { error: '予期しないエラーが発生しました' };
   }
 }
@@ -138,7 +162,7 @@ export async function uploadPortfolioImage(
       });
 
     if (error) {
-      console.error('ポートフォリオ画像アップロードエラー:', error);
+      logger.error('ポートフォリオ画像アップロードエラー', error);
       return {
         url: null,
         error: 'ポートフォリオ画像のアップロードに失敗しました',
@@ -151,7 +175,7 @@ export async function uploadPortfolioImage(
 
     return { url: urlData.publicUrl, error: null };
   } catch (error) {
-    console.error('ポートフォリオ画像アップロード処理でエラー:', error);
+    logger.error('ポートフォリオ画像アップロード処理でエラー', error);
     return { url: null, error: '予期しないエラーが発生しました' };
   }
 }
@@ -174,7 +198,7 @@ export async function getPortfolioImages(userId: string): Promise<{
       });
 
     if (error) {
-      console.error('ポートフォリオ画像取得エラー:', error);
+      logger.error('ポートフォリオ画像取得エラー', error);
       return { images: [], error: 'ポートフォリオ画像の取得に失敗しました' };
     }
 
@@ -189,7 +213,7 @@ export async function getPortfolioImages(userId: string): Promise<{
 
     return { images, error: null };
   } catch (error) {
-    console.error('ポートフォリオ画像取得処理でエラー:', error);
+    logger.error('ポートフォリオ画像取得処理でエラー', error);
     return { images: [], error: '予期しないエラーが発生しました' };
   }
 }
