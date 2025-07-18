@@ -34,6 +34,7 @@ import {
   uploadProfileImage,
   validateProfileImageFile,
 } from '@/lib/storage/profile-images';
+import { notifyProfileUpdate } from '@/hooks/useProfile';
 import { User, Save, X, Camera } from 'lucide-react';
 
 const profileEditSchema = z.object({
@@ -198,6 +199,9 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
         title: '成功',
         description: 'プロフィールを更新しました',
       });
+
+      // プロフィール更新をグローバルに通知（キャッシュクリア）
+      notifyProfileUpdate();
 
       // プレビューURLのクリーンアップ
       if (previewUrl) {
