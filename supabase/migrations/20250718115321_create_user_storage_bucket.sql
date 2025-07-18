@@ -1,6 +1,6 @@
--- Migration: 047_create_user_storage_bucket
+-- Migration: 048_create_user_storage_bucket
 -- Description: ユーザー別ストレージバケット（プロフィール画像・ポートフォリオ対応）
--- Date: 2024-12-01
+-- Date: 2025-07-18
 
 -- ユーザーストレージバケットを作成
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
