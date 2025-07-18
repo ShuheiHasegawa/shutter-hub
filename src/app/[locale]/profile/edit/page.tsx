@@ -9,6 +9,7 @@ import { ProfileEditForm } from '@/components/profile/ProfileEditForm';
 import { getProfile } from '@/lib/auth/profile';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { BackButton } from '@/components/ui/back-button';
 import { AlertCircle } from 'lucide-react';
 
 export default function EditProfilePage() {
@@ -63,9 +64,12 @@ export default function EditProfilePage() {
     return (
       <DashboardLayout>
         <div className="space-y-6">
-          <div>
-            <Skeleton className="h-8 w-48 mb-2" />
-            <Skeleton className="h-4 w-64" />
+          <div className="flex items-center gap-4">
+            <BackButton href="/profile" variant="ghost" size="sm" />
+            <div>
+              <Skeleton className="h-8 w-48 mb-2" />
+              <Skeleton className="h-4 w-64" />
+            </div>
           </div>
 
           <Card>
@@ -105,6 +109,14 @@ export default function EditProfilePage() {
     return (
       <DashboardLayout>
         <div className="space-y-6">
+          <div className="flex items-center gap-4">
+            <BackButton href="/profile" variant="ghost" size="sm" />
+            <div>
+              <h1 className="text-2xl font-bold">プロフィール編集</h1>
+              <p className="text-muted-foreground">エラーが発生しました</p>
+            </div>
+          </div>
+
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center gap-3 text-red-600">
@@ -122,6 +134,16 @@ export default function EditProfilePage() {
     return (
       <DashboardLayout>
         <div className="space-y-6">
+          <div className="flex items-center gap-4">
+            <BackButton href="/profile" variant="ghost" size="sm" />
+            <div>
+              <h1 className="text-2xl font-bold">プロフィール編集</h1>
+              <p className="text-muted-foreground">
+                プロフィールが見つかりません
+              </p>
+            </div>
+          </div>
+
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center gap-3 text-yellow-600">
@@ -138,6 +160,16 @@ export default function EditProfilePage() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <BackButton href="/profile" variant="ghost" size="sm" />
+          <div>
+            <h1 className="text-2xl font-bold">プロフィール編集</h1>
+            <p className="text-muted-foreground">
+              あなたのプロフィール情報を編集してください
+            </p>
+          </div>
+        </div>
+
         <div className="max-w-2xl">
           <ProfileEditForm profile={profile} />
         </div>
