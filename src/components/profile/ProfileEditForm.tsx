@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -26,6 +26,7 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { ActionSheet, ActionButton } from '@/components/ui/action-sheet';
 import { updateProfile } from '@/lib/auth/profile';
 import { useToast } from '@/hooks/use-toast';
@@ -33,7 +34,7 @@ import {
   uploadProfileImage,
   validateProfileImageFile,
 } from '@/lib/storage/profile-images';
-import { User, Save, X, Camera, Upload } from 'lucide-react';
+import { User, Save, X, Camera } from 'lucide-react';
 
 const profileEditSchema = z.object({
   user_type: z.enum(['model', 'photographer', 'organizer']),
@@ -93,8 +94,10 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [showActionSheet, setShowActionSheet] = useState(false);
-  const [uploadingImage, setUploadingImage] = useState(false);
-  const [currentAvatarUrl, setCurrentAvatarUrl] = useState(profile.avatar_url);
+
+  // 画像関連の状態管理
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const form = useForm<ProfileEditValues>({
     resolver: zodResolver(profileEditSchema),
@@ -112,9 +115,16 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
     },
   });
 
-  const handleImageUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  // コンポーネントのクリーンアップ時にプレビューURLを解放
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
+
+  const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -129,44 +139,47 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
       return;
     }
 
-    setUploadingImage(true);
-    try {
-      const { url, error } = await uploadProfileImage(file, profile.id);
-
-      if (error) {
-        toast({
-          title: 'エラー',
-          description: error,
-          variant: 'destructive',
-        });
-        return;
-      }
-
-      if (url) {
-        setCurrentAvatarUrl(url);
-        toast({
-          title: '成功',
-          description: 'プロフィール画像をアップロードしました',
-        });
-      }
-    } catch (error) {
-      console.error('画像アップロードエラー:', error);
-      toast({
-        title: 'エラー',
-        description: '画像のアップロードに失敗しました',
-        variant: 'destructive',
-      });
-    } finally {
-      setUploadingImage(false);
+    // 既存のプレビューURLを解放
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
     }
+
+    // ローカルプレビュー作成
+    setSelectedImageFile(file);
+    const preview = URL.createObjectURL(file);
+    setPreviewUrl(preview);
   };
 
   const onSubmit = async (data: ProfileEditValues) => {
     setIsLoading(true);
     try {
+      let avatarUrl = profile.avatar_url;
+
+      // 新しい画像が選択されている場合のみアップロード
+      if (selectedImageFile) {
+        const { url, error } = await uploadProfileImage(
+          selectedImageFile,
+          profile.id
+        );
+
+        if (error) {
+          toast({
+            title: 'エラー',
+            description: error,
+            variant: 'destructive',
+          });
+          return;
+        }
+
+        if (url) {
+          avatarUrl = url;
+        }
+      }
+
+      // プロフィール更新
       const updateData = {
         ...data,
-        avatar_url: currentAvatarUrl || undefined,
+        avatar_url: avatarUrl || undefined,
       };
 
       const result = await updateProfile(profile.id, updateData);
@@ -186,6 +199,13 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
         description: 'プロフィールを更新しました',
       });
 
+      // プレビューURLのクリーンアップ
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+        setPreviewUrl(null);
+      }
+      setSelectedImageFile(null);
+
       // プロフィールページに戻る
       setShowActionSheet(false);
       router.push('/profile');
@@ -203,6 +223,12 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
   };
 
   const handleCancel = () => {
+    // プレビューURLのクリーンアップ
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+    }
+    setSelectedImageFile(null);
     setShowActionSheet(false);
     router.push('/profile');
   };
@@ -241,13 +267,16 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
       .slice(0, 2);
   };
 
+  // 表示する画像URLを決定
+  const displayImageUrl = previewUrl || profile.avatar_url;
+
   return (
     <Card>
       <CardContent className="p-6">
         <div className="flex flex-col items-center mb-6">
           <div className="relative group">
             <Avatar className="h-24 w-24">
-              <AvatarImage src={currentAvatarUrl || undefined} />
+              <AvatarImage src={displayImageUrl || undefined} />
               <AvatarFallback className="text-lg">
                 {profile.display_name ? (
                   getInitials(profile.display_name)
@@ -260,11 +289,7 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
             {/* アップロードボタンのオーバーレイ */}
             <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
               <label htmlFor="avatar-upload" className="cursor-pointer">
-                {uploadingImage ? (
-                  <Upload className="h-6 w-6 text-white animate-spin" />
-                ) : (
-                  <Camera className="h-6 w-6 text-white" />
-                )}
+                <Camera className="h-6 w-6 text-white" />
               </label>
             </div>
 
@@ -273,8 +298,7 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
               id="avatar-upload"
               type="file"
               accept="image/jpeg,image/jpg,image/png,image/webp"
-              onChange={handleImageUpload}
-              disabled={uploadingImage}
+              onChange={handleImageSelect}
               className="hidden"
             />
           </div>
@@ -282,6 +306,13 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
           <p className="text-sm text-muted-foreground mt-2 text-center">
             画像をクリックして変更
           </p>
+
+          {/* 変更状態の表示 */}
+          {selectedImageFile && (
+            <Badge variant="outline" className="mt-2">
+              画像変更待機中
+            </Badge>
+          )}
         </div>
 
         <Form {...form}>
