@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import { logger } from '@/lib/utils/logger';
 import { createClient } from '@/lib/supabase/server';
 import { EscrowPaymentForm } from '@/components/instant/EscrowPaymentForm';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -275,7 +276,7 @@ export default async function PaymentPage({ params }: PageProps) {
                     window.location.href = `/instant/payment/${bookingId}/success?payment=${paymentId}`;
                   }}
                   onError={error => {
-                    console.error('決済エラー:', error);
+                    logger.error('決済エラー:', error);
                   }}
                 />
               </CardContent>

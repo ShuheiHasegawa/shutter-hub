@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import { logger } from '@/lib/utils/logger';
 import { createClient } from '@/lib/supabase/server';
 import { PhotoDeliveryForm } from '@/components/instant/PhotoDeliveryForm';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -44,7 +45,7 @@ async function getBookingForPhotographer(bookingId: string): Promise<{
 
     return { booking: booking as InstantBooking };
   } catch (error) {
-    console.error('予約情報取得エラー:', error);
+    logger.error('予約情報取得エラー:', error);
     return { booking: null, error: 'データの取得に失敗しました' };
   }
 }

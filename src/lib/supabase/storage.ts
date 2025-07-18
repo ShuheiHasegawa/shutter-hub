@@ -1,4 +1,5 @@
 import { createClient } from './client';
+import { logger } from '@/lib/utils/logger';
 
 export interface UploadResult {
   success: boolean;
@@ -28,7 +29,7 @@ export async function uploadPhotoSessionImage(
       });
 
     if (error) {
-      console.error('画像アップロードエラー:', error);
+      logger.error('画像アップロードエラー:', error);
       return { success: false, error: 'ファイルのアップロードに失敗しました' };
     }
 
@@ -42,7 +43,7 @@ export async function uploadPhotoSessionImage(
       url: urlData.publicUrl,
     };
   } catch (error) {
-    console.error('予期しないエラー:', error);
+    logger.error('予期しないエラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -60,13 +61,13 @@ export async function deletePhotoSessionImage(url: string): Promise<boolean> {
       .remove([path]);
 
     if (error) {
-      console.error('画像削除エラー:', error);
+      logger.error('画像削除エラー:', error);
       return false;
     }
 
     return true;
   } catch (error) {
-    console.error('予期しないエラー:', error);
+    logger.error('予期しないエラー:', error);
     return false;
   }
 }

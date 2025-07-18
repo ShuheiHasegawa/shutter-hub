@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuth } from '@/hooks/useAuth';
+import { logger } from '@/lib/utils/logger';
 import { getProfile } from '@/lib/auth/profile';
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
@@ -130,13 +131,13 @@ export default function SettingsPage() {
       );
 
       if (profileError) {
-        console.error('プロフィール取得エラー:', profileError);
+        logger.error('プロフィール取得エラー:', profileError);
         return;
       }
 
       setProfile(profileData);
     } catch (error) {
-      console.error('プロフィール取得エラー:', error);
+      logger.error('プロフィール取得エラー:', error);
     }
   }, [user]);
 

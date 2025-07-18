@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/client';
+import { logger } from '@/lib/utils/logger';
 import {
   PhotoSessionSlot,
   CreatePhotoSessionSlotData,
@@ -23,7 +24,7 @@ export async function getPhotoSessionSlots(
     .order('slot_number');
 
   if (error) {
-    console.error('Error fetching photo session slots:', error);
+    logger.error('Error fetching photo session slots:', error);
     throw new Error('スロット情報の取得に失敗しました');
   }
 
@@ -46,7 +47,7 @@ export async function createPhotoSessionSlot(
     .single();
 
   if (error) {
-    console.error('Error creating photo session slot:', error);
+    logger.error('Error creating photo session slot:', error);
     throw new Error('スロットの作成に失敗しました');
   }
 
@@ -68,7 +69,7 @@ export async function updatePhotoSessionSlot(
     .single();
 
   if (error) {
-    console.error('Error updating photo session slot:', error);
+    logger.error('Error updating photo session slot:', error);
     throw new Error('スロットの更新に失敗しました');
   }
 
@@ -84,7 +85,7 @@ export async function deletePhotoSessionSlot(slotId: string): Promise<void> {
     .eq('id', slotId);
 
   if (error) {
-    console.error('Error deleting photo session slot:', error);
+    logger.error('Error deleting photo session slot:', error);
     throw new Error('スロットの削除に失敗しました');
   }
 }
@@ -119,7 +120,7 @@ export async function createSlotBooking(
     .single();
 
   if (slotError || !slotData) {
-    console.error('Error fetching slot data:', slotError);
+    logger.error('Error fetching slot data:', slotError);
     throw new Error('スロット情報の取得に失敗しました');
   }
 
@@ -133,7 +134,7 @@ export async function createSlotBooking(
       .eq('status', 'confirmed');
 
     if (checkError) {
-      console.error('Error checking existing bookings:', checkError);
+      logger.error('Error checking existing bookings:', checkError);
       throw new Error('既存予約の確認に失敗しました');
     }
 
@@ -150,7 +151,7 @@ export async function createSlotBooking(
   });
 
   if (error) {
-    console.error('Error creating slot booking:', error);
+    logger.error('Error creating slot booking:', error);
     // PostgreSQLの一意制約違反エラーの場合、より分かりやすいメッセージを表示
     if (
       error.code === '23505' &&
@@ -184,7 +185,7 @@ export async function cancelSlotBooking(
   });
 
   if (error) {
-    console.error('Error cancelling slot booking:', error);
+    logger.error('Error cancelling slot booking:', error);
     throw new Error('予約のキャンセルに失敗しました');
   }
 
@@ -288,7 +289,7 @@ export async function getSlotStatistics(
     .eq('is_active', true);
 
   if (error) {
-    console.error('Error fetching slot statistics:', error);
+    logger.error('Error fetching slot statistics:', error);
     throw new Error('統計情報の取得に失敗しました');
   }
 

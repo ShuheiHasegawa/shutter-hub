@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { ChatWindow } from '@/components/social/ChatWindow';
@@ -34,7 +35,7 @@ export default function ChatPage() {
           router.push('/messages');
         }
       } catch (error) {
-        console.error('Failed to load conversation:', error);
+        logger.error('Failed to load conversation:', error);
         router.push('/messages');
       } finally {
         setLoading(false);

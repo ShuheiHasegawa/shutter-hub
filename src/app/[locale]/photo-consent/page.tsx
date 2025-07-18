@@ -1,4 +1,5 @@
 import React from 'react';
+import { logger } from '@/lib/utils/logger';
 import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
@@ -84,7 +85,7 @@ async function getConsentRequests(): Promise<SwipeablePhotoConsent[]> {
     .order('created_at', { ascending: false });
 
   if (error) {
-    console.error('Error fetching consent requests:', error);
+    logger.error('Error fetching consent requests:', error);
     return [];
   }
 
@@ -185,13 +186,13 @@ export default async function PhotoConsentPage({
               message
             );
             if (!result.success) {
-              console.error('Failed to update consent:', result.error);
+              logger.error('Failed to update consent:', result.error);
             }
           }}
           onRefresh={async () => {
             const result = await refreshConsentRequests();
             if (!result.success) {
-              console.error('Failed to refresh:', result.error);
+              logger.error('Failed to refresh:', result.error);
             }
           }}
           showBatchMode={showBatchMode}

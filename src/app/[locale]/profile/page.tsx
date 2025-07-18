@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuth } from '@/hooks/useAuth';
+import { logger } from '@/lib/utils/logger';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
@@ -61,12 +62,12 @@ export default function ProfilePage() {
           .maybeSingle();
 
         if (profileError) {
-          console.error('プロフィール取得エラー:', profileError);
+          logger.error('プロフィール取得エラー:', profileError);
           return;
         }
 
         if (!profileData) {
-          console.log(
+          logger.debug(
             'プロフィールが見つかりません。設定ページにリダイレクトします。'
           );
           router.push('/ja/auth/setup-profile');
@@ -127,7 +128,7 @@ export default function ProfilePage() {
           sessionReviews: sessionReviewsCount || 0,
         });
       } catch (error) {
-        console.error('プロフィールデータ取得エラー:', error);
+        logger.error('プロフィールデータ取得エラー:', error);
       }
     };
 

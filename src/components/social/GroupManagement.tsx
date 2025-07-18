@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -95,7 +96,7 @@ export function GroupManagement({
       const groupMembers = await getGroupMembers(conversation.id);
       setMembers(groupMembers);
     } catch (error) {
-      console.error('Failed to load members:', error);
+      logger.error('Failed to load members:', error);
       toast.error(t('loadMembersError'));
     } finally {
       setLoading(false);
@@ -118,7 +119,7 @@ export function GroupManagement({
         toast.error(result.message);
       }
     } catch (error) {
-      console.error('Update settings error:', error);
+      logger.error('Update settings error:', error);
       toast.error(t('updateSettingsError'));
     }
   };
@@ -135,7 +136,7 @@ export function GroupManagement({
         toast.error(result.message);
       }
     } catch (error) {
-      console.error('Remove member error:', error);
+      logger.error('Remove member error:', error);
       toast.error(t('removeMemberError'));
     }
   };
@@ -156,7 +157,7 @@ export function GroupManagement({
         toast.error(result.message);
       }
     } catch (error) {
-      console.error('Leave group error:', error);
+      logger.error('Leave group error:', error);
       toast.error(t('leaveGroupError'));
     }
   };

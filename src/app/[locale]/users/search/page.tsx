@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
@@ -61,7 +62,7 @@ export default function UserSearchPage() {
           setFollowing(followingResult.data);
         }
       } catch (error) {
-        console.error('Failed to load users:', error);
+        logger.error('Failed to load users:', error);
         toast.error('ユーザーの読み込みに失敗しました');
       } finally {
         setLoading(false);
@@ -114,7 +115,7 @@ export default function UserSearchPage() {
         toast.error(result.message || '会話の作成に失敗しました');
       }
     } catch (error) {
-      console.error('Create conversation error:', error);
+      logger.error('Create conversation error:', error);
       toast.error('会話の作成に失敗しました');
     } finally {
       setCreatingConversation(null);

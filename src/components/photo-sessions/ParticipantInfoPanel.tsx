@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { logger } from '@/lib/utils/logger';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -118,7 +119,7 @@ export function ParticipantInfoPanel({
                 variant="outline"
                 className="h-auto p-4 flex-col gap-2"
                 onClick={() =>
-                  console.log('主催者にメッセージ機能は開発中です')
+                  logger.debug('主催者にメッセージ機能は開発中です')
                 }
               >
                 <MessageSquareIcon className="h-5 w-5" />
@@ -129,7 +130,7 @@ export function ParticipantInfoPanel({
                 <Button
                   variant="outline"
                   className="h-auto p-4 flex-col gap-2"
-                  onClick={() => console.log('レビュー投稿機能は開発中です')}
+                  onClick={() => logger.debug('レビュー投稿機能は開発中です')}
                 >
                   <StarIcon className="h-5 w-5" />
                   <span className="text-sm">レビューを投稿</span>

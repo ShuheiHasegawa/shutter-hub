@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { logger } from '@/lib/utils/logger';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -65,9 +66,9 @@ export const PhotobookDashboard: React.FC<PhotobookDashboardProps> = ({
     if (confirm('このフォトブックを削除しますか？この操作は元に戻せません。')) {
       try {
         // TODO: Server Actionで削除処理
-        console.log('Deleting photobook:', photobookId);
+        logger.debug('Deleting photobook:', photobookId);
       } catch (error) {
-        console.error('Failed to delete photobook:', error);
+        logger.error('Failed to delete photobook:', error);
       }
     }
   };

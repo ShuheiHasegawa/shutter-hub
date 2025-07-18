@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/utils/logger';
 import { revalidatePath } from 'next/cache';
 
 export interface WaitlistEntry {
@@ -77,7 +78,7 @@ export async function joinWaitlist(
     });
 
     if (error) {
-      console.error('キャンセル待ち登録エラー:', error);
+      logger.error('キャンセル待ち登録エラー:', error);
       return { success: false, error: 'キャンセル待ちの登録に失敗しました' };
     }
 
@@ -100,7 +101,7 @@ export async function joinWaitlist(
       },
     };
   } catch (error) {
-    console.error('キャンセル待ち登録エラー:', error);
+    logger.error('キャンセル待ち登録エラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -125,7 +126,7 @@ export async function cancelWaitlistEntry(
     });
 
     if (error) {
-      console.error('キャンセル待ちキャンセルエラー:', error);
+      logger.error('キャンセル待ちキャンセルエラー:', error);
       return {
         success: false,
         error: 'キャンセル待ちのキャンセルに失敗しました',
@@ -145,7 +146,7 @@ export async function cancelWaitlistEntry(
 
     return { success: true };
   } catch (error) {
-    console.error('キャンセル待ちキャンセルエラー:', error);
+    logger.error('キャンセル待ちキャンセルエラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -179,7 +180,7 @@ export async function getUserWaitlistEntry(
 
     if (error && error.code !== 'PGRST116') {
       // PGRST116 = not found
-      console.error('キャンセル待ち状況取得エラー:', error);
+      logger.error('キャンセル待ち状況取得エラー:', error);
       return {
         success: false,
         error: 'キャンセル待ち状況の取得に失敗しました',
@@ -188,7 +189,7 @@ export async function getUserWaitlistEntry(
 
     return { success: true, data: data || undefined };
   } catch (error) {
-    console.error('キャンセル待ち状況取得エラー:', error);
+    logger.error('キャンセル待ち状況取得エラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -213,7 +214,7 @@ export async function getPhotoSessionWaitlist(
       .order('queue_position', { ascending: true });
 
     if (error) {
-      console.error('キャンセル待ち一覧取得エラー:', error);
+      logger.error('キャンセル待ち一覧取得エラー:', error);
       return {
         success: false,
         error: 'キャンセル待ち一覧の取得に失敗しました',
@@ -222,7 +223,7 @@ export async function getPhotoSessionWaitlist(
 
     return { success: true, data: data || [] };
   } catch (error) {
-    console.error('キャンセル待ち一覧取得エラー:', error);
+    logger.error('キャンセル待ち一覧取得エラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -242,7 +243,7 @@ export async function getWaitlistSettings(
 
     if (error && error.code !== 'PGRST116') {
       // PGRST116 = not found
-      console.error('キャンセル待ち設定取得エラー:', error);
+      logger.error('キャンセル待ち設定取得エラー:', error);
       return {
         success: false,
         error: 'キャンセル待ち設定の取得に失敗しました',
@@ -251,7 +252,7 @@ export async function getWaitlistSettings(
 
     return { success: true, data: data || undefined };
   } catch (error) {
-    console.error('キャンセル待ち設定取得エラー:', error);
+    logger.error('キャンセル待ち設定取得エラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -291,7 +292,7 @@ export async function createOrUpdateWaitlistSettings(
       .single();
 
     if (error) {
-      console.error('キャンセル待ち設定エラー:', error);
+      logger.error('キャンセル待ち設定エラー:', error);
       return {
         success: false,
         error: 'キャンセル待ち設定の保存に失敗しました',
@@ -301,7 +302,7 @@ export async function createOrUpdateWaitlistSettings(
     revalidatePath('/photo-sessions');
     return { success: true, data };
   } catch (error) {
-    console.error('キャンセル待ち設定エラー:', error);
+    logger.error('キャンセル待ち設定エラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -342,7 +343,7 @@ export async function promoteFromWaitlist(
     });
 
     if (error) {
-      console.error('キャンセル待ち繰り上げエラー:', error);
+      logger.error('キャンセル待ち繰り上げエラー:', error);
       return {
         success: false,
         error: 'キャンセル待ちの繰り上げに失敗しました',
@@ -361,7 +362,7 @@ export async function promoteFromWaitlist(
       },
     };
   } catch (error) {
-    console.error('キャンセル待ち繰り上げエラー:', error);
+    logger.error('キャンセル待ち繰り上げエラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -439,7 +440,7 @@ export async function confirmPromotedBooking(
 
     return bookingResult;
   } catch (error) {
-    console.error('繰り上げ予約確定エラー:', error);
+    logger.error('繰り上げ予約確定エラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -477,7 +478,7 @@ export async function getUserWaitlistNotifications(userId?: string): Promise<{
       .limit(50);
 
     if (error) {
-      console.error('キャンセル待ち通知取得エラー:', error);
+      logger.error('キャンセル待ち通知取得エラー:', error);
       return {
         success: false,
         error: 'キャンセル待ち通知の取得に失敗しました',
@@ -486,7 +487,7 @@ export async function getUserWaitlistNotifications(userId?: string): Promise<{
 
     return { success: true, data: data || [] };
   } catch (error) {
-    console.error('キャンセル待ち通知取得エラー:', error);
+    logger.error('キャンセル待ち通知取得エラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -515,13 +516,13 @@ export async function markNotificationAsRead(
       .eq('user_id', user.id);
 
     if (error) {
-      console.error('通知既読エラー:', error);
+      logger.error('通知既読エラー:', error);
       return { success: false, error: '通知の既読処理に失敗しました' };
     }
 
     return { success: true };
   } catch (error) {
-    console.error('通知既読エラー:', error);
+    logger.error('通知既読エラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -538,7 +539,7 @@ export async function expireWaitlistPromotions(): Promise<{
     const { data, error } = await supabase.rpc('expire_waitlist_promotions');
 
     if (error) {
-      console.error('期限切れ処理エラー:', error);
+      logger.error('期限切れ処理エラー:', error);
       return { success: false, error: '期限切れ処理に失敗しました' };
     }
 
@@ -552,7 +553,7 @@ export async function expireWaitlistPromotions(): Promise<{
       },
     };
   } catch (error) {
-    console.error('期限切れ処理エラー:', error);
+    logger.error('期限切れ処理エラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -626,7 +627,7 @@ export async function getUserWaitlistEntries(userId?: string): Promise<{
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('ユーザーキャンセル待ち一覧取得エラー:', error);
+      logger.error('ユーザーキャンセル待ち一覧取得エラー:', error);
       return {
         success: false,
         error: 'キャンセル待ち一覧の取得に失敗しました',
@@ -635,7 +636,7 @@ export async function getUserWaitlistEntries(userId?: string): Promise<{
 
     return { success: true, data: data || [] };
   } catch (error) {
-    console.error('ユーザーキャンセル待ち一覧取得エラー:', error);
+    logger.error('ユーザーキャンセル待ち一覧取得エラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }

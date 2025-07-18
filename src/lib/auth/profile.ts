@@ -31,12 +31,12 @@ export async function createProfile(
       .maybeSingle();
 
     if (checkError) {
-      console.error('既存プロフィールチェックエラー:', checkError);
+      logger.error('既存プロフィールチェックエラー:', checkError);
     }
 
     // 既に存在する場合は更新
     if (existingProfile) {
-      console.log('既存のプロフィールが見つかりました。更新します。');
+      logger.debug('既存のプロフィールが見つかりました。更新します。');
       return await updateProfile(user.id, profileData);
     }
 
@@ -55,7 +55,7 @@ export async function createProfile(
 
     // トリガーエラー（user_id曖昧性）の場合は、手動で関連データを作成
     if (error && error.code === '42702') {
-      console.warn(
+      logger.warn(
         'トリガーエラーが発生しました。手動で関連データを作成します。'
       );
 
@@ -68,7 +68,7 @@ export async function createProfile(
 
       if (recheckError || !createdProfile) {
         // プロフィール作成が完全に失敗した場合、再試行
-        console.log('プロフィール作成を再試行します...');
+        logger.debug('プロフィール作成を再試行します...');
         const { error: retryError } = await supabase
           .from('profiles')
           .insert({
@@ -82,29 +82,29 @@ export async function createProfile(
           .single();
 
         if (retryError) {
-          console.error('プロフィール再作成に失敗:', retryError);
+          logger.error('プロフィール再作成に失敗:', retryError);
           return { data: null, error: retryError };
         }
       }
 
       // 手動でソーシャル機能を初期化
       try {
-        console.log('ソーシャル機能を手動で初期化します...');
+        logger.debug('ソーシャル機能を手動で初期化します...');
 
         // user_preferences を作成
         try {
           await supabase.from('user_preferences').insert({ user_id: user.id });
-          console.log('✓ user_preferences created');
+          logger.debug('✓ user_preferences created');
         } catch (err) {
-          console.warn('user_preferences creation failed:', err);
+          logger.warn('user_preferences creation failed:', err);
         }
 
         // user_follow_stats を作成
         try {
           await supabase.from('user_follow_stats').insert({ user_id: user.id });
-          console.log('✓ user_follow_stats created');
+          logger.debug('✓ user_follow_stats created');
         } catch (err) {
-          console.warn('user_follow_stats creation failed:', err);
+          logger.warn('user_follow_stats creation failed:', err);
         }
 
         // timeline_preferences を作成
@@ -112,20 +112,20 @@ export async function createProfile(
           await supabase
             .from('timeline_preferences')
             .insert({ user_id: user.id });
-          console.log('✓ timeline_preferences created');
+          logger.debug('✓ timeline_preferences created');
         } catch (err) {
-          console.warn('timeline_preferences creation failed:', err);
+          logger.warn('timeline_preferences creation failed:', err);
         }
 
         // user_rating_stats を作成
         try {
           await supabase.from('user_rating_stats').insert({ user_id: user.id });
-          console.log('✓ user_rating_stats created');
+          logger.debug('✓ user_rating_stats created');
         } catch (err) {
-          console.warn('user_rating_stats creation failed:', err);
+          logger.warn('user_rating_stats creation failed:', err);
         }
       } catch (initError) {
-        console.error('ソーシャル機能初期化エラー:', initError);
+        logger.error('ソーシャル機能初期化エラー:', initError);
         // ソーシャル機能の初期化に失敗してもプロフィール作成は成功とする
       }
 
@@ -137,7 +137,7 @@ export async function createProfile(
         .maybeSingle();
 
       if (finalError || !finalProfile) {
-        console.error('最終プロフィール取得に失敗:', finalError);
+        logger.error('最終プロフィール取得に失敗:', finalError);
         return {
           data: null,
           error: finalError || new Error('Profile not found after creation'),
@@ -177,7 +177,7 @@ export async function createProfile(
 
     return { data, error };
   } catch (error) {
-    console.error('プロフィール作成中に予期しないエラー:', error);
+    logger.error('プロフィール作成中に予期しないエラー:', error);
     return { data: null, error };
   }
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { X, Upload, Image as ImageIcon } from 'lucide-react';
@@ -68,7 +69,7 @@ export function ImageUpload({
         );
       }
     } catch (error) {
-      console.error('アップロードエラー:', error);
+      logger.error('アップロードエラー:', error);
       toast.error('予期しないエラーが発生しました');
     } finally {
       setUploading(false);

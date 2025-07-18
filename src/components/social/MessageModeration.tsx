@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import {
@@ -156,12 +157,12 @@ export function MessageModeration({
     // 自動隠匿処理
     if (spam.isSpam && spam.confidence > 80) {
       setIsHidden(true);
-      console.log('Auto-hidden spam message:', message.id);
+      logger.debug('Auto-hidden spam message:', message.id);
     }
 
     if (inappropriate.isInappropriate) {
       setIsHidden(true);
-      console.log('Auto-hidden inappropriate message:', message.id);
+      logger.debug('Auto-hidden inappropriate message:', message.id);
     }
   }, [message.content, message.id]);
 
@@ -179,7 +180,7 @@ export function MessageModeration({
       setReportReason('');
       setReportDetails('');
     } catch (error) {
-      console.error('Report error:', error);
+      logger.error('Report error:', error);
       toast.error(t('report.error'));
     }
   };
@@ -190,7 +191,7 @@ export function MessageModeration({
       await onBlock?.(message.senderId);
       toast.success(t('block.success'));
     } catch (error) {
-      console.error('Block error:', error);
+      logger.error('Block error:', error);
       toast.error(t('block.error'));
     }
   };
@@ -202,7 +203,7 @@ export function MessageModeration({
       setIsHidden(true);
       toast.success(t('hide.success'));
     } catch (error) {
-      console.error('Hide error:', error);
+      logger.error('Hide error:', error);
       toast.error(t('hide.error'));
     }
   };

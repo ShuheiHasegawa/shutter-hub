@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { useTranslations } from 'next-intl';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -85,7 +86,7 @@ export function ChatWindow({
       // 未読メッセージを既読にする
       await markMessagesAsRead(conversation.id);
     } catch (error) {
-      console.error('Failed to load messages:', error);
+      logger.error('Failed to load messages:', error);
       toast.error(t('errorLoadingMessages'));
     } finally {
       setLoading(false);
@@ -215,7 +216,7 @@ export function ChatWindow({
         setSelectedFile(fileToSend); // ファイルも元に戻す
       }
     } catch (error) {
-      console.error('Send message error:', error);
+      logger.error('Send message error:', error);
       toast.error(t('errorSendingMessage'));
       setMessageText(messageContent); // 元に戻す
       setSelectedFile(fileToSend); // ファイルも元に戻す

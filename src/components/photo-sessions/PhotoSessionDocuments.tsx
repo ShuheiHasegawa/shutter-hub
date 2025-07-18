@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { useTranslations } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -84,7 +85,7 @@ export function PhotoSessionDocuments({
     // フォールバック: 10秒後にローディングを強制終了
     const timeout = setTimeout(() => {
       if (loading) {
-        console.warn('Document loading timeout - forcing completion');
+        logger.warn('Document loading timeout - forcing completion');
         setLoading(false);
       }
     }, 10000);
@@ -113,9 +114,7 @@ export function PhotoSessionDocuments({
       if (error) {
         // テーブルが存在しない場合は空配列を設定
         if (error.code === '42P01') {
-          console.warn(
-            'Document system not yet available - migration required'
-          );
+          logger.warn('Document system not yet available - migration required');
           setDocuments([]);
           setLoading(false);
           return;
@@ -129,7 +128,7 @@ export function PhotoSessionDocuments({
         setLoading(false);
       }
     } catch (error) {
-      console.error('Load documents error:', error);
+      logger.error('Load documents error:', error);
       setDocuments([]);
       setLoading(false);
       toast.error(t('errorLoadingDocuments'));
@@ -156,19 +155,19 @@ export function PhotoSessionDocuments({
       if (error) {
         // テーブルが存在しない場合は空配列を設定
         if (error.code === '42P01') {
-          console.warn(
+          logger.warn(
             'Signature system not yet available - migration required'
           );
           setSignatures([]);
           setLoading(false);
           return;
         }
-        console.error('Signature query error:', error);
+        logger.error('Signature query error:', error);
         throw error;
       }
       setSignatures(data || []);
     } catch (error) {
-      console.error('Load signatures error:', error);
+      logger.error('Load signatures error:', error);
       setSignatures([]);
     } finally {
       setLoading(false);
@@ -196,7 +195,7 @@ export function PhotoSessionDocuments({
       setSignatures(prev => [data, ...prev]);
       toast.success(t('documentSigned'));
     } catch (error) {
-      console.error('Sign document error:', error);
+      logger.error('Sign document error:', error);
       toast.error(t('errorSigningDocument'));
     } finally {
       setSigningDocument(null);

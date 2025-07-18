@@ -1,24 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { logger } from '@/lib/utils/logger';
 import { headers } from 'next/headers';
 import { stripe } from '@/lib/stripe/config';
 import { createClient } from '@/lib/supabase/server';
 import type Stripe from 'stripe';
 
 export async function POST(request: NextRequest) {
-  console.log('🔔 Webhook received at:', new Date().toISOString());
+  logger.debug('🔔 Webhook received at:', new Date().toISOString());
 
   const body = await request.text();
   const headersList = await headers();
   const signature = headersList.get('stripe-signature');
 
-  console.log('📝 Request details:', {
+  logger.debug('📝 Request details:', {
     bodyLength: body.length,
     hasSignature: !!signature,
     headers: Object.fromEntries(headersList.entries()),
   });
 
   if (!signature) {
-    console.error('❌ Missing stripe-signature header');
+    logger.error('❌ Missing stripe-signature header');
     return NextResponse.json(
       { error: 'Missing stripe-signature header' },
       { status: 400 }
@@ -26,7 +27,7 @@ export async function POST(request: NextRequest) {
   }
 
   if (!stripe) {
-    console.error('❌ Stripe not initialized on server');
+    logger.error('❌ Stripe not initialized on server');
     return NextResponse.json(
       { error: 'Stripe not initialized' },
       { status: 500 }
@@ -34,7 +35,7 @@ export async function POST(request: NextRequest) {
   }
 
   if (!process.env.STRIPE_WEBHOOK_SECRET) {
-    console.error('❌ STRIPE_WEBHOOK_SECRET not configured');
+    logger.error('❌ STRIPE_WEBHOOK_SECRET not configured');
     return NextResponse.json(
       { error: 'Webhook secret not configured' },
       { status: 500 }
@@ -49,9 +50,9 @@ export async function POST(request: NextRequest) {
       signature,
       process.env.STRIPE_WEBHOOK_SECRET
     );
-    console.log('✅ Webhook signature verified, event type:', event.type);
+    logger.debug('✅ Webhook signature verified, event type:', event.type);
   } catch (error) {
-    console.error('❌ Webhook signature verification failed:', error);
+    logger.error('❌ Webhook signature verification failed:', error);
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
   }
 
@@ -89,7 +90,7 @@ export async function POST(request: NextRequest) {
             .eq('id', payment.booking_id);
         }
 
-        console.log('✅ Payment succeeded:', paymentIntent.id);
+        logger.debug('✅ Payment succeeded:', paymentIntent.id);
         break;
       }
 
@@ -105,7 +106,7 @@ export async function POST(request: NextRequest) {
           })
           .eq('stripe_payment_intent_id', paymentIntent.id);
 
-        console.log('Payment failed:', paymentIntent.id);
+        logger.debug('Payment failed:', paymentIntent.id);
         break;
       }
 
@@ -121,7 +122,7 @@ export async function POST(request: NextRequest) {
           })
           .eq('stripe_payment_intent_id', paymentIntent.id);
 
-        console.log('Payment canceled:', paymentIntent.id);
+        logger.debug('Payment canceled:', paymentIntent.id);
         break;
       }
 
@@ -129,7 +130,7 @@ export async function POST(request: NextRequest) {
         const dispute = event.data.object as Stripe.Dispute;
 
         // チャージバック処理
-        console.log('Dispute created:', dispute.id);
+        logger.debug('Dispute created:', dispute.id);
         // TODO: 管理者に通知、調査開始
         break;
       }
@@ -138,18 +139,18 @@ export async function POST(request: NextRequest) {
         const invoice = event.data.object as Stripe.Invoice;
 
         // サブスクリプション決済成功
-        console.log('Invoice payment succeeded:', invoice.id);
+        logger.debug('Invoice payment succeeded:', invoice.id);
         break;
       }
 
       default:
-        console.log(`Unhandled event type: ${event.type}`);
+        logger.debug(`Unhandled event type: ${event.type}`);
     }
 
-    console.log('🎉 Webhook processed successfully');
+    logger.debug('🎉 Webhook processed successfully');
     return NextResponse.json({ received: true });
   } catch (error) {
-    console.error('❌ Webhook processing error:', error);
+    logger.error('❌ Webhook processing error:', error);
     return NextResponse.json(
       { error: 'Webhook processing failed' },
       { status: 500 }

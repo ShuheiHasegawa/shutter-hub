@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/utils/logger';
 import { revalidatePath } from 'next/cache';
 
 // レビューシステムのServer Actions
@@ -104,7 +105,7 @@ export async function createPhotoSessionReview(
       .single();
 
     if (checkError && checkError.code !== 'PGRST116') {
-      console.error('レビューチェックエラー:', checkError);
+      logger.error('レビューチェックエラー:', checkError);
       return { error: 'Failed to check existing review' };
     }
 
@@ -136,14 +137,14 @@ export async function createPhotoSessionReview(
       .single();
 
     if (createError) {
-      console.error('レビュー作成エラー:', createError);
+      logger.error('レビュー作成エラー:', createError);
       return { error: 'Failed to create review' };
     }
 
     revalidatePath('/photo-sessions');
     return { data: review };
   } catch (error) {
-    console.error('予期しないエラー:', error);
+    logger.error('予期しないエラー:', error);
     return { error: 'Unexpected error occurred' };
   }
 }
@@ -228,7 +229,7 @@ export async function createUserReview(data: CreateUserReviewData) {
       .single();
 
     if (checkError && checkError.code !== 'PGRST116') {
-      console.error('ユーザーレビューチェックエラー:', checkError);
+      logger.error('ユーザーレビューチェックエラー:', checkError);
       return { error: 'Failed to check existing review' };
     }
 
@@ -260,14 +261,14 @@ export async function createUserReview(data: CreateUserReviewData) {
       .single();
 
     if (createError) {
-      console.error('ユーザーレビュー作成エラー:', createError);
+      logger.error('ユーザーレビュー作成エラー:', createError);
       return { error: 'Failed to create user review' };
     }
 
     revalidatePath('/photo-sessions');
     return { data: review };
   } catch (error) {
-    console.error('予期しないエラー:', error);
+    logger.error('予期しないエラー:', error);
     return { error: 'Unexpected error occurred' };
   }
 }
@@ -296,7 +297,7 @@ export async function voteReviewHelpful(data: ReviewHelpfulVoteData) {
       .single();
 
     if (checkError && checkError.code !== 'PGRST116') {
-      console.error('投票チェックエラー:', checkError);
+      logger.error('投票チェックエラー:', checkError);
       return { error: 'Failed to check existing vote' };
     }
 
@@ -310,7 +311,7 @@ export async function voteReviewHelpful(data: ReviewHelpfulVoteData) {
         .single();
 
       if (updateError) {
-        console.error('投票更新エラー:', updateError);
+        logger.error('投票更新エラー:', updateError);
         return { error: 'Failed to update vote' };
       }
 
@@ -329,14 +330,14 @@ export async function voteReviewHelpful(data: ReviewHelpfulVoteData) {
         .single();
 
       if (createError) {
-        console.error('投票作成エラー:', createError);
+        logger.error('投票作成エラー:', createError);
         return { error: 'Failed to create vote' };
       }
 
       return { data: vote };
     }
   } catch (error) {
-    console.error('予期しないエラー:', error);
+    logger.error('予期しないエラー:', error);
     return { error: 'Unexpected error occurred' };
   }
 }
@@ -365,7 +366,7 @@ export async function reportReview(data: ReviewReportData) {
       .single();
 
     if (checkError && checkError.code !== 'PGRST116') {
-      console.error('報告チェックエラー:', checkError);
+      logger.error('報告チェックエラー:', checkError);
       return { error: 'Failed to check existing report' };
     }
 
@@ -388,13 +389,13 @@ export async function reportReview(data: ReviewReportData) {
       .single();
 
     if (createError) {
-      console.error('報告作成エラー:', createError);
+      logger.error('報告作成エラー:', createError);
       return { error: 'Failed to create report' };
     }
 
     return { data: report };
   } catch (error) {
-    console.error('予期しないエラー:', error);
+    logger.error('予期しないエラー:', error);
     return { error: 'Unexpected error occurred' };
   }
 }
@@ -421,13 +422,13 @@ export async function getPhotoSessionReviews(photoSessionId: string) {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('レビュー取得エラー:', error);
+      logger.error('レビュー取得エラー:', error);
       return { error: 'Failed to fetch reviews' };
     }
 
     return { data: reviews };
   } catch (error) {
-    console.error('予期しないエラー:', error);
+    logger.error('予期しないエラー:', error);
     return { error: 'Unexpected error occurred' };
   }
 }
@@ -459,13 +460,13 @@ export async function getUserReviews(userId: string) {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('ユーザーレビュー取得エラー:', error);
+      logger.error('ユーザーレビュー取得エラー:', error);
       return { data: null, error: error.message };
     }
 
     return { data: reviews || [], error: null };
   } catch (error) {
-    console.error('getUserReviews実行エラー:', error);
+    logger.error('getUserReviews実行エラー:', error);
     return {
       data: null,
       error: error instanceof Error ? error.message : 'Unknown error',
@@ -485,13 +486,13 @@ export async function getUserRatingStats(userId: string) {
       .single();
 
     if (error && error.code !== 'PGRST116') {
-      console.error('評価統計取得エラー:', error);
+      logger.error('評価統計取得エラー:', error);
       return { error: 'Failed to fetch rating stats' };
     }
 
     return { data: stats };
   } catch (error) {
-    console.error('予期しないエラー:', error);
+    logger.error('予期しないエラー:', error);
     return { error: 'Unexpected error occurred' };
   }
 }
@@ -508,13 +509,13 @@ export async function getPhotoSessionRatingStats(photoSessionId: string) {
       .single();
 
     if (error && error.code !== 'PGRST116') {
-      console.error('撮影会評価統計取得エラー:', error);
+      logger.error('撮影会評価統計取得エラー:', error);
       return { error: 'Failed to fetch photo session rating stats' };
     }
 
     return { data: stats };
   } catch (error) {
-    console.error('予期しないエラー:', error);
+    logger.error('予期しないエラー:', error);
     return { error: 'Unexpected error occurred' };
   }
 }

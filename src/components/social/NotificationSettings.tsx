@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -27,7 +28,7 @@ import { toast } from 'sonner';
 
 // 仮実装（後でnotification.tsから移行）
 const updateNotificationSettings = async (settings: NotificationSettings) => {
-  console.log('Settings to save:', settings);
+  logger.debug('Settings to save:', settings);
   // TODO: 実際のServer Action実装
   return { success: true, message: '設定を保存しました' };
 };
@@ -122,7 +123,7 @@ export function NotificationSettings({
           setSettings(prev => ({ ...prev, ...result.data }));
         }
       } catch (error) {
-        console.error('Load notification settings error:', error);
+        logger.error('Load notification settings error:', error);
         toast.error(t('settings.loadError'));
       } finally {
         setLoading(false);
@@ -153,7 +154,7 @@ export function NotificationSettings({
         toast.error(result.message || t('settings.saveError'));
       }
     } catch (error) {
-      console.error('Save notification settings error:', error);
+      logger.error('Save notification settings error:', error);
       toast.error(t('settings.saveError'));
     } finally {
       setSaving(false);

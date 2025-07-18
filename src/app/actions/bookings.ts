@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/utils/logger';
 import { BookingWithDetails } from '@/types/database';
 
 export interface BookingsResult {
@@ -50,7 +51,7 @@ export async function getUserBookings(): Promise<BookingsResult> {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('予約取得エラー:', error);
+      logger.error('予約取得エラー:', error);
       return {
         success: false,
         error: '予約の取得に失敗しました',
@@ -62,7 +63,7 @@ export async function getUserBookings(): Promise<BookingsResult> {
       bookings: bookings || [],
     };
   } catch (error) {
-    console.error('予約取得エラー:', error);
+    logger.error('予約取得エラー:', error);
     return {
       success: false,
       error: '予約の取得に失敗しました',
@@ -100,7 +101,7 @@ export async function cancelBooking(
       .eq('user_id', user.id); // セキュリティ: 自分の予約のみキャンセル可能
 
     if (error) {
-      console.error('予約キャンセルエラー:', error);
+      logger.error('予約キャンセルエラー:', error);
       return {
         success: false,
         error: '予約のキャンセルに失敗しました',
@@ -111,7 +112,7 @@ export async function cancelBooking(
       success: true,
     };
   } catch (error) {
-    console.error('予約キャンセルエラー:', error);
+    logger.error('予約キャンセルエラー:', error);
     return {
       success: false,
       error: '予約のキャンセルに失敗しました',

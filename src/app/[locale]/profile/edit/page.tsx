@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuth } from '@/hooks/useAuth';
+import { logger } from '@/lib/utils/logger';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
@@ -34,7 +35,7 @@ export default function EditProfilePage() {
         const { data, error: profileError } = await getProfile(user.id);
 
         if (profileError) {
-          console.error('プロフィール取得エラー:', profileError);
+          logger.error('プロフィール取得エラー:', profileError);
           setError('プロフィール情報の取得に失敗しました');
           return;
         }
@@ -46,7 +47,7 @@ export default function EditProfilePage() {
 
         setProfile(data);
       } catch (err) {
-        console.error('予期しないエラー:', err);
+        logger.error('予期しないエラー:', err);
         setError('予期しないエラーが発生しました');
       } finally {
         setProfileLoading(false);

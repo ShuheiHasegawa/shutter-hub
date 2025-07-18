@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/utils/logger';
 import { ConsentStatus } from '@/types/photo-consent';
 import { revalidatePath } from 'next/cache';
 
@@ -42,7 +43,7 @@ export async function updateConsentStatus(
     revalidatePath('/photo-consent');
     return { success: true };
   } catch (error) {
-    console.error('Error updating consent status:', error);
+    logger.error('Error updating consent status:', error);
     return { success: false, error: '更新に失敗しました' };
   }
 }
@@ -74,7 +75,7 @@ export async function batchUpdateConsent(
       message: `${successCount}/${consentIds.length}件の更新が完了しました`,
     };
   } catch (error) {
-    console.error('Error batch updating consents:', error);
+    logger.error('Error batch updating consents:', error);
     return { success: false, error: '一括更新に失敗しました' };
   }
 }
@@ -84,7 +85,7 @@ export async function refreshConsentRequests() {
     revalidatePath('/photo-consent');
     return { success: true };
   } catch (error) {
-    console.error('Error refreshing consents:', error);
+    logger.error('Error refreshing consents:', error);
     return { success: false, error: 'リフレッシュに失敗しました' };
   }
 }

@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/utils/logger';
 import { revalidatePath } from 'next/cache';
 // 抽選予約システムのServer Actions
 
@@ -61,14 +62,14 @@ export async function createLotterySession(data: CreateLotterySessionData) {
       .single();
 
     if (createError) {
-      console.error('抽選セッション作成エラー:', createError);
+      logger.error('抽選セッション作成エラー:', createError);
       return { error: 'Failed to create lottery session' };
     }
 
     revalidatePath('/dashboard');
     return { data: lotterySession };
   } catch (error) {
-    console.error('予期しないエラー:', error);
+    logger.error('予期しないエラー:', error);
     return { error: 'Unexpected error occurred' };
   }
 }
@@ -124,7 +125,7 @@ export async function enterLottery(data: LotteryEntryData) {
       .single();
 
     if (checkError && checkError.code !== 'PGRST116') {
-      console.error('エントリーチェックエラー:', checkError);
+      logger.error('エントリーチェックエラー:', checkError);
       return { error: 'Failed to check existing entry' };
     }
 
@@ -145,14 +146,14 @@ export async function enterLottery(data: LotteryEntryData) {
       .single();
 
     if (entryError) {
-      console.error('エントリー作成エラー:', entryError);
+      logger.error('エントリー作成エラー:', entryError);
       return { error: 'Failed to enter lottery' };
     }
 
     revalidatePath('/photo-sessions');
     return { data: entry };
   } catch (error) {
-    console.error('予期しないエラー:', error);
+    logger.error('予期しないエラー:', error);
     return { error: 'Unexpected error occurred' };
   }
 }
@@ -177,14 +178,14 @@ export async function conductLottery(lotterySessionId: string) {
     });
 
     if (error) {
-      console.error('抽選実行エラー:', error);
+      logger.error('抽選実行エラー:', error);
       return { error: 'Failed to conduct lottery' };
     }
 
     revalidatePath('/dashboard');
     return { data: result };
   } catch (error) {
-    console.error('予期しないエラー:', error);
+    logger.error('予期しないエラー:', error);
     return { error: 'Unexpected error occurred' };
   }
 }
@@ -209,13 +210,13 @@ export async function getLotterySession(photoSessionId: string) {
       .single();
 
     if (error && error.code !== 'PGRST116') {
-      console.error('抽選セッション取得エラー:', error);
+      logger.error('抽選セッション取得エラー:', error);
       return { error: 'Failed to fetch lottery session' };
     }
 
     return { data: lotterySession };
   } catch (error) {
-    console.error('予期しないエラー:', error);
+    logger.error('予期しないエラー:', error);
     return { error: 'Unexpected error occurred' };
   }
 }
@@ -267,13 +268,13 @@ export async function getLotteryEntries(lotterySessionId: string) {
       .order('created_at', { ascending: true });
 
     if (error) {
-      console.error('エントリー一覧取得エラー:', error);
+      logger.error('エントリー一覧取得エラー:', error);
       return { error: 'Failed to fetch lottery entries' };
     }
 
     return { data: entries };
   } catch (error) {
-    console.error('予期しないエラー:', error);
+    logger.error('予期しないエラー:', error);
     return { error: 'Unexpected error occurred' };
   }
 }
@@ -300,13 +301,13 @@ export async function getUserLotteryEntry(lotterySessionId: string) {
       .single();
 
     if (error && error.code !== 'PGRST116') {
-      console.error('エントリー取得エラー:', error);
+      logger.error('エントリー取得エラー:', error);
       return { error: 'Failed to fetch lottery entry' };
     }
 
     return { data: entry };
   } catch (error) {
-    console.error('予期しないエラー:', error);
+    logger.error('予期しないエラー:', error);
     return { error: 'Unexpected error occurred' };
   }
 }
@@ -357,14 +358,14 @@ export async function updateLotterySessionStatus(
       .single();
 
     if (updateError) {
-      console.error('ステータス更新エラー:', updateError);
+      logger.error('ステータス更新エラー:', updateError);
       return { error: 'Failed to update lottery status' };
     }
 
     revalidatePath('/dashboard');
     return { data: updatedSession };
   } catch (error) {
-    console.error('予期しないエラー:', error);
+    logger.error('予期しないエラー:', error);
     return { error: 'Unexpected error occurred' };
   }
 }

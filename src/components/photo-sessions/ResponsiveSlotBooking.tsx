@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback, memo } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -138,7 +139,7 @@ export const ResponsiveSlotBooking = memo(function ResponsiveSlotBooking({
         }
       }
     } catch (error) {
-      console.error('予約エラー:', error);
+      logger.error('予約エラー:', error);
       toast({
         title: 'エラー',
         description: '予期しないエラーが発生しました',

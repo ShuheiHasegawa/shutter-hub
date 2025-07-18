@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -99,7 +100,7 @@ export function ReviewList({
         setStats(statsResult.data);
       }
     } catch (error) {
-      console.error('レビュー・統計取得エラー:', error);
+      logger.error('レビュー・統計取得エラー:', error);
     } finally {
       setIsLoading(false);
     }

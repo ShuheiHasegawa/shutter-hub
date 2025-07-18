@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -145,9 +146,9 @@ export function PhotoDeliveryForm({ booking }: PhotoDeliveryFormProps) {
       try {
         const result = await getExternalDeliveryServices();
         // 現在は使用していないが、将来の機能拡張用に保持
-        console.log('External services loaded:', result.data);
+        logger.debug('External services loaded:', result.data);
       } catch (error) {
-        console.error('外部サービス一覧取得エラー:', error);
+        logger.error('外部サービス一覧取得エラー:', error);
       }
     };
 
@@ -240,7 +241,7 @@ export function PhotoDeliveryForm({ booking }: PhotoDeliveryFormProps) {
     } catch (error) {
       setSubmitStatus('error');
       setErrorMessage('予期しないエラーが発生しました');
-      console.error('写真配信エラー:', error);
+      logger.error('写真配信エラー:', error);
     } finally {
       setIsSubmitting(false);
     }

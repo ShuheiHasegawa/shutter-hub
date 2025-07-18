@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -74,7 +75,7 @@ export function useRealtimeNotifications({
       oscillator.start(audioContext.currentTime);
       oscillator.stop(audioContext.currentTime + 0.3);
     } catch (error) {
-      console.warn('通知音の再生に失敗しました:', error);
+      logger.warn('通知音の再生に失敗しました:', error);
     }
   }, [enableSound]);
 
@@ -271,7 +272,7 @@ export function useRealtimeNotifications({
         const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
         if (!supabaseUrl || !supabaseAnonKey) {
-          console.warn(
+          logger.warn(
             'Supabase configuration missing, skipping realtime notifications'
           );
           setState(prev => ({ ...prev, isConnected: false }));
@@ -374,7 +375,7 @@ export function useRealtimeNotifications({
           }
         });
       } catch (error) {
-        console.warn('Realtime connection error (non-critical):', error);
+        logger.warn('Realtime connection error (non-critical):', error);
         setState(prev => ({ ...prev, isConnected: false }));
 
         // エラー時の再接続（開発環境では無効化）
@@ -400,7 +401,7 @@ export function useRealtimeNotifications({
 
       if (channel) {
         supabase.removeChannel(channel).catch(error => {
-          console.warn('Channel cleanup error:', error);
+          logger.warn('Channel cleanup error:', error);
         });
       }
     };

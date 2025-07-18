@@ -1,4 +1,5 @@
 import React from 'react';
+import { logger } from '@/lib/utils/logger';
 import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
@@ -73,7 +74,7 @@ async function getEditablePhotobookData(id: string) {
     .order('page_number');
 
   if (pagesError) {
-    console.error('Error fetching pages:', pagesError);
+    logger.error('Error fetching pages:', pagesError);
   }
 
   // 既存のPhotobook型に変換（一時的にサンプルデータを使用）
@@ -264,7 +265,7 @@ export default async function PhotobookEditPage({
           <Photobook
             photobook={photobook}
             isEditable={true}
-            onPhotoClick={photo => console.log('Photo clicked:', photo)}
+            onPhotoClick={photo => logger.debug('Photo clicked:', photo)}
           />
         </div>
 

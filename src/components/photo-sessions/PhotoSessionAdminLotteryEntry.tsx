@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -79,7 +80,7 @@ export function PhotoSessionAdminLotteryEntry({
         }
       }
     } catch (error) {
-      console.error('データ取得エラー:', error);
+      logger.error('データ取得エラー:', error);
     } finally {
       setIsLoadingData(false);
     }
@@ -128,7 +129,7 @@ export function PhotoSessionAdminLotteryEntry({
         }
       }
     } catch (error) {
-      console.error('エントリーエラー:', error);
+      logger.error('エントリーエラー:', error);
       const errorMessage = tErrors('unexpectedError');
       toast({
         title: tErrors('title'),

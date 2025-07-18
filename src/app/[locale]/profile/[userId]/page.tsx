@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { useParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
@@ -82,7 +83,7 @@ export default function UserProfilePage() {
         .eq('status', 'accepted');
 
       if (followersError) {
-        console.warn('Followers fetch error:', followersError);
+        logger.warn('Followers fetch error:', followersError);
       }
 
       const { data: followingData, error: followingError } = await supabase
@@ -92,7 +93,7 @@ export default function UserProfilePage() {
         .eq('status', 'accepted');
 
       if (followingError) {
-        console.warn('Following fetch error:', followingError);
+        logger.warn('Following fetch error:', followingError);
       }
 
       // 現在のフォロー関係を確認
@@ -105,7 +106,7 @@ export default function UserProfilePage() {
           .maybeSingle(); // singleの代わりにmaybeSingleを使用
 
       if (followRelationError) {
-        console.warn('Follow relation fetch error:', followRelationError);
+        logger.warn('Follow relation fetch error:', followRelationError);
       }
 
       const { data: mutualFollow, error: mutualFollowError } = await supabase
@@ -116,7 +117,7 @@ export default function UserProfilePage() {
         .maybeSingle(); // singleの代わりにmaybeSingleを使用
 
       if (mutualFollowError) {
-        console.warn('Mutual follow fetch error:', mutualFollowError);
+        logger.warn('Mutual follow fetch error:', mutualFollowError);
       }
 
       setFollowStats({
@@ -132,7 +133,7 @@ export default function UserProfilePage() {
           mutualFollow?.status === 'accepted',
       });
     } catch (error) {
-      console.error('Follow stats update error:', error);
+      logger.error('Follow stats update error:', error);
       // エラーが発生してもフォロー機能を無効にしない
       setFollowStats({
         followers_count: 0,
@@ -174,7 +175,7 @@ export default function UserProfilePage() {
           .maybeSingle();
 
         if (error) {
-          console.error('プロフィール取得エラー:', error);
+          logger.error('プロフィール取得エラー:', error);
           toast.error('プロフィールの読み込みに失敗しました');
           return;
         }
@@ -191,7 +192,7 @@ export default function UserProfilePage() {
           await updateFollowStats();
         }
       } catch (error) {
-        console.error('Profile load error:', error);
+        logger.error('Profile load error:', error);
         toast.error('プロフィールの読み込みに失敗しました');
       } finally {
         setIsLoading(false);

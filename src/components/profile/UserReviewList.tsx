@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -83,7 +84,7 @@ export function UserReviewList({ userId }: UserReviewListProps) {
       const userReviewsResult = await getUserReviews(userId);
 
       if (userReviewsResult.error) {
-        console.error('ユーザーレビュー取得エラー:', userReviewsResult.error);
+        logger.error('ユーザーレビュー取得エラー:', userReviewsResult.error);
       } else if (userReviewsResult.data) {
         setUserReviews(userReviewsResult.data);
       }
@@ -93,7 +94,7 @@ export function UserReviewList({ userId }: UserReviewListProps) {
       // 現在は空配列を設定
       setSessionReviews([]);
     } catch (error) {
-      console.error('レビュー取得エラー:', error);
+      logger.error('レビュー取得エラー:', error);
     } finally {
       setIsLoading(false);
     }

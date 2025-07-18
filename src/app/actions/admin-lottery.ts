@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/utils/logger';
 import { revalidatePath } from 'next/cache';
 
 // 管理抽選システムのServer Actions
@@ -72,14 +73,14 @@ export async function createAdminLotterySession(
       .single();
 
     if (createError) {
-      console.error('管理抽選セッション作成エラー:', createError);
+      logger.error('管理抽選セッション作成エラー:', createError);
       return { error: 'Failed to create admin lottery session' };
     }
 
     revalidatePath('/dashboard');
     return { data: adminLotterySession };
   } catch (error) {
-    console.error('予期しないエラー:', error);
+    logger.error('予期しないエラー:', error);
     return { error: 'Unexpected error occurred' };
   }
 }
@@ -135,7 +136,7 @@ export async function applyToAdminLottery(data: AdminLotteryEntryData) {
       .single();
 
     if (checkError && checkError.code !== 'PGRST116') {
-      console.error('応募チェックエラー:', checkError);
+      logger.error('応募チェックエラー:', checkError);
       return { error: 'Failed to check existing entry' };
     }
 
@@ -156,14 +157,14 @@ export async function applyToAdminLottery(data: AdminLotteryEntryData) {
       .single();
 
     if (entryError) {
-      console.error('応募作成エラー:', entryError);
+      logger.error('応募作成エラー:', entryError);
       return { error: 'Failed to apply to admin lottery' };
     }
 
     revalidatePath('/photo-sessions');
     return { data: entry };
   } catch (error) {
-    console.error('予期しないエラー:', error);
+    logger.error('予期しないエラー:', error);
     return { error: 'Unexpected error occurred' };
   }
 }
@@ -194,7 +195,7 @@ export async function selectAdminLotteryWinners(data: SelectWinnersData) {
     );
 
     if (error) {
-      console.error('当選者選出エラー:', error);
+      logger.error('当選者選出エラー:', error);
       return { error: 'Failed to select winners' };
     }
 
@@ -205,7 +206,7 @@ export async function selectAdminLotteryWinners(data: SelectWinnersData) {
     revalidatePath('/dashboard');
     return { data: result[0] };
   } catch (error) {
-    console.error('予期しないエラー:', error);
+    logger.error('予期しないエラー:', error);
     return { error: 'Unexpected error occurred' };
   }
 }
@@ -236,14 +237,14 @@ export async function undoAdminLotterySelection(data: SelectWinnersData) {
     );
 
     if (error) {
-      console.error('選出取り消しエラー:', error);
+      logger.error('選出取り消しエラー:', error);
       return { error: 'Failed to undo selection' };
     }
 
     revalidatePath('/dashboard');
     return { data: result[0] };
   } catch (error) {
-    console.error('予期しないエラー:', error);
+    logger.error('予期しないエラー:', error);
     return { error: 'Unexpected error occurred' };
   }
 }
@@ -268,13 +269,13 @@ export async function getAdminLotterySession(photoSessionId: string) {
       .single();
 
     if (error && error.code !== 'PGRST116') {
-      console.error('管理抽選セッション取得エラー:', error);
+      logger.error('管理抽選セッション取得エラー:', error);
       return { error: 'Failed to fetch admin lottery session' };
     }
 
     return { data: adminLotterySession };
   } catch (error) {
-    console.error('予期しないエラー:', error);
+    logger.error('予期しないエラー:', error);
     return { error: 'Unexpected error occurred' };
   }
 }
@@ -326,13 +327,13 @@ export async function getAdminLotteryEntries(sessionId: string) {
       .order('created_at', { ascending: true });
 
     if (error) {
-      console.error('応募一覧取得エラー:', error);
+      logger.error('応募一覧取得エラー:', error);
       return { error: 'Failed to fetch admin lottery entries' };
     }
 
     return { data: entries };
   } catch (error) {
-    console.error('予期しないエラー:', error);
+    logger.error('予期しないエラー:', error);
     return { error: 'Unexpected error occurred' };
   }
 }
@@ -359,13 +360,13 @@ export async function getUserAdminLotteryEntry(sessionId: string) {
       .single();
 
     if (error && error.code !== 'PGRST116') {
-      console.error('応募取得エラー:', error);
+      logger.error('応募取得エラー:', error);
       return { error: 'Failed to fetch admin lottery entry' };
     }
 
     return { data: entry };
   } catch (error) {
-    console.error('予期しないエラー:', error);
+    logger.error('予期しないエラー:', error);
     return { error: 'Unexpected error occurred' };
   }
 }
@@ -416,14 +417,14 @@ export async function updateAdminLotterySessionStatus(
       .single();
 
     if (updateError) {
-      console.error('ステータス更新エラー:', updateError);
+      logger.error('ステータス更新エラー:', updateError);
       return { error: 'Failed to update admin lottery status' };
     }
 
     revalidatePath('/dashboard');
     return { data: updatedSession };
   } catch (error) {
-    console.error('予期しないエラー:', error);
+    logger.error('予期しないエラー:', error);
     return { error: 'Unexpected error occurred' };
   }
 }
@@ -479,13 +480,13 @@ export async function getAdminLotterySelectionHistory(sessionId: string) {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('選出履歴取得エラー:', error);
+      logger.error('選出履歴取得エラー:', error);
       return { error: 'Failed to fetch selection history' };
     }
 
     return { data: history };
   } catch (error) {
-    console.error('予期しないエラー:', error);
+    logger.error('予期しないエラー:', error);
     return { error: 'Unexpected error occurred' };
   }
 }

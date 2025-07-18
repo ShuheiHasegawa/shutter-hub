@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/utils/logger';
 import { revalidatePath } from 'next/cache';
 import {
   UserPreferences,
@@ -40,7 +41,7 @@ export async function getFollowingUsers(userId: string): Promise<{
       .eq('status', 'accepted');
 
     if (followError) {
-      console.error('Get following IDs error:', followError);
+      logger.error('Get following IDs error:', followError);
       return {
         success: false,
         message: 'フォロー中のユーザー取得に失敗しました',
@@ -60,7 +61,7 @@ export async function getFollowingUsers(userId: string): Promise<{
       .in('id', followingIds);
 
     if (profileError) {
-      console.error('Get profiles error:', profileError);
+      logger.error('Get profiles error:', profileError);
       return { success: false, message: 'プロフィール取得に失敗しました' };
     }
 
@@ -96,7 +97,7 @@ export async function getFollowingUsers(userId: string): Promise<{
 
     return { success: true, data: users };
   } catch (error) {
-    console.error('Get following users error:', error);
+    logger.error('Get following users error:', error);
     return {
       success: false,
       message: 'フォロー中のユーザー取得に失敗しました',
@@ -129,7 +130,7 @@ export async function getFollowerUsers(userId: string): Promise<{
       .eq('status', 'accepted');
 
     if (followError) {
-      console.error('Get follower IDs error:', followError);
+      logger.error('Get follower IDs error:', followError);
       return { success: false, message: 'フォロワー取得に失敗しました' };
     }
 
@@ -146,7 +147,7 @@ export async function getFollowerUsers(userId: string): Promise<{
       .in('id', followerIds);
 
     if (profileError) {
-      console.error('Get profiles error:', profileError);
+      logger.error('Get profiles error:', profileError);
       return { success: false, message: 'プロフィール取得に失敗しました' };
     }
 
@@ -182,7 +183,7 @@ export async function getFollowerUsers(userId: string): Promise<{
 
     return { success: true, data: users };
   } catch (error) {
-    console.error('Get follower users error:', error);
+    logger.error('Get follower users error:', error);
     return { success: false, message: 'フォロワー取得に失敗しました' };
   }
 }
@@ -241,7 +242,7 @@ export async function followUser(
     );
 
     if (followError) {
-      console.error('Follow error:', followError);
+      logger.error('Follow error:', followError);
       return { success: false, message: 'フォローに失敗しました' };
     }
 
@@ -259,7 +260,7 @@ export async function followUser(
         : 'フォローしました',
     };
   } catch (error) {
-    console.error('Follow user error:', error);
+    logger.error('Follow user error:', error);
     return { success: false, message: 'フォローに失敗しました' };
   }
 }
@@ -285,7 +286,7 @@ export async function unfollowUser(
       .eq('following_id', targetUserId);
 
     if (error) {
-      console.error('Unfollow error:', error);
+      logger.error('Unfollow error:', error);
       return { success: false, message: 'アンフォローに失敗しました' };
     }
 
@@ -296,7 +297,7 @@ export async function unfollowUser(
 
     return { success: true, message: 'アンフォローしました' };
   } catch (error) {
-    console.error('Unfollow user error:', error);
+    logger.error('Unfollow user error:', error);
     return { success: false, message: 'アンフォローに失敗しました' };
   }
 }
@@ -324,7 +325,7 @@ export async function approveFollowRequest(
       .eq('status', 'pending');
 
     if (error) {
-      console.error('Approve follow request error:', error);
+      logger.error('Approve follow request error:', error);
       return { success: false, message: 'リクエストの承認に失敗しました' };
     }
 
@@ -333,7 +334,7 @@ export async function approveFollowRequest(
 
     return { success: true, message: 'フォローリクエストを承認しました' };
   } catch (error) {
-    console.error('Approve follow request error:', error);
+    logger.error('Approve follow request error:', error);
     return { success: false, message: 'リクエストの承認に失敗しました' };
   }
 }
@@ -360,7 +361,7 @@ export async function rejectFollowRequest(
       .eq('status', 'pending');
 
     if (error) {
-      console.error('Reject follow request error:', error);
+      logger.error('Reject follow request error:', error);
       return { success: false, message: 'リクエストの拒否に失敗しました' };
     }
 
@@ -368,7 +369,7 @@ export async function rejectFollowRequest(
 
     return { success: true, message: 'フォローリクエストを拒否しました' };
   } catch (error) {
-    console.error('Reject follow request error:', error);
+    logger.error('Reject follow request error:', error);
     return { success: false, message: 'リクエストの拒否に失敗しました' };
   }
 }
@@ -416,7 +417,7 @@ export async function blockUser(
     );
 
     if (blockError) {
-      console.error('Block user error:', blockError);
+      logger.error('Block user error:', blockError);
       return { success: false, message: 'ブロックに失敗しました' };
     }
 
@@ -429,7 +430,7 @@ export async function blockUser(
       message: 'ユーザーをブロックしました',
     };
   } catch (error) {
-    console.error('Block user error:', error);
+    logger.error('Block user error:', error);
     return { success: false, message: 'ブロックに失敗しました' };
   }
 }
@@ -455,7 +456,7 @@ export async function unblockUser(
       .eq('blocked_id', targetUserId);
 
     if (error) {
-      console.error('Unblock user error:', error);
+      logger.error('Unblock user error:', error);
       return { success: false, message: 'ブロック解除に失敗しました' };
     }
 
@@ -468,7 +469,7 @@ export async function unblockUser(
       message: 'ブロックを解除しました',
     };
   } catch (error) {
-    console.error('Unblock user error:', error);
+    logger.error('Unblock user error:', error);
     return { success: false, message: 'ブロック解除に失敗しました' };
   }
 }
@@ -525,7 +526,7 @@ export async function getFollowList(
       .range(offset, offset + limit - 1);
 
     if (error) {
-      console.error('Get follow list error:', error);
+      logger.error('Get follow list error:', error);
       return { users: [], total_count: 0, has_more: false };
     }
 
@@ -556,7 +557,7 @@ export async function getFollowList(
       has_more: (count || 0) > offset + limit,
     };
   } catch (error) {
-    console.error('Get follow list error:', error);
+    logger.error('Get follow list error:', error);
     return { users: [], total_count: 0, has_more: false };
   }
 }
@@ -575,7 +576,7 @@ export async function getUserFollowStats(
       .single();
 
     if (error && error.code !== 'PGRST116') {
-      console.error('Get follow stats error:', error);
+      logger.error('Get follow stats error:', error);
       return null;
     }
 
@@ -589,7 +590,7 @@ export async function getUserFollowStats(
       }
     );
   } catch (error) {
-    console.error('Get follow stats error:', error);
+    logger.error('Get follow stats error:', error);
     return null;
   }
 }
@@ -618,13 +619,13 @@ export async function getUserPreferences(
       .single();
 
     if (error && error.code !== 'PGRST116') {
-      console.error('Get user preferences error:', error);
+      logger.error('Get user preferences error:', error);
       return null;
     }
 
     return data;
   } catch (error) {
-    console.error('Get user preferences error:', error);
+    logger.error('Get user preferences error:', error);
     return null;
   }
 }
@@ -655,14 +656,14 @@ export async function updatePrivacySettings(
     );
 
     if (error) {
-      console.error('Update privacy settings error:', error);
+      logger.error('Update privacy settings error:', error);
       return { success: false, message: '設定の更新に失敗しました' };
     }
 
     revalidatePath('/settings/privacy');
     return { success: true, message: 'プライバシー設定を更新しました' };
   } catch (error) {
-    console.error('Update privacy settings error:', error);
+    logger.error('Update privacy settings error:', error);
     return { success: false, message: '設定の更新に失敗しました' };
   }
 }
@@ -693,14 +694,14 @@ export async function updateNotificationSettings(
     );
 
     if (error) {
-      console.error('Update notification settings error:', error);
+      logger.error('Update notification settings error:', error);
       return { success: false, message: '設定の更新に失敗しました' };
     }
 
     revalidatePath('/settings/notifications');
     return { success: true, message: '通知設定を更新しました' };
   } catch (error) {
-    console.error('Update notification settings error:', error);
+    logger.error('Update notification settings error:', error);
     return { success: false, message: '設定の更新に失敗しました' };
   }
 }
@@ -737,7 +738,7 @@ export async function searchUsers(
       .range(offset, offset + limit - 1);
 
     if (error) {
-      console.error('Search users error:', error);
+      logger.error('Search users error:', error);
       return { users: [], total_count: 0, has_more: false };
     }
 
@@ -795,7 +796,7 @@ export async function searchUsers(
       has_more: (count || 0) > offset + limit,
     };
   } catch (error) {
-    console.error('Search users error:', error);
+    logger.error('Search users error:', error);
     return { users: [], total_count: 0, has_more: false };
   }
 }

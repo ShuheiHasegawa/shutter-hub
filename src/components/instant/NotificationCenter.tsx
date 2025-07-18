@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -91,7 +92,7 @@ export function NotificationCenter({
     // 通知に応じたアクションを実行
     if (notification.data?.requestId) {
       // リクエスト詳細ページに遷移など
-      console.log('Navigate to request:', notification.data.requestId);
+      logger.debug('Navigate to request:', notification.data.requestId);
     }
   };
 

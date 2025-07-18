@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/client';
+import { logger } from '@/lib/utils/logger';
 
 const BUCKET_NAME = 'photo-sessions';
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -79,7 +80,7 @@ export async function uploadPhotoSessionImage(
       });
 
     if (error) {
-      console.error('Upload error:', error);
+      logger.error('Upload error:', error);
       return { success: false, error: 'アップロードに失敗しました。' };
     }
 
@@ -93,7 +94,7 @@ export async function uploadPhotoSessionImage(
       url: urlData.publicUrl,
     };
   } catch (error) {
-    console.error('Upload error:', error);
+    logger.error('Upload error:', error);
     return { success: false, error: 'アップロードに失敗しました。' };
   }
 }
@@ -137,13 +138,13 @@ export async function deletePhotoSessionImage(
       .remove([filePath]);
 
     if (error) {
-      console.error('Delete error:', error);
+      logger.error('Delete error:', error);
       return { success: false, error: '画像の削除に失敗しました。' };
     }
 
     return { success: true };
   } catch (error) {
-    console.error('Delete error:', error);
+    logger.error('Delete error:', error);
     return { success: false, error: '画像の削除に失敗しました。' };
   }
 }
@@ -164,13 +165,13 @@ export async function updatePhotoSessionImages(
       .eq('id', photoSessionId);
 
     if (error) {
-      console.error('Update error:', error);
+      logger.error('Update error:', error);
       return { success: false, error: '画像リストの更新に失敗しました。' };
     }
 
     return { success: true };
   } catch (error) {
-    console.error('Update error:', error);
+    logger.error('Update error:', error);
     return { success: false, error: '画像リストの更新に失敗しました。' };
   }
 }

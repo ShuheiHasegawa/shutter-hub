@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/utils/logger';
 import { stripe } from '@/lib/stripe/config';
 import { revalidatePath } from 'next/cache';
 import type {
@@ -87,7 +88,7 @@ export async function createEscrowPayment(
       .single();
 
     if (escrowError) {
-      console.error('エスクロー決済作成エラー:', escrowError);
+      logger.error('エスクロー決済作成エラー:', escrowError);
       return { success: false, error: 'エスクロー決済の作成に失敗しました' };
     }
 
@@ -99,7 +100,7 @@ export async function createEscrowPayment(
       },
     };
   } catch (error) {
-    console.error('エスクロー決済作成エラー:', error);
+    logger.error('エスクロー決済作成エラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -126,7 +127,7 @@ export async function confirmEscrowPayment(
       .single();
 
     if (error) {
-      console.error('エスクロー決済確認エラー:', error);
+      logger.error('エスクロー決済確認エラー:', error);
       return { success: false, error: 'エスクロー決済の確認に失敗しました' };
     }
 
@@ -151,7 +152,7 @@ export async function confirmEscrowPayment(
     revalidatePath('/instant');
     return { success: true, data: escrowPayment };
   } catch (error) {
-    console.error('エスクロー決済確認エラー:', error);
+    logger.error('エスクロー決済確認エラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -220,7 +221,7 @@ export async function deliverPhotos(
       .single();
 
     if (deliveryError) {
-      console.error('写真配信記録エラー:', deliveryError);
+      logger.error('写真配信記録エラー:', deliveryError);
       return { success: false, error: '写真配信の記録に失敗しました' };
     }
 
@@ -252,14 +253,14 @@ export async function deliverPhotos(
       .eq('id', data.booking_id)
       .single();
 
-    console.log('Booking data for status update:', {
+    logger.debug('Booking data for status update:', {
       bookingData,
       bookingSelectError,
       booking_id: data.booking_id,
     });
 
     if (bookingSelectError) {
-      console.error('booking取得エラー:', bookingSelectError);
+      logger.error('booking取得エラー:', bookingSelectError);
     }
 
     if (bookingData?.request_id) {
@@ -271,22 +272,22 @@ export async function deliverPhotos(
         })
         .eq('id', bookingData.request_id);
 
-      console.log('Status update result:', {
+      logger.debug('Status update result:', {
         request_id: bookingData.request_id,
         statusUpdateError,
       });
 
       if (statusUpdateError) {
-        console.error('ステータス更新エラー:', statusUpdateError);
+        logger.error('ステータス更新エラー:', statusUpdateError);
       }
     } else {
-      console.error('request_idが見つかりません:', { bookingData });
+      logger.error('request_idが見つかりません:', { bookingData });
     }
 
     revalidatePath('/instant');
     return { success: true, data: photoDelivery };
   } catch (error) {
-    console.error('写真配信エラー:', error);
+    logger.error('写真配信エラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -397,7 +398,7 @@ export async function confirmDeliveryWithReview(
     revalidatePath('/instant');
     return { success: true, data: undefined };
   } catch (error) {
-    console.error('配信確認エラー:', error);
+    logger.error('配信確認エラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -436,7 +437,7 @@ export async function createDispute(
     revalidatePath('/instant');
     return { success: true, data: undefined };
   } catch (error) {
-    console.error('争議申請エラー:', error);
+    logger.error('争議申請エラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -498,7 +499,7 @@ export async function getExternalDeliveryServices(): Promise<
 
     return { success: true, data: services };
   } catch (error) {
-    console.error('外部配信サービス取得エラー:', error);
+    logger.error('外部配信サービス取得エラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -568,14 +569,14 @@ export async function processAutoConfirmations(): Promise<
 
         processedCount++;
       } catch (error) {
-        console.error(`自動確認処理エラー (payment_id: ${payment.id}):`, error);
+        logger.error(`自動確認処理エラー (payment_id: ${payment.id}):`, error);
         // 個別のエラーはログに記録して続行
       }
     }
 
     return { success: true, data: processedCount };
   } catch (error) {
-    console.error('自動確認処理エラー:', error);
+    logger.error('自動確認処理エラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -615,7 +616,7 @@ export async function getEscrowPaymentStatus(
       },
     };
   } catch (error) {
-    console.error('エスクロー決済状況取得エラー:', error);
+    logger.error('エスクロー決済状況取得エラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }

@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/utils/logger';
 import { revalidatePath } from 'next/cache';
 import {
   CreatePostData,
@@ -85,7 +86,7 @@ export async function createPost(
       .single();
 
     if (postError) {
-      console.error('投稿作成エラー詳細:', postError);
+      logger.error('投稿作成エラー詳細:', postError);
       return {
         success: false,
         message: `ポストの作成に失敗しました: ${postError.message}`,
@@ -148,8 +149,8 @@ export async function createPost(
       },
     };
   } catch (error) {
-    console.error('投稿作成エラー:', error);
-    console.error('投稿データ:', postData);
+    logger.error('投稿作成エラー:', error);
+    logger.error('投稿データ:', postData);
     return {
       success: false,
       message: `投稿の作成に失敗しました: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -216,7 +217,7 @@ export async function likePost(
       return { success: true, isLiked: true };
     }
   } catch (error) {
-    console.error('いいね処理エラー:', error);
+    logger.error('いいね処理エラー:', error);
     return {
       success: false,
       isLiked: false,
@@ -282,7 +283,7 @@ export async function commentOnPost(
       },
     };
   } catch (error) {
-    console.error('コメント投稿エラー:', error);
+    logger.error('コメント投稿エラー:', error);
     return { success: false, message: 'コメントの投稿に失敗しました' };
   }
 }
@@ -358,7 +359,7 @@ export async function repostPost(
       },
     };
   } catch (error) {
-    console.error('リポストエラー:', error);
+    logger.error('リポストエラー:', error);
     return { success: false, message: 'リポストに失敗しました' };
   }
 }
@@ -390,14 +391,14 @@ export async function getTimelinePosts(
       .range(offset, offset + limit - 1);
 
     if (error) {
-      console.error('タイムライン取得エラー:', error);
+      logger.error('タイムライン取得エラー:', error);
       return {
         success: false,
         message: `タイムラインの取得に失敗しました: ${error.message}`,
       };
     }
 
-    console.log('取得された投稿数:', posts?.length || 0);
+    logger.debug('取得された投稿数:', posts?.length || 0);
 
     if (!posts || posts.length === 0) {
       return { success: true, data: [] };
@@ -510,10 +511,10 @@ export async function getTimelinePosts(
       };
     });
 
-    console.log('処理された投稿数:', timelinePosts.length);
+    logger.debug('処理された投稿数:', timelinePosts.length);
     return { success: true, data: timelinePosts };
   } catch (error) {
-    console.error('タイムライン取得エラー:', error);
+    logger.error('タイムライン取得エラー:', error);
     return { success: false, message: 'タイムラインの取得に失敗しました' };
   }
 }
@@ -617,7 +618,7 @@ export async function searchPosts(
 
     return { success: true, data: postsWithUser };
   } catch (error) {
-    console.error('投稿検索エラー:', error);
+    logger.error('投稿検索エラー:', error);
     return { success: false, message: '投稿の検索に失敗しました' };
   }
 }
@@ -648,7 +649,7 @@ export async function getTrendingHashtags(
 
     return { success: true, data: trendingTopics };
   } catch (error) {
-    console.error('トレンド取得エラー:', error);
+    logger.error('トレンド取得エラー:', error);
     return { success: false, message: 'トレンドの取得に失敗しました' };
   }
 }
@@ -702,7 +703,7 @@ export async function getUserPostStats(
 
     return { success: true, data: postStats };
   } catch (error) {
-    console.error('統計取得エラー:', error);
+    logger.error('統計取得エラー:', error);
     return { success: false, message: '統計の取得に失敗しました' };
   }
 }
@@ -750,7 +751,7 @@ export async function deletePost(
 
     return { success: true };
   } catch (error) {
-    console.error('投稿削除エラー:', error);
+    logger.error('投稿削除エラー:', error);
     return { success: false, message: '投稿の削除に失敗しました' };
   }
 }
@@ -804,14 +805,14 @@ export async function getTrendingPosts(
       .range(offset, offset + limit - 1);
 
     if (error) {
-      console.error('トレンド投稿取得エラー:', error);
+      logger.error('トレンド投稿取得エラー:', error);
       return {
         success: false,
         message: `トレンド投稿の取得に失敗しました: ${error.message}`,
       };
     }
 
-    console.log(`取得されたトレンド投稿数(${period}):`, posts?.length || 0);
+    logger.debug(`取得されたトレンド投稿数(${period}):`, posts?.length || 0);
 
     if (!posts || posts.length === 0) {
       return { success: true, data: [] };
@@ -924,10 +925,10 @@ export async function getTrendingPosts(
       };
     });
 
-    console.log(`処理されたトレンド投稿数(${period}):`, trendingPosts.length);
+    logger.debug(`処理されたトレンド投稿数(${period}):`, trendingPosts.length);
     return { success: true, data: trendingPosts };
   } catch (error) {
-    console.error('トレンド投稿取得エラー:', error);
+    logger.error('トレンド投稿取得エラー:', error);
     return { success: false, message: 'トレンド投稿の取得に失敗しました' };
   }
 }

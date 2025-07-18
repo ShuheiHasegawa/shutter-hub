@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/utils/logger';
 
 export async function getUserSubscriptionPlan(userId: string) {
   try {
@@ -15,7 +16,7 @@ export async function getUserSubscriptionPlan(userId: string) {
       .single();
 
     if (error) {
-      console.error('Error fetching user subscription:', error);
+      logger.error('Error fetching user subscription:', error);
       return { subscription_plan: 'free' };
     }
 
@@ -36,7 +37,7 @@ export async function getUserSubscriptionPlan(userId: string) {
       user_role: userProfile?.user_role,
     };
   } catch (error) {
-    console.error('Error in getUserSubscriptionPlan:', error);
+    logger.error('Error in getUserSubscriptionPlan:', error);
     return { subscription_plan: 'free' };
   }
 }

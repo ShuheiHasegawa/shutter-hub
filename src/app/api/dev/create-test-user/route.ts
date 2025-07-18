@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { logger } from '@/lib/utils/logger';
 // import { createClient } from '@supabase/supabase-js';
 
 export async function POST(request: NextRequest) {
@@ -54,7 +55,7 @@ export async function POST(request: NextRequest) {
 
     if (!response.ok) {
       const errorData = await response.json();
-      console.error('Supabase Admin API Error:', errorData);
+      logger.error('Supabase Admin API Error:', errorData);
       return NextResponse.json(
         { error: errorData.msg || 'Failed to create user' },
         { status: response.status }
@@ -72,7 +73,7 @@ export async function POST(request: NextRequest) {
       note: 'Profile creation will be handled on client side',
     });
   } catch (error) {
-    console.error('API Error:', error);
+    logger.error('API Error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

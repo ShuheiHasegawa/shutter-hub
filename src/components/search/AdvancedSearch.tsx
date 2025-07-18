@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -182,7 +183,7 @@ export function AdvancedSearch() {
 
       setSessions(results);
     } catch (error) {
-      console.error('検索エラー:', error);
+      logger.error('検索エラー:', error);
       toast({
         title: t('error.searchFailed'),
         description: t('error.unexpectedError'),

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import {
@@ -108,7 +109,7 @@ export default function TestLoginPage() {
         .eq('id', userId);
 
       if (fetchError && fetchError.code !== 'PGRST116') {
-        console.error('プロフィール確認エラー:', fetchError);
+        logger.error('プロフィール確認エラー:', fetchError);
         return;
       }
 
@@ -124,7 +125,7 @@ export default function TestLoginPage() {
           .eq('id', userId);
 
         if (error) {
-          console.error('プロフィール更新エラー:', error);
+          logger.error('プロフィール更新エラー:', error);
         }
       } else {
         // 新規プロフィールを作成
@@ -136,17 +137,17 @@ export default function TestLoginPage() {
         });
 
         if (error) {
-          console.error('プロフィール作成エラー:', error);
+          logger.error('プロフィール作成エラー:', error);
           // トリガーエラーの場合は警告として表示
           if (error.code === '42702') {
-            console.warn(
+            logger.warn(
               'データベーストリガーエラーが発生しましたが、ユーザー作成は成功しています'
             );
           }
         }
       }
     } catch (error) {
-      console.error('プロフィール処理エラー:', error);
+      logger.error('プロフィール処理エラー:', error);
     }
   };
 
@@ -175,7 +176,7 @@ export default function TestLoginPage() {
         toast.error(`削除に失敗しました: ${result.error}`);
       }
     } catch (error) {
-      console.error('ユーザー削除エラー:', error);
+      logger.error('ユーザー削除エラー:', error);
       toast.error('ユーザー削除中にエラーが発生しました');
     }
   };
@@ -244,7 +245,7 @@ export default function TestLoginPage() {
               return;
             }
           } catch (createError) {
-            console.error('ユーザー作成エラー:', createError);
+            logger.error('ユーザー作成エラー:', createError);
             throw new Error(
               `ユーザー作成に失敗しました: ${createError instanceof Error ? createError.message : 'Unknown error'}`
             );
@@ -259,7 +260,7 @@ export default function TestLoginPage() {
         router.push('/ja/dashboard');
       }
     } catch (error: unknown) {
-      console.error('ログインエラー:', error);
+      logger.error('ログインエラー:', error);
       const message = error instanceof Error ? error.message : 'Unknown error';
       toast.error(`ログインに失敗しました: ${message}`);
     } finally {
@@ -277,7 +278,7 @@ export default function TestLoginPage() {
       await logout();
       toast.success('ログアウトしました');
     } catch (error: unknown) {
-      console.error('ログアウトエラー:', error);
+      logger.error('ログアウトエラー:', error);
       const message = error instanceof Error ? error.message : 'Unknown error';
       toast.error(`ログアウトに失敗しました: ${message}`);
     } finally {

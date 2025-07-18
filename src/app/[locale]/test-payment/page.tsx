@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -44,7 +45,7 @@ export default function TestPaymentPage() {
       }
       */
     } catch (error) {
-      console.error('テスト予約作成エラー:', error);
+      logger.error('テスト予約作成エラー:', error);
       setError('予期しないエラーが発生しました');
     } finally {
       setIsCreatingBooking(false);

@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/utils/logger';
 import { revalidatePath } from 'next/cache';
 import { CreatePhotoSessionSlotData } from '@/types/photo-session';
 
@@ -68,7 +69,7 @@ export async function createPhotoSessionWithSlotsAction(
       .single();
 
     if (sessionError) {
-      console.error('撮影会作成エラー:', sessionError);
+      logger.error('撮影会作成エラー:', sessionError);
       return { success: false, error: '撮影会の作成に失敗しました' };
     }
 
@@ -84,7 +85,7 @@ export async function createPhotoSessionWithSlotsAction(
         .insert(slotsToInsert);
 
       if (slotsError) {
-        console.error('スロット作成エラー:', slotsError);
+        logger.error('スロット作成エラー:', slotsError);
         // 撮影会は作成されているので削除
         await supabase.from('photo_sessions').delete().eq('id', session.id);
         return { success: false, error: 'スロットの作成に失敗しました' };
@@ -96,7 +97,7 @@ export async function createPhotoSessionWithSlotsAction(
 
     return { success: true, data: session };
   } catch (error) {
-    console.error('撮影会作成エラー:', error);
+    logger.error('撮影会作成エラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -159,7 +160,7 @@ export async function updatePhotoSessionWithSlotsAction(
       .single();
 
     if (sessionError) {
-      console.error('撮影会更新エラー:', sessionError);
+      logger.error('撮影会更新エラー:', sessionError);
       return { success: false, error: '撮影会の更新に失敗しました' };
     }
 
@@ -181,7 +182,7 @@ export async function updatePhotoSessionWithSlotsAction(
         .insert(slotsToInsert);
 
       if (slotsError) {
-        console.error('スロット更新エラー:', slotsError);
+        logger.error('スロット更新エラー:', slotsError);
         return { success: false, error: 'スロットの更新に失敗しました' };
       }
     }
@@ -192,7 +193,7 @@ export async function updatePhotoSessionWithSlotsAction(
 
     return { success: true, data: session };
   } catch (error) {
-    console.error('撮影会更新エラー:', error);
+    logger.error('撮影会更新エラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { useRouter } from 'next/navigation';
 import { PhotoSessionCard } from './PhotoSessionCard';
 import { Button } from '@/components/ui/button';
@@ -230,7 +231,7 @@ export function PhotoSessionList({
         const { data, error } = await query;
 
         if (error) {
-          console.error('撮影会一覧取得エラー:', error);
+          logger.error('撮影会一覧取得エラー:', error);
           return;
         }
 
@@ -257,7 +258,7 @@ export function PhotoSessionList({
           setPage(prev => prev + 1);
         }
       } catch (error) {
-        console.error('撮影会一覧取得エラー:', error);
+        logger.error('撮影会一覧取得エラー:', error);
       } finally {
         setLoading(false);
         setLoadingMore(false);
@@ -386,13 +387,13 @@ export function PhotoSessionList({
     // 権限チェック
     const session = sessions.find(s => s.id === sessionId);
     if (!session || !currentUser || currentUser.id !== session.organizer_id) {
-      console.error('編集権限がありません');
+      logger.error('編集権限がありません');
       // TODO: トースト通知で権限エラーを表示
       return;
     }
 
     // 編集ページに遷移（現在は未実装）
-    console.log('編集機能は開発中です');
+    logger.debug('編集機能は開発中です');
     // router.push(`/photo-sessions/${sessionId}/edit`);
   };
 

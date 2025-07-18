@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -113,7 +114,7 @@ export function ProfileForm({
       if (isEditing) {
         result = await updateProfile(user.id, data);
       } else {
-        console.log('サーバーサイドAPIでプロフィールを作成します:', data);
+        logger.debug('サーバーサイドAPIでプロフィールを作成します:', data);
 
         const response = await fetch('/api/profile/create', {
           method: 'POST',
@@ -139,16 +140,16 @@ export function ProfileForm({
         const apiResult = await response.json();
 
         if (!response.ok || !apiResult.success) {
-          console.error('サーバーサイドAPI エラー:', apiResult);
+          logger.error('サーバーサイドAPI エラー:', apiResult);
           result = { error: apiResult.error || 'API call failed' };
         } else {
-          console.log('サーバーサイドAPI 成功:', apiResult);
+          logger.debug('サーバーサイドAPI 成功:', apiResult);
           result = { data: apiResult.data, error: null };
         }
       }
 
       if (result.error) {
-        console.error('プロフィール保存エラー:', result.error);
+        logger.error('プロフィール保存エラー:', result.error);
         toast({
           title: 'エラー',
           description: 'プロフィールの保存に失敗しました',
@@ -170,7 +171,7 @@ export function ProfileForm({
         router.push('/dashboard');
       }
     } catch (error) {
-      console.error('予期しないエラー:', error);
+      logger.error('予期しないエラー:', error);
       toast({
         title: 'エラー',
         description: '予期しないエラーが発生しました',

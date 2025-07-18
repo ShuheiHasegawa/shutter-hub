@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { useTranslations } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -80,7 +81,7 @@ export function PhotoSessionGroupChat({
       if (conversationError) {
         // テーブルが存在しない場合は警告のみ表示
         if (conversationError.code === '42P01') {
-          console.warn(
+          logger.warn(
             'メッセージシステムのテーブルが存在しません。マイグレーションが必要です。'
           );
           setLoading(false);
@@ -88,14 +89,14 @@ export function PhotoSessionGroupChat({
         }
         // RLSポリシーエラーの場合
         if (conversationError.code === '42P17') {
-          console.warn(
+          logger.warn(
             'RLSポリシーエラーが発生しました。ポリシーの修正が必要です。'
           );
           setLoading(false);
           return;
         }
         // 500 Internal Server Errorやその他のエラー
-        console.warn(
+        logger.warn(
           'グループチャット機能でエラーが発生しました:',
           conversationError
         );
@@ -118,9 +119,9 @@ export function PhotoSessionGroupChat({
         if (memberError) {
           // メンバーシップチェックでエラーが発生した場合は警告のみ
           if (memberError.code === '406') {
-            console.warn('メンバーシップデータが見つかりませんでした');
+            logger.warn('メンバーシップデータが見つかりませんでした');
           } else {
-            console.warn(
+            logger.warn(
               'メンバーシップチェックでエラーが発生しました:',
               memberError
             );
@@ -135,7 +136,7 @@ export function PhotoSessionGroupChat({
         }
       }
     } catch (error) {
-      console.error('Check existing group chat error:', error);
+      logger.error('Check existing group chat error:', error);
     } finally {
       setLoading(false);
     }
@@ -179,7 +180,7 @@ export function PhotoSessionGroupChat({
         toast.error(result.message || 'グループチャットの作成に失敗しました');
       }
     } catch (error) {
-      console.error('Group creation failed:', error);
+      logger.error('Group creation failed:', error);
       toast.error('グループチャットの作成中にエラーが発生しました');
     } finally {
       setCreating(false);
@@ -215,7 +216,7 @@ export function PhotoSessionGroupChat({
         toast.error(result.message || t('errorAddingParticipants'));
       }
     } catch (error) {
-      console.error('Add new participants error:', error);
+      logger.error('Add new participants error:', error);
       toast.error(t('errorAddingParticipants'));
     }
   };

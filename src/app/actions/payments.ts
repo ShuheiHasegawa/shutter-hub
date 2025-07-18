@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/utils/logger';
 import { stripe, calculateTotalFees } from '@/lib/stripe/config';
 import { revalidatePath } from 'next/cache';
 import type {
@@ -89,7 +90,7 @@ export async function createPaymentIntent(
       .single();
 
     if (paymentError) {
-      console.error('決済レコード作成エラー:', paymentError);
+      logger.error('決済レコード作成エラー:', paymentError);
       return { success: false, error: 'Failed to create payment record' };
     }
 
@@ -99,7 +100,7 @@ export async function createPaymentIntent(
       client_secret: paymentIntent.client_secret!,
     };
   } catch (error) {
-    console.error('決済インテント作成エラー:', error);
+    logger.error('決済インテント作成エラー:', error);
     return { success: false, error: 'Failed to create payment intent' };
   }
 }
@@ -145,7 +146,7 @@ export async function confirmPayment(
       .single();
 
     if (updateError) {
-      console.error('決済ステータス更新エラー:', updateError);
+      logger.error('決済ステータス更新エラー:', updateError);
       return { success: false, error: 'Failed to update payment status' };
     }
 
@@ -168,7 +169,7 @@ export async function confirmPayment(
       payment_intent_id: paymentIntentId,
     };
   } catch (error) {
-    console.error('決済確認エラー:', error);
+    logger.error('決済確認エラー:', error);
     return { success: false, error: 'Failed to confirm payment' };
   }
 }
@@ -255,7 +256,7 @@ export async function processRefund(data: RefundData): Promise<PaymentResult> {
       payment_intent_id: payment.stripe_payment_intent_id,
     };
   } catch (error) {
-    console.error('返金処理エラー:', error);
+    logger.error('返金処理エラー:', error);
     return { success: false, error: 'Failed to process refund' };
   }
 }
@@ -297,13 +298,13 @@ export async function getUserPayments(): Promise<{
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('決済履歴取得エラー:', error);
+      logger.error('決済履歴取得エラー:', error);
       return { success: false, error: 'Failed to fetch payments' };
     }
 
     return { success: true, data: payments as PaymentInfo[] };
   } catch (error) {
-    console.error('予期しないエラー:', error);
+    logger.error('予期しないエラー:', error);
     return { success: false, error: 'Unexpected error occurred' };
   }
 }
@@ -333,13 +334,13 @@ export async function getOrganizerRevenue(): Promise<{
     );
 
     if (error) {
-      console.error('売上統計取得エラー:', error);
+      logger.error('売上統計取得エラー:', error);
       return { success: false, error: 'Failed to fetch revenue stats' };
     }
 
     return { success: true, data: stats };
   } catch (error) {
-    console.error('予期しないエラー:', error);
+    logger.error('予期しないエラー:', error);
     return { success: false, error: 'Unexpected error occurred' };
   }
 }

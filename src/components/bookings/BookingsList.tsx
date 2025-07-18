@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -82,7 +83,7 @@ export function BookingsList() {
         });
       }
     } catch (error) {
-      console.error('データ読み込みエラー:', error);
+      logger.error('データ読み込みエラー:', error);
       toast({
         title: t('loadError'),
         description: t('loadErrorDescription'),

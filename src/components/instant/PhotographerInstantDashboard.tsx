@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -73,7 +74,7 @@ export function PhotographerInstantDashboard({
         setError(result.error || 'リクエストの取得に失敗しました');
       }
     } catch (error) {
-      console.error('リクエスト取得エラー:', error);
+      logger.error('リクエスト取得エラー:', error);
       setError('予期しないエラーが発生しました');
     } finally {
       setRequestsLoading(false);
@@ -106,7 +107,7 @@ export function PhotographerInstantDashboard({
         setError(result.error || 'ステータスの更新に失敗しました');
       }
     } catch (error) {
-      console.error('オンライン状態更新エラー:', error);
+      logger.error('オンライン状態更新エラー:', error);
       setError('予期しないエラーが発生しました');
     } finally {
       setIsLoading(false);
@@ -134,7 +135,7 @@ export function PhotographerInstantDashboard({
         setError(result.error || '応答の送信に失敗しました');
       }
     } catch (error) {
-      console.error('応答エラー:', error);
+      logger.error('応答エラー:', error);
       setError('予期しないエラーが発生しました');
     }
   };
@@ -152,7 +153,7 @@ export function PhotographerInstantDashboard({
         setError(result.error || 'ステータスの更新に失敗しました');
       }
     } catch (error) {
-      console.error('ステータス更新エラー:', error);
+      logger.error('ステータス更新エラー:', error);
       setError('予期しないエラーが発生しました');
     }
   };
@@ -176,7 +177,7 @@ export function PhotographerInstantDashboard({
 
       router.push(`/instant/deliver/${booking.id}`);
     } catch (error) {
-      console.error('予約情報取得エラー:', error);
+      logger.error('予約情報取得エラー:', error);
       setError('予期しないエラーが発生しました');
     }
   };
@@ -195,7 +196,7 @@ export function PhotographerInstantDashboard({
         // 撮影完了処理
       }
     } catch (error) {
-      console.error('撮影完了エラー:', error);
+      logger.error('撮影完了エラー:', error);
     }
   };
 

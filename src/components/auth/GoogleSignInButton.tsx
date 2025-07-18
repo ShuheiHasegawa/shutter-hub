@@ -1,6 +1,7 @@
 'use client';
 
 import { createClient } from '@/lib/supabase/client';
+import { logger } from '@/lib/utils/logger';
 import { useState } from 'react';
 import { useParams } from 'next/navigation';
 
@@ -38,11 +39,11 @@ export function OAuthButton({
       });
 
       if (error) {
-        console.error(`${provider}認証エラー:`, error);
+        logger.error(`${provider}認証エラー:`, error);
         alert('認証に失敗しました。もう一度お試しください。');
       }
     } catch (error) {
-      console.error('予期しないエラー:', error);
+      logger.error('予期しないエラー:', error);
       alert('予期しないエラーが発生しました。');
     } finally {
       setIsLoading(false);

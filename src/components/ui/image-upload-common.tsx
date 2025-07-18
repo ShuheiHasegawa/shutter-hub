@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -189,7 +190,7 @@ export function ImageUploadCommon({
 
         updateImages(updatedImages);
       } catch (error) {
-        console.error('画像アップロードエラー:', error);
+        logger.error('画像アップロードエラー:', error);
         alert(mergedLabels.errors.uploadFailed);
       } finally {
         setUploading(false);

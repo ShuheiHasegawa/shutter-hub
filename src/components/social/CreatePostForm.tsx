@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -208,7 +209,7 @@ export function CreatePostForm({
         toast.error(result.message || '投稿の作成に失敗しました');
       }
     } catch (error) {
-      console.error('投稿作成エラー:', error);
+      logger.error('投稿作成エラー:', error);
       toast.error('投稿の作成に失敗しました');
     } finally {
       setIsSubmitting(false);

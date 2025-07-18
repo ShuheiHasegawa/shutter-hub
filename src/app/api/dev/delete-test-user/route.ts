@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { logger } from '@/lib/utils/logger';
 
 export async function POST(request: NextRequest) {
   // 開発環境でのみ動作
@@ -78,7 +79,7 @@ export async function POST(request: NextRequest) {
       userId: userToDelete.id,
     });
   } catch (error) {
-    console.error('Delete user API Error:', error);
+    logger.error('Delete user API Error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

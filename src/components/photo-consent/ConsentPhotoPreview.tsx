@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { logger } from '@/lib/utils/logger';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -42,7 +43,7 @@ export const ConsentPhotoPreview: React.FC<ConsentPhotoPreviewProps> = ({
       await onUpdate(consent.id, status, message || undefined);
       onClose();
     } catch (error) {
-      console.error('Failed to update consent:', error);
+      logger.error('Failed to update consent:', error);
     } finally {
       setIsUpdating(false);
     }

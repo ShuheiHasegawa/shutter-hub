@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import {
@@ -55,7 +56,7 @@ export function WaitlistForm({
         setWaitlistEntry(result.data);
       }
     } catch (error) {
-      console.error('キャンセル待ち状況取得エラー:', error);
+      logger.error('キャンセル待ち状況取得エラー:', error);
       toast.error(t('error.load_failed'));
     } finally {
       setIsLoading(false);
@@ -76,7 +77,7 @@ export function WaitlistForm({
         toast.error(result.error || t('error.join_failed'));
       }
     } catch (error) {
-      console.error('キャンセル待ち登録エラー:', error);
+      logger.error('キャンセル待ち登録エラー:', error);
       toast.error(t('error.unexpected'));
     } finally {
       setIsSubmitting(false);
@@ -98,7 +99,7 @@ export function WaitlistForm({
         toast.error(result.error || t('error.cancel_failed'));
       }
     } catch (error) {
-      console.error('キャンセル待ちキャンセルエラー:', error);
+      logger.error('キャンセル待ちキャンセルエラー:', error);
       toast.error(t('error.unexpected'));
     } finally {
       setIsSubmitting(false);
@@ -120,7 +121,7 @@ export function WaitlistForm({
         toast.error(result.error || t('error.confirm_failed'));
       }
     } catch (error) {
-      console.error('繰り上げ確定エラー:', error);
+      logger.error('繰り上げ確定エラー:', error);
       toast.error(t('error.unexpected'));
     } finally {
       setIsSubmitting(false);

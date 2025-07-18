@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -183,10 +184,10 @@ export function AdminDisputeManagement({
           notifyPhotographer: true,
         });
       } else {
-        console.error('争議解決エラー:', result.error);
+        logger.error('争議解決エラー:', result.error);
       }
     } catch (error) {
-      console.error('争議解決エラー:', error);
+      logger.error('争議解決エラー:', error);
     } finally {
       setIsLoading(false);
     }

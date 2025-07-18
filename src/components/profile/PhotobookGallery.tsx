@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { logger } from '@/lib/utils/logger';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -70,13 +71,13 @@ export const PhotobookGallery: React.FC<PhotobookGalleryProps> = ({
         const { data, error } = await query;
 
         if (error) {
-          console.error('Error loading photobooks:', error);
+          logger.error('Error loading photobooks:', error);
           return;
         }
 
         setPhotobooks(data || []);
       } catch (error) {
-        console.error('Failed to load photobooks:', error);
+        logger.error('Failed to load photobooks:', error);
       } finally {
         setLoading(false);
       }

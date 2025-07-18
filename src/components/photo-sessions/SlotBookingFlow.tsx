@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -134,7 +135,7 @@ export function SlotBookingFlow({
                 errors.push(result.message || '予約に失敗しました');
               }
             } catch (err) {
-              console.error('スロット予約エラー:', err);
+              logger.error('スロット予約エラー:', err);
               const errorMessage =
                 err instanceof Error
                   ? err.message
@@ -166,7 +167,7 @@ export function SlotBookingFlow({
               toast.error(result.message || '予約に失敗しました');
             }
           } catch (err) {
-            console.error('スロット予約エラー:', err);
+            logger.error('スロット予約エラー:', err);
             const errorMessage =
               err instanceof Error
                 ? err.message
@@ -186,7 +187,7 @@ export function SlotBookingFlow({
         }
       }
     } catch (error) {
-      console.error('予約エラー:', error);
+      logger.error('予約エラー:', error);
       toast.error('予期しないエラーが発生しました');
     } finally {
       setIsBooking(false);

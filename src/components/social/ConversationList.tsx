@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -48,7 +49,7 @@ export function ConversationList({
       setConversations(result);
       setFilteredConversations(result);
     } catch (error) {
-      console.error('Failed to load conversations:', error);
+      logger.error('Failed to load conversations:', error);
     } finally {
       setLoading(false);
     }

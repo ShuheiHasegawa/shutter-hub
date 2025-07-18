@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/utils/logger';
 
 export interface PhotobookSocialData {
   id: string;
@@ -56,7 +57,7 @@ export async function incrementPhotobookView(photobookId: string) {
 
     return { success: true };
   } catch (error) {
-    console.error('Error incrementing photobook view:', error);
+    logger.error('Error incrementing photobook view:', error);
     return { success: false, error: 'Failed to increment view count' };
   }
 }
@@ -102,7 +103,7 @@ export async function getUserPhotobooks(
 
     const { data: photobooks, error } = await query;
     if (error) {
-      console.error('Error fetching photobooks:', error);
+      logger.error('Error fetching photobooks:', error);
       return { success: false, error: 'Failed to fetch photobooks' };
     }
 
@@ -137,7 +138,7 @@ export async function getUserPhotobooks(
 
     return { success: true, data: formattedPhotobooks };
   } catch (error) {
-    console.error('Error in getUserPhotobooks:', error);
+    logger.error('Error in getUserPhotobooks:', error);
     return { success: false, error: 'Failed to fetch photobooks' };
   }
 }
@@ -179,7 +180,7 @@ export async function getPhotobookDetails(photobookId: string) {
       .single();
 
     if (error) {
-      console.error('Error fetching photobook:', error);
+      logger.error('Error fetching photobook:', error);
       return { success: false, error: 'Photobook not found' };
     }
 
@@ -201,7 +202,7 @@ export async function getPhotobookDetails(photobookId: string) {
 
     return { success: true, data: formattedPhotobook, isOwner };
   } catch (error) {
-    console.error('Error in getPhotobookDetails:', error);
+    logger.error('Error in getPhotobookDetails:', error);
     return { success: false, error: 'Failed to fetch photobook details' };
   }
 }

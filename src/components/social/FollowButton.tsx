@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition, useEffect } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -80,7 +81,7 @@ export function FollowButton({
           }
         }
       } catch (error) {
-        console.error('Follow action error:', error);
+        logger.error('Follow action error:', error);
         toast.error(t('error'));
       }
     });

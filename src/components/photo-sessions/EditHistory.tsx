@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { logger } from '@/lib/utils/logger';
 // import { useTranslations } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -98,7 +99,7 @@ export function EditHistory({
       }));
       setHistory(processedData as EditHistoryEntry[]);
     } catch (error) {
-      console.error('編集履歴取得エラー:', error);
+      logger.error('編集履歴取得エラー:', error);
       toast.error('編集履歴の取得に失敗しました');
     } finally {
       setLoading(false);
@@ -126,7 +127,7 @@ export function EditHistory({
       // 履歴を再取得
       await fetchEditHistory();
     } catch (error) {
-      console.error('復元エラー:', error);
+      logger.error('復元エラー:', error);
       toast.error('復元に失敗しました');
     } finally {
       setRestoring(null);

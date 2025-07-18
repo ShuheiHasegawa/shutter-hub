@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { useAuth } from '@/hooks/useAuth';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -108,7 +109,7 @@ export function DashboardTopbar() {
     try {
       await logout();
     } catch (error) {
-      console.error('ログアウトエラー:', error);
+      logger.error('ログアウトエラー:', error);
       setIsLoggingOut(false);
     }
   };

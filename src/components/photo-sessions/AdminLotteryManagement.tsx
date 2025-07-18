@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -125,7 +126,7 @@ export function AdminLotteryManagement({
 
       setEntries(result.data || []);
     } catch (error) {
-      console.error('エントリー取得エラー:', error);
+      logger.error('エントリー取得エラー:', error);
       toast({
         title: tErrors('title'),
         description: tErrors('unexpectedError'),
@@ -255,7 +256,7 @@ export function AdminLotteryManagement({
       setSelectionReason('');
       await fetchEntries();
     } catch (error) {
-      console.error('当選者選出エラー:', error);
+      logger.error('当選者選出エラー:', error);
       toast({
         title: tErrors('title'),
         description: tErrors('unexpectedError'),
@@ -291,7 +292,7 @@ export function AdminLotteryManagement({
 
       await fetchEntries();
     } catch (error) {
-      console.error('選出取り消しエラー:', error);
+      logger.error('選出取り消しエラー:', error);
       toast({
         title: tErrors('title'),
         description: tErrors('unexpectedError'),
@@ -326,7 +327,7 @@ export function AdminLotteryManagement({
 
       onStatusUpdate?.();
     } catch (error) {
-      console.error('ステータス更新エラー:', error);
+      logger.error('ステータス更新エラー:', error);
       toast({
         title: tErrors('title'),
         description: tErrors('unexpectedError'),

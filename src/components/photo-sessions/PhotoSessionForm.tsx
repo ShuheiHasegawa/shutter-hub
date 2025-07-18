@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -274,7 +275,7 @@ export function PhotoSessionForm({
         }
 
         if (result.error) {
-          console.error('撮影枠制撮影会保存エラー:', result.error);
+          logger.error('撮影枠制撮影会保存エラー:', result.error);
           toast({
             title: tErrors('title'),
             description: t('form.error.saveFailed'),
@@ -309,7 +310,7 @@ export function PhotoSessionForm({
         }
 
         if (result.error) {
-          console.error('撮影会保存エラー:', result.error);
+          logger.error('撮影会保存エラー:', result.error);
           toast({
             title: tErrors('title'),
             description: t('form.error.saveFailed'),
@@ -332,7 +333,7 @@ export function PhotoSessionForm({
         router.push('/dashboard');
       }
     } catch (error) {
-      console.error('予期しないエラー:', error);
+      logger.error('予期しないエラー:', error);
       toast({
         title: tErrors('title'),
         description: tErrors('unexpectedError'),

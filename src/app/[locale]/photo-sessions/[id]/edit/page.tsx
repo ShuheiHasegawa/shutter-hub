@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { useAuth } from '@/hooks/useAuth';
 import { useParams, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
@@ -42,7 +43,7 @@ export default function EditPhotoSessionPage() {
         .single();
 
       if (error) {
-        console.error('Error loading session:', error);
+        logger.error('Error loading session:', error);
         setError('撮影会の読み込みに失敗しました');
         return;
       }
@@ -60,7 +61,7 @@ export default function EditPhotoSessionPage() {
 
       setSession(data as PhotoSessionWithOrganizer);
     } catch (error) {
-      console.error('Error loading session:', error);
+      logger.error('Error loading session:', error);
       setError('撮影会の読み込み中にエラーが発生しました');
     } finally {
       setLoading(false);

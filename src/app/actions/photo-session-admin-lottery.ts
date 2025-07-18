@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/utils/logger';
 import { revalidatePath } from 'next/cache';
 import type {
   AdminLotteryPhotoSession,
@@ -38,14 +39,14 @@ export async function createAdminLotteryPhotoSession(data: {
       .single();
 
     if (error) {
-      console.error('管理抽選撮影会作成エラー:', error);
+      logger.error('管理抽選撮影会作成エラー:', error);
       return { success: false, error: error.message };
     }
 
     revalidatePath('/dashboard');
     return { success: true, data: adminLotterySession };
   } catch (error) {
-    console.error('管理抽選撮影会作成エラー:', error);
+    logger.error('管理抽選撮影会作成エラー:', error);
     return { success: false, error: '管理抽選撮影会の作成に失敗しました' };
   }
 }
@@ -67,7 +68,7 @@ export async function createAdminLotteryEntry(
     });
 
     if (error) {
-      console.error('管理抽選エントリーエラー:', error);
+      logger.error('管理抽選エントリーエラー:', error);
       return { success: false, error: error.message };
     }
 
@@ -79,7 +80,7 @@ export async function createAdminLotteryEntry(
     revalidatePath('/photo-sessions');
     return { success: true, data: { entry_id: result.entry_id } };
   } catch (error) {
-    console.error('管理抽選エントリーエラー:', error);
+    logger.error('管理抽選エントリーエラー:', error);
     return { success: false, error: '管理抽選エントリーに失敗しました' };
   }
 }
@@ -103,7 +104,7 @@ export async function selectAdminLotteryWinners(
     });
 
     if (error) {
-      console.error('管理抽選選出エラー:', error);
+      logger.error('管理抽選選出エラー:', error);
       return { success: false, error: error.message };
     }
 
@@ -129,7 +130,7 @@ export async function selectAdminLotteryWinners(
       },
     };
   } catch (error) {
-    console.error('管理抽選選出エラー:', error);
+    logger.error('管理抽選選出エラー:', error);
     return { success: false, error: '応募者の選出に失敗しました' };
   }
 }
@@ -150,7 +151,7 @@ async function createBookingsForSelectedWinners(
       .single();
 
     if (sessionError || !adminLotterySession) {
-      console.error('管理抽選撮影会取得エラー:', sessionError);
+      logger.error('管理抽選撮影会取得エラー:', sessionError);
       return;
     }
 
@@ -163,7 +164,7 @@ async function createBookingsForSelectedWinners(
       });
 
       if (bookingError) {
-        console.error('選出者予約作成エラー:', bookingError);
+        logger.error('選出者予約作成エラー:', bookingError);
       }
     }
 
@@ -176,10 +177,10 @@ async function createBookingsForSelectedWinners(
       .eq('id', adminLotterySession.photo_session_id);
 
     if (updateError) {
-      console.error('撮影会参加者数更新エラー:', updateError);
+      logger.error('撮影会参加者数更新エラー:', updateError);
     }
   } catch (error) {
-    console.error('選出者予約作成エラー:', error);
+    logger.error('選出者予約作成エラー:', error);
   }
 }
 
@@ -207,13 +208,13 @@ export async function getAdminLotteryPhotoSession(id: string): Promise<{
       .single();
 
     if (error) {
-      console.error('管理抽選撮影会取得エラー:', error);
+      logger.error('管理抽選撮影会取得エラー:', error);
       return { success: false, error: error.message };
     }
 
     return { success: true, data: data as AdminLotteryPhotoSessionWithDetails };
   } catch (error) {
-    console.error('管理抽選撮影会取得エラー:', error);
+    logger.error('管理抽選撮影会取得エラー:', error);
     return { success: false, error: '管理抽選撮影会の取得に失敗しました' };
   }
 }
@@ -241,13 +242,13 @@ export async function getAdminLotteryEntries(
       .order('created_at', { ascending: true });
 
     if (error) {
-      console.error('管理抽選エントリー取得エラー:', error);
+      logger.error('管理抽選エントリー取得エラー:', error);
       return { success: false, error: error.message };
     }
 
     return { success: true, data: data as AdminLotteryEntryWithUser[] };
   } catch (error) {
-    console.error('管理抽選エントリー取得エラー:', error);
+    logger.error('管理抽選エントリー取得エラー:', error);
     return { success: false, error: '管理抽選エントリーの取得に失敗しました' };
   }
 }
@@ -272,13 +273,13 @@ export async function getUserAdminLotteryEntry(
       .maybeSingle();
 
     if (error) {
-      console.error('ユーザー管理抽選エントリー取得エラー:', error);
+      logger.error('ユーザー管理抽選エントリー取得エラー:', error);
       return { success: false, error: error.message };
     }
 
     return { success: true, data: data };
   } catch (error) {
-    console.error('ユーザー管理抽選エントリー取得エラー:', error);
+    logger.error('ユーザー管理抽選エントリー取得エラー:', error);
     return { success: false, error: 'エントリー状況の取得に失敗しました' };
   }
 }
@@ -297,7 +298,7 @@ export async function updateAdminLotteryPhotoSessionStatus(
       .eq('id', id);
 
     if (error) {
-      console.error('管理抽選撮影会ステータス更新エラー:', error);
+      logger.error('管理抽選撮影会ステータス更新エラー:', error);
       return { success: false, error: error.message };
     }
 
@@ -305,7 +306,7 @@ export async function updateAdminLotteryPhotoSessionStatus(
     revalidatePath('/photo-sessions');
     return { success: true };
   } catch (error) {
-    console.error('管理抽選撮影会ステータス更新エラー:', error);
+    logger.error('管理抽選撮影会ステータス更新エラー:', error);
     return { success: false, error: 'ステータスの更新に失敗しました' };
   }
 }
@@ -326,13 +327,13 @@ export async function getAdminLotteryStats(
     });
 
     if (error) {
-      console.error('管理抽選統計取得エラー:', error);
+      logger.error('管理抽選統計取得エラー:', error);
       return { success: false, error: error.message };
     }
 
     return { success: true, data: data[0] as AdminLotteryStats };
   } catch (error) {
-    console.error('管理抽選統計取得エラー:', error);
+    logger.error('管理抽選統計取得エラー:', error);
     return { success: false, error: '統計情報の取得に失敗しました' };
   }
 }
@@ -354,14 +355,14 @@ export async function createSelectionCriteria(data: {
       .single();
 
     if (error) {
-      console.error('選出基準作成エラー:', error);
+      logger.error('選出基準作成エラー:', error);
       return { success: false, error: error.message };
     }
 
     revalidatePath('/dashboard');
     return { success: true, data: criteria };
   } catch (error) {
-    console.error('選出基準作成エラー:', error);
+    logger.error('選出基準作成エラー:', error);
     return { success: false, error: '選出基準の作成に失敗しました' };
   }
 }
@@ -384,13 +385,13 @@ export async function getSelectionCriteria(
       .order('created_at', { ascending: true });
 
     if (error) {
-      console.error('選出基準取得エラー:', error);
+      logger.error('選出基準取得エラー:', error);
       return { success: false, error: error.message };
     }
 
     return { success: true, data: data as SelectionCriteria[] };
   } catch (error) {
-    console.error('選出基準取得エラー:', error);
+    logger.error('選出基準取得エラー:', error);
     return { success: false, error: '選出基準の取得に失敗しました' };
   }
 }
@@ -436,7 +437,7 @@ export async function getAdminLotteryPhotoSessions(options?: {
     const { data, error } = await query;
 
     if (error) {
-      console.error('管理抽選撮影会一覧取得エラー:', error);
+      logger.error('管理抽選撮影会一覧取得エラー:', error);
       return { success: false, error: error.message };
     }
 
@@ -445,7 +446,7 @@ export async function getAdminLotteryPhotoSessions(options?: {
       data: data as AdminLotteryPhotoSessionWithDetails[],
     };
   } catch (error) {
-    console.error('管理抽選撮影会一覧取得エラー:', error);
+    logger.error('管理抽選撮影会一覧取得エラー:', error);
     return { success: false, error: '管理抽選撮影会一覧の取得に失敗しました' };
   }
 }

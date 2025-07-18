@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/utils/logger';
 import { revalidatePath } from 'next/cache';
 
 export interface PriorityBookingSettings {
@@ -89,14 +90,14 @@ export async function createOrUpdatePriorityBookingSettings(
       .single();
 
     if (error) {
-      console.error('優先予約設定エラー:', error);
+      logger.error('優先予約設定エラー:', error);
       return { success: false, error: '優先予約設定の保存に失敗しました' };
     }
 
     revalidatePath('/photo-sessions');
     return { success: true, data };
   } catch (error) {
-    console.error('優先予約設定エラー:', error);
+    logger.error('優先予約設定エラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -120,13 +121,13 @@ export async function getPriorityBookingSettings(
 
     if (error && error.code !== 'PGRST116') {
       // PGRST116 = not found
-      console.error('優先予約設定取得エラー:', error);
+      logger.error('優先予約設定取得エラー:', error);
       return { success: false, error: '優先予約設定の取得に失敗しました' };
     }
 
     return { success: true, data: data || undefined };
   } catch (error) {
-    console.error('優先予約設定取得エラー:', error);
+    logger.error('優先予約設定取得エラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -166,14 +167,14 @@ export async function createPriorityTicket(
       .single();
 
     if (error) {
-      console.error('優先チケット作成エラー:', error);
+      logger.error('優先チケット作成エラー:', error);
       return { success: false, error: '優先チケットの作成に失敗しました' };
     }
 
     revalidatePath('/photo-sessions');
     return { success: true, data };
   } catch (error) {
-    console.error('優先チケット作成エラー:', error);
+    logger.error('優先チケット作成エラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -198,13 +199,13 @@ export async function getPriorityTickets(
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('優先チケット取得エラー:', error);
+      logger.error('優先チケット取得エラー:', error);
       return { success: false, error: '優先チケットの取得に失敗しました' };
     }
 
     return { success: true, data: data || [] };
   } catch (error) {
-    console.error('優先チケット取得エラー:', error);
+    logger.error('優先チケット取得エラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -235,13 +236,13 @@ export async function getUserRank(
 
     if (error && error.code !== 'PGRST116') {
       // PGRST116 = not found
-      console.error('ユーザーランク取得エラー:', error);
+      logger.error('ユーザーランク取得エラー:', error);
       return { success: false, error: 'ユーザーランクの取得に失敗しました' };
     }
 
     return { success: true, data: data || undefined };
   } catch (error) {
-    console.error('ユーザーランク取得エラー:', error);
+    logger.error('ユーザーランク取得エラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -271,13 +272,13 @@ export async function calculateUserRank(userId?: string): Promise<{
     });
 
     if (error) {
-      console.error('ユーザーランク計算エラー:', error);
+      logger.error('ユーザーランク計算エラー:', error);
       return { success: false, error: 'ユーザーランクの計算に失敗しました' };
     }
 
     return { success: true, data: data?.[0] };
   } catch (error) {
-    console.error('ユーザーランク計算エラー:', error);
+    logger.error('ユーザーランク計算エラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -314,7 +315,7 @@ export async function checkPriorityBookingEligibility(
     );
 
     if (error) {
-      console.error('優先予約可能性チェックエラー:', error);
+      logger.error('優先予約可能性チェックエラー:', error);
       return {
         success: false,
         error: '優先予約可能性のチェックに失敗しました',
@@ -323,7 +324,7 @@ export async function checkPriorityBookingEligibility(
 
     return { success: true, data: data?.[0] };
   } catch (error) {
-    console.error('優先予約可能性チェックエラー:', error);
+    logger.error('優先予約可能性チェックエラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -407,7 +408,7 @@ export async function createPriorityBooking(
 
     return bookingResult;
   } catch (error) {
-    console.error('優先予約作成エラー:', error);
+    logger.error('優先予約作成エラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -469,14 +470,14 @@ export async function setUserRankManually(
       .single();
 
     if (error) {
-      console.error('ユーザーランク手動設定エラー:', error);
+      logger.error('ユーザーランク手動設定エラー:', error);
       return { success: false, error: 'ユーザーランクの設定に失敗しました' };
     }
 
     revalidatePath('/admin');
     return { success: true, data };
   } catch (error) {
-    console.error('ユーザーランク手動設定エラー:', error);
+    logger.error('ユーザーランク手動設定エラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }

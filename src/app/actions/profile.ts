@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/utils/logger';
 
 export async function getUserProfile(userId: string) {
   try {
@@ -41,7 +42,7 @@ export async function getUserProfile(userId: string) {
       data: profile,
     };
   } catch (error) {
-    console.error('getUserProfile error:', error);
+    logger.error('getUserProfile error:', error);
     return {
       success: false,
       message: 'プロフィールの取得に失敗しました',

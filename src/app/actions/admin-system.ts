@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/utils/logger';
 import { revalidatePath } from 'next/cache';
 
 export interface ActionResult<T> {
@@ -70,7 +71,7 @@ export async function createInitialAdmin(
     });
 
     if (error) {
-      console.error('初期管理者作成エラー:', error);
+      logger.error('初期管理者作成エラー:', error);
       return { success: false, error: error.message };
     }
 
@@ -85,7 +86,7 @@ export async function createInitialAdmin(
     revalidatePath('/admin');
     return { success: true, data: undefined };
   } catch (error) {
-    console.error('初期管理者作成エラー:', error);
+    logger.error('初期管理者作成エラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -132,7 +133,7 @@ export async function inviteAdmin(
     });
 
     if (error) {
-      console.error('管理者招待エラー:', error);
+      logger.error('管理者招待エラー:', error);
       return { success: false, error: error.message };
     }
 
@@ -150,7 +151,7 @@ export async function inviteAdmin(
       data: { invitationToken: result.invitation_token },
     };
   } catch (error) {
-    console.error('管理者招待エラー:', error);
+    logger.error('管理者招待エラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -180,7 +181,7 @@ export async function acceptAdminInvitation(
     });
 
     if (error) {
-      console.error('招待受諾エラー:', error);
+      logger.error('招待受諾エラー:', error);
       return { success: false, error: error.message };
     }
 
@@ -196,7 +197,7 @@ export async function acceptAdminInvitation(
     revalidatePath('/profile');
     return { success: true, data: undefined };
   } catch (error) {
-    console.error('招待受諾エラー:', error);
+    logger.error('招待受諾エラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -241,13 +242,13 @@ export async function getAdminInvitations(): Promise<
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('招待一覧取得エラー:', error);
+      logger.error('招待一覧取得エラー:', error);
       return { success: false, error: '招待一覧の取得に失敗しました' };
     }
 
     return { success: true, data: invitations || [] };
   } catch (error) {
-    console.error('招待一覧取得エラー:', error);
+    logger.error('招待一覧取得エラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -287,14 +288,14 @@ export async function deleteAdminInvitation(
       .eq('id', invitationId);
 
     if (error) {
-      console.error('招待削除エラー:', error);
+      logger.error('招待削除エラー:', error);
       return { success: false, error: '招待の削除に失敗しました' };
     }
 
     revalidatePath('/admin/users');
     return { success: true, data: undefined };
   } catch (error) {
-    console.error('招待削除エラー:', error);
+    logger.error('招待削除エラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -340,7 +341,7 @@ export async function getAdminActivityLogs(
       .limit(limit);
 
     if (error) {
-      console.error('アクティビティログ取得エラー:', error);
+      logger.error('アクティビティログ取得エラー:', error);
       return {
         success: false,
         error: 'アクティビティログの取得に失敗しました',
@@ -349,7 +350,7 @@ export async function getAdminActivityLogs(
 
     return { success: true, data: logs || [] };
   } catch (error) {
-    console.error('アクティビティログ取得エラー:', error);
+    logger.error('アクティビティログ取得エラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -414,7 +415,7 @@ export async function updateUserRole(
       .eq('id', userId);
 
     if (updateError) {
-      console.error('権限更新エラー:', updateError);
+      logger.error('権限更新エラー:', updateError);
       return { success: false, error: '権限の更新に失敗しました' };
     }
 
@@ -435,7 +436,7 @@ export async function updateUserRole(
     revalidatePath('/admin/users');
     return { success: true, data: undefined };
   } catch (error) {
-    console.error('権限更新エラー:', error);
+    logger.error('権限更新エラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -485,13 +486,13 @@ export async function getAdminUsers(): Promise<
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('管理者一覧取得エラー:', error);
+      logger.error('管理者一覧取得エラー:', error);
       return { success: false, error: '管理者一覧の取得に失敗しました' };
     }
 
     return { success: true, data: adminUsers || [] };
   } catch (error) {
-    console.error('管理者一覧取得エラー:', error);
+    logger.error('管理者一覧取得エラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }

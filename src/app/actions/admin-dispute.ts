@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/utils/logger';
 import { revalidatePath } from 'next/cache';
 import Stripe from 'stripe';
 
@@ -137,7 +138,7 @@ export async function getAdminDisputes(): Promise<
       .order('created_at', { ascending: false });
 
     if (disputeError) {
-      console.error('争議取得エラー:', disputeError);
+      logger.error('争議取得エラー:', disputeError);
       return { success: false, error: '争議データの取得に失敗しました' };
     }
 
@@ -209,7 +210,7 @@ export async function getAdminDisputes(): Promise<
 
     return { success: true, data: formattedDisputes };
   } catch (error) {
-    console.error('争議一覧取得エラー:', error);
+    logger.error('争議一覧取得エラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -346,7 +347,7 @@ export async function resolveDispute(
     revalidatePath('/admin/disputes');
     return { success: true, data: undefined };
   } catch (error) {
-    console.error('争議解決エラー:', error);
+    logger.error('争議解決エラー:', error);
     return { success: false, error: '争議解決に失敗しました' };
   }
 }
@@ -391,7 +392,7 @@ export async function updateDisputeStatus(
     revalidatePath('/admin/disputes');
     return { success: true, data: undefined };
   } catch (error) {
-    console.error('ステータス更新エラー:', error);
+    logger.error('ステータス更新エラー:', error);
     return { success: false, error: 'ステータス更新に失敗しました' };
   }
 }
@@ -483,7 +484,7 @@ export async function getDisputeStats(): Promise<
       },
     };
   } catch (error) {
-    console.error('争議統計取得エラー:', error);
+    logger.error('争議統計取得エラー:', error);
     return { success: false, error: '統計データの取得に失敗しました' };
   }
 }

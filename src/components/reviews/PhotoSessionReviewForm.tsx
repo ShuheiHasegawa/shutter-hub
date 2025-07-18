@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -107,7 +108,7 @@ export function PhotoSessionReviewForm({
 
       onSuccess?.();
     } catch (error) {
-      console.error('レビュー投稿エラー:', error);
+      logger.error('レビュー投稿エラー:', error);
       toast({
         title: t('error.submitFailed'),
         description: t('error.unexpectedError'),

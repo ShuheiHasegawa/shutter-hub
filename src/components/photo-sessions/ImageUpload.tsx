@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -110,7 +111,7 @@ export function ImageUpload({
           description: t('imageUpload.success.uploaded'),
         });
       } catch (error) {
-        console.error('画像アップロードエラー:', error);
+        logger.error('画像アップロードエラー:', error);
         toast({
           title: t('imageUpload.error.uploadFailed'),
           description: t('imageUpload.error.uploadFailedDescription'),

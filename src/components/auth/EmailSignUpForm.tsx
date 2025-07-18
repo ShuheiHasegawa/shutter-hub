@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { useRouter, useParams } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -80,7 +81,7 @@ export function EmailSignUpForm() {
       });
 
       if (error) {
-        console.error('サインアップエラー:', error);
+        logger.error('サインアップエラー:', error);
         toast.error(`サインアップに失敗しました: ${error.message}`);
         return;
       }
@@ -95,7 +96,7 @@ export function EmailSignUpForm() {
         router.push(`/${locale}/auth/setup-profile`);
       }
     } catch (error) {
-      console.error('予期しないエラー:', error);
+      logger.error('予期しないエラー:', error);
       toast.error('予期しないエラーが発生しました');
     } finally {
       setIsLoading(false);

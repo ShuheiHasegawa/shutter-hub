@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { logger } from '@/lib/utils/logger';
 import {
   Dialog,
   DialogContent,
@@ -79,7 +80,7 @@ export function BookingConfirmation({
           });
         }
       } catch (error) {
-        console.error('キャンセルエラー:', error);
+        logger.error('キャンセルエラー:', error);
         toast({
           title: tErrors('title'),
           description: tErrors('unexpectedError'),

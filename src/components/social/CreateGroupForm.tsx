@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -105,7 +106,7 @@ export function CreateGroupForm({
         toast.error(result.message);
       }
     } catch (error) {
-      console.error('Create group error:', error);
+      logger.error('Create group error:', error);
       toast.error(t('createGroupError'));
     } finally {
       setIsSubmitting(false);

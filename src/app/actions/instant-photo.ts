@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/utils/logger';
 import { revalidatePath } from 'next/cache';
 import type {
   CreateInstantPhotoRequestData,
@@ -57,7 +58,7 @@ export async function createInstantPhotoRequest(
       .single();
 
     if (error) {
-      console.error('即座撮影リクエスト作成エラー:', error);
+      logger.error('即座撮影リクエスト作成エラー:', error);
       return { success: false, error: 'リクエストの作成に失敗しました' };
     }
 
@@ -73,13 +74,13 @@ export async function createInstantPhotoRequest(
     // 自動マッチングを実行
     const matchResult = await autoMatchRequest(request.id);
     if (matchResult.success) {
-      console.log('自動マッチング実行:', matchResult.data?.message);
+      logger.debug('自動マッチング実行:', matchResult.data?.message);
     }
 
     revalidatePath('/instant');
     return { success: true, data: request };
   } catch (error) {
-    console.error('予期しないエラー:', error);
+    logger.error('予期しないエラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -116,14 +117,14 @@ export async function updatePhotographerLocation(
       .single();
 
     if (error) {
-      console.error('位置情報更新エラー:', error);
+      logger.error('位置情報更新エラー:', error);
       return { success: false, error: '位置情報の更新に失敗しました' };
     }
 
     revalidatePath('/dashboard');
     return { success: true, data: location };
   } catch (error) {
-    console.error('予期しないエラー:', error);
+    logger.error('予期しないエラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -148,13 +149,13 @@ export async function findNearbyPhotographers(
     });
 
     if (error) {
-      console.error('近くのカメラマン検索エラー:', error);
+      logger.error('近くのカメラマン検索エラー:', error);
       return { success: false, error: 'カメラマンの検索に失敗しました' };
     }
 
     return { success: true, data: data || [] };
   } catch (error) {
-    console.error('予期しないエラー:', error);
+    logger.error('予期しないエラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -171,14 +172,14 @@ export async function autoMatchRequest(
     });
 
     if (error) {
-      console.error('自動マッチングエラー:', error);
+      logger.error('自動マッチングエラー:', error);
       return { success: false, error: '自動マッチングに失敗しました' };
     }
 
     const result = data?.[0] as AutoMatchResult;
     return { success: true, data: result };
   } catch (error) {
-    console.error('予期しないエラー:', error);
+    logger.error('予期しないエラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -198,14 +199,14 @@ export async function checkGuestUsageLimit(
     });
 
     if (error) {
-      console.error('利用制限チェックエラー:', error);
+      logger.error('利用制限チェックエラー:', error);
       return { success: false, error: '利用制限のチェックに失敗しました' };
     }
 
     const result = data?.[0] as GuestUsageLimit;
     return { success: true, data: result };
   } catch (error) {
-    console.error('予期しないエラー:', error);
+    logger.error('予期しないエラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -224,13 +225,13 @@ export async function getInstantPhotoRequest(
       .single();
 
     if (error) {
-      console.error('リクエスト取得エラー:', error);
+      logger.error('リクエスト取得エラー:', error);
       return { success: false, error: 'リクエストの取得に失敗しました' };
     }
 
     return { success: true, data };
   } catch (error) {
-    console.error('予期しないエラー:', error);
+    logger.error('予期しないエラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -250,13 +251,13 @@ export async function getGuestRequestHistory(
       .limit(10);
 
     if (error) {
-      console.error('履歴取得エラー:', error);
+      logger.error('履歴取得エラー:', error);
       return { success: false, error: '履歴の取得に失敗しました' };
     }
 
     return { success: true, data: data || [] };
   } catch (error) {
-    console.error('予期しないエラー:', error);
+    logger.error('予期しないエラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -269,13 +270,13 @@ export async function expireOldRequests(): Promise<ApiResponse<number>> {
     const { data, error } = await supabase.rpc('expire_old_requests');
 
     if (error) {
-      console.error('期限切れ処理エラー:', error);
+      logger.error('期限切れ処理エラー:', error);
       return { success: false, error: '期限切れ処理に失敗しました' };
     }
 
     return { success: true, data: data || 0 };
   } catch (error) {
-    console.error('予期しないエラー:', error);
+    logger.error('予期しないエラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -309,14 +310,14 @@ export async function togglePhotographerOnlineStatus(
         .eq('photographer_id', user.id);
 
       if (error) {
-        console.error('位置情報削除エラー:', error);
+        logger.error('位置情報削除エラー:', error);
         return { success: false, error: '状態の更新に失敗しました' };
       }
 
       return { success: true, data: null };
     }
   } catch (error) {
-    console.error('オンライン状態切り替えエラー:', error);
+    logger.error('オンライン状態切り替えエラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -361,7 +362,7 @@ export async function togglePhotographerOnlineStatusWithLocation(
         .single();
 
       if (error) {
-        console.error('位置情報更新エラー:', error);
+        logger.error('位置情報更新エラー:', error);
         return { success: false, error: '状態の更新に失敗しました' };
       }
 
@@ -374,14 +375,14 @@ export async function togglePhotographerOnlineStatusWithLocation(
         .eq('photographer_id', user.id);
 
       if (error) {
-        console.error('位置情報削除エラー:', error);
+        logger.error('位置情報削除エラー:', error);
         return { success: false, error: '状態の更新に失敗しました' };
       }
 
       return { success: true, data: null };
     }
   } catch (error) {
-    console.error('オンライン状態切り替えエラー:', error);
+    logger.error('オンライン状態切り替えエラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -415,13 +416,13 @@ export async function getPhotographerRequests(): Promise<
       .limit(20);
 
     if (error) {
-      console.error('リクエスト取得エラー:', error);
+      logger.error('リクエスト取得エラー:', error);
       return { success: false, error: 'リクエストの取得に失敗しました' };
     }
 
     return { success: true, data: data || [] };
   } catch (error) {
-    console.error('リクエスト取得エラー:', error);
+    logger.error('リクエスト取得エラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -456,7 +457,7 @@ export async function respondToRequest(
       });
 
       if (error) {
-        console.error('リクエスト受諾エラー:', error);
+        logger.error('リクエスト受諾エラー:', error);
         return { success: false, error: 'リクエストの受諾に失敗しました' };
       }
     } else {
@@ -471,14 +472,14 @@ export async function respondToRequest(
         });
 
       if (error) {
-        console.error('応答記録エラー:', error);
+        logger.error('応答記録エラー:', error);
         return { success: false, error: '応答の記録に失敗しました' };
       }
     }
 
     return { success: true, data: undefined };
   } catch (error) {
-    console.error('リクエスト応答エラー:', error);
+    logger.error('リクエスト応答エラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -526,7 +527,7 @@ export async function updateRequestStatus(
       .eq('matched_photographer_id', user.id);
 
     if (updateError) {
-      console.error('ステータス更新エラー:', updateError);
+      logger.error('ステータス更新エラー:', updateError);
       return { success: false, error: 'ステータスの更新に失敗しました' };
     }
 
@@ -549,9 +550,9 @@ export async function updateRequestStatus(
         });
 
       if (bookingError) {
-        console.error('予約レコード作成エラー:', bookingError);
+        logger.error('予約レコード作成エラー:', bookingError);
         // ステータス更新は成功しているので、警告として処理
-        console.warn(
+        logger.warn(
           '予約レコードの作成に失敗しましたが、ステータス更新は完了しました'
         );
       }
@@ -559,7 +560,7 @@ export async function updateRequestStatus(
 
     return { success: true, data: undefined };
   } catch (error) {
-    console.error('ステータス更新エラー:', error);
+    logger.error('ステータス更新エラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }

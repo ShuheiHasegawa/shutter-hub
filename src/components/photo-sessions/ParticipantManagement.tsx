@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { logger } from '@/lib/utils/logger';
 // import { useTranslations } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -121,7 +122,7 @@ export function ParticipantManagement({
       }));
       setParticipants(processedParticipants as Participant[]);
     } catch (error) {
-      console.error('参加者取得エラー:', error);
+      logger.error('参加者取得エラー:', error);
       toast.error('参加者情報の取得に失敗しました');
     } finally {
       setLoading(false);
@@ -176,7 +177,7 @@ export function ParticipantManagement({
 
       toast.success('参加者ステータスを更新しました');
     } catch (error) {
-      console.error('ステータス更新エラー:', error);
+      logger.error('ステータス更新エラー:', error);
       toast.error('ステータスの更新に失敗しました');
     }
   };
@@ -219,7 +220,7 @@ export function ParticipantManagement({
       setMessageText('');
       setSelectedParticipants([]);
     } catch (error) {
-      console.error('メッセージ送信エラー:', error);
+      logger.error('メッセージ送信エラー:', error);
       toast.error('メッセージの送信に失敗しました');
     } finally {
       setSendingMessage(false);

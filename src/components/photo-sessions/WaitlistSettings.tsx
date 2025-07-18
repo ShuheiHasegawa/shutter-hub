@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import {
@@ -54,7 +55,7 @@ export function WaitlistSettingsComponent({
         setSettings(result.data);
       }
     } catch (error) {
-      console.error('設定取得エラー:', error);
+      logger.error('設定取得エラー:', error);
       toast.error(t('error.load_failed'));
     } finally {
       setIsLoading(false);
@@ -71,7 +72,7 @@ export function WaitlistSettingsComponent({
         toast.error(result.error || t('error.save_failed'));
       }
     } catch (error) {
-      console.error('設定保存エラー:', error);
+      logger.error('設定保存エラー:', error);
       toast.error(t('error.unexpected'));
     } finally {
       setIsSaving(false);

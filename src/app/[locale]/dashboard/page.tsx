@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuth } from '@/hooks/useAuth';
+import { logger } from '@/lib/utils/logger';
 import { getProfile } from '@/lib/auth/profile';
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
@@ -41,7 +42,7 @@ export default function DashboardPage() {
       const { data, error } = await getProfile(user.id);
 
       if (error) {
-        console.error('プロフィール取得エラー:', error);
+        logger.error('プロフィール取得エラー:', error);
         // プロフィールが存在しない場合は設定ページにリダイレクト
         if (error.code === 'PGRST116' || error.code === 'PROFILE_NOT_FOUND') {
           router.push(`/${locale}/auth/setup-profile`);
@@ -51,7 +52,7 @@ export default function DashboardPage() {
         setProfile(data);
       }
     } catch (error) {
-      console.error('予期しないエラー:', error);
+      logger.error('予期しないエラー:', error);
     } finally {
       setProfileLoading(false);
     }

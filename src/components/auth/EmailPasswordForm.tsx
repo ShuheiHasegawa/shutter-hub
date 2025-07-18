@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { useRouter, useParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -61,7 +62,7 @@ export function EmailPasswordForm() {
       toast.success('ログインしました');
       router.push(`/${locale}/dashboard`);
     } catch (error) {
-      console.error('Sign in error:', error);
+      logger.error('Sign in error:', error);
       setError('ログイン中にエラーが発生しました');
     } finally {
       setIsLoading(false);
@@ -116,7 +117,7 @@ export function EmailPasswordForm() {
       toast.success('アカウントを作成しました');
       router.push(`/${locale}/dashboard`);
     } catch (error) {
-      console.error('Sign up error:', error);
+      logger.error('Sign up error:', error);
       setError('アカウント作成中にエラーが発生しました');
     } finally {
       setIsLoading(false);

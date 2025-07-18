@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/utils/logger';
 import { revalidatePath } from 'next/cache';
 import {
   Conversation,
@@ -54,7 +55,7 @@ export async function createOrGetConversation(
       });
 
     if (conversationError) {
-      console.error('Conversation creation error:', conversationError);
+      logger.error('Conversation creation error:', conversationError);
       return { success: false, message: '会話の作成に失敗しました' };
     }
 
@@ -75,7 +76,7 @@ export async function createOrGetConversation(
       data: conversation,
     };
   } catch (error) {
-    console.error('Create conversation error:', error);
+    logger.error('Create conversation error:', error);
     return { success: false, message: '予期しないエラーが発生しました' };
   }
 }
@@ -142,7 +143,7 @@ export async function sendMessage(
         );
 
         if (!uploadResult.success) {
-          console.error('File upload failed:', uploadResult.error);
+          logger.error('File upload failed:', uploadResult.error);
           return {
             success: false,
             message:
@@ -155,7 +156,7 @@ export async function sendMessage(
         fileSize = request.file.size;
         fileType = request.file.type;
       } catch (fileError) {
-        console.error('File processing error:', fileError);
+        logger.error('File processing error:', fileError);
         return {
           success: false,
           message: 'ファイルの処理中にエラーが発生しました',
@@ -181,7 +182,7 @@ export async function sendMessage(
       .single();
 
     if (messageError) {
-      console.error('Message insert error:', messageError);
+      logger.error('Message insert error:', messageError);
       return { success: false, message: 'メッセージの送信に失敗しました' };
     }
 
@@ -194,7 +195,7 @@ export async function sendMessage(
       data: message,
     };
   } catch (error) {
-    console.error('Send message error:', error);
+    logger.error('Send message error:', error);
     return { success: false, message: '予期しないエラーが発生しました' };
   }
 }
@@ -261,7 +262,7 @@ export async function getConversations(
     const { data: conversations, error: conversationsError } = await query;
 
     if (conversationsError) {
-      console.error('Conversations fetch error:', conversationsError);
+      logger.error('Conversations fetch error:', conversationsError);
       return [];
     }
 
@@ -307,7 +308,7 @@ export async function getConversations(
 
     return conversationsWithUnread;
   } catch (error) {
-    console.error('Get conversations error:', error);
+    logger.error('Get conversations error:', error);
     return [];
   }
 }
@@ -361,13 +362,13 @@ export async function getConversationMessages(
       .range(offset, offset + limit - 1);
 
     if (messagesError) {
-      console.error('Messages fetch error:', messagesError);
+      logger.error('Messages fetch error:', messagesError);
       return [];
     }
 
     return messages || [];
   } catch (error) {
-    console.error('Get conversation messages error:', error);
+    logger.error('Get conversation messages error:', error);
     return [];
   }
 }
@@ -397,7 +398,7 @@ export async function markMessagesAsRead(
     );
 
     if (markError) {
-      console.error('Mark as read error:', markError);
+      logger.error('Mark as read error:', markError);
       return { success: false, message: '既読処理に失敗しました' };
     }
 
@@ -409,7 +410,7 @@ export async function markMessagesAsRead(
       message: `${markedCount}件のメッセージを既読にしました`,
     };
   } catch (error) {
-    console.error('Mark messages as read error:', error);
+    logger.error('Mark messages as read error:', error);
     return { success: false, message: '予期しないエラーが発生しました' };
   }
 }
@@ -444,7 +445,7 @@ export async function editMessage(
       .single();
 
     if (updateError) {
-      console.error('Message edit error:', updateError);
+      logger.error('Message edit error:', updateError);
       return { success: false, message: 'メッセージの編集に失敗しました' };
     }
 
@@ -457,7 +458,7 @@ export async function editMessage(
       data: message,
     };
   } catch (error) {
-    console.error('Edit message error:', error);
+    logger.error('Edit message error:', error);
     return { success: false, message: '予期しないエラーが発生しました' };
   }
 }
@@ -485,7 +486,7 @@ export async function deleteMessage(
       .eq('sender_id', user.id); // 送信者のみ削除可能
 
     if (deleteError) {
-      console.error('Message delete error:', deleteError);
+      logger.error('Message delete error:', deleteError);
       return { success: false, message: 'メッセージの削除に失敗しました' };
     }
 
@@ -497,7 +498,7 @@ export async function deleteMessage(
       message: 'メッセージが削除されました',
     };
   } catch (error) {
-    console.error('Delete message error:', error);
+    logger.error('Delete message error:', error);
     return { success: false, message: '予期しないエラーが発生しました' };
   }
 }
@@ -530,7 +531,7 @@ export async function createGroupConversation(
 
     // 重複を除去（作成者は除く）
     const uniqueMemberIds = Array.from(new Set(memberIds));
-    console.log('Creating group with members:', uniqueMemberIds);
+    logger.debug('Creating group with members:', uniqueMemberIds);
 
     // ストアドプロシージャを使用してグループとメンバーを一括作成
     const { data: conversationId, error: createError } = await supabase.rpc(
@@ -545,8 +546,8 @@ export async function createGroupConversation(
     );
 
     if (createError) {
-      console.error('Group creation with RPC error:', createError);
-      console.error('Error details:', JSON.stringify(createError, null, 2));
+      logger.error('Group creation with RPC error:', createError);
+      logger.error('Error details:', JSON.stringify(createError, null, 2));
       return { success: false, message: 'グループの作成に失敗しました' };
     }
 
@@ -562,7 +563,7 @@ export async function createGroupConversation(
         message_type: 'system',
       });
     } catch (messageError) {
-      console.warn('Send message error:', messageError);
+      logger.warn('Send message error:', messageError);
     }
 
     // メンバー情報を含む完全な会話データを取得
@@ -581,7 +582,7 @@ export async function createGroupConversation(
       .single();
 
     if (fetchError) {
-      console.error('Fetch conversation with members error:', fetchError);
+      logger.error('Fetch conversation with members error:', fetchError);
       return { success: false, message: 'グループ情報の取得に失敗しました' };
     }
 
@@ -592,12 +593,12 @@ export async function createGroupConversation(
       data: conversationWithMembers,
     };
   } catch (error) {
-    console.error('Create group conversation error:', error);
-    console.error('Error type:', typeof error);
-    console.error('Error constructor:', error?.constructor?.name);
+    logger.error('Create group conversation error:', error);
+    logger.error('Error type:', typeof error);
+    logger.error('Error constructor:', error?.constructor?.name);
     if (error instanceof Error) {
-      console.error('Error message:', error.message);
-      console.error('Error stack:', error.stack);
+      logger.error('Error message:', error.message);
+      logger.error('Error stack:', error.stack);
     }
     return { success: false, message: 'グループの作成に失敗しました' };
   }
@@ -663,7 +664,7 @@ export async function addGroupMembers(
       .insert(memberInserts);
 
     if (insertError) {
-      console.error('Add group members error:', insertError);
+      logger.error('Add group members error:', insertError);
       return { success: false, message: 'メンバーの追加に失敗しました' };
     }
 
@@ -680,7 +681,7 @@ export async function addGroupMembers(
       message: `${newMemberIds.length}人のメンバーを追加しました`,
     };
   } catch (error) {
-    console.error('Add group members error:', error);
+    logger.error('Add group members error:', error);
     return { success: false, message: 'メンバーの追加に失敗しました' };
   }
 }
@@ -729,7 +730,7 @@ export async function removeGroupMember(
       .eq('user_id', memberId);
 
     if (updateError) {
-      console.error('Remove group member error:', updateError);
+      logger.error('Remove group member error:', updateError);
       return { success: false, message: 'メンバーの削除に失敗しました' };
     }
 
@@ -749,7 +750,7 @@ export async function removeGroupMember(
         : 'メンバーを削除しました',
     };
   } catch (error) {
-    console.error('Remove group member error:', error);
+    logger.error('Remove group member error:', error);
     return { success: false, message: 'メンバーの削除に失敗しました' };
   }
 }
@@ -804,7 +805,7 @@ export async function updateGroupSettings(
       .eq('id', conversationId);
 
     if (updateError) {
-      console.error('Update group settings error:', updateError);
+      logger.error('Update group settings error:', updateError);
       return { success: false, message: 'グループ設定の更新に失敗しました' };
     }
 
@@ -826,7 +827,7 @@ export async function updateGroupSettings(
       message: 'グループ設定を更新しました',
     };
   } catch (error) {
-    console.error('Update group settings error:', error);
+    logger.error('Update group settings error:', error);
     return { success: false, message: 'グループ設定の更新に失敗しました' };
   }
 }
@@ -871,13 +872,13 @@ export async function getGroupMembers(conversationId: string) {
       .order('joined_at', { ascending: true });
 
     if (membersError) {
-      console.error('Get group members error:', membersError);
+      logger.error('Get group members error:', membersError);
       return [];
     }
 
     return members || [];
   } catch (error) {
-    console.error('Get group members error:', error);
+    logger.error('Get group members error:', error);
     return [];
   }
 }
@@ -919,7 +920,7 @@ export async function getTotalUnreadCount(): Promise<number> {
 
     return totalUnread;
   } catch (error) {
-    console.error('Get total unread count error:', error);
+    logger.error('Get total unread count error:', error);
     return 0;
   }
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -52,7 +53,7 @@ export function EscrowPaymentForm({
           setPaymentStatus('error');
         }
       } catch (error) {
-        console.error('エスクロー決済初期化エラー:', error);
+        logger.error('エスクロー決済初期化エラー:', error);
         setErrorMessage('予期しないエラーが発生しました');
         setPaymentStatus('error');
       }
@@ -107,7 +108,7 @@ export function EscrowPaymentForm({
         }
       }
     } catch (error) {
-      console.error('決済処理エラー:', error);
+      logger.error('決済処理エラー:', error);
       setErrorMessage('予期しないエラーが発生しました');
       setPaymentStatus('error');
       onError?.('予期しないエラーが発生しました');

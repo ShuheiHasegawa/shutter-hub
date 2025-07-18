@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { logger } from '@/lib/utils/logger';
 import type {
   LocationData,
   GeolocationPosition,
@@ -112,7 +113,7 @@ export function useGeolocation(
         );
         locationData.address = address;
       } catch (geocodeError) {
-        console.warn('Reverse geocoding failed:', geocodeError);
+        logger.warn('Reverse geocoding failed:', geocodeError);
         // 逆ジオコーディングの失敗は致命的ではないので継続
       }
 
@@ -220,7 +221,7 @@ async function reverseGeocode(
 
     throw new Error('No address found');
   } catch (error) {
-    console.error('Reverse geocoding error:', error);
+    logger.error('Reverse geocoding error:', error);
     throw error;
   }
 }
@@ -257,7 +258,7 @@ export async function getNearbyLandmarks(
 
     return [];
   } catch (error) {
-    console.error('Landmark search error:', error);
+    logger.error('Landmark search error:', error);
     return [];
   }
 }

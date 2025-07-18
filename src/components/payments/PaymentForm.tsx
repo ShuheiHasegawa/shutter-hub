@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -87,7 +88,7 @@ export function PaymentForm({
           onError?.(result.error || '決済の準備に失敗しました');
         }
       } catch (error) {
-        console.error('PaymentIntent作成エラー:', error);
+        logger.error('PaymentIntent作成エラー:', error);
         setError('決済の準備中にエラーが発生しました');
         onError?.('決済の準備中にエラーが発生しました');
       }
@@ -152,7 +153,7 @@ export function PaymentForm({
         }
       }
     } catch (error) {
-      console.error('決済エラー:', error);
+      logger.error('決済エラー:', error);
       setError('決済処理中にエラーが発生しました');
       onError?.('決済処理中にエラーが発生しました');
     } finally {

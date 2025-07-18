@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import { logger } from '@/lib/utils/logger';
 import { createClient } from '@/lib/supabase/server';
 import { DeliveryConfirmationForm } from '@/components/instant/DeliveryConfirmationForm';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -46,7 +47,7 @@ async function getDeliveryDetails(bookingId: string): Promise<{
 
     return { booking: booking as ExtendedBooking };
   } catch (error) {
-    console.error('配信情報取得エラー:', error);
+    logger.error('配信情報取得エラー:', error);
     return { booking: null, error: 'データの取得に失敗しました' };
   }
 }
@@ -172,7 +173,7 @@ export default async function DeliveryConfirmationPage({
             window.location.href = `/instant?success=${encodeURIComponent('受取確認が完了しました！ありがとうございました。')}`;
           }}
           onError={(error: string) => {
-            console.error('確認エラー:', error);
+            logger.error('確認エラー:', error);
           }}
         />
       )}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -85,7 +86,7 @@ export default function PhotoSessionSlotCard({
         toast.error(result.message);
       }
     } catch (error) {
-      console.error('Error booking slot:', error);
+      logger.error('Error booking slot:', error);
       toast.error(locale === 'ja' ? '予約に失敗しました' : 'Booking failed');
     } finally {
       setIsBooking(false);

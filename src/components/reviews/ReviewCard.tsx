@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { useTranslations } from 'next-intl';
 import { format } from 'date-fns';
 import { ja, enUS } from 'date-fns/locale';
@@ -105,7 +106,7 @@ export function ReviewCard({
         description: t('success.voteSubmitted'),
       });
     } catch (error) {
-      console.error('投票エラー:', error);
+      logger.error('投票エラー:', error);
       toast({
         title: t('error.voteFailed'),
         description: t('error.unexpectedError'),
@@ -157,7 +158,7 @@ export function ReviewCard({
       setReportReason('');
       setReportDescription('');
     } catch (error) {
-      console.error('報告エラー:', error);
+      logger.error('報告エラー:', error);
       toast({
         title: t('error.reportFailed'),
         description: t('error.unexpectedError'),

@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/utils/logger';
 import { revalidatePath } from 'next/cache';
 
 export interface PhotoSessionData {
@@ -42,7 +43,7 @@ export async function createPhotoSessionAction(data: PhotoSessionData) {
       .single();
 
     if (error) {
-      console.error('撮影会作成エラー:', error);
+      logger.error('撮影会作成エラー:', error);
       return { success: false, error: '撮影会の作成に失敗しました' };
     }
 
@@ -51,7 +52,7 @@ export async function createPhotoSessionAction(data: PhotoSessionData) {
 
     return { success: true, data: session };
   } catch (error) {
-    console.error('撮影会作成エラー:', error);
+    logger.error('撮影会作成エラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -90,7 +91,7 @@ export async function updatePhotoSessionAction(
       .single();
 
     if (error) {
-      console.error('撮影会更新エラー:', error);
+      logger.error('撮影会更新エラー:', error);
       return { success: false, error: '撮影会の更新に失敗しました' };
     }
 
@@ -100,7 +101,7 @@ export async function updatePhotoSessionAction(
 
     return { success: true, data: session };
   } catch (error) {
-    console.error('撮影会更新エラー:', error);
+    logger.error('撮影会更新エラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -158,7 +159,7 @@ export async function canJoinPhotoSessionAction(
 
     return { canJoin: true, reason: null };
   } catch (error) {
-    console.error('参加可能性チェックエラー:', error);
+    logger.error('参加可能性チェックエラー:', error);
     return { canJoin: false, reason: '予期しないエラーが発生しました' };
   }
 }

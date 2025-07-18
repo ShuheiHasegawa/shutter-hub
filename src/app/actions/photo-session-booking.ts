@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/utils/logger';
 import { revalidatePath } from 'next/cache';
 
 export interface BookingResult {
@@ -29,7 +30,7 @@ export async function createPhotoSessionBooking(
     });
 
     if (error) {
-      console.error('予約作成エラー:', error);
+      logger.error('予約作成エラー:', error);
 
       // エラーメッセージに基づいてエラーコードを判定
       if (error.message.includes('満席')) {
@@ -71,7 +72,7 @@ export async function createPhotoSessionBooking(
       bookingId: data?.booking_id,
     };
   } catch (error) {
-    console.error('予期しないエラー:', error);
+    logger.error('予期しないエラー:', error);
     return {
       success: false,
       error: '予期しないエラーが発生しました。',
@@ -94,7 +95,7 @@ export async function cancelPhotoSessionBooking(
     });
 
     if (error) {
-      console.error('予約キャンセルエラー:', error);
+      logger.error('予約キャンセルエラー:', error);
       return {
         success: false,
         error: '予約のキャンセルに失敗しました。',
@@ -108,7 +109,7 @@ export async function cancelPhotoSessionBooking(
 
     return { success: true };
   } catch (error) {
-    console.error('予期しないエラー:', error);
+    logger.error('予期しないエラー:', error);
     return {
       success: false,
       error: '予期しないエラーが発生しました。',
@@ -135,7 +136,7 @@ export async function getUserBookings(userId: string) {
     .order('created_at', { ascending: false });
 
   if (error) {
-    console.error('予約一覧取得エラー:', error);
+    logger.error('予約一覧取得エラー:', error);
     return { data: null, error };
   }
 
@@ -158,7 +159,7 @@ export async function getPhotoSessionBookings(photoSessionId: string) {
     .order('created_at', { ascending: true });
 
   if (error) {
-    console.error('撮影会予約一覧取得エラー:', error);
+    logger.error('撮影会予約一覧取得エラー:', error);
     return { data: null, error };
   }
 

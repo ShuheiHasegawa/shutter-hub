@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -121,7 +122,7 @@ export function AdminLotteryEntry({
       setApplicationMessage('');
       onEntrySuccess?.();
     } catch (error) {
-      console.error('管理抽選応募エラー:', error);
+      logger.error('管理抽選応募エラー:', error);
       toast({
         title: tErrors('title'),
         description: tErrors('unexpectedError'),

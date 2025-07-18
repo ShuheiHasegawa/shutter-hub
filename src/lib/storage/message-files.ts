@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/client';
+import { logger } from '@/lib/utils/logger';
 
 /**
  * メッセージ添付ファイルをアップロードする
@@ -53,7 +54,7 @@ export async function uploadMessageFile(
       .upload(filePath, file);
 
     if (error) {
-      console.error('File upload error:', error);
+      logger.error('File upload error:', error);
       return {
         success: false,
         error: 'ファイルのアップロードに失敗しました',
@@ -70,7 +71,7 @@ export async function uploadMessageFile(
       url: urlData.publicUrl,
     };
   } catch (error) {
-    console.error('Upload message file error:', error);
+    logger.error('Upload message file error:', error);
     return {
       success: false,
       error: '予期しないエラーが発生しました',
@@ -98,7 +99,7 @@ export async function deleteMessageFile(
       .remove([filePath]);
 
     if (error) {
-      console.error('File delete error:', error);
+      logger.error('File delete error:', error);
       return {
         success: false,
         error: 'ファイルの削除に失敗しました',
@@ -107,7 +108,7 @@ export async function deleteMessageFile(
 
     return { success: true };
   } catch (error) {
-    console.error('Delete message file error:', error);
+    logger.error('Delete message file error:', error);
     return {
       success: false,
       error: '予期しないエラーが発生しました',

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import type { PhotoSessionWithOrganizer } from '@/types/database';
@@ -113,7 +114,7 @@ export function usePhotoSessionBooking(session: PhotoSessionWithOrganizer) {
         availableSlots,
       });
     } catch (error) {
-      console.error('予約状態チェックエラー:', error);
+      logger.error('予約状態チェックエラー:', error);
       setBookingState({
         isLoading: false,
         canBook: false,

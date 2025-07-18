@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -79,7 +80,7 @@ export function PaymentBookingForm({
         onBookingError?.(result.error || '予約の作成に失敗しました');
       }
     } catch (error) {
-      console.error('予約作成エラー:', error);
+      logger.error('予約作成エラー:', error);
       setError('予期しないエラーが発生しました');
       onBookingError?.('予期しないエラーが発生しました');
     } finally {

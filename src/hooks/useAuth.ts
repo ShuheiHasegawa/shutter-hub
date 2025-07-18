@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 import { useRouter } from 'next/navigation';
@@ -43,14 +44,14 @@ export function useAuth() {
 
       if (error) {
         toast.error('ログアウトに失敗しました');
-        console.error('Logout error:', error);
+        logger.error('Logout error:', error);
         return;
       }
 
       toast.success('ログアウトしました');
       router.push('/ja/auth/signin');
     } catch (error) {
-      console.error('Logout error:', error);
+      logger.error('Logout error:', error);
       toast.error('ログアウト処理中にエラーが発生しました');
     } finally {
       setLoading(false);

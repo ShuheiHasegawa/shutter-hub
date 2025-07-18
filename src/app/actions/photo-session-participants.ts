@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/utils/logger';
 
 export interface PhotoSessionParticipant {
   id: string;
@@ -42,7 +43,7 @@ export async function getPhotoSessionParticipants(
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching participants:', error);
+      logger.error('Error fetching participants:', error);
       return [];
     }
 
@@ -51,7 +52,7 @@ export async function getPhotoSessionParticipants(
       user: Array.isArray(item.user) ? item.user[0] : item.user,
     })) as PhotoSessionParticipant[];
   } catch (error) {
-    console.error('Error in getPhotoSessionParticipants:', error);
+    logger.error('Error in getPhotoSessionParticipants:', error);
     return [];
   }
 }
@@ -72,13 +73,13 @@ export async function checkUserParticipation(
       .single();
 
     if (error && error.code !== 'PGRST116') {
-      console.error('Error checking participation:', error);
+      logger.error('Error checking participation:', error);
       return false;
     }
 
     return !!data;
   } catch (error) {
-    console.error('Error in checkUserParticipation:', error);
+    logger.error('Error in checkUserParticipation:', error);
     return false;
   }
 }

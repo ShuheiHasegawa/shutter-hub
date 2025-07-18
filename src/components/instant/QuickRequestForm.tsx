@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -151,7 +152,7 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
         setNearbyPhotographers(photographersWithLocation);
       }
     } catch (error) {
-      console.error('カメラマン検索エラー:', error);
+      logger.error('カメラマン検索エラー:', error);
     } finally {
       setIsSearching(false);
     }
@@ -172,7 +173,7 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
         setUsageLimit(result.data);
       }
     } catch (error) {
-      console.error('利用制限チェックエラー:', error);
+      logger.error('利用制限チェックエラー:', error);
     }
   };
 
@@ -224,7 +225,7 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
     } catch (error) {
       setSubmitStatus('error');
       setErrorMessage('予期しないエラーが発生しました');
-      console.error('リクエスト送信エラー:', error);
+      logger.error('リクエスト送信エラー:', error);
     } finally {
       setIsSubmitting(false);
     }

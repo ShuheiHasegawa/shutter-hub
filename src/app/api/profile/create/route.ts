@@ -1,15 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { logger } from '@/lib/utils/logger';
 import { createClient } from '@supabase/supabase-js';
 
 export async function POST(request: NextRequest) {
   try {
     const { userId, profileData } = await request.json();
-    console.log('=== プロフィール作成API 開始 ===');
-    console.log('Request data:', { userId, profileData });
+    logger.debug('=== プロフィール作成API 開始 ===');
+    logger.debug('Request data:', { userId, profileData });
 
     // 入力検証
     if (!userId || !profileData) {
-      console.error('入力検証エラー:', {
+      logger.error('入力検証エラー:', {
         userId: !!userId,
         profileData: !!profileData,
       });
@@ -24,7 +25,7 @@ export async function POST(request: NextRequest) {
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     if (!supabaseUrl || !serviceRoleKey) {
-      console.error('Supabase設定エラー:', {
+      logger.error('Supabase設定エラー:', {
         hasUrl: !!supabaseUrl,
         hasKey: !!serviceRoleKey,
       });
@@ -42,8 +43,8 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    console.log('✓ Supabase Admin クライアント作成完了');
-    console.log('プロフィール作成開始:', { userId, profileData });
+    logger.debug('✓ Supabase Admin クライアント作成完了');
+    logger.debug('プロフィール作成開始:', { userId, profileData });
 
     // まず既存のプロフィールをチェック
     const { data: existingProfile, error: checkError } = await supabaseAdmin
@@ -53,11 +54,11 @@ export async function POST(request: NextRequest) {
       .maybeSingle();
 
     if (checkError) {
-      console.error('既存プロフィールチェックエラー:', checkError);
+      logger.error('既存プロフィールチェックエラー:', checkError);
     }
 
     if (existingProfile) {
-      console.log('既存のプロフィールが見つかりました。更新します。');
+      logger.debug('既存のプロフィールが見つかりました。更新します。');
 
       // 既存プロフィールを更新
       const { data: updatedProfile, error: updateError } = await supabaseAdmin
@@ -78,7 +79,7 @@ export async function POST(request: NextRequest) {
         .single();
 
       if (updateError) {
-        console.error('プロフィール更新エラー:', updateError);
+        logger.error('プロフィール更新エラー:', updateError);
         return NextResponse.json(
           { error: 'Failed to update profile' },
           { status: 500 }
@@ -93,7 +94,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 新規プロフィールを作成（最小限のデータ）
-    console.log('新規プロフィールを作成します...');
+    logger.debug('新規プロフィールを作成します...');
 
     const { data: newProfile, error: createError } = await supabaseAdmin
       .from('profiles')
@@ -114,13 +115,15 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (createError) {
-      console.error('プロフィール作成エラー:', createError);
-      console.log('エラーコード:', createError.code);
-      console.log('エラー詳細:', createError.details);
+      logger.error('プロフィール作成エラー:', createError);
+      logger.debug('エラーコード:', createError.code);
+      logger.debug('エラー詳細:', createError.details);
 
       // トリガーエラーの場合は手動で関連データを作成
       if (createError.code === '42702') {
-        console.log('🔧 トリガーエラーを検出。手動で関連データを作成します...');
+        logger.debug(
+          '🔧 トリガーエラーを検出。手動で関連データを作成します...'
+        );
 
         // まずプロフィールが部分的に作成されたかチェック
         const { data: partialProfile, error: partialCheckError } =
@@ -131,19 +134,19 @@ export async function POST(request: NextRequest) {
             .maybeSingle();
 
         if (partialCheckError) {
-          console.error('部分プロフィールチェックエラー:', partialCheckError);
+          logger.error('部分プロフィールチェックエラー:', partialCheckError);
         }
 
         if (partialProfile) {
-          console.log('✓ 部分プロフィールが見つかりました:', partialProfile);
+          logger.debug('✓ 部分プロフィールが見つかりました:', partialProfile);
         } else {
-          console.log(
+          logger.debug(
             '❌ プロフィールが見つかりません。強制作成を試行します...'
           );
         }
 
         // 基本プロフィールを強制作成（upsertを使用してトリガーを回避）
-        console.log('🚀 強制プロフィール作成を開始...');
+        logger.debug('🚀 強制プロフィール作成を開始...');
         const { data: forcedProfile, error: forcedError } = await supabaseAdmin
           .from('profiles')
           .upsert(
@@ -170,17 +173,17 @@ export async function POST(request: NextRequest) {
           .single();
 
         if (forcedError) {
-          console.error('❌ 強制プロフィール作成エラー:', forcedError);
+          logger.error('❌ 強制プロフィール作成エラー:', forcedError);
           return NextResponse.json(
             { error: 'Failed to create profile', details: forcedError },
             { status: 500 }
           );
         }
 
-        console.log('✅ 強制プロフィール作成成功:', forcedProfile);
+        logger.debug('✅ 強制プロフィール作成成功:', forcedProfile);
 
         // 関連テーブルを手動で作成
-        console.log('🔧 関連テーブルを手動で作成中...');
+        logger.debug('🔧 関連テーブルを手動で作成中...');
 
         const socialTables = [
           { table: 'user_preferences', data: { user_id: userId } },
@@ -199,23 +202,23 @@ export async function POST(request: NextRequest) {
               });
 
             if (tableError) {
-              console.warn(`⚠️ ${table} creation failed:`, tableError);
+              logger.warn(`⚠️ ${table} creation failed:`, tableError);
               creationResults.push({
                 table,
                 success: false,
                 error: tableError,
               });
             } else {
-              console.log(`✅ ${table} created successfully`);
+              logger.debug(`✅ ${table} created successfully`);
               creationResults.push({ table, success: true });
             }
           } catch (err) {
-            console.warn(`❌ ${table} creation exception:`, err);
+            logger.warn(`❌ ${table} creation exception:`, err);
             creationResults.push({ table, success: false, error: err });
           }
         }
 
-        console.log('📊 関連テーブル作成結果:', creationResults);
+        logger.debug('📊 関連テーブル作成結果:', creationResults);
 
         return NextResponse.json({
           success: true,
@@ -231,7 +234,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('プロフィール作成成功:', newProfile);
+    logger.debug('プロフィール作成成功:', newProfile);
 
     return NextResponse.json({
       success: true,
@@ -239,7 +242,7 @@ export async function POST(request: NextRequest) {
       message: 'Profile created successfully',
     });
   } catch (error) {
-    console.error('プロフィール作成API エラー:', error);
+    logger.error('プロフィール作成API エラー:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

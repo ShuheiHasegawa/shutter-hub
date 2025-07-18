@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import {
@@ -76,7 +77,7 @@ export function PriorityBookingForm({
         setUserRank(rankResult.data);
       }
     } catch (error) {
-      console.error('データ取得エラー:', error);
+      logger.error('データ取得エラー:', error);
       toast.error(t('error.load_failed'));
     } finally {
       setIsLoading(false);
@@ -100,7 +101,7 @@ export function PriorityBookingForm({
         toast.error(result.error || t('error.booking_failed'));
       }
     } catch (error) {
-      console.error('予約エラー:', error);
+      logger.error('予約エラー:', error);
       toast.error(t('error.unexpected'));
     } finally {
       setIsBooking(false);

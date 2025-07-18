@@ -1,4 +1,5 @@
 import React from 'react';
+import { logger } from '@/lib/utils/logger';
 import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
@@ -56,7 +57,7 @@ async function getUserPhotobookSettings() {
     .order('created_at', { ascending: false });
 
   if (error) {
-    console.error('Error fetching photobooks:', error);
+    logger.error('Error fetching photobooks:', error);
   }
 
   return {

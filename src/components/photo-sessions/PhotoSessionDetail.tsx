@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -117,7 +118,7 @@ export function PhotoSessionDetail({
         setParticipants(participantsData);
         setIsParticipant(userParticipation);
       } catch (error) {
-        console.error('Error loading participants data:', error);
+        logger.error('Error loading participants data:', error);
       } finally {
         setLoading(false);
       }

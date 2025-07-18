@@ -1,9 +1,3 @@
----
-description:
-globs:
-alwaysApply: true
----
-
 # ShutterHub v2 開発ルール
 
 **最終更新**: 2024年12月1日（Next.js 15型定義ルール・コミット自動化追加）
@@ -954,22 +948,29 @@ components={{
 9. **🎨【新規追加】Tailwind色クラス直接使用禁止**（カラーシステム統一必須）
 10. **📅【新規追加】手動での日付入力禁止**（システム日付コマンド使用必須）
 
-### 🚨 **Logger使用必須ルール（重要）**
+### �� **Logger使用必須ルール（重要・自動検出機能付き）**
 
 #### **console.log直接使用の絶対禁止**
 
 ```yaml
 prohibited_logging:
   direct_console_usage:
-    - 'console.log() の直接使用'
-    - 'console.error() の直接使用'
-    - 'console.warn() の直接使用'
-    - 'console.info() の直接使用'
-    - 'console.debug() の直接使用'
+    - 'console.log() の直接使用' # ❌ ESLintエラー
+    - 'console.error() の直接使用' # ❌ ESLintエラー
+    - 'console.warn() の直接使用' # ❌ ESLintエラー
+    - 'console.info() の直接使用' # ❌ ESLintエラー
+    - 'console.debug() の直接使用' # ❌ ESLintエラー
 
-  exceptions:
-    - '一時的なデバッグ時は許可（コミット前に必ず削除）'
-    - 'Logger機能自体の実装・テスト時は例外'
+  automatic_detection:
+    - 'ESLint: no-console ルール（エラーレベル）'
+    - 'npm run lint で自動検出'
+    - 'コミット前チェック'
+    - 'CI/CDパイプライン統合'
+
+  enforcement_tools:
+    - 'ESLint設定: eslint.config.mjs'
+    - 'Logger移行スクリプト: scripts/migrate-to-logger.js'
+    - 'プロジェクト統計: 589箇所をLogger化完了（2025年7月18日）'
 ```
 
 #### **必須Logger使用パターン**
@@ -996,38 +997,55 @@ logger.time('API呼び出し');
 logger.timeEnd('API呼び出し');
 ```
 
-#### **❌ 禁止されるパターン**
+#### **❌ 禁止されるパターン（ESLintエラー）**
 
 ```typescript
-// ❌ 絶対禁止
+// ❌ 絶対禁止 - ESLintエラーになります
 console.log('ユーザー情報:', user);
 console.error('エラー:', error);
 console.warn('警告:', warning);
 
-// ❌ 本番環境混入リスク
+// ❌ 条件付きでも禁止 - ESLintエラーになります
 if (process.env.NODE_ENV === 'development') {
   console.log('デバッグ情報'); // 条件付きでも禁止
 }
 ```
 
-#### **移行ガイドライン**
+#### **自動修正ツール**
 
-```yaml
-migration_steps:
-  1_immediate:
-    - '新規実装では必ずLoggerを使用'
-    - 'console.log発見時は即座にLoggerに置き換え'
+```bash
+# Logger移行スクリプト実行
+node scripts/migrate-to-logger.js
 
-  2_gradual:
-    - '既存のconsole.logを段階的にLoggerに移行'
-    - 'コードレビュー時にconsole.log使用をチェック'
-
-  3_enforcement:
-    - 'ESLintルールでconsole.log使用を検出'
-    - 'コミット前フックでconsole.log使用をブロック'
+# 実行結果例（2025年7月18日実績）
+# 📊 処理結果:
+#    処理ファイル数: 115/250
+#    総置き換え数: 589箇所
+#    logger import自動追加: 114ファイル
 ```
 
-#### **Logger設定（環境変数）**
+#### **技術的利点**
+
+```yaml
+technical_benefits:
+  production_safety:
+    - '本番環境での自動無効化（環境変数制御）'
+    - 'パフォーマンスオーバーヘッドなし'
+    - 'セキュリティ情報漏洩防止'
+
+  development_efficiency:
+    - '詳細なデバッグ情報とグループ化'
+    - '実行時間測定機能（logger.time/timeEnd）'
+    - '構造化されたエラー情報'
+    - 'ログレベル制御（DEBUG, INFO, WARN, ERROR）'
+
+  maintenance:
+    - '一元化されたログ管理'
+    - '本番環境での問題調査機能'
+    - 'ログ出力の一貫性確保'
+```
+
+#### **環境変数設定**
 
 ```bash
 # 開発環境設定
@@ -1039,14 +1057,6 @@ NEXT_PUBLIC_ENABLE_DEBUG_LOGGING=false
 # または設定しない（デフォルトでfalse）
 ```
 
-#### **利点**
-
-- **🔒 本番環境安全**: 環境変数制御による完全な無効化
-- **🚀 開発効率**: 詳細なデバッグ情報とグループ化
-- **📊 パフォーマンス**: 実行時間測定機能
-- **🛠️ 保守性**: 一元化されたログ管理
-- **🎯 問題解決**: 構造化されたエラー情報
-
 #### **実装チェックリスト**
 
 - [ ] console.logの代わりにlogger.debug()を使用
@@ -1054,6 +1064,7 @@ NEXT_PUBLIC_ENABLE_DEBUG_LOGGING=false
 - [ ] 重要な処理にはlogger.group()でグループ化
 - [ ] 性能測定にはlogger.time()/timeEnd()を使用
 - [ ] 環境変数でログ出力制御を設定
+- [ ] `npm run lint`でno-consoleエラーがないことを確認
 
 ### 🎨 **カラーシステム統一ルール（新規追加）**
 
@@ -2858,6 +2869,11 @@ formatDateRange(startDate, endDate);
 
 - **エラー防止**: `RangeError: Invalid time value` エラーの完全回避
 - **安定性**: 無効な日時値に対する堅牢な処理
+- **一貫性**: プロジェクト全体で統一されたフォーマット関数使用
+- **保守性**: シンプルで理解しやすい実装
+
+## エラーハンドリング
+
 - **一貫性**: プロジェクト全体で統一されたフォーマット関数使用
 - **保守性**: シンプルで理解しやすい実装
 

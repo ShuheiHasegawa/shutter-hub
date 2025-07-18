@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { AnimatePresence } from 'framer-motion';
 import { RefreshCw, Settings, Filter, Search } from 'lucide-react';
 import { ConsentSwipeCard } from './ConsentSwipeCard';
@@ -80,7 +81,7 @@ export const ConsentSwipeContainer: React.FC<ConsentSwipeContainerProps> = ({
         // 次のカードに移動
         setCurrentIndex(prev => prev + 1);
       } catch (error) {
-        console.error('Failed to update consent:', error);
+        logger.error('Failed to update consent:', error);
         // エラーハンドリング - 必要に応じてトースト表示など
       }
     },
@@ -137,7 +138,7 @@ export const ConsentSwipeContainer: React.FC<ConsentSwipeContainerProps> = ({
         await Promise.all(promises);
         setSelectedConsents(new Set());
       } catch (error) {
-        console.error('Failed to process batch actions:', error);
+        logger.error('Failed to process batch actions:', error);
       }
     },
     [selectedConsents, onConsentUpdate]

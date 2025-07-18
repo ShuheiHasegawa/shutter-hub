@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -118,7 +119,7 @@ export function PhotoSessionLotteryEntry({
       setMessage('');
       onEntrySuccess?.();
     } catch (error) {
-      console.error('抽選エントリーエラー:', error);
+      logger.error('抽選エントリーエラー:', error);
       toast({
         title: tErrors('title'),
         description: tErrors('unexpectedError'),

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -106,7 +107,7 @@ export function PhotoSessionBookingForm({
         }
       }
     } catch (error) {
-      console.error('予約エラー:', error);
+      logger.error('予約エラー:', error);
       const errorMessage = tErrors('unexpectedError');
       toast({
         title: tErrors('title'),

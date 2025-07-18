@@ -1,4 +1,5 @@
 import React from 'react';
+import { logger } from '@/lib/utils/logger';
 import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
@@ -32,7 +33,7 @@ async function checkUserPermissions() {
     .eq('user_id', user.id);
 
   if (error) {
-    console.error('Error fetching photobooks:', error);
+    logger.error('Error fetching photobooks:', error);
   }
 
   const photobookCount = photobooks?.length || 0;
@@ -163,7 +164,7 @@ export default async function PhotobookCreatePage() {
           <Photobook
             photobook={newPhotobook}
             isEditable={true}
-            onPhotoClick={photo => console.log('Photo clicked:', photo)}
+            onPhotoClick={photo => logger.debug('Photo clicked:', photo)}
           />
         </div>
 

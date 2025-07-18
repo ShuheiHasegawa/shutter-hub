@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuth } from '@/hooks/useAuth';
+import { logger } from '@/lib/utils/logger';
 import { getProfile } from '@/lib/auth/profile';
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
@@ -256,7 +257,7 @@ export default function AnalyticsPage() {
       );
 
       if (profileError) {
-        console.error('プロフィール取得エラー:', profileError);
+        logger.error('プロフィール取得エラー:', profileError);
         return;
       }
 
@@ -271,7 +272,7 @@ export default function AnalyticsPage() {
       );
       setStats(statsData);
     } catch (error) {
-      console.error('データ取得エラー:', error);
+      logger.error('データ取得エラー:', error);
     } finally {
       setStatsLoading(false);
     }

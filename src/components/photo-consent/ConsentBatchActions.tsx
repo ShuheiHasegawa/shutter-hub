@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { logger } from '@/lib/utils/logger';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import {
@@ -53,7 +54,7 @@ export const ConsentBatchActions: React.FC<ConsentBatchActionsProps> = ({
       setShowMessageInput(false);
       setBatchAction(null);
     } catch (error) {
-      console.error('Failed to execute batch action:', error);
+      logger.error('Failed to execute batch action:', error);
     }
   };
 

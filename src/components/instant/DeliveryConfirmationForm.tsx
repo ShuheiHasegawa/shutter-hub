@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { logger } from '@/lib/utils/logger';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -156,7 +157,7 @@ export function DeliveryConfirmationForm({
       setSubmitStatus('error');
       setErrorMessage('予期しないエラーが発生しました');
       onError?.('予期しないエラーが発生しました');
-      console.error('受取確認エラー:', error);
+      logger.error('受取確認エラー:', error);
     } finally {
       setIsSubmitting(false);
     }
