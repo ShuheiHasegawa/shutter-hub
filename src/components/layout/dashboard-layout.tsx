@@ -3,6 +3,7 @@
 import { useAuth } from '@/hooks/useAuth';
 import { Sidebar } from './sidebar';
 import { DashboardTopbar } from './dashboard-topbar';
+import { BottomNavigation } from './bottom-navigation';
 import { redirect } from 'next/navigation';
 import { useEffect } from 'react';
 
@@ -36,8 +37,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       <Sidebar />
       <div className="w-full">
         <DashboardTopbar />
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto p-6 pb-16 md:pb-6">
+          {children}
+        </main>
       </div>
+      <BottomNavigation />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { logger } from '@/lib/utils/logger';
 import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -164,16 +165,18 @@ export function UserReviewList({ userId }: UserReviewListProps) {
                   <div className="space-y-4">
                     {userReviews.map(review => (
                       <Card key={review.id}>
-                        <CardContent className="p-6">
+                        <CardContent className="p-4">
                           <div className="space-y-4">
                             {/* レビュー基本情報 */}
                             <div className="flex items-start justify-between">
                               <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
                                   {review.reviewer?.avatar_url ? (
-                                    <img
+                                    <Image
                                       src={review.reviewer.avatar_url}
                                       alt={review.reviewer.display_name}
+                                      width={40}
+                                      height={40}
                                       className="w-10 h-10 rounded-full object-cover"
                                     />
                                   ) : (
@@ -194,10 +197,10 @@ export function UserReviewList({ userId }: UserReviewListProps) {
                                   </div>
                                 </div>
                               </div>
-                              <Badge variant="outline">
+                              <Badge variant="outline" className="w-20">
                                 {review.reviewee_role === 'organizer'
-                                  ? '主催者として'
-                                  : '参加者として'}
+                                  ? '主催者'
+                                  : '参加者'}
                               </Badge>
                             </div>
 

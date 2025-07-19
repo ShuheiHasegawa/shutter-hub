@@ -154,7 +154,7 @@ export function UserRatingStats({ stats }: UserRatingStatsProps) {
           <div>
             <div className="flex items-center gap-2 mb-4">
               <Users className="h-4 w-4" />
-              <h4 className="font-medium">参加者として</h4>
+              <h4 className="font-medium">参加者</h4>
               <Badge variant="secondary">
                 {stats.participant_review_count}件のレビュー
               </Badge>
