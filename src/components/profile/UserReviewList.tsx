@@ -170,7 +170,7 @@ export function UserReviewList({ userId }: UserReviewListProps) {
                             {/* レビュー基本情報 */}
                             <div className="flex items-start justify-between">
                               <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                                <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
                                   {review.reviewer?.avatar_url ? (
                                     <Image
                                       src={review.reviewer.avatar_url}
@@ -180,7 +180,7 @@ export function UserReviewList({ userId }: UserReviewListProps) {
                                       className="w-10 h-10 rounded-full object-cover"
                                     />
                                   ) : (
-                                    <Users className="h-5 w-5 text-gray-500" />
+                                    <Users className="h-5 w-5 text-muted-foreground" />
                                   )}
                                 </div>
                                 <div>
@@ -212,8 +212,8 @@ export function UserReviewList({ userId }: UserReviewListProps) {
                                     key={star}
                                     className={`h-4 w-4 ${
                                       star <= review.overall_rating
-                                        ? 'text-yellow-500 fill-current'
-                                        : 'text-gray-300'
+                                        ? 'text-shutter-warning fill-current'
+                                        : 'text-muted'
                                     }`}
                                   />
                                 ))}

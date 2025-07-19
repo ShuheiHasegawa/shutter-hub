@@ -293,7 +293,7 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
             </Badge>
           )}
         </CardTitle>
-        <div className="flex items-center gap-2 text-sm text-gray-600">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <MapPin className="h-4 w-4" />
           <span>
             {location.address ||
@@ -338,16 +338,16 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
           <TabsContent value="form" className="space-y-6 mt-6">
             {/* 成功・エラーメッセージ */}
             {submitStatus === 'success' && (
-              <Alert className="border-green-200 bg-green-50">
-                <CheckCircle className="h-4 w-4 text-green-600" />
-                <AlertDescription className="text-green-800">
+              <Alert className="border-shutter-success/20 bg-shutter-success/10">
+                <CheckCircle className="h-4 w-4 text-shutter-success" />
+                <AlertDescription className="text-foreground">
                   {successMessage}
                   <div className="mt-2">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => setActiveTab('map')}
-                      className="text-green-700 border-green-300 hover:bg-green-100"
+                      className="text-shutter-success border-shutter-success/30 hover:bg-shutter-success/10"
                     >
                       <Map className="h-3 w-3 mr-1" />
                       進捗を確認
@@ -358,9 +358,9 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
             )}
 
             {submitStatus === 'matched' && matchedBookingId && (
-              <Alert className="border-blue-200 bg-blue-50">
-                <CheckCircle className="h-4 w-4 text-blue-600" />
-                <AlertDescription className="text-blue-800">
+              <Alert className="border-shutter-info/20 bg-shutter-info/10">
+                <CheckCircle className="h-4 w-4 text-shutter-info" />
+                <AlertDescription className="text-foreground">
                   <div className="font-medium mb-2">
                     🎉 カメラマンが見つかりました！
                   </div>
@@ -369,7 +369,7 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
                   </p>
                   <Button
                     onClick={handleProceedToPayment}
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                    className="bg-shutter-info hover:bg-shutter-info/90 text-white"
                   >
                     <CreditCard className="h-4 w-4 mr-2" />
                     決済に進む
@@ -391,18 +391,14 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
               <Alert
                 className={
                   usageLimit.can_use
-                    ? 'border-yellow-200 bg-yellow-50'
-                    : 'border-red-200 bg-red-50'
+                    ? 'border-shutter-warning/20 bg-shutter-warning/10'
+                    : 'border-shutter-accent/20 bg-shutter-accent/10'
                 }
               >
                 <AlertTriangle
-                  className={`h-4 w-4 ${usageLimit.can_use ? 'text-yellow-600' : 'text-red-600'}`}
+                  className={`h-4 w-4 ${usageLimit.can_use ? 'text-shutter-warning' : 'text-shutter-accent'}`}
                 />
-                <AlertDescription
-                  className={
-                    usageLimit.can_use ? 'text-yellow-800' : 'text-red-800'
-                  }
-                >
+                <AlertDescription className="text-foreground">
                   今月の利用回数: {usageLimit.usage_count}/3 回
                   {!usageLimit.can_use && ' - 利用制限に達しています'}
                 </AlertDescription>
@@ -420,8 +416,8 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
                       type="button"
                       className={`p-3 border rounded-lg text-left transition-colors ${
                         formData.requestType === type.value
-                          ? 'border-blue-500 bg-blue-50'
-                          : 'border-gray-200 hover:border-gray-300'
+                          ? 'border-shutter-primary bg-shutter-primary/10'
+                          : 'border-border hover:border-muted-foreground'
                       }`}
                       onClick={() =>
                         setFormData(prev => ({
@@ -449,8 +445,8 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
                         type="button"
                         className={`w-full p-3 border rounded-lg text-left transition-colors ${
                           formData.urgency === option.value
-                            ? 'border-blue-500 bg-blue-50'
-                            : 'border-gray-200 hover:border-gray-300'
+                            ? 'border-shutter-primary bg-shutter-primary/10'
+                            : 'border-border hover:border-muted-foreground'
                         }`}
                         onClick={() =>
                           setFormData(prev => ({
@@ -557,15 +553,17 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
               </div>
 
               {/* 料金内訳 */}
-              <div className="bg-gray-100 border border-gray-200 rounded-lg p-4 space-y-2">
-                <h4 className="font-medium text-sm text-gray-900">料金内訳</h4>
+              <div className="bg-muted border border-border rounded-lg p-4 space-y-2">
+                <h4 className="font-medium text-sm text-foreground">
+                  料金内訳
+                </h4>
                 <div className="space-y-1 text-sm">
-                  <div className="flex justify-between text-gray-800">
+                  <div className="flex justify-between text-foreground">
                     <span>基本料金</span>
                     <span>¥{priceBreakdown.basePrice.toLocaleString()}</span>
                   </div>
                   {priceBreakdown.additionalFees > 0 && (
-                    <div className="flex justify-between text-orange-600 font-medium">
+                    <div className="flex justify-between text-shutter-warning font-medium">
                       <span>追加料金</span>
                       <span>
                         +¥{priceBreakdown.additionalFees.toLocaleString()}
@@ -573,7 +571,7 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
                     </div>
                   )}
                   <Separator />
-                  <div className="flex justify-between font-medium text-gray-900">
+                  <div className="flex justify-between font-medium text-foreground">
                     <span>合計</span>
                     <span>¥{priceBreakdown.totalPrice.toLocaleString()}</span>
                   </div>
@@ -722,14 +720,14 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-start gap-4">
-                    <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center">
-                      <Camera className="h-6 w-6 text-gray-500" />
+                    <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center">
+                      <Camera className="h-6 w-6 text-muted-foreground" />
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-medium">
+                      <h4 className="font-medium text-foreground">
                         {selectedPhotographer.display_name}
                       </h4>
-                      <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
                         <span>
                           ⭐ {selectedPhotographer.rating?.toFixed(1) || 'N/A'}
                         </span>
@@ -743,7 +741,7 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
                         </span>
                       </div>
                       <div className="mt-2">
-                        <span className="text-lg font-medium text-green-600">
+                        <span className="text-lg font-medium text-shutter-success">
                           ¥{selectedPhotographer.instant_rate?.toLocaleString()}
                         </span>
                       </div>
@@ -766,21 +764,21 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
                         key={notification.id}
                         className={`p-3 rounded-lg border ${
                           notification.read
-                            ? 'bg-gray-50'
-                            : 'bg-blue-50 border-blue-200'
+                            ? 'bg-muted'
+                            : 'bg-shutter-info/10 border-shutter-info/20'
                         }`}
                         onClick={() => markAsRead(notification.id)}
                       >
                         <div className="flex items-start justify-between">
                           <div>
-                            <h5 className="font-medium text-sm">
+                            <h5 className="font-medium text-sm text-foreground">
                               {notification.title}
                             </h5>
-                            <p className="text-sm text-gray-600 mt-1">
+                            <p className="text-sm text-muted-foreground mt-1">
                               {notification.message}
                             </p>
                           </div>
-                          <div className="text-xs text-gray-500">
+                          <div className="text-xs text-muted-foreground">
                             {new Date(
                               notification.created_at
                             ).toLocaleTimeString()}

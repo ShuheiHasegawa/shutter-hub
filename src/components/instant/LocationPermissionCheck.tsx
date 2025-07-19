@@ -66,11 +66,11 @@ export function LocationPermissionCheck({
     <Card>
       <CardContent className="pt-6 text-center">
         <div className="mb-4">
-          <Navigation className="h-12 w-12 mx-auto text-blue-600 mb-4" />
-          <h3 className="text-lg font-semibold mb-2">
+          <Navigation className="h-12 w-12 mx-auto text-shutter-info mb-4" />
+          <h3 className="text-lg font-semibold mb-2 text-foreground">
             位置情報を許可してください
           </h3>
-          <p className="text-gray-600 dark:text-gray-300 text-sm">
+          <p className="text-muted-foreground text-sm">
             近くのカメラマンを見つけるために、現在地の情報が必要です。
           </p>
         </div>
@@ -92,7 +92,7 @@ export function LocationPermissionCheck({
           </div>
         )}
 
-        <p className="text-xs text-gray-500 dark:text-gray-400 mt-4">
+        <p className="text-xs text-muted-foreground mt-4">
           位置情報は撮影マッチングにのみ使用され、保存されません。
         </p>
       </CardContent>
