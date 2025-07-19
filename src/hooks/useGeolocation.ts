@@ -36,10 +36,14 @@ export function useGeolocation(
   const [error, setError] = useState<GeolocationError | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [watchId, setWatchId] = useState<number | null>(null);
+  const [isSupported, setIsSupported] = useState(false);
 
-  // Geolocation APIの対応チェック
-  const isSupported =
-    typeof navigator !== 'undefined' && 'geolocation' in navigator;
+  // クライアントサイドでのGeolocation API対応チェック
+  useEffect(() => {
+    setIsSupported(
+      typeof navigator !== 'undefined' && 'geolocation' in navigator
+    );
+  }, []);
 
   // 位置情報を取得する関数
   const getCurrentPosition = (): Promise<GeolocationPosition> => {
@@ -176,6 +180,9 @@ export function useGeolocation(
   };
 
   useEffect(() => {
+    // クライアントサイドかつGeolocationがサポートされている場合のみ実行
+    if (!isSupported) return;
+
     if (watch) {
       startWatching();
     } else {
@@ -186,7 +193,7 @@ export function useGeolocation(
       stopWatching();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [watch, enableHighAccuracy, timeout, maximumAge]);
+  }, [isSupported, watch, enableHighAccuracy, timeout, maximumAge]);
 
   return {
     location,
