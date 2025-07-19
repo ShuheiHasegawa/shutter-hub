@@ -105,3 +105,61 @@ export interface CostumeImage {
   usage_count: number;
   created_at: string;
 }
+
+// 一括撮影会作成用の型定義を追加
+
+// 一括撮影会の選択モデル情報
+export interface SelectedModel {
+  model_id: string;
+  display_name: string;
+  avatar_url?: string;
+  fee_amount: number; // モデルごとの個別料金
+  profile_id?: string;
+}
+
+// 一括撮影会作成データ
+export interface BulkPhotoSessionData {
+  // 基本情報
+  title: string;
+  description?: string;
+  location: string;
+  address?: string;
+  start_time: string;
+  end_time: string;
+  max_participants: number;
+  booking_type: string;
+  allow_multiple_bookings: boolean;
+  booking_settings: Record<string, unknown>;
+  is_published: boolean;
+  image_urls: string[];
+
+  // 一括作成用
+  selected_models: SelectedModel[];
+
+  // 撮影枠（オプション）
+  slots?: CreatePhotoSessionSlotData[];
+}
+
+// 一括撮影会作成結果
+export interface BulkPhotoSessionResult {
+  success: boolean;
+  created_sessions: string[]; // 作成された撮影会IDのリスト
+  bulk_group_id: string; // 一括作成グループID
+  error?: string;
+}
+
+// モデル検索用の型
+export interface ModelSearchResult {
+  id: string;
+  display_name: string;
+  avatar_url?: string;
+  bio?: string;
+  user_type: string;
+}
+
+// モデル検索フィルター
+export interface ModelSearchFilter {
+  query?: string;
+  exclude_ids?: string[]; // 既に選択済みのモデルIDを除外
+  limit?: number;
+}

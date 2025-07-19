@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { useProfile } from '@/hooks/useProfile';
 import {
   createPhotoSessionAction,
   updatePhotoSessionAction,
@@ -19,17 +20,19 @@ import {
   updatePhotoSessionWithSlotsAction,
   PhotoSessionWithSlotsData,
 } from '@/app/actions/photo-session-slots';
+import { createBulkPhotoSessionsAction } from '@/app/actions/bulk-photo-sessions';
 import type {
   PhotoSessionWithOrganizer,
   BookingType,
   BookingSettings,
 } from '@/types/database';
-import type { PhotoSessionSlot } from '@/types/photo-session';
+import type { PhotoSessionSlot, SelectedModel } from '@/types/photo-session';
 import { useTranslations } from 'next-intl';
 import { ImageUpload } from '@/components/photo-sessions/ImageUpload';
 import { BookingTypeSelector } from '@/components/photo-sessions/BookingTypeSelector';
 import { BookingSettingsForm } from '@/components/photo-sessions/BookingSettingsForm';
 import PhotoSessionSlotForm from '@/components/photo-sessions/PhotoSessionSlotForm';
+import { ModelSelectionForm } from '@/components/photo-sessions/ModelSelectionForm';
 import { Label } from '@/components/ui/label';
 import { FormattedDateTime } from '@/components/ui/formatted-display';
 import { PriceInput } from '@/components/ui/price-input';
@@ -49,6 +52,7 @@ export function PhotoSessionForm({
   onSuccess,
 }: PhotoSessionFormProps) {
   const { user } = useAuth();
+  const { profile } = useProfile();
   const router = useRouter();
   const { toast } = useToast();
   const t = useTranslations('photoSessions');
@@ -81,6 +85,11 @@ export function PhotoSessionForm({
   const [photoSessionSlots, setPhotoSessionSlots] = useState<
     PhotoSessionSlot[]
   >([]);
+  const [selectedModels, setSelectedModels] = useState<SelectedModel[]>([]);
+
+  // 運営アカウントかどうかの判定
+  const isOrganizer = profile?.user_type === 'organizer';
+  const MAX_MODELS = 99;
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -179,6 +188,39 @@ export function PhotoSessionForm({
       return;
     }
 
+    // 運営アカウントの場合：モデル選択バリデーション
+    if (isOrganizer) {
+      if (selectedModels.length === 0) {
+        toast({
+          title: tErrors('title'),
+          description: '出演モデルを最低1名選択してください',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      if (selectedModels.length > MAX_MODELS) {
+        toast({
+          title: tErrors('title'),
+          description: `モデルは最大${MAX_MODELS}人まで選択可能です`,
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // 重複チェック
+      const modelIds = selectedModels.map(m => m.model_id);
+      const uniqueIds = new Set(modelIds);
+      if (modelIds.length !== uniqueIds.size) {
+        toast({
+          title: tErrors('title'),
+          description: '同じモデルを重複して選択することはできません',
+          variant: 'destructive',
+        });
+        return;
+      }
+    }
+
     // 撮影枠がない場合のみ日時バリデーションを実行
     if (!hasSlots) {
       if (!formData.start_time || !formData.end_time) {
@@ -228,6 +270,66 @@ export function PhotoSessionForm({
 
     setIsLoading(true);
     try {
+      // 運営アカウントの場合：一括作成
+      if (isOrganizer && !isEditing) {
+        const bulkData = {
+          title: formData.title,
+          description: formData.description || undefined,
+          location: formData.location,
+          address: formData.address || undefined,
+          start_time: startTime.toISOString(),
+          end_time: endTime.toISOString(),
+          max_participants: formData.max_participants,
+          booking_type: formData.booking_type,
+          allow_multiple_bookings: formData.allow_multiple_bookings,
+          booking_settings: bookingSettings as Record<string, unknown>,
+          is_published: formData.is_published,
+          image_urls: formData.image_urls,
+          selected_models: selectedModels,
+          slots: hasSlots
+            ? photoSessionSlots.map(slot => ({
+                slot_number: slot.slot_number,
+                start_time: slot.start_time,
+                end_time: slot.end_time,
+                break_duration_minutes: slot.break_duration_minutes,
+                price_per_person: slot.price_per_person,
+                max_participants: slot.max_participants,
+                costume_image_url: slot.costume_image_url || undefined,
+                costume_image_hash: slot.costume_image_hash || undefined,
+                costume_description: slot.costume_description || undefined,
+                discount_type: slot.discount_type || 'none',
+                discount_value: slot.discount_value || 0,
+                discount_condition: slot.discount_condition || undefined,
+                notes: slot.notes || undefined,
+              }))
+            : undefined,
+        };
+
+        const result = await createBulkPhotoSessionsAction(bulkData);
+
+        if (!result.success) {
+          logger.error('一括撮影会作成エラー:', result.error);
+          toast({
+            title: tErrors('title'),
+            description: result.error || t('form.error.saveFailed'),
+            variant: 'destructive',
+          });
+          return;
+        }
+
+        toast({
+          title: tCommon('success'),
+          description: `${result.created_sessions.length}個の撮影会を作成しました`,
+        });
+
+        if (onSuccess) {
+          onSuccess();
+        } else {
+          router.push('/dashboard');
+        }
+        return;
+      }
+
       // 撮影枠がある場合とない場合で使用するactionを切り替え
       if (hasSlots) {
         // 撮影枠制撮影会の場合
@@ -541,7 +643,9 @@ export function PhotoSessionForm({
 
           {/* 参加者・料金情報 */}
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">{t('form.participantInfo')}</h3>
+            <h3 className="text-lg font-medium">
+              {isOrganizer ? '参加者設定' : t('form.participantInfo')}
+            </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -563,28 +667,49 @@ export function PhotoSessionForm({
                 />
               </div>
 
-              <div>
-                <label
-                  htmlFor="price_per_person"
-                  className="block text-sm font-medium mb-2"
-                >
-                  {t('form.priceLabel')} {t('form.required')}
-                </label>
-                <PriceInput
-                  id="price_per_person"
-                  name="price_per_person"
-                  value={formData.price_per_person}
-                  onChange={value => {
-                    setFormData(prev => ({
-                      ...prev,
-                      price_per_person: parseInt(value) || 0,
-                    }));
-                  }}
-                  required
-                />
-              </div>
+              {/* 運営アカウント以外のみ表示 */}
+              {!isOrganizer && (
+                <div>
+                  <label
+                    htmlFor="price_per_person"
+                    className="block text-sm font-medium mb-2"
+                  >
+                    {t('form.priceLabel')} {t('form.required')}
+                  </label>
+                  <PriceInput
+                    id="price_per_person"
+                    name="price_per_person"
+                    value={formData.price_per_person}
+                    onChange={value => {
+                      setFormData(prev => ({
+                        ...prev,
+                        price_per_person: parseInt(value) || 0,
+                      }));
+                    }}
+                    required
+                  />
+                </div>
+              )}
             </div>
           </div>
+
+          {/* 運営アカウントのみ：モデル選択セクション */}
+          {isOrganizer && (
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">出演モデル設定</h3>
+              <p className="text-sm text-muted-foreground">
+                各モデルを検索して追加し、個別に料金を設定してください（最大
+                {MAX_MODELS}人）
+              </p>
+
+              <ModelSelectionForm
+                selectedModels={selectedModels}
+                onModelsChange={setSelectedModels}
+                maxModels={MAX_MODELS}
+                disabled={isLoading}
+              />
+            </div>
+          )}
 
           {/* 予約方式選択 */}
           <BookingTypeSelector
