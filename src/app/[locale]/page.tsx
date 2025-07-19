@@ -1,5 +1,5 @@
 import { useTranslations } from 'next-intl';
-import { MainLayout } from '@/components/layout/main-layout';
+import { PublicLayout } from '@/components/layout/public-layout';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -15,7 +15,7 @@ export default function HomePage() {
   const t = useTranslations('home');
 
   return (
-    <MainLayout>
+    <PublicLayout>
       {/* ヒーローセクション */}
       <section className="relative bg-gradient-to-br from-shutter-primary to-shutter-primary-dark text-white">
         <div className="container py-24 md:py-32">
@@ -200,6 +200,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-    </MainLayout>
+    </PublicLayout>
   );
 }
