@@ -28,6 +28,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { ActionSheet, ActionButton } from '@/components/ui/action-sheet';
+import { ImageCropDialog } from '@/components/profile/ImageCropDialog';
 import { updateProfile } from '@/lib/auth/profile';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -100,6 +101,9 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
   // 画像関連の状態管理
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [showCropDialog, setShowCropDialog] = useState(false);
+  const [originalImageSrc, setOriginalImageSrc] = useState<string>('');
+  const [originalFileName, setOriginalFileName] = useState<string>('');
 
   const form = useForm<ProfileEditValues>({
     resolver: zodResolver(profileEditSchema),
@@ -141,15 +145,37 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
       return;
     }
 
+    // トリミングダイアログ用の画像データを準備
+    const imageUrl = URL.createObjectURL(file);
+    setOriginalImageSrc(imageUrl);
+    setOriginalFileName(file.name);
+    setShowCropDialog(true);
+  };
+
+  const handleCropComplete = (croppedFile: File) => {
     // 既存のプレビューURLを解放
     if (previewUrl) {
       URL.revokeObjectURL(previewUrl);
     }
 
-    // ローカルプレビュー作成
-    setSelectedImageFile(file);
-    const preview = URL.createObjectURL(file);
+    // トリミング済み画像をセット
+    setSelectedImageFile(croppedFile);
+    const preview = URL.createObjectURL(croppedFile);
     setPreviewUrl(preview);
+    setShowCropDialog(false);
+
+    // 元画像URLをクリーンアップ
+    if (originalImageSrc) {
+      URL.revokeObjectURL(originalImageSrc);
+    }
+  };
+
+  const handleCropCancel = () => {
+    setShowCropDialog(false);
+    // 元画像URLをクリーンアップ
+    if (originalImageSrc) {
+      URL.revokeObjectURL(originalImageSrc);
+    }
   };
 
   const onSubmit = async (data: ProfileEditValues) => {
@@ -538,6 +564,15 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
             </div>
           </form>
         </Form>
+
+        {/* 画像トリミングダイアログ */}
+        <ImageCropDialog
+          isOpen={showCropDialog}
+          onClose={handleCropCancel}
+          imageSrc={originalImageSrc}
+          onCropComplete={handleCropComplete}
+          originalFileName={originalFileName}
+        />
       </CardContent>
     </Card>
   );
