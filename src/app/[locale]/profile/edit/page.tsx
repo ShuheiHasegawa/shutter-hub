@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { ProfileEditForm } from '@/components/profile/ProfileEditForm';
-import { OrganizerModelManagement } from '@/components/profile/organizer/OrganizerModelManagement';
 import { getProfile } from '@/lib/auth/profile';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -188,26 +187,8 @@ export default function EditProfilePage() {
         </div>
 
         {/* プロフィール編集セクション */}
-        <div className="space-y-8">
-          {/* 運営アカウント専用セクション（上部配置） */}
-          {profile?.user_type === 'organizer' && (
-            <div className="space-y-6">
-              <div className="border-b pb-8">
-                <div className="mb-6">
-                  <h2 className="text-xl font-semibold mb-2">所属モデル管理</h2>
-                  <p className="text-muted-foreground text-sm">
-                    あなたの運営に所属するモデルの管理を行えます
-                  </p>
-                </div>
-                <OrganizerModelManagement />
-              </div>
-            </div>
-          )}
-
-          {/* メインコンテンツ（保存ボタンが最下部に来るよう最後に配置） */}
-          <div className="max-w-2xl">
-            <ProfileEditForm profile={profile} />
-          </div>
+        <div className="max-w-2xl">
+          <ProfileEditForm profile={profile} />
         </div>
       </div>
     </DashboardLayout>

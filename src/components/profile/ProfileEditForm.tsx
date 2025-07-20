@@ -38,6 +38,7 @@ import {
 import { notifyProfileUpdate } from '@/hooks/useProfile';
 import { logger } from '@/lib/utils/logger';
 import { User, Save, X, Camera } from 'lucide-react';
+import { OrganizerModelManagement } from '@/components/profile/organizer/OrganizerModelManagement';
 
 const profileEditSchema = z.object({
   user_type: z.enum(['model', 'photographer', 'organizer']),
@@ -546,6 +547,19 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
                 )}
               />
             </div>
+
+            {/* 運営アカウントの場合：所属モデル管理 */}
+            {profile.user_type === 'organizer' && (
+              <div className="space-y-4 pt-6 border-t">
+                <div className="space-y-2">
+                  <h3 className="text-lg font-semibold">所属モデル管理</h3>
+                  <p className="text-sm text-muted-foreground">
+                    あなたの運営に所属するモデルの管理を行えます
+                  </p>
+                </div>
+                <OrganizerModelManagement />
+              </div>
+            )}
 
             {/* ActionSheetを使った保存・キャンセルボタン */}
             <div className="pt-6">
