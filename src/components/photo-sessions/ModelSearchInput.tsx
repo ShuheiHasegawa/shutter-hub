@@ -37,7 +37,6 @@ export function ModelSearchInput({
 
     return () => clearTimeout(timer);
   }, [query]);
-  const supabase = createClient();
 
   // 検索実行
   const searchModels = useCallback(
@@ -49,6 +48,7 @@ export function ModelSearchInput({
 
       setIsLoading(true);
       try {
+        const supabase = createClient();
         const { data, error } = await supabase
           .from('profiles')
           .select('id, display_name, avatar_url, bio, user_type')
@@ -71,7 +71,7 @@ export function ModelSearchInput({
         setIsLoading(false);
       }
     },
-    [excludeIds, supabase]
+    [excludeIds]
   );
 
   // デバウンス検索
