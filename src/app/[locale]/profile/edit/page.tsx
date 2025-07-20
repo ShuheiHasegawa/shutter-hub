@@ -189,15 +189,10 @@ export default function EditProfilePage() {
 
         {/* プロフィール編集セクション */}
         <div className="space-y-8">
-          {/* メインコンテンツ */}
-          <div className="max-w-2xl">
-            <ProfileEditForm profile={profile} />
-          </div>
-
-          {/* 運営アカウント専用セクション */}
+          {/* 運営アカウント専用セクション（上部配置） */}
           {profile?.user_type === 'organizer' && (
             <div className="space-y-6">
-              <div className="border-t pt-8">
+              <div className="border-b pb-8">
                 <div className="mb-6">
                   <h2 className="text-xl font-semibold mb-2">所属モデル管理</h2>
                   <p className="text-muted-foreground text-sm">
@@ -208,6 +203,11 @@ export default function EditProfilePage() {
               </div>
             </div>
           )}
+
+          {/* メインコンテンツ（保存ボタンが最下部に来るよう最後に配置） */}
+          <div className="max-w-2xl">
+            <ProfileEditForm profile={profile} />
+          </div>
         </div>
       </div>
     </DashboardLayout>

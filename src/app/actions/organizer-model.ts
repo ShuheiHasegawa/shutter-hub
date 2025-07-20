@@ -53,6 +53,7 @@ export async function createModelInvitationAction(
       // テーブルが存在しない場合はわかりやすいエラーメッセージ
       if (
         error.code === 'PGRST106' ||
+        error.code === '42P01' ||
         error.message?.includes('does not exist')
       ) {
         return { success: false, error: '所属モデル管理機能はまだ準備中です' };
@@ -106,6 +107,7 @@ export async function getOrganizerModelsAction(): Promise<OrganizerModelResponse
       // テーブルが存在しない場合は空配列を返す
       if (
         error.code === 'PGRST106' ||
+        error.code === '42P01' ||
         error.message?.includes('does not exist')
       ) {
         return { success: true, data: [] };
@@ -180,6 +182,7 @@ export async function getOrganizerInvitationsAction(): Promise<InvitationRespons
       // テーブルが存在しない場合は空配列を返す
       if (
         error.code === 'PGRST106' ||
+        error.code === '42P01' ||
         error.message?.includes('does not exist')
       ) {
         return { success: true, data: [] };

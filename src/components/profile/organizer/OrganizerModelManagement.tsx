@@ -44,12 +44,16 @@ export function OrganizerModelManagement() {
         setModels(modelsResult.data);
       } else {
         logger.error('所属モデル取得エラー:', modelsResult.error);
+        // テーブル未存在の場合でも空配列で継続
+        setModels([]);
       }
 
       if (invitationsResult.success && Array.isArray(invitationsResult.data)) {
         setInvitations(invitationsResult.data);
       } else {
         logger.error('招待一覧取得エラー:', invitationsResult.error);
+        // テーブル未存在の場合でも空配列で継続
+        setInvitations([]);
       }
     } catch (error) {
       logger.error('データ読み込みエラー:', error);
