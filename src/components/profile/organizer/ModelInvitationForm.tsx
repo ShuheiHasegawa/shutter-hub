@@ -29,9 +29,7 @@ export function ModelInvitationForm({
     setSelectedModel(model);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const handleSubmit = async () => {
     if (!selectedModel) {
       toast({
         title: 'エラー',
@@ -87,7 +85,7 @@ export function ModelInvitationForm({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="space-y-6">
           {/* モデル検索・選択 */}
           <div className="space-y-2">
             <Label>招待するモデル</Label>
@@ -148,7 +146,8 @@ export function ModelInvitationForm({
           {/* 送信ボタン */}
           <div className="flex justify-end">
             <Button
-              type="submit"
+              type="button"
+              onClick={handleSubmit}
               disabled={!selectedModel || isLoading}
               className="flex items-center gap-2"
             >
@@ -178,7 +177,7 @@ export function ModelInvitationForm({
               <li>• 招待の状況は「送信済み招待」タブで確認できます</li>
             </ul>
           </div>
-        </form>
+        </div>
       </CardContent>
     </Card>
   );

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
@@ -40,41 +40,44 @@ export function ModelSearchInput({
   const supabase = createClient();
 
   // 検索実行
-  const searchModels = async (searchQuery: string) => {
-    if (!searchQuery.trim() || searchQuery.length < 2) {
-      setResults([]);
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('id, display_name, avatar_url, bio, user_type')
-        .eq('user_type', 'model')
-        .ilike('display_name', `%${searchQuery}%`)
-        .not('id', 'in', `(${excludeIds.join(',')})`)
-        .limit(10);
-
-      if (error) {
-        logger.error('モデル検索エラー:', error);
+  const searchModels = useCallback(
+    async (searchQuery: string) => {
+      if (!searchQuery.trim() || searchQuery.length < 2) {
         setResults([]);
         return;
       }
 
-      setResults(data || []);
-    } catch (error) {
-      logger.error('予期しないモデル検索エラー:', error);
-      setResults([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      setIsLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('id, display_name, avatar_url, bio, user_type')
+          .eq('user_type', 'model')
+          .ilike('display_name', `%${searchQuery}%`)
+          .not('id', 'in', `(${excludeIds.join(',')})`)
+          .limit(10);
+
+        if (error) {
+          logger.error('モデル検索エラー:', error);
+          setResults([]);
+          return;
+        }
+
+        setResults(data || []);
+      } catch (error) {
+        logger.error('予期しないモデル検索エラー:', error);
+        setResults([]);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [excludeIds, supabase]
+  );
 
   // デバウンス検索
   useEffect(() => {
     searchModels(debouncedQuery);
-  }, [debouncedQuery, excludeIds]);
+  }, [debouncedQuery, searchModels]);
 
   // 外部クリックで閉じる
   useEffect(() => {
