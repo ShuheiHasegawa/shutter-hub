@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
@@ -26,72 +26,76 @@ export function ModelSearchInput({
   const [results, setResults] = useState<ModelSearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [debouncedQuery, setDebouncedQuery] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // useDebounce hook実装
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedQuery(query);
-    }, 300);
+  // デバウンス付き検索実行
+  const searchModels = async (searchQuery: string, excludeList: string[]) => {
+    const trimmedQuery = searchQuery.trim();
 
-    return () => clearTimeout(timer);
-  }, [query]);
+    // 2文字未満の場合は結果をクリアして終了
+    if (trimmedQuery.length < 2) {
+      setResults([]);
+      setIsOpen(false);
+      return;
+    }
 
-  // 検索実行
-  const searchModels = useCallback(
-    async (searchQuery: string) => {
-      // より厳密な条件チェック
-      const trimmedQuery = searchQuery.trim();
-      if (!trimmedQuery || trimmedQuery.length < 2) {
+    setIsLoading(true);
+    setIsOpen(true);
+
+    try {
+      const supabase = createClient();
+      let queryBuilder = supabase
+        .from('profiles')
+        .select('id, display_name, avatar_url, bio, user_type')
+        .eq('user_type', 'model')
+        .ilike('display_name', `%${trimmedQuery}%`);
+
+      // excludeIdsがある場合のみフィルタリング
+      if (excludeList.length > 0) {
+        queryBuilder = queryBuilder.not(
+          'id',
+          'in',
+          `(${excludeList.join(',')})`
+        );
+      }
+
+      const { data, error } = await queryBuilder.limit(10);
+
+      if (error) {
+        logger.error('モデル検索エラー:', error);
         setResults([]);
-        setIsOpen(false);
         return;
       }
 
-      setIsLoading(true);
-      try {
-        const supabase = createClient();
-        let query = supabase
-          .from('profiles')
-          .select('id, display_name, avatar_url, bio, user_type')
-          .eq('user_type', 'model')
-          .ilike('display_name', `%${trimmedQuery}%`);
-
-        // excludeIdsがある場合のみフィルタリングを追加
-        if (excludeIds.length > 0) {
-          query = query.not('id', 'in', `(${excludeIds.join(',')})`);
-        }
-
-        const { data, error } = await query.limit(10);
-
-        if (error) {
-          logger.error('モデル検索エラー:', error);
-          setResults([]);
-          return;
-        }
-
-        setResults(data || []);
-      } catch (error) {
-        logger.error('予期しないモデル検索エラー:', error);
-        setResults([]);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [excludeIds]
-  );
-
-  // デバウンス検索
-  useEffect(() => {
-    // 空文字列または短すぎる場合は実行しない
-    if (debouncedQuery.trim().length >= 2) {
-      searchModels(debouncedQuery);
-    } else {
+      setResults(data || []);
+    } catch (error) {
+      logger.error('予期しないモデル検索エラー:', error);
       setResults([]);
-      setIsOpen(false);
+    } finally {
+      setIsLoading(false);
     }
-  }, [debouncedQuery, searchModels]);
+  };
+
+  // デバウンス処理
+  useEffect(() => {
+    // 既存のタイマーをクリア
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    // 新しいタイマーを設定
+    timeoutRef.current = setTimeout(() => {
+      searchModels(query, excludeIds);
+    }, 300);
+
+    // クリーンアップ
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [query, excludeIds]);
 
   // 外部クリックで閉じる
   useEffect(() => {
@@ -115,17 +119,33 @@ export function ModelSearchInput({
     setIsOpen(false);
   };
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setQuery(value);
+
+    // 空文字列の場合は即座に結果をクリア
+    if (!value.trim()) {
+      setResults([]);
+      setIsOpen(false);
+    } else if (value.trim().length >= 2) {
+      setIsOpen(true);
+    }
+  };
+
+  const handleInputFocus = () => {
+    if (query.trim().length >= 2) {
+      setIsOpen(true);
+    }
+  };
+
   return (
     <div ref={containerRef} className="relative">
       <div className="relative">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           value={query}
-          onChange={e => {
-            setQuery(e.target.value);
-            setIsOpen(true);
-          }}
-          onFocus={() => setIsOpen(true)}
+          onChange={handleInputChange}
+          onFocus={handleInputFocus}
           placeholder={placeholder}
           disabled={disabled}
           className="pl-10"
@@ -133,7 +153,7 @@ export function ModelSearchInput({
       </div>
 
       {/* 検索結果ドロップダウン */}
-      {isOpen && (query.length >= 2 || results.length > 0) && (
+      {isOpen && query.trim().length >= 2 && (
         <Card className="absolute top-full left-0 right-0 z-50 mt-1 max-h-64 overflow-y-auto">
           <CardContent className="p-0">
             {isLoading ? (
@@ -142,9 +162,7 @@ export function ModelSearchInput({
               </div>
             ) : results.length === 0 ? (
               <div className="p-4 text-center text-sm text-muted-foreground">
-                {query.length < 2
-                  ? '2文字以上入力してください'
-                  : 'モデルが見つかりませんでした'}
+                モデルが見つかりませんでした
               </div>
             ) : (
               <div className="py-2">
