@@ -50,6 +50,13 @@ export async function createModelInvitationAction(
 
     if (error) {
       logger.error('招待作成エラー:', error);
+      // テーブルが存在しない場合はわかりやすいエラーメッセージ
+      if (
+        error.code === 'PGRST106' ||
+        error.message?.includes('does not exist')
+      ) {
+        return { success: false, error: '所属モデル管理機能はまだ準備中です' };
+      }
       return { success: false, error: '招待の送信に失敗しました' };
     }
 
@@ -87,23 +94,48 @@ export async function getOrganizerModelsAction(): Promise<OrganizerModelResponse
       return { success: false, error: '運営者のみがアクセスできます' };
     }
 
+    // 所属モデル基本情報を取得
     const { data: models, error } = await supabase
       .from('organizer_models')
-      .select(
-        `
-        *,
-        model_profile:model_id(id, display_name, avatar_url, user_type, is_public, bio, location)
-      `
-      )
+      .select('*')
       .eq('organizer_id', user.id)
       .order('joined_at', { ascending: false });
 
     if (error) {
       logger.error('所属モデル一覧取得エラー:', error);
+      // テーブルが存在しない場合は空配列を返す
+      if (
+        error.code === 'PGRST106' ||
+        error.message?.includes('does not exist')
+      ) {
+        return { success: true, data: [] };
+      }
       return { success: false, error: '所属モデル一覧の取得に失敗しました' };
     }
 
-    return { success: true, data: models };
+    if (!models || models.length === 0) {
+      return { success: true, data: [] };
+    }
+
+    // モデルのプロフィール情報を別途取得
+    const modelIds = models.map(m => m.model_id);
+    const { data: profiles, error: profilesError } = await supabase
+      .from('profiles')
+      .select('id, display_name, avatar_url, user_type')
+      .in('id', modelIds);
+
+    if (profilesError) {
+      logger.error('モデルプロフィール取得エラー:', profilesError);
+      return { success: false, error: 'モデル情報の取得に失敗しました' };
+    }
+
+    // データを結合
+    const modelsWithProfiles = models.map(model => ({
+      ...model,
+      model_profile: profiles?.find(p => p.id === model.model_id) || null,
+    }));
+
+    return { success: true, data: modelsWithProfiles };
   } catch (error) {
     logger.error('所属モデル一覧取得処理エラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
@@ -136,23 +168,48 @@ export async function getOrganizerInvitationsAction(): Promise<InvitationRespons
       return { success: false, error: '運営者のみがアクセスできます' };
     }
 
+    // 招待基本情報を取得
     const { data: invitations, error } = await supabase
       .from('organizer_model_invitations')
-      .select(
-        `
-        *,
-        model_profile:model_id(id, display_name, avatar_url, user_type, is_public)
-      `
-      )
+      .select('*')
       .eq('organizer_id', user.id)
       .order('invited_at', { ascending: false });
 
     if (error) {
       logger.error('招待一覧取得エラー:', error);
+      // テーブルが存在しない場合は空配列を返す
+      if (
+        error.code === 'PGRST106' ||
+        error.message?.includes('does not exist')
+      ) {
+        return { success: true, data: [] };
+      }
       return { success: false, error: '招待一覧の取得に失敗しました' };
     }
 
-    return { success: true, data: invitations };
+    if (!invitations || invitations.length === 0) {
+      return { success: true, data: [] };
+    }
+
+    // モデルのプロフィール情報を別途取得
+    const modelIds = invitations.map(inv => inv.model_id);
+    const { data: profiles, error: profilesError } = await supabase
+      .from('profiles')
+      .select('id, display_name, avatar_url, user_type')
+      .in('id', modelIds);
+
+    if (profilesError) {
+      logger.error('モデルプロフィール取得エラー:', profilesError);
+      return { success: false, error: 'モデル情報の取得に失敗しました' };
+    }
+
+    // データを結合
+    const invitationsWithProfiles = invitations.map(invitation => ({
+      ...invitation,
+      model_profile: profiles?.find(p => p.id === invitation.model_id) || null,
+    }));
+
+    return { success: true, data: invitationsWithProfiles };
   } catch (error) {
     logger.error('招待一覧取得処理エラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };

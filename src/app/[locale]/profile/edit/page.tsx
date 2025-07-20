@@ -187,18 +187,28 @@ export default function EditProfilePage() {
           </div>
         </div>
 
-        <div className="max-w-2xl">
-          <ProfileEditForm profile={profile} />
-        </div>
-
-        {/* 運営アカウントの場合のみ所属モデル管理を表示 */}
-        {profile?.user_type === 'organizer' && (
-          <div className="space-y-6">
-            <div className="border-t pt-8">
-              <OrganizerModelManagement />
-            </div>
+        {/* プロフィール編集セクション */}
+        <div className="space-y-8">
+          {/* メインコンテンツ */}
+          <div className="max-w-2xl">
+            <ProfileEditForm profile={profile} />
           </div>
-        )}
+
+          {/* 運営アカウント専用セクション */}
+          {profile?.user_type === 'organizer' && (
+            <div className="space-y-6">
+              <div className="border-t pt-8">
+                <div className="mb-6">
+                  <h2 className="text-xl font-semibold mb-2">所属モデル管理</h2>
+                  <p className="text-muted-foreground text-sm">
+                    あなたの運営に所属するモデルの管理を行えます
+                  </p>
+                </div>
+                <OrganizerModelManagement />
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </DashboardLayout>
   );
