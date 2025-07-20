@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
@@ -16,12 +16,19 @@ interface ModelSearchInputProps {
   disabled?: boolean;
 }
 
+// 空配列の安定した参照を作成
+const EMPTY_ARRAY: string[] = [];
+
 export function ModelSearchInput({
   onModelSelect,
-  excludeIds = [],
+  excludeIds,
   placeholder = 'モデル名で検索...',
   disabled = false,
 }: ModelSearchInputProps) {
+  // excludeIdsの安定化 - 文字列化して比較することで参照の変更を回避
+  const stableExcludeIds = useMemo(() => {
+    return excludeIds && excludeIds.length > 0 ? excludeIds : EMPTY_ARRAY;
+  }, [excludeIds ? excludeIds.join(',') : '']);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<ModelSearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -86,7 +93,7 @@ export function ModelSearchInput({
 
     // 新しいタイマーを設定
     timeoutRef.current = setTimeout(() => {
-      searchModels(query, excludeIds);
+      searchModels(query, stableExcludeIds);
     }, 300);
 
     // クリーンアップ
@@ -95,7 +102,7 @@ export function ModelSearchInput({
         clearTimeout(timeoutRef.current);
       }
     };
-  }, [query, excludeIds]);
+  }, [query, stableExcludeIds]);
 
   // 外部クリックで閉じる
   useEffect(() => {
