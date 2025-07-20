@@ -41,21 +41,29 @@ export function ModelSearchInput({
   // 検索実行
   const searchModels = useCallback(
     async (searchQuery: string) => {
-      if (!searchQuery.trim() || searchQuery.length < 2) {
+      // より厳密な条件チェック
+      const trimmedQuery = searchQuery.trim();
+      if (!trimmedQuery || trimmedQuery.length < 2) {
         setResults([]);
+        setIsOpen(false);
         return;
       }
 
       setIsLoading(true);
       try {
         const supabase = createClient();
-        const { data, error } = await supabase
+        let query = supabase
           .from('profiles')
           .select('id, display_name, avatar_url, bio, user_type')
           .eq('user_type', 'model')
-          .ilike('display_name', `%${searchQuery}%`)
-          .not('id', 'in', `(${excludeIds.join(',')})`)
-          .limit(10);
+          .ilike('display_name', `%${trimmedQuery}%`);
+
+        // excludeIdsがある場合のみフィルタリングを追加
+        if (excludeIds.length > 0) {
+          query = query.not('id', 'in', `(${excludeIds.join(',')})`);
+        }
+
+        const { data, error } = await query.limit(10);
 
         if (error) {
           logger.error('モデル検索エラー:', error);
@@ -76,7 +84,13 @@ export function ModelSearchInput({
 
   // デバウンス検索
   useEffect(() => {
-    searchModels(debouncedQuery);
+    // 空文字列または短すぎる場合は実行しない
+    if (debouncedQuery.trim().length >= 2) {
+      searchModels(debouncedQuery);
+    } else {
+      setResults([]);
+      setIsOpen(false);
+    }
   }, [debouncedQuery, searchModels]);
 
   // 外部クリックで閉じる
