@@ -6,16 +6,33 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { ProfileEditForm } from '@/components/profile/ProfileEditForm';
+import { OrganizerModelManagement } from '@/components/profile/organizer/OrganizerModelManagement';
 import { getProfile } from '@/lib/auth/profile';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BackButton } from '@/components/ui/back-button';
 import { AlertCircle } from 'lucide-react';
 
+interface Profile {
+  id: string;
+  user_type: string;
+  display_name: string | null;
+  email: string;
+  avatar_url: string | null;
+  bio: string | null;
+  location: string | null;
+  website: string | null;
+  instagram_handle: string | null;
+  twitter_handle: string | null;
+  phone: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export default function EditProfilePage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
-  const [profile, setProfile] = useState(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [profileLoading, setProfileLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -173,6 +190,15 @@ export default function EditProfilePage() {
         <div className="max-w-2xl">
           <ProfileEditForm profile={profile} />
         </div>
+
+        {/* 運営アカウントの場合のみ所属モデル管理を表示 */}
+        {profile?.user_type === 'organizer' && (
+          <div className="space-y-6">
+            <div className="border-t pt-8">
+              <OrganizerModelManagement />
+            </div>
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );
