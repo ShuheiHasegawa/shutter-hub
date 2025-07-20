@@ -105,6 +105,7 @@ export function OrganizerModelManagement() {
               所属モデル管理
             </CardTitle>
             <Button
+              type="button"
               variant="outline"
               size="sm"
               onClick={loadData}
@@ -168,6 +169,7 @@ export function OrganizerModelManagement() {
           <div className="border-b border-gray-200 dark:border-gray-700">
             <nav className="-mb-px flex space-x-8">
               <button
+                type="button"
                 onClick={() => setActiveTab('models')}
                 className={`py-2 px-1 border-b-2 font-medium text-sm ${
                   activeTab === 'models'
@@ -178,6 +180,7 @@ export function OrganizerModelManagement() {
                 所属モデル ({models.length})
               </button>
               <button
+                type="button"
                 onClick={() => setActiveTab('invitations')}
                 className={`py-2 px-1 border-b-2 font-medium text-sm ${
                   activeTab === 'invitations'
@@ -188,6 +191,7 @@ export function OrganizerModelManagement() {
                 送信済み招待 ({invitations.length})
               </button>
               <button
+                type="button"
                 onClick={() => setActiveTab('invite')}
                 className={`py-2 px-1 border-b-2 font-medium text-sm ${
                   activeTab === 'invite'

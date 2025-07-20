@@ -100,14 +100,15 @@ export async function getOrganizerModelsAction(): Promise<OrganizerModelResponse
       .from('organizer_models')
       .select('*')
       .eq('organizer_id', user.id)
-      .order('joined_at', { ascending: false });
+      .order('invited_at', { ascending: false });
 
     if (error) {
       logger.error('所属モデル一覧取得エラー:', error);
-      // テーブルが存在しない場合は空配列を返す
+      // テーブルやカラムが存在しない場合は空配列を返す
       if (
         error.code === 'PGRST106' ||
         error.code === '42P01' ||
+        error.code === '42703' || // カラムが存在しない
         error.message?.includes('does not exist')
       ) {
         return { success: true, data: [] };
@@ -175,14 +176,15 @@ export async function getOrganizerInvitationsAction(): Promise<InvitationRespons
       .from('organizer_model_invitations')
       .select('*')
       .eq('organizer_id', user.id)
-      .order('invited_at', { ascending: false });
+      .order('created_at', { ascending: false });
 
     if (error) {
       logger.error('招待一覧取得エラー:', error);
-      // テーブルが存在しない場合は空配列を返す
+      // テーブルやカラムが存在しない場合は空配列を返す
       if (
         error.code === 'PGRST106' ||
         error.code === '42P01' ||
+        error.code === '42703' || // カラムが存在しない
         error.message?.includes('does not exist')
       ) {
         return { success: true, data: [] };
