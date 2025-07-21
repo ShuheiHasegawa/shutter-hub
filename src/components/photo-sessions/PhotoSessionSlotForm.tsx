@@ -1,8 +1,5 @@
 'use client';
 
-/* eslint-disable @typescript-eslint/ban-ts-comment, @typescript-eslint/no-explicit-any */
-// @ts-ignore - useTranslations型定義の問題により一時的に無効化
-
 import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -50,7 +47,7 @@ export default function PhotoSessionSlotForm({
   baseDate,
   allowMultipleBookings = false,
 }: PhotoSessionSlotFormProps) {
-  const t = useTranslations('photoSessionSlotForm') as any;
+  const t = useTranslations('photoSessionSlotForm');
 
   const [slotForms, setSlotForms] = useState<SlotFormData[]>([
     {
@@ -172,7 +169,7 @@ export default function PhotoSessionSlotForm({
     }));
     setSlotForms(renumberedForms);
     updateParentSlots(renumberedForms);
-    toast.success(t.deleteSuccess);
+    toast.success(t('deleteSuccess'));
   };
 
   const updateSlot = (
@@ -197,7 +194,7 @@ export default function PhotoSessionSlotForm({
     );
 
     updateSlot(index + 1, 'start_time', nextStartTime);
-    toast.success(t.autoFillSuccess);
+    toast.success(t('autoFillSuccess'));
   };
 
   const copyFromAbove = (index: number) => {
@@ -226,7 +223,7 @@ export default function PhotoSessionSlotForm({
     updatedForms[index] = updatedSlot;
     setSlotForms(updatedForms);
     updateParentSlots(updatedForms);
-    toast.success(t.copySuccess);
+    toast.success(t('copySuccess'));
   };
 
   // 初期化時と撮影枠変更時に親に通知
@@ -245,7 +242,7 @@ export default function PhotoSessionSlotForm({
     <div className="space-y-4">
       {/* ヘッダー */}
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-medium">{t.title}</h3>
+        <h3 className="text-lg font-medium">{t('title')}</h3>
         <Button
           type="button"
           size="sm"
@@ -253,7 +250,7 @@ export default function PhotoSessionSlotForm({
           className="flex items-center gap-2"
         >
           <Plus className="h-4 w-4" />
-          {t.addSlot}
+          {t('addSlot')}
         </Button>
       </div>
 
@@ -267,7 +264,7 @@ export default function PhotoSessionSlotForm({
                 <div className="flex items-center gap-2">
                   <Badge variant="outline">#{slot.slot_number}</Badge>
                   <span className="font-medium">
-                    {t.slotNumber} {slot.slot_number}
+                    {t('slotNumber')} {slot.slot_number}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -280,7 +277,7 @@ export default function PhotoSessionSlotForm({
                       className="flex items-center gap-1"
                     >
                       <Copy className="h-4 w-4" />
-                      {t.copyFromAbove}
+                      {t('copyFromAbove')}
                     </Button>
                   )}
                   {index < slotForms.length - 1 && (
@@ -292,7 +289,7 @@ export default function PhotoSessionSlotForm({
                       className="flex items-center gap-1"
                     >
                       <ArrowDown className="h-4 w-4" />
-                      {t.autoFill}
+                      {t('autoFill')}
                     </Button>
                   )}
                   {slotForms.length > 1 && (
@@ -312,7 +309,7 @@ export default function PhotoSessionSlotForm({
               {/* 時間設定 */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
-                  <Label>{t.startTime}</Label>
+                  <Label>{t('startTime')}</Label>
                   <Input
                     type="time"
                     value={slot.start_time}
@@ -322,7 +319,7 @@ export default function PhotoSessionSlotForm({
                   />
                 </div>
                 <div>
-                  <Label>{t.shootingDuration}</Label>
+                  <Label>{t('shootingDuration')}</Label>
                   <Input
                     type="number"
                     min="1"
@@ -335,12 +332,12 @@ export default function PhotoSessionSlotForm({
                         parseInt(e.target.value) || 50
                       )
                     }
-                    placeholder={t.durationInputPlaceholder}
+                    placeholder={t('durationInputPlaceholder')}
                     inputMode="numeric"
                   />
                 </div>
                 <div>
-                  <Label>{t.breakDuration}</Label>
+                  <Label>{t('breakDuration')}</Label>
                   <Input
                     type="number"
                     min="0"
@@ -353,15 +350,15 @@ export default function PhotoSessionSlotForm({
                         parseInt(e.target.value) || 0
                       )
                     }
-                    placeholder={t.breakInputPlaceholder}
+                    placeholder={t('breakInputPlaceholder')}
                     inputMode="numeric"
                   />
                 </div>
                 <div>
                   <Label>
-                    {t.endTime}{' '}
+                    {t('endTime')}{' '}
                     <span className="text-xs text-muted-foreground">
-                      ({t.calculated})
+                      ({t('calculated')})
                     </span>
                   </Label>
                   <Input
@@ -379,7 +376,7 @@ export default function PhotoSessionSlotForm({
               {/* 料金・参加者設定 */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label>{t.pricePerPerson}</Label>
+                  <Label>{t('pricePerPerson')}</Label>
                   <PriceInput
                     value={slot.price_per_person}
                     onChange={value =>
@@ -389,11 +386,11 @@ export default function PhotoSessionSlotForm({
                         parseInt(value) || 0
                       )
                     }
-                    placeholder={t.priceInputPlaceholder}
+                    placeholder={t('priceInputPlaceholder')}
                   />
                 </div>
                 <div>
-                  <Label>{t.maxParticipants}</Label>
+                  <Label>{t('maxParticipants')}</Label>
                   <Input
                     type="number"
                     min="1"
@@ -407,7 +404,7 @@ export default function PhotoSessionSlotForm({
                         parseInt(e.target.value) || 1
                       )
                     }
-                    placeholder={t.participantsInputPlaceholder}
+                    placeholder={t('participantsInputPlaceholder')}
                     inputMode="numeric"
                   />
                 </div>
@@ -418,7 +415,7 @@ export default function PhotoSessionSlotForm({
                 <div>
                   <Label className="flex items-center gap-2 mb-2">
                     <Image className="h-4 w-4" />
-                    {t.costumeImage}
+                    {t('costumeImage')}
                   </Label>
                   <ImageUploadCommon
                     value={slot.costume_image_url || ''}
@@ -442,13 +439,13 @@ export default function PhotoSessionSlotForm({
                         : result.url || '';
                     }}
                     labels={{
-                      selectFiles: t.uploadImage,
-                      uploading: t.uploading,
+                      selectFiles: t('uploadImage'),
+                      uploading: t('uploading'),
                     }}
                   />
                 </div>
                 <div>
-                  <Label>{t.costumeDescription}</Label>
+                  <Label>{t('costumeDescription')}</Label>
                   <Textarea
                     value={slot.costume_description || ''}
                     onChange={e =>
@@ -461,7 +458,7 @@ export default function PhotoSessionSlotForm({
 
               {/* メモ */}
               <div>
-                <Label>{t.notes}</Label>
+                <Label>{t('notes')}</Label>
                 <Textarea
                   value={slot.notes || ''}
                   onChange={e => updateSlot(index, 'notes', e.target.value)}
