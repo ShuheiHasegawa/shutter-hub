@@ -333,7 +333,7 @@ export default function PhotoSessionSlotForm({
         <h3 className="text-lg font-medium">{t.title}</h3>
         <Button
           type="button"
-          variant="outline"
+          size="sm"
           onClick={addSlot}
           className="flex items-center gap-2"
         >
@@ -345,7 +345,7 @@ export default function PhotoSessionSlotForm({
       {/* 撮影枠リスト */}
       <div className="space-y-4">
         {slotForms.map((slot, index) => (
-          <Card key={index} className="p-4">
+          <Card key={index} className="p-4 border-2 border-gray-200">
             <div className="space-y-4">
               {/* 撮影枠ヘッダー */}
               <div className="flex items-center justify-between">
