@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { PhotographerInstantDashboard } from '@/components/instant/PhotographerInstantDashboard';
+import { ModelInvitationNotifications } from '@/components/profile/organizer/ModelInvitationNotifications';
 import { CheckCircle, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
@@ -81,6 +82,19 @@ export default function DashboardPage() {
     }
   }, [user, loading, router, locale, loadProfile]);
 
+  // プロフィール更新時にログ出力
+  useEffect(() => {
+    if (profile) {
+      logger.info('Dashboard: プロフィール情報', {
+        userId: user?.id,
+        userType: profile.user_type,
+        email: profile.email,
+        displayName: profile.display_name,
+        shouldShowInvitations: profile.user_type === 'model',
+      });
+    }
+  }, [profile, user]);
+
   if (loading || profileLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -129,6 +143,9 @@ export default function DashboardPage() {
             </AlertDescription>
           </Alert>
         )}
+
+        {/* モデル向け招待通知 */}
+        {profile.user_type === 'model' && <ModelInvitationNotifications />}
 
         <Card>
           <CardHeader>
