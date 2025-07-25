@@ -1,12 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Users, AlertCircle, CheckCircle } from 'lucide-react';
-import { ModelSearchInput } from './ModelSearchInput';
+import { MultiSelect } from '@/components/ui/multi-select';
 import { SelectedModelCard } from './SelectedModelCard';
+import { createClient } from '@/lib/supabase/client';
+import { logger } from '@/lib/utils/logger';
 import type { SelectedModel, ModelSearchResult } from '@/types/photo-session';
 
 interface ModelSelectionFormProps {
@@ -23,37 +25,81 @@ export function ModelSelectionForm({
   disabled = false,
 }: ModelSelectionFormProps) {
   const [searchError, setSearchError] = useState<string | null>(null);
+  const [allModels, setAllModels] = useState<ModelSearchResult[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // モデル追加
-  const handleModelAdd = (searchResult: ModelSearchResult) => {
-    setSearchError(null);
+  // 全モデル一覧を取得
+  useEffect(() => {
+    const fetchAllModels = async () => {
+      setIsLoading(true);
+      try {
+        const supabase = createClient();
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('id, display_name, avatar_url, bio, user_type')
+          .eq('user_type', 'model')
+          .order('display_name');
 
-    // 重複チェック
-    const isDuplicate = selectedModels.some(
-      model => model.model_id === searchResult.id
-    );
+        if (error) {
+          logger.error('モデル一覧取得エラー:', error);
+          return;
+        }
 
-    if (isDuplicate) {
-      setSearchError('このモデルは既に選択されています');
-      return;
-    }
-
-    // 最大数チェック
-    if (selectedModels.length >= maxModels) {
-      setSearchError(`最大${maxModels}人まで選択可能です`);
-      return;
-    }
-
-    // 新しいモデルを追加
-    const newModel: SelectedModel = {
-      model_id: searchResult.id,
-      display_name: searchResult.display_name,
-      avatar_url: searchResult.avatar_url,
-      fee_amount: 5000, // デフォルト料金
-      profile_id: searchResult.id,
+        setAllModels(data || []);
+      } catch (error) {
+        logger.error('予期しないモデル取得エラー:', error);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
-    onModelsChange([...selectedModels, newModel]);
+    fetchAllModels();
+  }, []);
+
+  // MultiSelect用のオプション作成
+  const modelOptions = useMemo(() => {
+    return allModels.map(model => ({
+      label: model.display_name,
+      value: model.id,
+      icon: Users,
+      type: 'model' as const,
+    }));
+  }, [allModels]);
+
+  // マルチセレクトからの選択変更を処理
+  const handleMultiSelectChange = (selectedIds: string[]) => {
+    setSearchError(null);
+
+    // 新しく追加されたモデルIDを特定
+    const currentIds = selectedModels.map(m => m.model_id);
+    const addedIds = selectedIds.filter(id => !currentIds.includes(id));
+    const removedIds = currentIds.filter(id => !selectedIds.includes(id));
+
+    let updatedModels = [...selectedModels];
+
+    // 削除されたモデルを除去
+    if (removedIds.length > 0) {
+      updatedModels = updatedModels.filter(
+        model => !removedIds.includes(model.model_id)
+      );
+    }
+
+    // 新しく追加されたモデルを追加
+    for (const modelId of addedIds) {
+      const modelData = allModels.find(m => m.id === modelId);
+      if (modelData) {
+        const newModel: SelectedModel = {
+          model_id: modelData.id,
+          display_name: modelData.display_name,
+          avatar_url: modelData.avatar_url,
+          fee_amount: 5000, // デフォルト料金
+          profile_id: modelData.id,
+        };
+        updatedModels.push(newModel);
+      }
+    }
+
+    onModelsChange(updatedModels);
   };
 
   // モデル更新
@@ -73,8 +119,8 @@ export function ModelSelectionForm({
     setSearchError(null);
   };
 
-  // 除外IDリスト
-  const excludeIds = selectedModels.map(model => model.model_id);
+  // 現在選択されているモデルIDのリスト
+  const selectedModelIds = selectedModels.map(model => model.model_id);
 
   // 統計情報
   const totalFee = selectedModels.reduce(
@@ -98,18 +144,22 @@ export function ModelSelectionForm({
         )}
       </div>
 
-      {/* モデル検索 */}
+      {/* モデル検索 - マルチセレクト */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg">モデル検索</CardTitle>
+          <CardTitle className="text-lg">モデル選択</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            <ModelSearchInput
-              onModelSelect={handleModelAdd}
-              excludeIds={excludeIds}
-              placeholder="モデル名で検索してください..."
-              disabled={disabled || isMaxReached}
+            <MultiSelect
+              options={modelOptions}
+              onValueChange={handleMultiSelectChange}
+              defaultValue={selectedModelIds}
+              placeholder="モデルを検索・選択してください..."
+              variant="default"
+              maxCount={3}
+              className="w-full"
+              disabled={disabled || isLoading}
             />
 
             {/* エラー表示 */}
@@ -135,7 +185,7 @@ export function ModelSelectionForm({
               <div className="text-sm text-muted-foreground p-4 bg-muted/50 rounded-lg">
                 <p className="font-medium mb-2">💡 モデル選択のヒント</p>
                 <ul className="space-y-1 text-xs">
-                  <li>• モデル名を入力して検索してください</li>
+                  <li>• 複数のモデルを一度に選択できます</li>
                   <li>• 各モデルに個別の料金を設定できます</li>
                   <li>• 同じモデルを重複して選択することはできません</li>
                   <li>• 最大{maxModels}人まで選択可能です</li>
