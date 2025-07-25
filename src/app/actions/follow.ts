@@ -706,7 +706,7 @@ export async function updateNotificationSettings(
   }
 }
 
-// ユーザー検索
+// ユーザー検索（@username対応版）
 export async function searchUsers(
   query: string,
   limit = 20,
@@ -724,21 +724,67 @@ export async function searchUsers(
     }
 
     const searchTerm = `%${query}%`;
+    const usernameQuery = query.replace('@', '').toLowerCase();
 
-    const { data, error, count } = await supabase
-      .from('profiles')
-      .select(
+    // @username形式での検索を最優先し、その後通常検索を行う
+    let data: UserWithFollowInfo[] = [];
+    let count = 0;
+    let searchError: Error | null = null;
+
+    // まず@username形式での完全一致検索
+    if (query.startsWith('@') || /^[a-zA-Z0-9_]+$/.test(query)) {
+      const { data: usernameData, error: usernameError } = await supabase
+        .from('profiles')
+        .select(
+          `
+          *,
+          follow_stats:user_follow_stats(*)
         `
-        *,
-        follow_stats:user_follow_stats(*)
-      `
-      )
-      .or(`display_name.ilike.${searchTerm},bio.ilike.${searchTerm}`)
-      .neq('id', user.id) // 自分を除外
-      .range(offset, offset + limit - 1);
+        )
+        .eq('username', usernameQuery)
+        .neq('id', user.id)
+        .limit(1);
 
-    if (error) {
-      logger.error('Search users error:', error);
+      if (!usernameError && usernameData && usernameData.length > 0) {
+        data = usernameData;
+        count = 1;
+      } else if (usernameError) {
+        searchError = usernameError;
+      }
+    }
+
+    // @username検索で結果がない場合は統合検索を実行
+    if (data.length === 0 && !searchError) {
+      const {
+        data: searchData,
+        error: searchDataError,
+        count: searchCount,
+      } = await supabase
+        .from('profiles')
+        .select(
+          `
+          *,
+          follow_stats:user_follow_stats(*)
+        `,
+          { count: 'exact' }
+        )
+        .or(
+          `username.ilike.${searchTerm},display_name.ilike.${searchTerm},bio.ilike.${searchTerm}`
+        )
+        .neq('id', user.id) // 自分を除外
+        .order('created_at', { ascending: false })
+        .range(offset, offset + limit - 1);
+
+      if (!searchDataError && searchData) {
+        data = searchData;
+        count = searchCount || 0;
+      } else if (searchDataError) {
+        searchError = searchDataError;
+      }
+    }
+
+    if (searchError) {
+      logger.error('Search users error:', searchError);
       return { users: [], total_count: 0, has_more: false };
     }
 
@@ -773,6 +819,7 @@ export async function searchUsers(
     const users: UserWithFollowInfo[] = (data || []).map(profile => ({
       id: profile.id,
       display_name: profile.display_name,
+      username: profile.username,
       avatar_url: profile.avatar_url,
       bio: profile.bio,
       user_type: profile.user_type,
