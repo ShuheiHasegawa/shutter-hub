@@ -14,6 +14,7 @@ export interface Profile {
   id: string;
   email: string;
   display_name: string | null;
+  username: string | null;
   avatar_url: string | null;
   user_type: UserType;
   bio: string | null;
@@ -25,6 +26,7 @@ export interface Profile {
   is_verified: boolean;
   created_at: string;
   updated_at: string;
+  username_updated_at?: string | null;
 }
 
 export interface PhotoSession {

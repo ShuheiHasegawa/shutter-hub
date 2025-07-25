@@ -12,6 +12,7 @@ export type ActivityVisibility = 'public' | 'followers_only' | 'private';
 export interface SimpleUserProfile {
   id: string;
   display_name: string | null;
+  username?: string | null;
   avatar_url: string | null;
   user_type: string;
   is_verified: boolean;
@@ -91,6 +92,7 @@ export interface UserFollowStats {
 export interface UserWithFollowInfo {
   id: string;
   display_name: string | null;
+  username?: string | null;
   avatar_url: string | null;
   bio: string | null;
   user_type: string;
