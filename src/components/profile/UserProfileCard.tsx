@@ -15,6 +15,7 @@ interface UserProfileCardProps {
   profile: {
     id: string;
     display_name: string | null;
+    username?: string | null;
     email: string;
     avatar_url: string | null;
     bio: string | null;
@@ -77,6 +78,11 @@ export function UserProfileCard({ profile }: UserProfileCardProps) {
             <h3 className="text-xl font-semibold">
               {profile.display_name || 'ユーザー'}
             </h3>
+            {profile.username && (
+              <p className="text-sm text-muted-foreground mt-1">
+                @{profile.username}
+              </p>
+            )}
             <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground mt-1">
               <Mail className="h-3 w-3" />
               {profile.email}

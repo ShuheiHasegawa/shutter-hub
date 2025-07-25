@@ -29,15 +29,17 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { ActionSheet, ActionButton } from '@/components/ui/action-sheet';
 import { ImageCropDialog } from '@/components/profile/ImageCropDialog';
+import { UsernameSetupDialog } from '@/components/profile/UsernameSetupDialog';
 import { updateProfile } from '@/lib/auth/profile';
 import { useToast } from '@/hooks/use-toast';
 import {
   uploadProfileImage,
   validateProfileImageFile,
 } from '@/lib/storage/profile-images';
+import { getCurrentUsername } from '@/app/actions/username';
 import { notifyProfileUpdate } from '@/hooks/useProfile';
 import { logger } from '@/lib/utils/logger';
-import { User, Save, X, Camera } from 'lucide-react';
+import { User, Save, X, Camera, AtSign } from 'lucide-react';
 import { OrganizerModelManagement } from '@/components/profile/organizer/OrganizerModelManagement';
 
 const profileEditSchema = z.object({
@@ -80,6 +82,7 @@ interface ProfileEditFormProps {
     id: string;
     user_type: string;
     display_name: string | null;
+    username?: string | null;
     email: string;
     avatar_url: string | null;
     bio: string | null;
@@ -98,6 +101,8 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [showActionSheet, setShowActionSheet] = useState(false);
+  const [showUsernameDialog, setShowUsernameDialog] = useState(false);
+  const [currentUsername, setCurrentUsername] = useState<string | null>(null);
 
   // 画像関連の状態管理
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
@@ -121,6 +126,11 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
       phone: profile.phone || '',
     },
   });
+
+  // 現在のusernameを取得
+  useEffect(() => {
+    getCurrentUsername().then(setCurrentUsername);
+  }, []);
 
   // コンポーネントのクリーンアップ時にプレビューURLを解放
   useEffect(() => {
@@ -383,6 +393,42 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
 
         <Form {...form}>
           <form className="space-y-6">
+            {/* ユーザー名設定セクション */}
+            <div className="space-y-3">
+              <FormLabel>ユーザー名</FormLabel>
+              <div className="flex items-center gap-3">
+                <div className="flex-1">
+                  {currentUsername ? (
+                    <div className="flex items-center gap-2 p-3 border rounded-md bg-muted/50">
+                      <AtSign className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm font-medium">
+                        @{currentUsername}
+                      </span>
+                      <Badge variant="secondary" className="text-xs">
+                        設定済み
+                      </Badge>
+                    </div>
+                  ) : (
+                    <div className="p-3 border border-dashed rounded-md text-center text-muted-foreground">
+                      <AtSign className="h-4 w-4 mx-auto mb-1" />
+                      <p className="text-sm">ユーザー名が未設定です</p>
+                    </div>
+                  )}
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowUsernameDialog(true)}
+                  className="shrink-0"
+                >
+                  {currentUsername ? '変更' : '設定'}
+                </Button>
+              </div>
+              <FormDescription>
+                他のユーザーがあなたを@usernameで検索できるようになります
+              </FormDescription>
+            </div>
+
             <FormField
               control={form.control}
               name="user_type"
@@ -578,6 +624,21 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
             </div>
           </form>
         </Form>
+
+        {/* ユーザー名設定ダイアログ */}
+        <UsernameSetupDialog
+          open={showUsernameDialog}
+          onOpenChange={setShowUsernameDialog}
+          initialUsername={currentUsername || ''}
+          variant={currentUsername ? 'change' : 'setup'}
+          onSuccess={username => {
+            setCurrentUsername(username);
+            toast({
+              title: '成功',
+              description: `ユーザー名「@${username}」を設定しました`,
+            });
+          }}
+        />
 
         {/* 画像トリミングダイアログ */}
         <ImageCropDialog
