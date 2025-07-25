@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/client';
 import { User } from '@supabase/supabase-js';
 import { logger } from '@/lib/utils/logger';
+import { generateUsernameFromDisplayName } from '@/app/actions/username';
 
 export type UserType = 'model' | 'photographer' | 'organizer';
 
@@ -161,6 +162,14 @@ export async function createProfile(
 
     // エラーがない場合は通常通り
     if (!error && data) {
+      // Google認証などで表示名が設定されている場合、username候補を生成
+      if (data.display_name && !profileData.user_type) {
+        // バックグラウンドでusername候補を生成（エラーは無視）
+        generateUsernameFromDisplayName(data.display_name).catch(err => {
+          logger.warn('Username候補生成エラー:', err);
+        });
+      }
+
       // 残りのプロフィールデータを更新
       if (
         profileData.bio ||
