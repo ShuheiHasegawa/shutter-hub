@@ -25,11 +25,11 @@ export interface OrganizerModelInvitation {
 // プロフィール情報付き招待型
 export interface OrganizerModelInvitationWithProfiles
   extends OrganizerModelInvitation {
-  organizer_profile?: {
+  organizer?: {
     id: string;
     display_name?: string;
+    email?: string;
     avatar_url?: string;
-    user_type: string;
   };
   model_profile?: {
     id: string;
@@ -63,6 +63,7 @@ export interface OrganizerModelWithProfile extends OrganizerModel {
     display_name?: string;
     avatar_url?: string;
     user_type: string;
+    email?: string;
     is_public?: boolean;
     bio?: string;
     location?: string;

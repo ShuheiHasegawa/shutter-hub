@@ -23,7 +23,9 @@ import {
   Hash,
   Book,
   Edit3,
+  Users,
 } from 'lucide-react';
+import { useProfile } from '@/hooks/useProfile';
 import {
   Collapsible,
   CollapsibleContent,
@@ -46,6 +48,7 @@ export function Sidebar({ className }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const t = useTranslations('navigation');
+  const { profile } = useProfile();
   const [openSections, setOpenSections] = useState<string[]>([
     'photo-sessions',
   ]);
@@ -87,17 +90,12 @@ export function Sidebar({ className }: SidebarProps) {
           href: '/dashboard/my-sessions',
           icon: Camera,
         },
+        {
+          title: t('bookings'),
+          href: '/bookings',
+          icon: Calendar,
+        },
       ],
-    },
-    {
-      title: t('bookings'),
-      href: '/bookings',
-      icon: Calendar,
-    },
-    {
-      title: t('profile'),
-      href: '/profile',
-      icon: User,
     },
     {
       title: t('photobook'),
@@ -129,6 +127,20 @@ export function Sidebar({ className }: SidebarProps) {
       title: '統計',
       href: '/analytics',
       icon: BarChart3,
+    },
+    ...(profile?.user_type === 'organizer'
+      ? [
+          {
+            title: 'モデル一覧',
+            href: '/models',
+            icon: Users,
+          },
+        ]
+      : []),
+    {
+      title: t('profile'),
+      href: '/profile',
+      icon: User,
     },
     {
       title: t('settings'),
@@ -240,6 +252,7 @@ export function MobileSidebarTrigger() {
   const pathname = usePathname();
   const router = useRouter();
   const t = useTranslations('navigation');
+  const { profile } = useProfile();
   const [openSections, setOpenSections] = useState<string[]>([
     'photo-sessions',
   ]);
@@ -324,6 +337,15 @@ export function MobileSidebarTrigger() {
       href: '/analytics',
       icon: BarChart3,
     },
+    ...(profile?.user_type === 'organizer'
+      ? [
+          {
+            title: 'モデル一覧',
+            href: '/models',
+            icon: Users,
+          },
+        ]
+      : []),
     {
       title: t('settings'),
       href: '/settings',

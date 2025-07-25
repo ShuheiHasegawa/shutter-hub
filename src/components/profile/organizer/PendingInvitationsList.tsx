@@ -3,7 +3,10 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 import type { OrganizerModelInvitationWithProfiles } from '@/types/organizer-model';
+import { cancelModelInvitationAction } from '@/app/actions/organizer-model';
 import {
   Mail,
   Clock,
@@ -14,6 +17,7 @@ import {
   Calendar,
   MessageSquare,
 } from 'lucide-react';
+import { useState } from 'react';
 
 interface PendingInvitationsListProps {
   invitations: OrganizerModelInvitationWithProfiles[];
@@ -24,7 +28,13 @@ interface PendingInvitationsListProps {
 export function PendingInvitationsList({
   invitations,
   isLoading = false,
+  onDataChanged,
 }: PendingInvitationsListProps) {
+  const { toast } = useToast();
+  const [actionLoading, setActionLoading] = useState<Record<string, boolean>>(
+    {}
+  );
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('ja-JP', {
       year: 'numeric',
@@ -41,6 +51,39 @@ export function PendingInvitationsList({
       hour: '2-digit',
       minute: '2-digit',
     });
+  };
+
+  const handleCancelInvitation = async (invitationId: string) => {
+    setActionLoading(prev => ({ ...prev, [invitationId]: true }));
+
+    try {
+      const result = await cancelModelInvitationAction(invitationId);
+
+      if (result.success) {
+        toast({
+          title: '招待を取り消しました',
+          description:
+            'モデルへの招待が正常に取り消されました。新しく招待を送信できます。',
+        });
+
+        // データ更新
+        onDataChanged?.();
+      } else {
+        toast({
+          title: 'エラーが発生しました',
+          description: result.error || '招待の取り消しに失敗しました。',
+          variant: 'destructive',
+        });
+      }
+    } catch {
+      toast({
+        title: 'エラーが発生しました',
+        description: '招待の取り消しに失敗しました。',
+        variant: 'destructive',
+      });
+    } finally {
+      setActionLoading(prev => ({ ...prev, [invitationId]: false }));
+    }
   };
 
   const getStatusBadge = (status: string) => {
@@ -200,7 +243,10 @@ export function PendingInvitationsList({
                     <div className="flex items-center gap-2">
                       <Calendar className="h-4 w-4 text-gray-400" />
                       <span className="text-gray-600 dark:text-gray-400">
-                        招待送信: {formatDateTime(invitation.invited_at)}
+                        招待送信:{' '}
+                        {formatDateTime(
+                          invitation.invited_at || invitation.created_at
+                        )}
                       </span>
                     </div>
 
@@ -235,6 +281,24 @@ export function PendingInvitationsList({
                   </div>
                 </div>
               </div>
+
+              {/* アクションボタン */}
+              {invitation.status === 'pending' && (
+                <div className="flex gap-2 mt-4">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleCancelInvitation(invitation.id)}
+                    disabled={actionLoading[invitation.id]}
+                    className="text-red-600 border-red-200 hover:bg-red-50"
+                  >
+                    <XCircle className="h-4 w-4 mr-1" />
+                    {actionLoading[invitation.id]
+                      ? '取消中...'
+                      : '招待を取り消し'}
+                  </Button>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
