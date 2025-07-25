@@ -1,253 +1,368 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
-import { removeOrganizerModelAction } from '@/app/actions/organizer-model';
-import type { OrganizerModelWithProfile } from '@/types/organizer-model';
+import { MultiSelect } from '@/components/ui/multi-select';
 import {
-  Users,
-  Trash2,
-  Calendar,
-  DollarSign,
-  Activity,
-  MapPin,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  Filter,
+  MoreVertical,
   User,
+  Calendar,
+  TrendingUp,
+  Mail,
+  RefreshCw,
 } from 'lucide-react';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
+import { format } from 'date-fns';
+import { ja } from 'date-fns/locale';
+import type { OrganizerModelWithProfile } from '@/types/organizer-model';
 
 interface OrganizerModelsListProps {
   models: OrganizerModelWithProfile[];
-  onModelRemoved?: () => void;
-  isLoading?: boolean;
+  onRefresh?: () => void;
+}
+
+interface FilterOption {
+  label: string;
+  value: string;
+  icon?: React.ComponentType<{ className?: string }>;
+  type: 'models';
 }
 
 export function OrganizerModelsList({
   models,
-  onModelRemoved,
-  isLoading = false,
+  onRefresh,
 }: OrganizerModelsListProps) {
-  const { toast } = useToast();
-  const [removingModelId, setRemovingModelId] = useState<string | null>(null);
+  const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
+  const [sortField, setSortField] = useState<
+    | 'joined_at'
+    | 'display_name'
+    | 'total_sessions_participated'
+    | 'last_activity_at'
+  >('joined_at');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
-  const handleRemoveModel = async (modelId: string, modelName: string) => {
-    setRemovingModelId(modelId);
-    try {
-      const result = await removeOrganizerModelAction(modelId);
+  // フィルターオプションの定義（モデル名のみ）
+  const filterOptions: FilterOption[] = useMemo(() => {
+    // モデル名フィルター（実際のモデルから動的生成）
+    const uniqueModels = Array.from(
+      new Set(models.map(m => m.model_profile?.display_name).filter(Boolean))
+    );
 
-      if (result.success) {
-        toast({
-          title: '成功',
-          description: `${modelName}の所属関係を削除しました`,
-        });
-        onModelRemoved?.();
-      } else {
-        toast({
-          title: 'エラー',
-          description: result.error || '削除に失敗しました',
-          variant: 'destructive',
-        });
+    return uniqueModels.map(name => ({
+      label: name!,
+      value: name!,
+      icon: User,
+      type: 'models' as const,
+    }));
+  }, [models]);
+
+  // フィルタリングとソート
+  const filteredAndSortedModels = useMemo(() => {
+    const filtered = models.filter(model => {
+      // フィルターが選択されていない場合は全て表示
+      if (selectedFilters.length === 0) return true;
+
+      // 選択されたモデル名に一致するかチェック
+      return selectedFilters.includes(model.model_profile?.display_name || '');
+    });
+
+    // ソート
+    filtered.sort((a, b) => {
+      let aValue: string | number | Date;
+      let bValue: string | number | Date;
+
+      switch (sortField) {
+        case 'display_name':
+          aValue = a.model_profile?.display_name || '';
+          bValue = b.model_profile?.display_name || '';
+          break;
+        case 'total_sessions_participated':
+          aValue = a.total_sessions_participated || 0;
+          bValue = b.total_sessions_participated || 0;
+          break;
+        case 'last_activity_at':
+          aValue = a.last_activity_at
+            ? new Date(a.last_activity_at)
+            : new Date(0);
+          bValue = b.last_activity_at
+            ? new Date(b.last_activity_at)
+            : new Date(0);
+          break;
+        default: // joined_at
+          aValue = new Date(a.joined_at);
+          bValue = new Date(b.joined_at);
       }
-    } catch {
-      toast({
-        title: 'エラー',
-        description: '予期しないエラーが発生しました',
-        variant: 'destructive',
-      });
-    } finally {
-      setRemovingModelId(null);
+
+      if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    return filtered;
+  }, [models, selectedFilters, sortField, sortOrder]);
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'active':
+        return (
+          <Badge variant="secondary" className="text-green-600">
+            アクティブ
+          </Badge>
+        );
+      case 'inactive':
+        return <Badge variant="outline">非アクティブ</Badge>;
+      case 'suspended':
+        return <Badge variant="destructive">停止中</Badge>;
+      default:
+        return <Badge variant="outline">{status}</Badge>;
     }
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('ja-JP');
+    try {
+      return format(new Date(dateString), 'yyyy年MM月dd日', { locale: ja });
+    } catch {
+      return '不明';
+    }
   };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('ja-JP', {
-      style: 'currency',
-      currency: 'JPY',
-    }).format(amount);
-  };
-
-  if (isLoading) {
-    return (
-      <div className="space-y-4">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <Card key={i} className="animate-pulse">
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-gray-200 rounded-full"></div>
-                <div className="flex-1 space-y-2">
-                  <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    );
-  }
-
-  if (models.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <Users className="mx-auto h-12 w-12 text-gray-400" />
-        <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">
-          所属モデルがいません
-        </h3>
-        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          「新規招待」タブからモデルを招待してみましょう
-        </p>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-4">
-      {models.map(model => (
-        <Card key={model.id} className="hover:shadow-md transition-shadow">
-          <CardContent className="p-6">
-            <div className="flex items-start justify-between">
-              {/* モデル情報 */}
-              <div className="flex items-start space-x-4 flex-1">
-                <Avatar className="h-12 w-12">
-                  <AvatarImage
-                    src={model.model_profile?.avatar_url}
-                    alt={model.model_profile?.display_name}
-                  />
-                  <AvatarFallback>
-                    <User className="h-6 w-6" />
-                  </AvatarFallback>
-                </Avatar>
+      {/* 検索・フィルター */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex-1">
+          <MultiSelect
+            options={filterOptions}
+            onValueChange={setSelectedFilters}
+            defaultValue={selectedFilters}
+            placeholder="モデル名で絞り込み..."
+            variant="default"
+            maxCount={3}
+            className="w-full"
+          />
+        </div>
 
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-2">
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 truncate">
-                      {model.model_profile?.display_name || 'Unknown'}
-                    </h3>
-                    <Badge
-                      variant={
-                        model.status === 'active' ? 'default' : 'secondary'
-                      }
-                      className="flex-shrink-0"
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => {
+              const newOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+              setSortOrder(newOrder);
+            }}
+            className="min-w-[120px]"
+          >
+            <TrendingUp className="h-4 w-4 mr-2" />
+            {sortOrder === 'asc' ? '昇順' : '降順'}
+          </Button>
+
+          <Button
+            variant="outline"
+            onClick={() => {
+              const fields = [
+                'joined_at',
+                'display_name',
+                'total_sessions_participated',
+                'last_activity_at',
+              ] as const;
+              const currentIndex = fields.indexOf(sortField);
+              const nextIndex = (currentIndex + 1) % fields.length;
+              setSortField(fields[nextIndex]);
+            }}
+            className="min-w-[140px]"
+          >
+            <Filter className="h-4 w-4 mr-2" />
+            {sortField === 'joined_at' && '参加日時順'}
+            {sortField === 'display_name' && '名前順'}
+            {sortField === 'total_sessions_participated' && '参加数順'}
+            {sortField === 'last_activity_at' && '最終活動順'}
+          </Button>
+
+          {onRefresh && (
+            <Button variant="outline" size="icon" onClick={onRefresh}>
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* 結果表示 */}
+      <div className="text-sm text-muted-foreground">
+        {filteredAndSortedModels.length} 件中 {filteredAndSortedModels.length}{' '}
+        件を表示
+      </div>
+
+      {/* モデル一覧 - クリーンなグリッドレイアウト */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        {filteredAndSortedModels.map(model => (
+          <Card
+            key={model.id}
+            className="group relative overflow-hidden border shadow-sm hover:shadow-lg transition-all duration-300"
+          >
+            {/* ステータスバッジ - 絶対配置 */}
+            <div className="absolute top-4 right-4 z-10">
+              {getStatusBadge(model.status)}
+            </div>
+
+            {/* モデル画像 */}
+            <div className="relative h-48 overflow-hidden bg-gray-100 dark:bg-gray-800">
+              <Avatar className="h-full w-full rounded-none">
+                <AvatarImage
+                  src={model.model_profile?.avatar_url || undefined}
+                  alt={model.model_profile?.display_name || 'モデル'}
+                  className="object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                <AvatarFallback className="h-full w-full rounded-none bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-4xl font-semibold">
+                  {model.model_profile?.display_name
+                    ?.charAt(0)
+                    ?.toUpperCase() || 'M'}
+                </AvatarFallback>
+              </Avatar>
+
+              {/* アクションメニュー - ホバー時表示 */}
+              <div className="absolute top-4 left-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                      className="h-8 w-8 bg-white/90 dark:bg-gray-800/90 shadow-sm"
                     >
-                      {model.status === 'active'
-                        ? 'アクティブ'
-                        : model.status === 'inactive'
-                          ? '非アクティブ'
-                          : '停止中'}
-                    </Badge>
-                  </div>
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start">
+                    <DropdownMenuItem>
+                      <User className="h-4 w-4 mr-2" />
+                      プロフィール表示
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Mail className="h-4 w-4 mr-2" />
+                      メッセージ送信
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
 
-                  {model.model_profile?.bio && (
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
-                      {model.model_profile.bio}
-                    </p>
-                  )}
+            <CardContent className="p-6 space-y-4">
+              {/* モデル基本情報 */}
+              <div className="space-y-3">
+                <div className="text-center">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    {model.model_profile?.display_name || '未設定'}
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {model.model_profile?.email}
+                  </p>
+                </div>
+                <div className="flex items-center justify-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                  <Calendar className="h-3 w-3" />
+                  <span>参加日: {formatDate(model.joined_at)}</span>
+                </div>
+              </div>
 
-                  {/* 統計情報 */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                    <div className="flex items-center gap-1">
-                      <Calendar className="h-4 w-4 text-gray-400" />
-                      <span className="text-gray-600 dark:text-gray-400">
-                        {formatDate(model.joined_at)}
-                      </span>
-                    </div>
+              {/* 統計情報 - ミニマル */}
+              <div className="grid grid-cols-3 gap-3">
+                <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 text-center">
+                  <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                    {model.total_sessions_participated || 0}
+                  </p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">
+                    参加回数
+                  </p>
+                </div>
 
-                    <div className="flex items-center gap-1">
-                      <Activity className="h-4 w-4 text-gray-400" />
-                      <span className="text-gray-600 dark:text-gray-400">
-                        {model.total_sessions_participated}回参加
-                      </span>
-                    </div>
+                <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 text-center">
+                  <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                    ¥{Math.floor((model.total_revenue_generated || 0) / 1000)}K
+                  </p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">
+                    収益貢献
+                  </p>
+                </div>
 
-                    <div className="flex items-center gap-1">
-                      <DollarSign className="h-4 w-4 text-gray-400" />
-                      <span className="text-gray-600 dark:text-gray-400">
-                        {formatCurrency(model.total_revenue_generated)}
-                      </span>
-                    </div>
+                <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 text-center">
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                    {model.last_activity_at
+                      ? format(new Date(model.last_activity_at), 'MM/dd', {
+                          locale: ja,
+                        })
+                      : '---'}
+                  </p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">
+                    最終活動
+                  </p>
+                </div>
+              </div>
 
-                    {model.model_profile?.location && (
-                      <div className="flex items-center gap-1">
-                        <MapPin className="h-4 w-4 text-gray-400" />
-                        <span className="text-gray-600 dark:text-gray-400 truncate">
-                          {model.model_profile.location}
+              {/* 契約情報 */}
+              {(model.contract_start_date ||
+                model.contract_end_date ||
+                model.notes) && (
+                <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-3">
+                  <h4 className="text-sm font-medium text-gray-900 dark:text-white">
+                    契約情報
+                  </h4>
+
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    {model.contract_start_date && (
+                      <div>
+                        <span className="text-gray-500 dark:text-gray-400 block text-xs">
+                          開始日
+                        </span>
+                        <span className="font-medium text-gray-900 dark:text-white">
+                          {formatDate(model.contract_start_date)}
+                        </span>
+                      </div>
+                    )}
+                    {model.contract_end_date && (
+                      <div>
+                        <span className="text-gray-500 dark:text-gray-400 block text-xs">
+                          終了日
+                        </span>
+                        <span className="font-medium text-gray-900 dark:text-white">
+                          {formatDate(model.contract_end_date)}
                         </span>
                       </div>
                     )}
                   </div>
 
-                  {model.last_activity_at && (
-                    <div className="mt-2 text-xs text-gray-500">
-                      最終活動: {formatDate(model.last_activity_at)}
+                  {model.notes && (
+                    <div>
+                      <span className="text-gray-500 dark:text-gray-400 text-xs block mb-1">
+                        メモ
+                      </span>
+                      <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                        {model.notes}
+                      </p>
                     </div>
                   )}
                 </div>
-              </div>
+              )}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
 
-              {/* アクションボタン */}
-              <div className="flex-shrink-0 ml-4">
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={removingModelId === model.id}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
-                    >
-                      {removingModelId === model.id ? (
-                        <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin" />
-                      ) : (
-                        <Trash2 className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>所属関係の削除</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        {model.model_profile?.display_name}
-                        との所属関係を削除しますか？
-                        この操作は取り消すことができません。
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>キャンセル</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={() =>
-                          handleRemoveModel(
-                            model.id,
-                            model.model_profile?.display_name || 'Unknown'
-                          )
-                        }
-                        className="bg-red-600 hover:bg-red-700"
-                      >
-                        削除する
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+      {/* 結果なし */}
+      {filteredAndSortedModels.length === 0 && models.length > 0 && (
+        <div className="text-center py-12">
+          <Filter className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+          <h3 className="text-lg font-medium mb-2">該当するモデルがいません</h3>
+          <p className="text-muted-foreground">
+            フィルター条件を変更してください。
+          </p>
+        </div>
+      )}
     </div>
   );
 }
