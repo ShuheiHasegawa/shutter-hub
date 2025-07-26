@@ -344,7 +344,11 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
   };
 
   // 表示する画像URLを決定
-  const displayImageUrl = previewUrl || profile.avatar_url;
+  // プレビューがある場合はそれを優先、そうでなければキャッシュバスティング付きプロフィール画像
+  const profileAvatarWithCacheBuster = profile.avatar_url
+    ? `${profile.avatar_url}?t=${profile.updated_at ? new Date(profile.updated_at).getTime() : Date.now()}`
+    : null;
+  const displayImageUrl = previewUrl || profileAvatarWithCacheBuster;
 
   return (
     <Card>

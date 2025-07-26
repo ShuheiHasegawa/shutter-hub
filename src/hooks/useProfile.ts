@@ -127,10 +127,12 @@ export function useProfile() {
   }, [fetchProfile]);
 
   // プロフィール画像のキャッシュバスティング用URLを生成
+  // 画像が存在する場合のみキャッシュバスティングを適用
   const avatarUrlWithCacheBuster = profile?.avatar_url
-    ? `${profile.avatar_url}?t=${Date.now()}`
-    : profile?.avatar_url;
+    ? `${profile.avatar_url}?t=${profile.updated_at ? new Date(profile.updated_at).getTime() : Date.now()}`
+    : null;
 
+  // プロフィール画像のURL優先順位：保存済み画像 > OAuth画像 > null
   const finalAvatarUrl =
     avatarUrlWithCacheBuster || user?.user_metadata?.avatar_url || null;
 

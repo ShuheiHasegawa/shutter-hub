@@ -32,6 +32,10 @@ export const routing = defineRouting({
       ja: '/profile',
       en: '/profile',
     },
+    '/settings': {
+      ja: '/settings',
+      en: '/settings',
+    },
     '/photo-sessions': {
       ja: '/photo-sessions',
       en: '/photo-sessions',

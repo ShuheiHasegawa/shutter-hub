@@ -44,6 +44,11 @@ export function UserProfileCard({ profile }: UserProfileCardProps) {
     });
   };
 
+  // プロフィール画像のキャッシュバスティング用URLを生成
+  const avatarUrlWithCacheBuster = profile.avatar_url
+    ? `${profile.avatar_url}?t=${profile.updated_at ? new Date(profile.updated_at).getTime() : Date.now()}`
+    : null;
+
   return (
     <Card>
       <CardHeader>
@@ -64,7 +69,7 @@ export function UserProfileCard({ profile }: UserProfileCardProps) {
         {/* アバターと基本情報 */}
         <div className="flex flex-col items-center text-center space-y-4">
           <Avatar className="h-24 w-24">
-            <AvatarImage src={profile.avatar_url || undefined} />
+            <AvatarImage src={avatarUrlWithCacheBuster || undefined} />
             <AvatarFallback className="text-lg">
               {profile.display_name ? (
                 getInitials(profile.display_name)

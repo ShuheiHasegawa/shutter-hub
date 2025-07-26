@@ -1,4 +1,4 @@
-import { Header } from './header';
+import { AppHeader } from './header';
 import { Footer } from './footer';
 import { BottomNavigation } from './bottom-navigation';
 
@@ -13,7 +13,7 @@ export function MainLayout({
 }: MainLayoutProps) {
   return (
     <div className="min-h-screen flex flex-col">
-      <Header />
+      <AppHeader variant="default" />
       <main className="flex-1 pb-16 md:pb-0">{children}</main>
       <Footer />
       {showBottomNav && <BottomNavigation />}

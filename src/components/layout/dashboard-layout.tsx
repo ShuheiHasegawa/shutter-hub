@@ -2,16 +2,16 @@
 
 import { useAuth } from '@/hooks/useAuth';
 import { Sidebar } from './sidebar';
-import { DashboardTopbar } from './dashboard-topbar';
+import { AppHeader } from './header';
 import { BottomNavigation } from './bottom-navigation';
 import { redirect } from 'next/navigation';
 import { useEffect } from 'react';
 
-interface DashboardLayoutProps {
+interface AuthenticatedLayoutProps {
   children: React.ReactNode;
 }
 
-export function DashboardLayout({ children }: DashboardLayoutProps) {
+export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
   const { user, loading } = useAuth();
 
   useEffect(() => {
@@ -36,7 +36,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     <div className="flex h-screen bg-background">
       <Sidebar />
       <div className="w-full">
-        <DashboardTopbar />
+        <AppHeader variant="authenticated" showPageTitle={true} />
         <main className="flex-1 overflow-y-auto p-6 pb-16 md:pb-6">
           {children}
         </main>
@@ -45,3 +45,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     </div>
   );
 }
+
+// 後方互換性のためのエイリアス
+export const DashboardLayout = AuthenticatedLayout;
