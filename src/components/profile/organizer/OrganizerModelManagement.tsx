@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -18,12 +18,24 @@ import type {
 } from '@/types/organizer-model';
 import { RefreshCw, Users, Mail } from 'lucide-react';
 
-export function OrganizerModelManagement() {
+interface OrganizerModelManagementProps {
+  showStatistics?: boolean;
+  showRefreshButton?: boolean;
+  defaultTab?: 'models' | 'invitations' | 'invite';
+  className?: string;
+}
+
+export function OrganizerModelManagement({
+  showStatistics = true,
+  showRefreshButton = true,
+  defaultTab = 'models',
+  className = '',
+}: OrganizerModelManagementProps) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<
     'models' | 'invitations' | 'invite'
-  >('models');
+  >(defaultTab);
 
   // データ状態
   const [models, setModels] = useState<OrganizerModelWithProfile[]>([]);
@@ -32,7 +44,7 @@ export function OrganizerModelManagement() {
   >([]);
 
   // データ読み込み
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setIsLoading(true);
     try {
       const [modelsResult, invitationsResult] = await Promise.all([
@@ -65,11 +77,11 @@ export function OrganizerModelManagement() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [toast]);
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [loadData]);
 
   // 招待成功時のコールバック
   const handleInvitationSent = () => {
@@ -81,22 +93,13 @@ export function OrganizerModelManagement() {
     });
   };
 
-  // モデル削除成功時のコールバック
-  const handleModelRemoved = () => {
-    loadData(); // データを再読み込み
-    toast({
-      title: '成功',
-      description: '所属関係を削除しました',
-    });
-  };
-
   // 保留中の招待数
   const pendingInvitationsCount = invitations.filter(
     inv => inv.status === 'pending'
   ).length;
 
   return (
-    <div className="space-y-6">
+    <div className={`space-y-6 ${className}`}>
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -104,66 +107,70 @@ export function OrganizerModelManagement() {
               <Users className="h-5 w-5" />
               所属モデル管理
             </CardTitle>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={loadData}
-              disabled={isLoading}
-              className="flex items-center gap-2"
-            >
-              <RefreshCw
-                className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`}
-              />
-              更新
-            </Button>
+            {showRefreshButton && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={loadData}
+                disabled={isLoading}
+                className="flex items-center gap-2"
+              >
+                <RefreshCw
+                  className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`}
+                />
+                更新
+              </Button>
+            )}
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* 概要統計 */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
-              <div className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                <div>
-                  <p className="text-sm font-medium text-blue-700 dark:text-blue-300">
-                    所属モデル
-                  </p>
-                  <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">
-                    {models.length}
-                  </p>
+          {showStatistics && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                  <div>
+                    <p className="text-sm font-medium text-blue-700 dark:text-blue-300">
+                      所属モデル
+                    </p>
+                    <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">
+                      {models.length}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg">
-              <div className="flex items-center gap-2">
-                <Mail className="h-5 w-5 text-orange-600 dark:text-orange-400" />
-                <div>
-                  <p className="text-sm font-medium text-orange-700 dark:text-orange-300">
-                    保留中招待
-                  </p>
-                  <p className="text-2xl font-bold text-orange-900 dark:text-orange-100">
-                    {pendingInvitationsCount}
-                  </p>
+              <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <Mail className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                  <div>
+                    <p className="text-sm font-medium text-orange-700 dark:text-orange-300">
+                      保留中招待
+                    </p>
+                    <p className="text-2xl font-bold text-orange-900 dark:text-orange-100">
+                      {pendingInvitationsCount}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
-              <div className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-green-600 dark:text-green-400" />
-                <div>
-                  <p className="text-sm font-medium text-green-700 dark:text-green-300">
-                    総招待数
-                  </p>
-                  <p className="text-2xl font-bold text-green-900 dark:text-green-100">
-                    {invitations.length}
-                  </p>
+              <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <Users className="h-5 w-5 text-green-600 dark:text-green-400" />
+                  <div>
+                    <p className="text-sm font-medium text-green-700 dark:text-green-300">
+                      総招待数
+                    </p>
+                    <p className="text-2xl font-bold text-green-900 dark:text-green-100">
+                      {invitations.length}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* タブナビゲーション */}
           <div className="border-b border-gray-200 dark:border-gray-700">
@@ -209,7 +216,7 @@ export function OrganizerModelManagement() {
             {activeTab === 'models' && (
               <OrganizerModelsList
                 models={models}
-                onModelRemoved={handleModelRemoved}
+                onRefresh={loadData}
                 isLoading={isLoading}
               />
             )}

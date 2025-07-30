@@ -607,7 +607,11 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
                     あなたの運営に所属するモデルの管理を行えます
                   </p>
                 </div>
-                <OrganizerModelManagement />
+                <OrganizerModelManagement
+                  showStatistics={false}
+                  showRefreshButton={true}
+                  defaultTab="models"
+                />
               </div>
             )}
 
