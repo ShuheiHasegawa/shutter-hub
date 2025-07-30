@@ -6,10 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { UserPlus, User, Send } from 'lucide-react';
 import { ModelSearchInput } from '@/components/photo-sessions/ModelSearchInput';
 import { createModelInvitationAction } from '@/app/actions/organizer-model';
 import type { ModelSearchResult } from '@/types/photo-session';
-import { Send, UserPlus } from 'lucide-react';
 
 interface ModelInvitationFormProps {
   onInvitationSent?: () => void;
@@ -91,23 +92,30 @@ export function ModelInvitationForm({
             <Label>招待するモデル</Label>
             <ModelSearchInput
               onModelSelect={handleModelSelect}
-              placeholder="モデル名で検索..."
+              placeholder="モデル名または@usernameで検索..."
               disabled={isLoading}
             />
             {selectedModel && (
               <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
                 <div className="flex items-center gap-3">
-                  {selectedModel.avatar_url && (
-                    <img
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage
                       src={selectedModel.avatar_url}
                       alt={selectedModel.display_name}
-                      className="w-8 h-8 rounded-full object-cover"
                     />
-                  )}
+                    <AvatarFallback>
+                      <User className="h-4 w-4" />
+                    </AvatarFallback>
+                  </Avatar>
                   <div>
                     <p className="font-medium text-blue-900 dark:text-blue-100">
                       {selectedModel.display_name}
                     </p>
+                    {selectedModel.username && (
+                      <p className="text-xs text-blue-600 dark:text-blue-400">
+                        @{selectedModel.username}
+                      </p>
+                    )}
                     <p className="text-sm text-blue-700 dark:text-blue-300">
                       選択済み
                     </p>

@@ -241,6 +241,7 @@ export function BookingsList() {
         id: item.data.photo_session.organizer_id,
         email: '',
         display_name: '運営者',
+        username: null,
         avatar_url: null,
         user_type: 'organizer' as const,
         bio: null,

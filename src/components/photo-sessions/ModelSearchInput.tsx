@@ -22,13 +22,13 @@ const EMPTY_ARRAY: string[] = [];
 export function ModelSearchInput({
   onModelSelect,
   excludeIds,
-  placeholder = 'モデル名で検索...',
+  placeholder = 'モデル名または@usernameで検索...',
   disabled = false,
 }: ModelSearchInputProps) {
-  // excludeIdsの安定化 - 文字列化して比較することで参照の変更を回避
+  // excludeIdsの安定化 - 参照の変更を回避
   const stableExcludeIds = useMemo(() => {
     return excludeIds && excludeIds.length > 0 ? excludeIds : EMPTY_ARRAY;
-  }, [excludeIds ? excludeIds.join(',') : '']);
+  }, [excludeIds]);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<ModelSearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -36,7 +36,7 @@ export function ModelSearchInput({
   const containerRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // デバウンス付き検索実行
+  // デバウンス付き検索実行（@username対応版）
   const searchModels = async (searchQuery: string, excludeList: string[]) => {
     const trimmedQuery = searchQuery.trim();
 
@@ -52,25 +52,74 @@ export function ModelSearchInput({
 
     try {
       const supabase = createClient();
-      let queryBuilder = supabase
-        .from('profiles')
-        .select('id, display_name, avatar_url, bio, user_type')
-        .eq('user_type', 'model')
-        .ilike('display_name', `%${trimmedQuery}%`);
+      const searchTerm = `%${trimmedQuery}%`;
+      const usernameQuery = trimmedQuery.replace('@', '').toLowerCase();
 
-      // excludeIdsがある場合のみフィルタリング
-      if (excludeList.length > 0) {
-        queryBuilder = queryBuilder.not(
-          'id',
-          'in',
-          `(${excludeList.join(',')})`
-        );
+      let data: ModelSearchResult[] = [];
+      let searchError: Error | null = null;
+
+      // まず@username形式での完全一致検索（モデルのみ）
+      if (
+        trimmedQuery.startsWith('@') ||
+        /^[a-zA-Z0-9_]+$/.test(trimmedQuery)
+      ) {
+        let usernameQueryBuilder = supabase
+          .from('profiles')
+          .select('id, display_name, avatar_url, bio, user_type, username')
+          .eq('user_type', 'model')
+          .eq('username', usernameQuery);
+
+        // excludeIdsがある場合のみフィルタリング
+        if (excludeList.length > 0) {
+          usernameQueryBuilder = usernameQueryBuilder.not(
+            'id',
+            'in',
+            `(${excludeList.join(',')})`
+          );
+        }
+
+        const { data: usernameData, error: usernameError } =
+          await usernameQueryBuilder.limit(1);
+
+        if (!usernameError && usernameData && usernameData.length > 0) {
+          data = usernameData;
+        } else if (usernameError) {
+          searchError = usernameError;
+        }
       }
 
-      const { data, error } = await queryBuilder.limit(10);
+      // @username検索で結果がない場合は統合検索を実行（モデルのみ）
+      if (data.length === 0 && !searchError) {
+        let integratedQueryBuilder = supabase
+          .from('profiles')
+          .select('id, display_name, avatar_url, bio, user_type, username')
+          .eq('user_type', 'model')
+          .or(
+            `username.ilike.${searchTerm},display_name.ilike.${searchTerm},bio.ilike.${searchTerm}`
+          )
+          .order('display_name', { ascending: true });
 
-      if (error) {
-        logger.error('モデル検索エラー:', error);
+        // excludeIdsがある場合のみフィルタリング
+        if (excludeList.length > 0) {
+          integratedQueryBuilder = integratedQueryBuilder.not(
+            'id',
+            'in',
+            `(${excludeList.join(',')})`
+          );
+        }
+
+        const { data: searchData, error: searchDataError } =
+          await integratedQueryBuilder.limit(10);
+
+        if (!searchDataError && searchData) {
+          data = searchData;
+        } else if (searchDataError) {
+          searchError = searchDataError;
+        }
+      }
+
+      if (searchError) {
+        logger.error('モデル検索エラー:', searchError);
         setResults([]);
         return;
       }
@@ -193,6 +242,11 @@ export function ModelSearchInput({
                       <p className="font-medium truncate">
                         {model.display_name}
                       </p>
+                      {model.username && (
+                        <p className="text-xs text-blue-600 dark:text-blue-400 truncate">
+                          @{model.username}
+                        </p>
+                      )}
                       {model.bio && (
                         <p className="text-xs text-muted-foreground truncate">
                           {model.bio}

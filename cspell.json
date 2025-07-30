@@ -1,0 +1,4 @@
+{
+  "ignorePaths": ["node_modules", "dist", "build", "public", "public/**"],
+  "words": ["supabase", "shadcn", "PGRST116", "ilike"]
+}

@@ -152,6 +152,7 @@ export interface BulkPhotoSessionResult {
 export interface ModelSearchResult {
   id: string;
   display_name: string;
+  username?: string;
   avatar_url?: string;
   bio?: string;
   user_type: string;
