@@ -151,59 +151,16 @@ export function validateImageFile(
 
 /**
  * 画像の最適化されたURLを生成（Supabase Transform対応）
+ * 一時的に安全モード: キャッシュ問題解決まで元URLをそのまま返す
  */
 export function getOptimizedImageUrl(
   baseUrl: string,
-  quality: 'web' | 'print' | 'thumbnail' = 'web',
-  category: keyof typeof IMAGE_QUALITY_CONFIGS = 'photoSession'
+  _quality: 'web' | 'print' | 'thumbnail' = 'web',
+  _category: keyof typeof IMAGE_QUALITY_CONFIGS = 'photoSession'
 ): string {
-  // 静的ファイル（/images/, /uploads/など）はそのまま返す
-  if (
-    baseUrl.startsWith('/images/') ||
-    baseUrl.startsWith('/uploads/') ||
-    baseUrl.startsWith('/public/')
-  ) {
-    return baseUrl;
-  }
-
-  try {
-    // 相対パスかどうかをチェック
-    const isRelativePath = baseUrl.startsWith('/');
-    const url = isRelativePath
-      ? new URL(
-          baseUrl,
-          typeof window !== 'undefined'
-            ? window.location.origin
-            : 'http://localhost:3000'
-        )
-      : new URL(baseUrl);
-
-    const config = IMAGE_QUALITY_CONFIGS[category][quality];
-
-    // Supabase Storage URLの場合のみTransformationパラメータを追加
-    if (url.hostname.includes('supabase.co')) {
-      url.searchParams.set('quality', config.quality.toString());
-
-      if ('maxWidth' in config) {
-        url.searchParams.set('width', config.maxWidth.toString());
-      } else if ('width' in config) {
-        url.searchParams.set('width', config.width.toString());
-      }
-
-      if ('maxHeight' in config) {
-        url.searchParams.set('height', config.maxHeight.toString());
-      } else if ('height' in config) {
-        url.searchParams.set('height', config.height.toString());
-      }
-
-      url.searchParams.set('format', config.format);
-      url.searchParams.set('resize', 'cover');
-    }
-
-    return url.toString();
-  } catch {
-    return baseUrl;
-  }
+  // 安全のため、すべての場合で元のURLをそのまま返す
+  // Next.js Imageコンポーネントが自動で最適化します
+  return baseUrl;
 }
 
 /**
