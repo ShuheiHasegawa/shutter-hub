@@ -793,7 +793,6 @@ export function PhotoSessionForm({
                   ? formData.start_time.split('T')[0]
                   : new Date().toISOString().split('T')[0]
               }
-              locale="ja"
               allowMultipleBookings={formData.allow_multiple_bookings}
             />
           </div>

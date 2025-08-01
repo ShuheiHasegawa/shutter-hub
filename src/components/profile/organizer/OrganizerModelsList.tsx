@@ -28,6 +28,7 @@ import type { OrganizerModelWithProfile } from '@/types/organizer-model';
 interface OrganizerModelsListProps {
   models: OrganizerModelWithProfile[];
   onRefresh?: () => void;
+  isLoading?: boolean;
 }
 
 interface FilterOption {
@@ -40,6 +41,7 @@ interface FilterOption {
 export function OrganizerModelsList({
   models,
   onRefresh,
+  isLoading: _isLoading = false,
 }: OrganizerModelsListProps) {
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
   const [sortField, setSortField] = useState<
