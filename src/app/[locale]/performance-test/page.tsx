@@ -5,24 +5,13 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import {
-  OptimizedImage,
-  PhotobookImage,
-  ProfileImage,
-  GalleryImage,
-  SocialImage,
-} from '@/components/ui/optimized-image';
-import {
-  LazyLoad,
-  LazyImage,
-  LazyGalleryGrid,
-  InfiniteScroll,
   useProgressiveLoading,
 } from '@/components/ui/lazy-loading';
 import { uploadEnhancedImage } from '@/lib/storage/enhanced-image-upload';
@@ -33,7 +22,7 @@ import {
   Image as ImageIcon,
   BarChart3,
   Upload,
-  Download,
+
   Gauge,
   CheckCircle,
   AlertCircle,
@@ -204,28 +193,28 @@ export default function PerformanceTestPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div className="space-y-3">
                   <h3 className="font-semibold">プロフィール画像</h3>
-                  <ProfileImage
+                  <img
                     src="/images/sample.png"
                     alt="プロフィールサンプル"
-                    size="large"
+                    className="w-full h-auto rounded-lg"
                   />
                 </div>
 
                 <div className="space-y-3">
                   <h3 className="font-semibold">撮影会画像</h3>
-                  <GalleryImage
+                  <img
                     src="/images/sample.png"
                     alt="撮影会サンプル"
-                    aspectRatio="portrait"
+                    className="w-full h-auto rounded-lg aspect-[3/4]"
                   />
                 </div>
 
                 <div className="space-y-3">
                   <h3 className="font-semibold">フォトブック用</h3>
-                  <PhotobookImage
+                  <img
                     src="/images/sample.png"
                     alt="フォトブックサンプル"
-                    showPrintQuality={false}
+                    className="w-full h-auto rounded-lg"
                     width={200}
                     height={300}
                   />
@@ -233,11 +222,10 @@ export default function PerformanceTestPage() {
 
                 <div className="space-y-3">
                   <h3 className="font-semibold">SNS投稿用</h3>
-                  <SocialImage
+                  <img
                     src="/images/sample.png"
                     alt="SNSサンプル"
-                    width={200}
-                    height={200}
+                    className="w-full h-auto rounded-lg aspect-square"
                   />
                 </div>
               </div>
@@ -319,34 +307,23 @@ export default function PerformanceTestPage() {
                   </Badge>
                 </div>
 
-                <LazyGalleryGrid
-                  items={visibleItems}
-                  columns={4}
-                  renderItem={(item, index) => (
-                    <LazyImage
+                <div className="grid grid-cols-4 gap-4">
+                  {visibleItems.map((item) => (
+                    <img
                       key={item.id}
                       src={item.src}
                       alt={item.alt}
-                      width={200}
-                      height={150}
-                      className="rounded-lg"
-                      onLoad={() => console.log(`Loaded: ${item.id}`)}
+                      className="w-full h-auto rounded-lg"
+                      loading="lazy"
                     />
-                  )}
-                  onItemLoad={index =>
-                    console.log(`Gallery item ${index} loaded`)
-                  }
-                />
+                  ))}
+                </div>
 
-                <InfiniteScroll
-                  hasMore={hasMore}
-                  loadMore={() => {
-                    // Progressive loadingが自動的に処理
-                  }}
-                  loading={false}
-                >
-                  <div />
-                </InfiniteScroll>
+                {hasMore && (
+                  <div className="text-center py-4">
+                    <p className="text-gray-500">さらに画像があります...</p>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
