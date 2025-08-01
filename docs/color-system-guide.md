@@ -1,6 +1,10 @@
 # ShutterHub v2 カラーシステム実装ガイド
 
 > **重要**: このガイドは`.cursor/rules/dev-rules/detailed-requirements.mdc`で定義された公式カラーパレットの実装方法を説明します。
+> 
+> **関連ドキュメント**: 
+> - 📋 **基本カラー**: 本ガイド（標準カラーシステム）
+> - 🎨 **テーマカラー**: `.cursor/rules/dev-rules/theme-color-system-guide.mdc`（動的切り替え対応システム）
 
 ## 📋 **公式カラーパレット（`.cursor/rules`準拠）**
 
@@ -43,10 +47,12 @@
 
 ## 🎨 **実装システム**
 
-### **セマンティックカラー（推奨）**
+### **1. 基本カラーシステム（固定）**
+
+#### **Shadcn/ui セマンティックカラー**
 
 ```css
-/* Shadcn/ui セマンティックカラー */
+/* Shadcn/ui 標準セマンティックカラー */
 text-foreground        /* メインテキスト */
 text-muted-foreground  /* セカンダリテキスト */
 text-card-foreground   /* カード内テキスト */
@@ -58,10 +64,10 @@ bg-muted               /* ミュート背景 */
 border-border          /* デフォルトボーダー */
 ```
 
-### **ShutterHubブランドカラー**
+#### **ShutterHubブランドカラー**
 
 ```css
-/* 実装済みカスタムクラス */
+/* 固定ブランドカラー（テーマ切り替えに影響されない） */
 text-shutter-primary      /* #6F5091 - メインブランド */
 text-shutter-secondary    /* #101820 - セカンダリブランド */
 
@@ -69,6 +75,21 @@ text-shutter-accent       /* #FF6B6B - 強調・エラー */
 text-shutter-success      /* #4ECDC4 - 成功・完了 */
 text-shutter-warning      /* #FFE66D - 警告・注意 */
 text-shutter-info         /* #4D96FF - 情報・リンク */
+```
+
+### **2. 拡張テーマシステム（動的）**
+
+> **新機能**: 動的テーマ切り替えについては `.cursor/rules/dev-rules/theme-color-system-guide.mdc` を参照
+
+```css
+/* テーマ対応カラー（5つのテーマ×ライト/ダークモード対応） */
+bg-theme-primary           /* 動的プライマリ色 */
+text-theme-text-primary    /* 動的テキスト色 */
+surface-primary            /* セマンティックサーフェース（推奨） */
+
+/* 使い分け */
+text-shutter-primary       /* 固定ブランド色（常に#6F5091） */
+bg-theme-primary          /* 動的テーマ色（テーマに応じて変化） */
 ```
 
 ## 🚀 **実装例：Before/After**
@@ -84,7 +105,7 @@ text-shutter-info         /* #4D96FF - 情報・リンク */
 </div>
 ```
 
-### **✅ After（推奨）**
+### **✅ After（基本カラーシステム）**
 ```tsx
 // .cursor/rules準拠のセマンティックカラー
 <div className="text-muted-foreground bg-muted border-border">
@@ -95,9 +116,29 @@ text-shutter-info         /* #4D96FF - 情報・リンク */
 </div>
 ```
 
+### **✅ Alternative（テーマ対応システム）**
+```tsx
+// 新機能：動的テーマ切り替え対応
+<div className="surface-neutral">
+  <MapPin className="text-theme-accent" />
+  <span className="text-shutter-success">成功</span> {/* 固定色 */}
+  <span className="surface-accent-0">エラー</span>    {/* テーマ色 */}
+  <span className="text-shutter-warning">警告</span>  {/* 固定色 */}
+</div>
+```
+
+### **🎯 使い分けガイドライン**
+
+| 用途 | 推奨システム | 理由 |
+|------|-------------|------|
+| **ブランド色** | `text-shutter-primary` | 常に一定のブランド認識が必要 |
+| **機能色** | `text-shutter-success/accent/warning` | UIの意味が固定的 |
+| **レイアウト色** | `surface-*` または `bg-theme-*` | ユーザーの好みでカスタマイズ可能 |
+| **テキスト色** | `text-theme-text-*` | ダークモード対応が重要 |
+
 ## 📊 **実装状況チェックリスト**
 
-### **✅ 完了済み**
+### **✅ 完了済み（基本システム）**
 - [x] 公式カラーパレット実装（CSS Variables）
 - [x] Shadcn/uiセマンティックカラー対応
 - [x] カスタムブランドカラークラス実装
@@ -105,15 +146,30 @@ text-shutter-info         /* #4D96FF - 情報・リンク */
 - [x] QuickRequestForm, LocationPermissionCheck統一
 - [x] Hydrationエラー修正（カラー関連）
 
-### **🔄 改善推奨**
+### **✅ 新機能（拡張システム）**
+- [x] **動的テーマシステム実装**: 5つのテーマ切り替え対応
+- [x] **セマンティックサーフェース**: 背景+テキスト色の自動ペア
+- [x] **自動コントラスト調整**: 明度に基づく最適なフォアグラウンド色
+- [x] **Tailwindプラグイン**: `surface-*`クラスの自動生成
+- [x] **React Hook**: `useTheme()`でテーマ状態管理
 
-#### **ニュートラルカラーの活用**
+### **🔄 使い分け推奨**
+
+#### **固定色（ブランド一貫性重視）**
 ```css
 /* 必要に応じて公式グレーを直接指定 */
 bg-[#F9FAFB]  /* gray_50 - 最も薄いグレー */
 bg-[#F3F4F6]  /* gray_100 - 薄いグレー */
 border-[#D1D5DB]  /* gray_300 - ボーダー用 */
 text-[#6B7280]  /* gray_500 - 中間グレーテキスト */
+```
+
+#### **動的色（ユーザー体験重視）**
+```css
+/* テーマ切り替え対応色 */
+surface-primary           /* 推奨：背景+テキストの自動ペア */
+bg-theme-primary         /* 詳細制御が必要な場合 */
+text-theme-text-primary  /* ダークモード対応テキスト */
 ```
 
 ## 🎯 **開発ガイドライン**

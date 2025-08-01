@@ -1,0 +1,538 @@
+# ShutterHub v2 テーマ対応カラーシステム実装ガイド
+
+> **新機能**: 動的テーマ切り替えに対応した拡張カラーシステムの完全ガイド
+
+## 📚 **概要**
+
+このガイドは、ShutterHub v2で新しく実装された**テーマ対応カラーシステム**の使い方を説明します。このシステムにより、複数のカラーテーマとダークモード/ライトモードを動的に切り替えることができます。
+
+### **従来のカラーシステムとの関係**
+
+- **基本カラー**: `docs/color-system-guide.md`で定義された標準カラーシステム
+- **テーマカラー**: 本ガイドで説明する動的切り替え対応システム
+- **ボタンカラー**: 'docs/theme-button-system-guide.md'
+- **併用可能**: 両システムは共存し、用途に応じて使い分けます
+
+## 🎨 **テーマカラーパレット**
+
+### **利用可能なテーマ**
+
+```typescript
+// 現在実装済みのテーマ
+const themes = [
+  'default', // デフォルト（ShutterHub紫系）
+  'image1', // 画像1テーマ（ピンク系）
+  'image2', // 画像2テーマ（ブルー系）
+  'image3', // 画像3テーマ（グリーン系）
+  'image4', // 画像4テーマ（オレンジ系）
+];
+```
+
+### **各テーマの色構成**
+
+各テーマには以下の構造化された色が自動設定されます：
+
+```css
+/* 基本テーマ色（構造化） */
+--theme-primary         /* プライマリブランド色 */
+--theme-secondary       /* セカンダリブランド色 */
+--theme-accent          /* アクセント・強調色 */
+--theme-neutral         /* ニュートラル・背景色 */
+
+/* フォアグラウンド色（自動コントラスト調整） */
+--theme-primary-foreground    /* プライマリ背景用テキスト */
+--theme-secondary-foreground  /* セカンダリ背景用テキスト */
+--theme-accent-foreground     /* アクセント背景用テキスト */
+--theme-neutral-foreground    /* ニュートラル背景用テキスト */
+
+/* セマンティックテキスト色（使いやすさ重視） */
+--theme-text-primary    /* メインテキスト（高コントラスト） */
+--theme-text-secondary  /* セカンダリテキスト（中コントラスト） */
+--theme-text-muted      /* 控えめなテキスト（低コントラスト） */
+
+/* 新機能：セマンティックサーフェース（背景+テキストペア） */
+--surface-primary       /* プライマリサーフェース背景 */
+--surface-primary-text  /* プライマリサーフェース用テキスト */
+--surface-accent        /* アクセントサーフェース背景 */
+--surface-accent-text   /* アクセントサーフェース用テキスト */
+--surface-neutral       /* ニュートラルサーフェース背景 */
+--surface-neutral-text  /* ニュートラルサーフェース用テキスト */
+```
+
+## 🔧 **実装アーキテクチャ**
+
+### **1. コアシステム (`src/lib/utils/color-system.ts`)**
+
+```typescript
+// テーマの適用
+import { applyTheme } from '@/lib/utils/color-system';
+
+// ライトモードでdefaultテーマを適用
+applyTheme('default', false);
+
+// ダークモードでimage1テーマを適用
+applyTheme('image1', true);
+```
+
+**主要機能:**
+
+- **輝度計算**: 自動的に明るい色/暗い色を判定
+- **モード対応**: ライト/ダークモードで色の明度を自動調整
+- **テキスト色**: 背景色に対して最適なコントラストを提供
+
+### **2. React Hook (`src/hooks/useTheme.ts`)**
+
+```typescript
+import { useTheme } from '@/hooks/useTheme';
+
+function MyComponent() {
+  const {
+    currentPalette,     // 現在のテーマ名
+    isDark,             // ダークモード状態
+    toggleDarkMode,     // ダークモード切り替え
+    setPalette          // テーマ変更
+  } = useTheme();
+
+  return (
+    <div>
+      <p>現在のテーマ: {currentPalette}</p>
+      <p>ダークモード: {isDark ? 'ON' : 'OFF'}</p>
+
+      <button onClick={toggleDarkMode}>
+        モード切り替え
+      </button>
+
+      <button onClick={() => setPalette('image1')}>
+        テーマ変更
+      </button>
+    </div>
+  );
+}
+```
+
+**自動機能:**
+
+- **ローカルストレージ**: テーマ設定の永続化
+- **システム検知**: OSのダークモード設定を自動検知
+- **リアルタイム更新**: 設定変更の即座反映
+
+### **3. テーマセレクター (`src/components/ui/theme-selector.tsx`)**
+
+```typescript
+import { ThemeSelector } from '@/components/ui/theme-selector';
+
+function Page() {
+  return (
+    <div>
+      {/* テーマ切り替えUI */}
+      <ThemeSelector />
+    </div>
+  );
+}
+```
+
+## 🎯 **実装方法**
+
+### **基本的なテーマカラーの使用**
+
+```tsx
+// ✅ 推奨: テーマ対応カラーの使用
+function MyComponent() {
+  return (
+    <div className="bg-theme-background text-theme-text-primary">
+      <h1 className="text-theme-text-primary">メインタイトル</h1>
+
+      <p className="text-theme-text-secondary">説明文</p>
+
+      <button className="bg-theme-primary text-theme-primary-foreground">
+        プライマリボタン
+      </button>
+
+      <button className="bg-theme-accent text-theme-accent-foreground">
+        アクセントボタン
+      </button>
+
+      <span className="text-theme-text-muted">控えめなテキスト</span>
+    </div>
+  );
+}
+```
+
+### **利用可能なTailwindクラス**
+
+#### **基本背景色**
+
+```css
+bg-theme-background         /* メイン背景（ライト/ダーク対応） */
+bg-theme-primary            /* プライマリブランド背景 */
+bg-theme-secondary          /* セカンダリブランド背景 */
+bg-theme-accent             /* アクセント・強調背景 */
+bg-theme-neutral            /* ニュートラル・サブ背景 */
+```
+
+#### **テキスト色（セマンティック）**
+
+```css
+text-theme-text-primary     /* メインテキスト（最高コントラスト） */
+text-theme-text-secondary   /* セカンダリテキスト（中コントラスト） */
+text-theme-text-muted       /* 控えめなテキスト（低コントラスト） */
+
+text-theme-primary-foreground    /* プライマリ背景用テキスト */
+text-theme-secondary-foreground  /* セカンダリ背景用テキスト */
+text-theme-accent-foreground     /* アクセント背景用テキスト */
+text-theme-neutral-foreground    /* ニュートラル背景用テキスト */
+```
+
+#### **🚀 NEW: セマンティックサーフェース（推奨）**
+
+```css
+/* 背景色とテキスト色が自動ペア - 最も簡単 */
+surface-primary             /* プライマリサーフェース */
+surface-primary-0           /* 明るいプライマリサーフェース */
+surface-primary-1           /* 暗いプライマリサーフェース */
+
+surface-accent              /* アクセントサーフェース */
+surface-accent-0            /* 明るいアクセントサーフェース */
+surface-accent-1            /* 暗いアクセントサーフェース */
+
+surface-neutral             /* ニュートラルサーフェース */
+surface-neutral-0           /* 明るいニュートラルサーフェース */
+surface-neutral-1           /* 暗いニュートラルサーフェース */
+```
+
+#### **透明度対応（全色）**
+
+```css
+bg-theme-primary/20         /* 透明度20% */
+bg-surface-accent/50        /* サーフェース透明度50% */
+text-theme-primary/80       /* テキスト透明度80% */
+border-theme-accent/30      /* ボーダー透明度30% */
+```
+
+#### **状態別（ホバー・フォーカス）**
+
+```css
+hover:surface-primary       /* ホバー時プライマリサーフェース */
+focus:surface-accent        /* フォーカス時アクセントサーフェース */
+hover:bg-theme-primary/90   /* ホバー時背景色透明度 */
+```
+
+## 📊 **実装例: Before/After**
+
+### **❌ Before（固定色）**
+
+```tsx
+// 固定色（テーマ切り替え未対応）
+<div className="bg-purple-600 text-white">
+  <h1 className="text-white">タイトル</h1>
+  <p className="text-gray-300">説明</p>
+  <button className="bg-red-500 text-white">ボタン</button>
+</div>
+```
+
+### **✅ After（セマンティックサーフェース使用）**
+
+```tsx
+// 最新実装：セマンティックサーフェース（推奨）
+<div className="surface-primary">
+  <h1>タイトル</h1> {/* 背景色に最適なテキスト色が自動適用 */}
+  <p className="opacity-80">説明</p> {/* 透明度で視覚的階層 */}
+  <button className="surface-accent px-4 py-2 rounded">ボタン</button>
+</div>
+```
+
+### **✅ Alternative（従来のテーマ色使用）**
+
+```tsx
+// 従来方式：背景色とテキスト色を個別指定
+<div className="bg-theme-primary text-theme-primary-foreground">
+  <h1 className="text-theme-text-primary">タイトル</h1>
+  <p className="text-theme-text-secondary">説明</p>
+  <button className="bg-theme-accent text-theme-accent-foreground">
+    ボタン
+  </button>
+</div>
+```
+
+### **✅ 実際の使用例（カードコンポーネント）**
+
+```tsx
+function PhotoSessionCard() {
+  return (
+    <div className="surface-neutral-0 rounded-lg p-6 transition-colors">
+      <div className="surface-primary-0 p-4 rounded mb-4">
+        <h3 className="font-semibold">撮影会タイトル</h3>
+        <p className="opacity-70">詳細情報</p>
+      </div>
+
+      <div className="flex gap-2">
+        <button className="surface-accent px-3 py-2 rounded text-sm">
+          予約する
+        </button>
+        <button className="surface-neutral-1 px-3 py-2 rounded text-sm">
+          詳細
+        </button>
+      </div>
+    </div>
+  );
+}
+```
+
+## 🔧 **高度な使用方法**
+
+### **条件付きテーマ適用**
+
+```tsx
+import { useTheme } from '@/hooks/useTheme';
+
+function AdvancedComponent() {
+  const { currentPalette, isDark } = useTheme();
+
+  return (
+    <div
+      className={cn(
+        'transition-colors duration-300',
+        isDark ? 'bg-theme-background/80' : 'bg-theme-background/60',
+        currentPalette === 'image1' && 'border-2 border-theme-accent'
+      )}
+    >
+      {/* 内容 */}
+    </div>
+  );
+}
+```
+
+### **カスタムテーマの追加**
+
+```typescript
+// color-system.ts でテーマを追加
+const newTheme: ColorPalette = {
+  name: 'custom',
+  colors: ['#FF6B6B', '#4ECDC4', '#FFE66D', '#4D96FF', '#9CA3AF'],
+  lightColors: ['#FFE66D', '#FF6B6B', '#4ECDC4'], // 明るい順
+  darkColors: ['#4D96FF', '#9CA3AF'], // 暗い順
+  textColors: {
+    light: {
+      primary: '#1F2937',
+      secondary: '#374151',
+      muted: '#6B7280',
+    },
+    dark: {
+      primary: '#F9FAFB',
+      secondary: '#E5E7EB',
+      muted: '#9CA3AF',
+    },
+  },
+};
+```
+
+## 🎨 **ダークモード/ライトモードの仕組み**
+
+### **自動色選択ロジック**
+
+```typescript
+// ライトモード: 明るい色を背景に、暗い色をアクセントに
+const lightModeColors = {
+  background: lightColors[0], // 最も明るい色
+  primary: darkColors[0], // 最も暗い色
+  accent: darkColors[1], // 2番目に暗い色
+};
+
+// ダークモード: 暗い色を背景に、明るい色をアクセントに
+const darkModeColors = {
+  background: darkColors[0], // 最も暗い色
+  primary: lightColors[0], // 最も明るい色
+  accent: lightColors[1], // 2番目に明るい色
+};
+```
+
+### **テキスト色の自動調整**
+
+```typescript
+// 背景色の明度に応じてテキスト色を自動選択
+const textColors = {
+  // ダークモード（暗い背景）
+  dark: {
+    primary: '#FFFFFF', // 白
+    secondary: '#E5E7EB', // 薄いグレー
+    muted: '#9CA3AF', // グレー
+  },
+  // ライトモード（明るい背景）
+  light: {
+    primary: '#111827', // ほぼ黒
+    secondary: '#374151', // ダークグレー
+    muted: '#6B7280', // ミディアムグレー
+  },
+};
+```
+
+## 🚀 **パフォーマンス最適化**
+
+### **CSS Variables の活用**
+
+```css
+/* 一度だけ定義し、全体で再利用 */
+:root {
+  --theme-primary: 255 35% 40%;
+  --theme-background: 0 71% 71%;
+  /* ... */
+}
+
+/* Tailwindで効率的に使用 */
+.my-component {
+  background: hsl(var(--theme-primary));
+  color: hsl(var(--theme-primary-foreground));
+}
+```
+
+### **トランジション効果**
+
+```tsx
+// スムーズなテーマ切り替え
+<div className="transition-colors duration-300 bg-theme-primary">
+  {/* 内容 */}
+</div>
+```
+
+## 🛠️ **デバッグとトラブルシューティング**
+
+### **テーマが適用されない場合**
+
+```typescript
+// 1. useThemeが正しく呼ばれているか確認
+const { currentPalette, isDark } = useTheme();
+console.log('Current:', currentPalette, 'Dark:', isDark);
+
+// 2. CSS変数が設定されているか確認
+console.log(
+  getComputedStyle(document.documentElement).getPropertyValue('--theme-primary')
+);
+
+// 3. Tailwindクラスが正しく指定されているか確認
+// ❌ 間違い: text-theme-primary-text
+// ✅ 正しい: text-theme-text-primary
+```
+
+### **既存システムとの競合**
+
+```tsx
+// ✅ 適切な優先順位
+<div className={cn(
+  // 1. テーマ対応色（動的）
+  "bg-theme-primary text-theme-text-primary",
+  // 2. 固定色（フォールバック）
+  "bg-purple-600 text-white"
+)}>
+```
+
+## 📚 **ファイル構成**
+
+```
+src/
+├── lib/utils/
+│   └── color-system.ts        # コアシステム
+├── hooks/
+│   └── useTheme.ts           # React Hook
+├── components/ui/
+│   └── theme-selector.tsx    # UIコンポーネント
+├── app/
+│   └── globals.css           # CSS Variables定義
+└── tailwind.config.ts        # Tailwind設定
+```
+
+## 🎯 **ベストプラクティス**
+
+### **DO（推奨）**
+
+```tsx
+✅ セマンティックサーフェースを優先使用（最も簡単）
+<div className="surface-primary">
+
+✅ 適切な視覚的階層（opacity, levels）
+<p className="opacity-80">セカンダリ情報</p>
+<div className="surface-primary-0">明るめレベル</div>
+
+✅ トランジション効果を追加
+<div className="transition-colors duration-300 surface-accent">
+
+✅ セマンティックなテキスト色（background指定時）
+<div className="bg-theme-primary text-theme-primary-foreground">
+
+✅ 透明度で視覚的階層を作成
+<div className="bg-theme-background/80">
+```
+
+### **DON'T（非推奨）**
+
+```tsx
+❌ 固定色との混在（一貫性を損ねる）
+<div className="surface-primary text-white">
+
+❌ 不適切なテキスト色の組み合わせ
+<div className="bg-theme-primary text-theme-text-primary">
+<!-- theme-primary-foregroundを使用すべき -->
+
+❌ 複雑すぎる条件分岐（サーフェースで代替可能）
+{currentPalette === 'default' && isDark ? 'class1' : 'class2'}
+
+❌ サーフェースとbg-textの混在
+<div className="surface-primary text-white">
+<!-- サーフェースに既にテキスト色が含まれる -->
+```
+
+### **💡 効率的な実装パターン**
+
+```tsx
+// ✅ パターン1：シンプルなサーフェース
+<button className="surface-accent">アクション</button>
+
+// ✅ パターン2：レベル分けでバリエーション
+<div className="surface-primary-0">    // 明るめ
+<div className="surface-primary">      // 標準
+<div className="surface-primary-1">    // 暗め
+
+// ✅ パターン3：透明度で重ね合わせ効果
+<div className="surface-neutral/80 backdrop-blur">
+
+// ✅ パターン4：状態変化
+<button className="surface-neutral hover:surface-accent transition-colors">
+```
+
+## 🔄 **マイグレーション手順**
+
+### **既存コンポーネントの更新**
+
+```bash
+# 1. 固定色の検索
+grep -r "bg-purple\|text-white\|bg-red" src/components/
+
+# 2. 段階的な置き換え
+# Before: bg-purple-600 text-white
+# After:  bg-theme-primary text-theme-primary-foreground
+
+# 3. ビルド確認
+npm run build
+```
+
+## 📈 **今後の拡張**
+
+### **予定されている機能**
+
+- [ ] テーマのエクスポート/インポート
+- [ ] ユーザーカスタムテーマ作成
+- [ ] アニメーション効果の強化
+- [ ] アクセシビリティ指標の自動チェック
+
+---
+
+## 🎉 **まとめ**
+
+このテーマ対応カラーシステムにより、ShutterHub v2は以下を実現します：
+
+1. **🎨 柔軟性**: 5つのテーマ × 2つのモード = 10通りの外観
+2. **🔄 一貫性**: 全コンポーネントで統一されたテーマ適用
+3. **🚀 パフォーマンス**: CSS Variablesによる効率的な色管理
+4. **👥 開発効率**: 新規メンバーも直感的に使用可能
+5. **♿ アクセシビリティ**: 自動コントラスト調整
+
+**新しく参加したチームメンバーの方も、このガイドを参考に効率的にテーマ対応の実装を進めることができます！**
