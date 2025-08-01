@@ -50,10 +50,6 @@ export function UpcomingOrganizerSessions({
   const [sessions, setSessions] = useState<OrganizerUpcomingSession[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchUpcomingSessions();
-  }, [fetchUpcomingSessions]);
-
   const fetchUpcomingSessions = useCallback(async () => {
     try {
       const supabase = createClient();
@@ -93,6 +89,10 @@ export function UpcomingOrganizerSessions({
       setLoading(false);
     }
   }, [userId]);
+
+  useEffect(() => {
+    fetchUpcomingSessions();
+  }, [fetchUpcomingSessions]);
 
   const formatDateTime = (dateString: string) => {
     return format(new Date(dateString), 'M月d日(E) HH:mm', { locale: ja });
