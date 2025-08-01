@@ -36,7 +36,7 @@ import {
   checkGuestUsageLimit,
 } from '@/app/actions/instant-photo';
 import { checkLocationAccuracy } from '@/hooks/useGeolocation';
-import { useRealtimeNotifications } from '@/hooks/useRealtimeNotifications';
+import { useNotifications } from '@/hooks/useNotifications';
 import { InstantPhotoMap } from './InstantPhotoMap';
 import { useRouter } from 'next/navigation';
 import type {
@@ -82,10 +82,9 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
   const [activeTab, setActiveTab] = useState<'form' | 'map'>('form');
   const [matchedBookingId, setMatchedBookingId] = useState<string | null>(null);
 
-  // リアルタイム通知を設定
-  const { notifications, unreadCount, markAsRead } = useRealtimeNotifications({
-    userType: 'guest',
-    guestPhone: formData.guestPhone,
+  // 統合通知システムを使用
+  const { notifications, unreadCount, markAsRead } = useNotifications({
+    enableRealtime: true,
     enableSound: true,
     enableToast: true,
   });
