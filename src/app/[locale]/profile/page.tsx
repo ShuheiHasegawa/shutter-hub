@@ -9,17 +9,12 @@ import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { UserProfileCard } from '@/components/profile/UserProfileCard';
 // import { UserRatingStats } from '@/components/profile/UserRatingStats';
 import { UserReviewList } from '@/components/profile/UserReviewList';
+import { UpcomingModelSessions } from '@/components/profile/UpcomingModelSessions';
+import { UpcomingOrganizerSessions } from '@/components/profile/UpcomingOrganizerSessions';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import {
-  Star,
-  Calendar,
-  Camera,
-  Users,
-  TrendingUp,
-  MessageSquare,
-} from 'lucide-react';
+import { Star, Camera, Users, TrendingUp, MessageSquare } from 'lucide-react';
 import type { Profile } from '@/types/database';
 
 interface UserStats {
@@ -219,7 +214,13 @@ export default function ProfilePage() {
           {/* メインコンテンツ */}
           <div className="lg:col-span-2">
             <Tabs defaultValue="reviews" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList
+                className={`grid w-full ${
+                  profile?.user_type === 'photographer'
+                    ? 'grid-cols-1'
+                    : 'grid-cols-2'
+                }`}
+              >
                 <TabsTrigger
                   value="reviews"
                   className="flex items-center gap-2"
@@ -227,51 +228,32 @@ export default function ProfilePage() {
                   <Star className="h-4 w-4" />
                   レビュー
                 </TabsTrigger>
-                <TabsTrigger
-                  value="sessions"
-                  className="flex items-center gap-2"
-                >
-                  <Camera className="h-4 w-4" />
-                  撮影会
-                </TabsTrigger>
-                <TabsTrigger
-                  value="activity"
-                  className="flex items-center gap-2"
-                >
-                  <Calendar className="h-4 w-4" />
-                  活動履歴
-                </TabsTrigger>
+                {(profile?.user_type === 'model' ||
+                  profile?.user_type === 'organizer') && (
+                  <TabsTrigger
+                    value="sessions"
+                    className="flex items-center gap-2"
+                  >
+                    <Camera className="h-4 w-4" />
+                    {profile?.user_type === 'model' ? '出演予定' : '開催予定'}
+                  </TabsTrigger>
+                )}
               </TabsList>
 
               <TabsContent value="reviews" className="space-y-6">
                 <UserReviewList userId={user?.id || ''} />
               </TabsContent>
 
-              <TabsContent value="sessions" className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>撮影会管理</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground">
-                      撮影会管理機能は今後実装予定です。
-                    </p>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="activity" className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>活動履歴</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground">
-                      活動履歴機能は今後実装予定です。
-                    </p>
-                  </CardContent>
-                </Card>
-              </TabsContent>
+              {(profile?.user_type === 'model' ||
+                profile?.user_type === 'organizer') && (
+                <TabsContent value="sessions" className="space-y-6">
+                  {profile?.user_type === 'model' ? (
+                    <UpcomingModelSessions userId={user?.id || ''} />
+                  ) : (
+                    <UpcomingOrganizerSessions userId={user?.id || ''} />
+                  )}
+                </TabsContent>
+              )}
             </Tabs>
           </div>
         </div>
