@@ -1705,6 +1705,38 @@ const hoursUntil = differenceInHours(startTime, new Date());
   - ❌ 設定ファイル・環境変数詳細
 ```
 
+### **1.1. TODOアーカイブ管理ルール（新規追加）**
+
+```yaml
+archive_rules:
+  trigger_conditions:
+    - "完了から1ヶ月以上経過したタスク"
+    - "主要機能実装完了済みのPhase"
+    - "技術負債解決済みのタスク"
+    - "todo.mdcファイルが500行を超過した場合"
+
+  archive_process:
+    1_create_archive_file:
+      - "ファイル名: .cursor/rules/dev-rules/todo-archive.mdc"
+      - "完了済みタスクの詳細記録を移動"
+      - "実装期間・技術成果・統計情報を保持"
+
+    2_update_main_todo:
+      - "アーカイブ済みタスクをtodo.mdcから削除"
+      - "最新の進行中・計画中タスクのみ残す"
+      - "アーカイブファイルへの参照リンク追加"
+
+    3_maintain_history:
+      - "完了実績の統計情報は保持"
+      - "重要な技術成果は開発ルールに反映"
+      - "学習内容は専門ファイルに移行"
+
+  automation_schedule:
+    - "月1回の定期アーカイブ実行"
+    - "大きなPhase完了時の自動アーカイブ"
+    - "ファイルサイズ警告時の即座アーカイブ"
+```
+
 ### **2. 専門ファイル分類基準**
 
 ```yaml
@@ -1750,6 +1782,42 @@ const hoursUntil = differenceInHours(startTime, new Date());
   - 月1回の完了済みタスクアーカイブ化
   - 重複・古い情報の整理
   - ファイル分類の見直し・最適化
+
+archive_automation:
+  - 完了タスクのtodo-archive.mdcへの自動移行
+  - メインtodo.mdcファイルの最新状態維持
+  - アーカイブファイル参照による履歴追跡機能
+```
+
+### **5. TODOアーカイブシステム実装ルール（新規追加）**
+
+```yaml
+file_structure:
+  main_todo: ".cursor/rules/dev-rules/todo.mdc"
+    purpose: "現在進行中・計画中タスクのみ管理"
+    content: "アクティブなタスク、優先度、依存関係"
+    size_limit: "500行以内に制限"
+
+  archive_todo: ".cursor/rules/dev-rules/todo-archive.mdc"
+    purpose: "完了済みタスクの履歴保持"
+    content: "完了タスク詳細、実装時間、技術成果、統計"
+    reference: "メインTODOから参照可能"
+
+management_process:
+  regular_archive:
+    timing: "月1回または500行超過時"
+    criteria: "完了から1ヶ月以上経過"
+    process: "メインファイルからアーカイブファイルへ移動"
+
+  emergency_archive:
+    trigger: "ファイルサイズ急増時"
+    action: "即座にアーカイブ実行"
+    priority: "最新タスクの見通し確保"
+
+  reference_maintenance:
+    links: "アーカイブファイルへの適切な参照リンク"
+    search: "統合的なタスク検索機能"
+    stats: "全期間統計の一元管理"
 ```
 
 ## 自動化ルール
