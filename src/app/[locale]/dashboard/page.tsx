@@ -11,6 +11,17 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { PhotographerInstantDashboard } from '@/components/instant/PhotographerInstantDashboard';
 import { ModelInvitationNotifications } from '@/components/profile/organizer/ModelInvitationNotifications';
+import { DashboardStatsCards } from '@/components/dashboard/DashboardStatsCards';
+import { RecentActivity as RecentActivityComponent } from '@/components/dashboard/RecentActivity';
+import { UpcomingEvents } from '@/components/dashboard/UpcomingEvents';
+import {
+  getDashboardStats,
+  getRecentActivity,
+  getUpcomingEvents,
+  DashboardStats,
+  RecentActivity as RecentActivityType,
+  UpcomingEvent,
+} from '@/app/actions/dashboard-stats';
 import { CheckCircle, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
@@ -35,6 +46,14 @@ export default function DashboardPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [profileLoading, setProfileLoading] = useState(true);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(
+    null
+  );
+  const [recentActivity, setRecentActivity] = useState<RecentActivityType[]>(
+    []
+  );
+  const [upcomingEvents, setUpcomingEvents] = useState<UpcomingEvent[]>([]);
+  const [dashboardLoading, setDashboardLoading] = useState(true);
 
   const loadProfile = useCallback(async () => {
     if (!user) return;
@@ -59,6 +78,33 @@ export default function DashboardPage() {
     }
   }, [user, router, locale]);
 
+  const loadDashboardData = useCallback(async () => {
+    if (!user || !profile) return;
+
+    setDashboardLoading(true);
+    try {
+      const [statsResult, activityResult, eventsResult] = await Promise.all([
+        getDashboardStats(user.id, profile.user_type),
+        getRecentActivity(user.id, profile.user_type),
+        getUpcomingEvents(user.id, profile.user_type),
+      ]);
+
+      if (statsResult.success && statsResult.data) {
+        setDashboardStats(statsResult.data);
+      }
+      if (activityResult.success) {
+        setRecentActivity(activityResult.data || []);
+      }
+      if (eventsResult.success) {
+        setUpcomingEvents(eventsResult.data || []);
+      }
+    } catch (error) {
+      logger.error('ダッシュボードデータ取得エラー:', error);
+    } finally {
+      setDashboardLoading(false);
+    }
+  }, [user, profile]);
+
   // URLクエリパラメータから成功メッセージを取得
   useEffect(() => {
     const success = searchParams.get('success');
@@ -82,7 +128,7 @@ export default function DashboardPage() {
     }
   }, [user, loading, router, locale, loadProfile]);
 
-  // プロフィール更新時にログ出力
+  // プロフィール更新時にログ出力とダッシュボードデータ取得
   useEffect(() => {
     if (profile) {
       logger.info('Dashboard: プロフィール情報', {
@@ -92,8 +138,9 @@ export default function DashboardPage() {
         displayName: profile.display_name,
         shouldShowInvitations: profile.user_type === 'model',
       });
+      loadDashboardData();
     }
-  }, [profile, user]);
+  }, [profile, user, loadDashboardData]);
 
   if (loading || profileLoading) {
     return (
@@ -147,54 +194,83 @@ export default function DashboardPage() {
         {/* モデル向け招待通知 */}
         {profile.user_type === 'model' && <ModelInvitationNotifications />}
 
-        <Card>
-          <CardHeader>
-            <CardTitle>プロフィール</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center space-x-4">
-              {profile.avatar_url && (
-                <Image
-                  className="h-16 w-16 rounded-full object-cover"
-                  src={profile.avatar_url}
-                  alt={profile.display_name}
-                  width={64}
-                  height={64}
-                />
-              )}
-              <div>
-                <h3 className="text-xl font-semibold">
-                  {profile.display_name || 'ユーザー'}
-                </h3>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-sm text-muted-foreground">
-                    {getUserTypeLabel(profile.user_type)}
-                  </span>
-                  {profile.is_verified && (
-                    <Badge variant="secondary">認証済み</Badge>
-                  )}
-                </div>
-                {profile.location && (
-                  <p className="text-sm text-muted-foreground mt-1">
-                    📍 {profile.location}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {profile.bio && (
-              <div className="mt-4">
-                <h4 className="font-medium mb-2">自己紹介</h4>
-                <p className="text-muted-foreground">{profile.bio}</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* カメラマン向け即座撮影ダッシュボード */}
-        {profile.user_type === 'photographer' && (
-          <PhotographerInstantDashboard userId={user.id} />
+        {/* 統計カード */}
+        {dashboardStats && !dashboardLoading && (
+          <DashboardStatsCards
+            stats={dashboardStats}
+            userType={profile.user_type}
+          />
         )}
+
+        {/* 2カラムレイアウト */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* 左カラム */}
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>プロフィール</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center space-x-4">
+                  {profile.avatar_url && (
+                    <Image
+                      className="h-16 w-16 rounded-full object-cover"
+                      src={profile.avatar_url}
+                      alt={profile.display_name}
+                      width={64}
+                      height={64}
+                    />
+                  )}
+                  <div>
+                    <h3 className="text-xl font-semibold">
+                      {profile.display_name || 'ユーザー'}
+                    </h3>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-sm text-muted-foreground">
+                        {getUserTypeLabel(profile.user_type)}
+                      </span>
+                      {profile.is_verified && (
+                        <Badge variant="secondary">認証済み</Badge>
+                      )}
+                    </div>
+                    {profile.location && (
+                      <p className="text-sm text-muted-foreground mt-1">
+                        📍 {profile.location}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {profile.bio && (
+                  <div className="mt-4">
+                    <h4 className="font-medium mb-2">自己紹介</h4>
+                    <p className="text-muted-foreground">{profile.bio}</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* 最近のアクティビティ */}
+            <RecentActivityComponent
+              activities={recentActivity}
+              isLoading={dashboardLoading}
+            />
+          </div>
+
+          {/* 右カラム */}
+          <div className="space-y-6">
+            {/* 今後の予定 */}
+            <UpcomingEvents
+              events={upcomingEvents}
+              isLoading={dashboardLoading}
+            />
+
+            {/* カメラマン向け即座撮影ダッシュボード */}
+            {profile.user_type === 'photographer' && (
+              <PhotographerInstantDashboard userId={user.id} />
+            )}
+          </div>
+        </div>
       </div>
     </DashboardLayout>
   );
