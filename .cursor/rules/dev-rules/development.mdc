@@ -1,6 +1,6 @@
 # ShutterHub v2 開発ルール
 
-**最終更新**: 2024年12月1日（Next.js 15型定義ルール・コミット自動化追加）
+**最終更新**: 2024年12月1日（画像実装統一ルール追加・Next.js 15型定義ルール・コミット自動化追加）
 
 このファイルを参照したら、このファイル名を発言すること
 
@@ -11,6 +11,7 @@
 3. **Shadcn/ui使用**: 一貫したUIコンポーネント
 4. **テスト必須**: 新機能には必ずテストを作成
 5. **🚨 UI/UXデザイン保護**: レイアウト・デザインの無断変更を絶対禁止
+6. **📸 画像実装統一**: 画像関連は専用システム使用必須（詳細: `image-implementation-rules.mdc`）
 
 ## 🚨 UI/UXデザイン・レイアウト保護ルール
 
@@ -225,6 +226,147 @@ export function EventForm() {
   // インタラクティブな処理
 }
 ```
+
+## 📸 画像実装統一ルール（重要）
+
+### **【必須】画像関連の専用システム使用**
+
+画像の表示・アップロード・処理を行う場合は、**必ず専用の最適化システムを使用する**こと。生のNext.js ImageやHTMLのimg要素の使用は禁止。
+
+#### **詳細ルールファイル**
+
+```typescript
+// 完全なルールは専用ファイルを参照
+.cursor/rules/dev-rules/image-implementation-rules.mdc
+```
+
+#### **必須使用コンポーネント**
+
+```typescript
+// 画像表示
+import {
+  OptimizedImage, // 汎用最適化画像
+  PhotobookImage, // フォトブック用高画質
+  ProfileImage, // プロフィール画像
+  GalleryImage, // ギャラリー画像
+  SocialImage, // SNS投稿画像
+} from '@/components/ui/optimized-image';
+
+// 遅延読み込み
+import {
+  LazyGalleryGrid, // ギャラリー表示
+  InfiniteScroll, // 無限スクロール
+  LazyLoad, // 汎用遅延読み込み
+} from '@/components/ui/lazy-loading';
+
+// アップロード
+import { uploadEnhancedImage } from '@/lib/storage/enhanced-image-upload';
+```
+
+#### **✅ 正しい実装例**
+
+```typescript
+// ✅ カテゴリ別最適化画像
+<OptimizedImage
+  src={imageUrl}
+  alt="説明文"
+  category="photoSession"  // 必須カテゴリ指定
+  priority={false}
+  loading="lazy"
+/>
+
+// ✅ フォトブック用高画質画像
+<PhotobookImage
+  src={imageUrl}
+  alt="フォトブック画像"
+  showPrintQuality={false}  // Web表示時はfalse
+  width={800}
+  height={600}
+/>
+
+// ✅ 大量画像の遅延読み込み
+<LazyGalleryGrid
+  items={images}
+  renderItem={(image) => (
+    <OptimizedImage
+      src={image.src}
+      alt={image.alt}
+      category="photoSession"
+    />
+  )}
+  columns={3}
+/>
+
+// ✅ 強化アップロードシステム
+const result = await uploadEnhancedImage(file, {
+  category: 'photobook',
+  generatePrintVersion: true,  // 高画質版生成
+  enableDeduplication: true,   // 重複検出
+  userId: currentUser.id
+});
+```
+
+#### **❌ 禁止される実装例**
+
+```typescript
+// ❌ 生のNext.js Image使用
+import Image from 'next/image';
+<Image src={src} alt={alt} width={100} height={100} />
+
+// ❌ HTMLのimg要素
+<img src={src} alt={alt} />
+
+// ❌ カテゴリ未指定
+<OptimizedImage src={src} alt={alt} /> // categoryが必須
+
+// ❌ 直接Supabase Storage使用
+await supabase.storage.from('bucket').upload(path, file);
+
+// ❌ 大量画像で遅延読み込み無し
+{images.map(img => <OptimizedImage key={img.id} {...img} />)}
+```
+
+#### **画像カテゴリ分類（必須）**
+
+```typescript
+type ImageCategory =
+  | 'profile' // プロフィール画像（15MB制限）
+  | 'photoSession' // 撮影会画像（25MB制限）
+  | 'photobook' // フォトブック用（50MB制限・高画質）
+  | 'social'; // SNS投稿（10MB制限）
+```
+
+#### **パフォーマンス要件**
+
+```yaml
+必須達成指標:
+  画像読み込み時間: < 500ms (profile), < 1s (gallery 10枚)
+  圧縮率: > 50% (最低), > 70% (目標)
+  キャッシュヒット率: > 85%
+  Lighthouse Performance: > 90点
+```
+
+### **重要な注意事項**
+
+1. **core files変更禁止**
+
+   - `image-optimization.ts`
+   - `enhanced-image-upload.ts`
+   - `optimized-image.tsx`
+   - `lazy-loading.tsx`
+
+2. **設定値変更禁止**
+
+   - 品質設定の独断変更
+   - ファイルサイズ制限の緩和
+   - キャッシュ戦略の変更
+
+3. **相談必須事項**
+   - 新しい画像カテゴリの追加
+   - パフォーマンス設定の変更
+   - セキュリティ要件の変更
+
+詳細は `image-implementation-rules.mdc` を必ず確認すること。
 
 ## 🚨 プロフィール表示統一ルール
 
@@ -1710,31 +1852,31 @@ const hoursUntil = differenceInHours(startTime, new Date());
 ```yaml
 archive_rules:
   trigger_conditions:
-    - "完了から1ヶ月以上経過したタスク"
-    - "主要機能実装完了済みのPhase"
-    - "技術負債解決済みのタスク"
-    - "todo.mdcファイルが500行を超過した場合"
+    - '完了から1ヶ月以上経過したタスク'
+    - '主要機能実装完了済みのPhase'
+    - '技術負債解決済みのタスク'
+    - 'todo.mdcファイルが500行を超過した場合'
 
   archive_process:
     1_create_archive_file:
-      - "ファイル名: .cursor/rules/dev-rules/todo-archive.mdc"
-      - "完了済みタスクの詳細記録を移動"
-      - "実装期間・技術成果・統計情報を保持"
+      - 'ファイル名: .cursor/rules/dev-rules/todo-archive.mdc'
+      - '完了済みタスクの詳細記録を移動'
+      - '実装期間・技術成果・統計情報を保持'
 
     2_update_main_todo:
-      - "アーカイブ済みタスクをtodo.mdcから削除"
-      - "最新の進行中・計画中タスクのみ残す"
-      - "アーカイブファイルへの参照リンク追加"
+      - 'アーカイブ済みタスクをtodo.mdcから削除'
+      - '最新の進行中・計画中タスクのみ残す'
+      - 'アーカイブファイルへの参照リンク追加'
 
     3_maintain_history:
-      - "完了実績の統計情報は保持"
-      - "重要な技術成果は開発ルールに反映"
-      - "学習内容は専門ファイルに移行"
+      - '完了実績の統計情報は保持'
+      - '重要な技術成果は開発ルールに反映'
+      - '学習内容は専門ファイルに移行'
 
   automation_schedule:
-    - "月1回の定期アーカイブ実行"
-    - "大きなPhase完了時の自動アーカイブ"
-    - "ファイルサイズ警告時の即座アーカイブ"
+    - '月1回の定期アーカイブ実行'
+    - '大きなPhase完了時の自動アーカイブ'
+    - 'ファイルサイズ警告時の即座アーカイブ'
 ```
 
 ### **2. 専門ファイル分類基準**
