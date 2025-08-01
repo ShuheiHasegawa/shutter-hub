@@ -32,27 +32,51 @@ export const IMAGE_QUALITY_CONFIGS: Record<string, ImageQualityConfig> = {
   // プロフィール画像
   profile: {
     web: { quality: 85, maxWidth: 800, maxHeight: 600, format: 'webp' },
-    print: { quality: 95, maxWidth: 2048, maxHeight: 1536, dpi: 300, format: 'jpg' },
-    thumbnail: { quality: 70, width: 150, height: 150, format: 'webp' }
+    print: {
+      quality: 95,
+      maxWidth: 2048,
+      maxHeight: 1536,
+      dpi: 300,
+      format: 'jpg',
+    },
+    thumbnail: { quality: 70, width: 150, height: 150, format: 'webp' },
   },
   // 撮影会画像
   photoSession: {
     web: { quality: 80, maxWidth: 1200, maxHeight: 900, format: 'webp' },
-    print: { quality: 95, maxWidth: 4096, maxHeight: 3072, dpi: 300, format: 'jpg' },
-    thumbnail: { quality: 65, width: 300, height: 200, format: 'webp' }
+    print: {
+      quality: 95,
+      maxWidth: 4096,
+      maxHeight: 3072,
+      dpi: 300,
+      format: 'jpg',
+    },
+    thumbnail: { quality: 65, width: 300, height: 200, format: 'webp' },
   },
   // フォトブック専用（最高品質）
   photobook: {
     web: { quality: 85, maxWidth: 1920, maxHeight: 1440, format: 'webp' },
-    print: { quality: 100, maxWidth: 6000, maxHeight: 4500, dpi: 300, format: 'jpg' },
-    thumbnail: { quality: 70, width: 400, height: 300, format: 'webp' }
+    print: {
+      quality: 100,
+      maxWidth: 6000,
+      maxHeight: 4500,
+      dpi: 300,
+      format: 'jpg',
+    },
+    thumbnail: { quality: 70, width: 400, height: 300, format: 'webp' },
   },
   // SNS投稿用
   social: {
     web: { quality: 75, maxWidth: 1080, maxHeight: 1080, format: 'webp' },
-    print: { quality: 90, maxWidth: 2160, maxHeight: 2160, dpi: 300, format: 'jpg' },
-    thumbnail: { quality: 60, width: 200, height: 200, format: 'webp' }
-  }
+    print: {
+      quality: 90,
+      maxWidth: 2160,
+      maxHeight: 2160,
+      dpi: 300,
+      format: 'jpg',
+    },
+    thumbnail: { quality: 60, width: 200, height: 200, format: 'webp' },
+  },
 };
 
 export interface ImageMetadata {
@@ -82,33 +106,33 @@ export interface OptimizedImageUrls {
 
 export const SUPPORTED_INPUT_FORMATS = [
   'image/jpeg',
-  'image/jpg', 
+  'image/jpg',
   'image/png',
   'image/webp',
   'image/heic',
   'image/heif',
-  'image/avif'
+  'image/avif',
 ];
 
 export const MAX_FILE_SIZES = {
-  profile: 15 * 1024 * 1024,     // 15MB
-  photoSession: 25 * 1024 * 1024, // 25MB  
-  photobook: 50 * 1024 * 1024,   // 50MB (フォトブック用高画質)
-  social: 10 * 1024 * 1024       // 10MB
+  profile: 15 * 1024 * 1024, // 15MB
+  photoSession: 25 * 1024 * 1024, // 25MB
+  photobook: 50 * 1024 * 1024, // 50MB (フォトブック用高画質)
+  social: 10 * 1024 * 1024, // 10MB
 };
 
 /**
  * 画像ファイルのバリデーション
  */
 export function validateImageFile(
-  file: File, 
+  file: File,
   category: keyof typeof MAX_FILE_SIZES
 ): { valid: boolean; error?: string } {
   // ファイル形式チェック
   if (!SUPPORTED_INPUT_FORMATS.includes(file.type)) {
     return {
       valid: false,
-      error: `サポートされていない画像形式です。対応形式: ${SUPPORTED_INPUT_FORMATS.join(', ')}`
+      error: `サポートされていない画像形式です。対応形式: ${SUPPORTED_INPUT_FORMATS.join(', ')}`,
     };
   }
 
@@ -118,7 +142,7 @@ export function validateImageFile(
     const maxSizeMB = Math.round(maxSize / (1024 * 1024));
     return {
       valid: false,
-      error: `ファイルサイズが${maxSizeMB}MBを超えています（現在: ${Math.round(file.size / (1024 * 1024))}MB）`
+      error: `ファイルサイズが${maxSizeMB}MBを超えています（現在: ${Math.round(file.size / (1024 * 1024))}MB）`,
     };
   }
 
@@ -134,29 +158,38 @@ export function getOptimizedImageUrl(
   category: keyof typeof IMAGE_QUALITY_CONFIGS = 'photoSession'
 ): string {
   // 静的ファイル（/images/, /uploads/など）はそのまま返す
-  if (baseUrl.startsWith('/images/') || baseUrl.startsWith('/uploads/') || baseUrl.startsWith('/public/')) {
+  if (
+    baseUrl.startsWith('/images/') ||
+    baseUrl.startsWith('/uploads/') ||
+    baseUrl.startsWith('/public/')
+  ) {
     return baseUrl;
   }
 
   try {
     // 相対パスかどうかをチェック
     const isRelativePath = baseUrl.startsWith('/');
-    const url = isRelativePath 
-      ? new URL(baseUrl, typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000')
+    const url = isRelativePath
+      ? new URL(
+          baseUrl,
+          typeof window !== 'undefined'
+            ? window.location.origin
+            : 'http://localhost:3000'
+        )
       : new URL(baseUrl);
-    
+
     const config = IMAGE_QUALITY_CONFIGS[category][quality];
 
     // Supabase Storage URLの場合のみTransformationパラメータを追加
     if (url.hostname.includes('supabase.co')) {
       url.searchParams.set('quality', config.quality.toString());
-      
+
       if ('maxWidth' in config) {
         url.searchParams.set('width', config.maxWidth.toString());
       } else if ('width' in config) {
         url.searchParams.set('width', config.width.toString());
       }
-      
+
       if ('maxHeight' in config) {
         url.searchParams.set('height', config.maxHeight.toString());
       } else if ('height' in config) {
@@ -175,49 +208,15 @@ export function getOptimizedImageUrl(
 
 /**
  * レスポンシブ画像のsrcSet生成
+ * 注意: この関数は現在使用されていませんが、後方互換性のため残しています
  */
 export function generateSrcSet(
-  baseUrl: string,
-  category: keyof typeof IMAGE_QUALITY_CONFIGS = 'photoSession'
+  _baseUrl: string,
+  _category: keyof typeof IMAGE_QUALITY_CONFIGS = 'photoSession'
 ): string {
-  // 静的ファイルの場合はNext.jsの自動最適化に任せる
-  if (baseUrl.startsWith('/images/') || baseUrl.startsWith('/uploads/') || baseUrl.startsWith('/public/')) {
-    return '';
-  }
-
-  const breakpoints = [480, 768, 1024, 1200, 1920];
-  const config = IMAGE_QUALITY_CONFIGS[category].web;
-  
-  try {
-    // 相対パスかどうかをチェック
-    const isRelativePath = baseUrl.startsWith('/');
-    
-    return breakpoints
-      .filter(width => width <= config.maxWidth)
-      .map(width => {
-        try {
-          const url = isRelativePath 
-            ? new URL(baseUrl, typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000')
-            : new URL(baseUrl);
-          
-          // Supabase Storage URLの場合のみTransformationパラメータを追加
-          if (url.hostname.includes('supabase.co')) {
-            url.searchParams.set('width', width.toString());
-            url.searchParams.set('quality', config.quality.toString());
-            url.searchParams.set('format', config.format);
-          }
-          
-          return `${url.toString()} ${width}w`;
-        } catch {
-          // URLエラーの場合は元のURLにwidth指定のみ
-          return `${baseUrl}?width=${width} ${width}w`;
-        }
-      })
-      .join(', ');
-  } catch {
-    // 全体的なエラーの場合は空文字を返す
-    return '';
-  }
+  // 安全のため、すべての場合で空文字を返す
+  // Next.js Imageコンポーネントが自動でsrcSetを生成します
+  return '';
 }
 
 /**
@@ -267,7 +266,7 @@ const imageOptimization = {
   generateSrcSet,
   generateSizesAttribute,
   calculateCompressionRatio,
-  generateFileHash
+  generateFileHash,
 };
 
 export default imageOptimization;
