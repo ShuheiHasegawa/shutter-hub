@@ -1,6 +1,6 @@
 # ShutterHub v2 開発ルール
 
-**最終更新**: 2024年12月1日（画像実装統一ルール追加・Next.js 15型定義ルール・コミット自動化追加）
+**最終更新**: 2025年8月1日（Supabase Server Action await必須ルール追加）
 
 このファイルを参照したら、このファイル名を発言すること
 
@@ -12,6 +12,7 @@
 4. **テスト必須**: 新機能には必ずテストを作成
 5. **🚨 UI/UXデザイン保護**: レイアウト・デザインの無断変更を絶対禁止
 6. **📸 画像実装統一**: 画像関連は専用システム使用必須（詳細: `image-implementation-rules.mdc`）
+7. **🔥 Supabase必須ルール**: Server Action内で `const supabase = await createClient();` のawait必須
 
 ## 🚨 UI/UXデザイン・レイアウト保護ルール
 
@@ -741,6 +742,8 @@ text-blue-600 dark:text-blue-400     // 情報
 
 ### Server Actions
 
+**🚨 重要：Supabase createClient() は必ず await 必須**
+
 ```typescript
 // app/actions/event.ts
 'use server';
@@ -749,7 +752,8 @@ import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 
 export async function createEvent(formData: FormData) {
-  const supabase = createClient();
+  // 🚨 必須：createClient() は async 関数のため await が必要
+  const supabase = await createClient();
 
   // バリデーション
   const validatedData = eventSchema.parse({
@@ -762,6 +766,77 @@ export async function createEvent(formData: FormData) {
   if (error) throw error;
   revalidatePath('/events');
 }
+```
+
+#### **📋 Server Action開発チェックリスト**
+
+**必須確認事項：**
+
+```yaml
+supabase_client:
+  - ✅ 'const supabase = await createClient();' でawait使用
+  - ❌ 'const supabase = createClient();' はエラーの原因
+
+error_handling:
+  - ✅ withServerActionErrorHandler でラップ済み
+  - ✅ 適切なエラーメッセージとログ出力
+  - ✅ revalidatePath での画面更新
+
+type_safety:
+  - ✅ 入力データの型定義・バリデーション
+  - ✅ 戻り値の型定義（ServerActionResult使用）
+```
+
+#### **よくあるエラーと対策**
+
+```typescript
+// ❌ 間違い：awaitなし → "supabase.from is not a function"
+const supabase = createClient();
+
+// ✅ 正解：awaitあり → 正常動作
+const supabase = await createClient();
+
+// ❌ 間違い：エラーハンドラーなし
+export async function badAction() {}
+
+// ✅ 正解：エラーハンドラーあり
+export const goodAction = withServerActionErrorHandler(async () => {}, {
+  actionName: 'goodAction',
+  component: 'example',
+});
+```
+
+#### **🔍 開発時必須チェック（毎回実行）**
+
+Server Action作成・修正時は以下を必ず確認：
+
+```bash
+# 1. コード内でのチェック
+grep -r "const supabase = createClient()" src/app/actions/
+# ↑ この検索でヒットした場合は全て await を追加
+
+# 2. 正しいパターンの確認
+grep -r "const supabase = await createClient()" src/app/actions/
+# ↑ 全てのSupabase使用箇所がこのパターンであることを確認
+```
+
+**実装前チェックリスト:**
+
+```yaml
+before_coding:
+  - [ ] "const supabase = await createClient();" でawait使用
+  - [ ] withServerActionErrorHandler でラップ
+  - [ ] actionName と component を正しく設定
+
+during_coding:
+  - [ ] TypeScript エラーなし
+  - [ ] リンターエラーなし
+  - [ ] console.log の削除
+
+after_coding:
+  - [ ] テスト実行成功
+  - [ ] ブラウザで動作確認
+  - [ ] "supabase.from is not a function" エラーなし
 ```
 
 ### クライアントサイドフェッチ（SWR）
