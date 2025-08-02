@@ -4,8 +4,23 @@ import Photobook from '@/components/photobook/Photobook';
 import { logger } from '@/lib/utils/logger';
 import { samplePhotobook } from '@/constants/samplePhotobookData';
 import { Photo } from '@/types/photobook';
+import { notFound } from 'next/navigation';
 
-export default function PhotobookPage() {
+interface PhotobookViewPageProps {
+  params: {
+    id: string;
+    locale: string;
+  };
+}
+
+export default function PhotobookViewPage({ params }: PhotobookViewPageProps) {
+  const { id } = params;
+
+  // 現在はサンプルフォトブックのIDのみサポート
+  if (id !== samplePhotobook.id) {
+    notFound();
+  }
+
   const handlePhotoClick = (photo: Photo) => {
     logger.debug('Photo clicked:', photo);
   };
