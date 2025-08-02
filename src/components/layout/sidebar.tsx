@@ -51,6 +51,7 @@ export function Sidebar({ className }: SidebarProps) {
   const { profile } = useProfile();
   const [openSections, setOpenSections] = useState<string[]>([
     'photo-sessions',
+    'photobook',
   ]);
 
   const toggleSection = (section: string) => {
@@ -103,12 +104,12 @@ export function Sidebar({ className }: SidebarProps) {
       children: [
         {
           title: t('photobookView'),
-          href: '/photobook',
+          href: '/photobooks',
           icon: Book,
         },
         {
           title: t('photobookEdit'),
-          href: '/photobook/edit',
+          href: '/photobooks/create',
           icon: Edit3,
         },
       ],
@@ -255,6 +256,7 @@ export function MobileSidebarTrigger() {
   const { profile } = useProfile();
   const [openSections, setOpenSections] = useState<string[]>([
     'photo-sessions',
+    'photobook',
   ]);
 
   const toggleSection = (section: string) => {
@@ -312,12 +314,12 @@ export function MobileSidebarTrigger() {
       children: [
         {
           title: t('photobookView'),
-          href: '/photobook',
+          href: '/photobooks',
           icon: Book,
         },
         {
           title: t('photobookEdit'),
-          href: '/photobook/edit',
+          href: '/photobooks/create',
           icon: Edit3,
         },
       ],
