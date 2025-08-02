@@ -248,6 +248,7 @@ export default function PhotoSessionSlotForm({
           size="sm"
           onClick={addSlot}
           className="flex items-center gap-2"
+          data-testid="add-slot-button"
         >
           <Plus className="h-4 w-4" />
           {t('addSlot')}
@@ -257,7 +258,11 @@ export default function PhotoSessionSlotForm({
       {/* 撮影枠リスト */}
       <div className="space-y-4">
         {slotForms.map((slot, index) => (
-          <Card key={index} className="p-4 border-2 border-gray-200">
+          <Card
+            key={index}
+            className="p-4 border-2 border-gray-200"
+            data-testid={`slot-card-${index}`}
+          >
             <div className="space-y-4">
               {/* 撮影枠ヘッダー */}
               <div className="flex items-center justify-between">
@@ -316,6 +321,7 @@ export default function PhotoSessionSlotForm({
                     onChange={e =>
                       updateSlot(index, 'start_time', e.target.value)
                     }
+                    data-testid={`slot-${index}-start-time`}
                   />
                 </div>
                 <div>
@@ -334,6 +340,7 @@ export default function PhotoSessionSlotForm({
                     }
                     placeholder={t('durationInputPlaceholder')}
                     inputMode="numeric"
+                    data-testid={`slot-${index}-duration`}
                   />
                 </div>
                 <div>
@@ -387,6 +394,7 @@ export default function PhotoSessionSlotForm({
                       )
                     }
                     placeholder={t('priceInputPlaceholder')}
+                    data-testid={`slot-${index}-price`}
                   />
                 </div>
                 <div>
@@ -406,6 +414,7 @@ export default function PhotoSessionSlotForm({
                     }
                     placeholder={t('participantsInputPlaceholder')}
                     inputMode="numeric"
+                    data-testid={`slot-${index}-max-participants`}
                   />
                 </div>
               </div>
