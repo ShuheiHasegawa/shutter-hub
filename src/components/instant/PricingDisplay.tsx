@@ -9,7 +9,6 @@ export function PricingDisplay() {
     {
       type: 'ポートレート',
       duration: '15分',
-      price: '¥3,000',
       description: '個人撮影に最適',
       features: ['5-10枚の編集済み写真', '基本的なレタッチ', '2時間以内配信'],
       icon: <Camera className="h-6 w-6 text-blue-600" />,
@@ -18,26 +17,43 @@ export function PricingDisplay() {
     {
       type: 'カップル・友人',
       duration: '30分',
-      price: '¥5,000',
       description: '2-3名での撮影',
       features: ['10-15枚の編集済み写真', 'プロレタッチ', '複数ポーズ対応'],
       icon: <Users className="h-6 w-6 text-green-600" />,
       popular: true,
     },
     {
-      type: 'ファミリー・グループ',
-      duration: '60分',
-      price: '¥8,000',
+      type: 'ファミリー',
+      duration: '30分',
+      description: '家族での撮影',
+      features: ['15-25枚の編集済み写真', '高品質レタッチ', '複数シーン撮影'],
+      icon: <Star className="h-6 w-6 text-purple-600" />,
+      popular: false,
+    },
+    {
+      type: 'グループ',
+      duration: '30分',
       description: '4名以上のグループ撮影',
       features: ['20-30枚の編集済み写真', '高品質レタッチ', '複数シーン撮影'],
-      icon: <Star className="h-6 w-6 text-purple-600" />,
+      icon: <Users className="h-6 w-6 text-orange-600" />,
+      popular: false,
+    },
+    {
+      type: 'ペット撮影',
+      duration: '30分',
+      description: 'ペットと一緒の撮影',
+      features: [
+        '10-20枚の編集済み写真',
+        'ペット専用レタッチ',
+        '自然な表情をキャッチ',
+      ],
+      icon: <div className="text-2xl">🐶</div>,
       popular: false,
     },
   ];
 
   const additionalFees = [
-    { condition: '今すぐ撮影', fee: '+¥2,000', icon: '⚡' },
-    { condition: '30分以内', fee: '+¥1,000', icon: '🕐' },
+    { condition: '重要リクエスト', fee: '+¥1,500', icon: '⚡' },
     { condition: '休日料金', fee: '+¥1,500', icon: '📅' },
     { condition: '夜間料金（18時以降）', fee: '+¥2,000', icon: '🌙' },
   ];
@@ -79,12 +95,6 @@ export function PricingDisplay() {
             </CardHeader>
 
             <CardContent className="text-center">
-              <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                {plan.price}
-                <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
-                  〜
-                </span>
-              </div>
               <p className="text-gray-700 dark:text-gray-300 text-sm mb-4">
                 {plan.description}
               </p>
@@ -123,9 +133,7 @@ export function PricingDisplay() {
                 <div className="text-sm font-medium text-gray-900 dark:text-white">
                   {fee.condition}
                 </div>
-                <div className="text-sm text-orange-600 dark:text-orange-400 font-semibold">
-                  {fee.fee}
-                </div>
+                <div className="text-sm font-semibold">{fee.fee}</div>
               </div>
             ))}
           </div>
