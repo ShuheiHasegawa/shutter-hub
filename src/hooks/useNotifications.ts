@@ -354,7 +354,6 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
 
     // クリーンアップ
     return () => {
-      isUnmounted = true;
       if (channel) {
         supabase.removeChannel(channel).catch(error => {
           logger.warn('Channel cleanup error:', error);
