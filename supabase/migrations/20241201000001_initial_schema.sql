@@ -1,5 +1,5 @@
 -- Migration: 001_initial_schema
--- Description: Initial database schema for ShutterHub v2
+-- Description: Initial database schema for ShutterHub
 -- Created: 2024-01-XX
 
 -- ユーザータイプ列挙型

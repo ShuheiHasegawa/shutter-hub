@@ -19,7 +19,7 @@ const notoSansJP = Noto_Sans_JP({
 });
 
 export const metadata: Metadata = {
-  title: 'ShutterHub v2 - 撮影業界をつなぐプラットフォーム',
+  title: 'ShutterHub - 撮影業界をつなぐプラットフォーム',
   description:
     'モデル、カメラマン、撮影会運営者をつなぐ統合型プラットフォーム。撮影会の予約から即座撮影リクエストまで、撮影業界のすべてがここに。',
   keywords: ['撮影会', 'カメラマン', 'モデル', '写真', 'ポートレート', '撮影'],
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     ],
   },
   openGraph: {
-    title: 'ShutterHub v2 - 撮影業界をつなぐプラットフォーム',
+    title: 'ShutterHub - 撮影業界をつなぐプラットフォーム',
     description:
       'モデル、カメラマン、撮影会運営者をつなぐ統合型プラットフォーム',
     url: 'https://shutterhub.app',
@@ -62,7 +62,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'ShutterHub v2 - 撮影業界をつなぐプラットフォーム',
+    title: 'ShutterHub - 撮影業界をつなぐプラットフォーム',
     description:
       'モデル、カメラマン、撮影会運営者をつなぐ統合型プラットフォーム',
     creator: '@shutterhub',

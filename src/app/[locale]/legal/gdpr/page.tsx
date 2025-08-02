@@ -352,7 +352,7 @@ export default async function GdprPage({ params }: GdprPageProps) {
 // メタデータ
 export async function generateMetadata(_: GdprPageProps) {
   return {
-    title: 'データ保護権利 | ShutterHub v2',
+    title: 'データ保護権利 | ShutterHub',
     description:
       'GDPR準拠のデータ保護権利を行使できます。アクセス権、削除権、データポータビリティ権など。',
     robots: 'noindex, nofollow', // 個人的な権利行使ページのため

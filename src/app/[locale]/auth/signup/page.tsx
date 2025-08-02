@@ -15,7 +15,7 @@ export default async function SignUpPage({
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <h2 className="mt-6 text-3xl font-bold tracking-tight text-gray-900">
-            ShutterHub v2
+            ShutterHub
           </h2>
           <p className="mt-2 text-gray-600">撮影会予約プラットフォーム</p>
         </div>

@@ -141,9 +141,9 @@ export async function generateMetadata({ params }: TermsPageProps) {
   const result = await getLegalDocument('terms_of_service', params.locale);
 
   return {
-    title: result.data?.title || 'ShutterHub v2 利用規約',
+    title: result.data?.title || 'ShutterHub 利用規約',
     description:
-      'ShutterHub v2サービスの利用規約です。サービスをご利用前に必ずお読みください。',
+      'ShutterHubサービスの利用規約です。サービスをご利用前に必ずお読みください。',
     robots: 'index, follow',
     alternates: {
       languages: {

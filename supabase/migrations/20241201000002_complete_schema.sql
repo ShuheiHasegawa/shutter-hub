@@ -1,5 +1,5 @@
 -- Migration: 002_complete_schema
--- Description: Complete database schema for ShutterHub v2 (統合版)
+-- Description: Complete database schema for ShutterHub (統合版)
 -- Created: 2024-12-01
 -- Includes: 抽選システム、管理抽選システム、優先予約システム、キャンセル待ちシステム
 

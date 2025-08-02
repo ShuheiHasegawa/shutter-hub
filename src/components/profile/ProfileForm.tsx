@@ -190,7 +190,7 @@ export function ProfileForm({
         </CardTitle>
         {!isEditing && (
           <p className="text-center text-muted-foreground">
-            ShutterHub v2へようこそ！プロフィールを設定してください。
+            ShutterHubへようこそ！プロフィールを設定してください。
           </p>
         )}
       </CardHeader>

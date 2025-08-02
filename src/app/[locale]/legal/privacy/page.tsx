@@ -218,7 +218,7 @@ export default async function PrivacyPage({ params }: PrivacyPageProps) {
             <div>
               <h4 className="font-semibold mb-2">データ管理者</h4>
               <p className="text-sm text-muted-foreground">
-                ShutterHub v2 運営チーム
+                ShutterHub 運営チーム
                 <br />
                 Email: privacy@shutterhub.example.com
               </p>
@@ -278,9 +278,9 @@ export async function generateMetadata({ params }: PrivacyPageProps) {
   const result = await getLegalDocument('privacy_policy', params.locale);
 
   return {
-    title: result.data?.title || 'ShutterHub v2 プライバシーポリシー',
+    title: result.data?.title || 'ShutterHub プライバシーポリシー',
     description:
-      'ShutterHub v2のプライバシーポリシーとGDPR準拠のデータ保護方針について説明します。',
+      'ShutterHubのプライバシーポリシーとGDPR準拠のデータ保護方針について説明します。',
     robots: 'index, follow',
     alternates: {
       languages: {

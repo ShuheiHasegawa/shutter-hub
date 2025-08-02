@@ -20,7 +20,7 @@ Sentry.init({
   // 開発環境でのみデバッグ有効
   debug: process.env.NODE_ENV === 'development',
 
-  // ShutterHub v2固有のサーバーサイド設定
+  // ShutterHub固有のサーバーサイド設定
   beforeSend(event) {
     // サーバーサイドタグ追加
     if (event.tags) {

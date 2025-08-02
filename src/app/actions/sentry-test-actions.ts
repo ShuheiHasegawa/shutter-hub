@@ -1,6 +1,6 @@
 /**
  * Sentry統合テスト用Server Actions
- * ShutterHub v2
+ * ShutterHub
  */
 
 'use server';

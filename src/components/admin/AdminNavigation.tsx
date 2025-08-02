@@ -65,7 +65,7 @@ export function AdminNavigation({ disputeCount = 0 }: AdminNavigationProps) {
             管理者ダッシュボード
           </CardTitle>
           <p className="text-sm text-gray-600">
-            ShutterHub v2 プラットフォームの管理・運営機能
+            ShutterHub プラットフォームの管理・運営機能
           </p>
         </CardHeader>
       </Card>

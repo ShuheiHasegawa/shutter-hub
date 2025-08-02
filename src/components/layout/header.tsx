@@ -368,7 +368,7 @@ export function AppHeader({
           <SheetContent side="left" className="w-[300px] sm:w-[400px]">
             <SheetHeader>
               <SheetTitle>メニュー</SheetTitle>
-              <SheetDescription>ShutterHub v2のナビゲーション</SheetDescription>
+              <SheetDescription>ShutterHubのナビゲーション</SheetDescription>
             </SheetHeader>
             <div className="grid gap-4 py-4">
               <Link href="/photo-sessions" className="block px-2 py-1 text-lg">

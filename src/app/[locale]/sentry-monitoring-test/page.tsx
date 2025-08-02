@@ -142,7 +142,7 @@ export default function SentryMonitoringTestPage() {
   return (
     <div style={{ padding: '20px', fontFamily: 'system-ui, sans-serif' }}>
       <h1>Sentry監視機能テスト</h1>
-      <p>ShutterHub v2のSentry連携をテストするためのページです。</p>
+      <p>ShutterHubのSentry連携をテストするためのページです。</p>
 
       <div style={{ marginBottom: '20px' }}>
         <h2>テスト項目</h2>

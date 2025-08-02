@@ -65,7 +65,7 @@ export default function GlobalError({
                 lineHeight: '1.6',
               }}
             >
-              ShutterHub v2でエラーが発生しました。
+              ShutterHubでエラーが発生しました。
               <br />
               このエラーは自動的に報告され、開発チームが対応いたします。
             </p>

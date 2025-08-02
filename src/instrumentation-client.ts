@@ -14,7 +14,7 @@ Sentry.init({
   // Add optional integrations for additional features
   integrations: [
     Sentry.replayIntegration({
-      // ShutterHub v2: PII保護のため個人情報をマスク
+      // ShutterHub: PII保護のため個人情報をマスク
       maskAllText: true,
       blockAllMedia: true,
       maskAllInputs: true,
@@ -34,7 +34,7 @@ Sentry.init({
   // 開発環境でのみデバッグ有効
   debug: process.env.NODE_ENV === 'development',
 
-  // ShutterHub v2固有のタグ付け
+  // ShutterHub固有のタグ付け
   beforeSend(event) {
     // クライアントサイドタグ追加
     if (event.tags) {

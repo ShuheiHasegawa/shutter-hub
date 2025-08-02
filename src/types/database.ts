@@ -1,4 +1,4 @@
-// ShutterHub v2 データベース型定義
+// ShutterHub データベース型定義
 
 export type UserType = 'model' | 'photographer' | 'organizer';
 

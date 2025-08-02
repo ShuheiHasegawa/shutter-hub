@@ -1,5 +1,5 @@
 /**
- * ShutterHub v2 統合ログ管理システム
+ * ShutterHub 統合ログ管理システム
  * Sentry連携とカスタムロガー
  */
 

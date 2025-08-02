@@ -13,7 +13,7 @@ if (process.env.MCP_ENABLED === 'true') {
 }
 
 /**
- * ShutterHub v2 E2Eテスト設定
+ * ShutterHub E2Eテスト設定
  * MCP連携対応 - Supabaseプロジェクトとの自動連携に対応
  * 複雑な予約システム、エスクロー決済、リアルタイム機能の自動テストに対応
  */

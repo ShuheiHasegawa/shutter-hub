@@ -121,7 +121,7 @@ export default async function AdminDashboardPage() {
             管理者ダッシュボード
           </h1>
           <p className="text-gray-600 mt-2">
-            ShutterHub v2 プラットフォームの管理・運営
+            ShutterHub プラットフォームの管理・運営
           </p>
         </div>
         <div className="flex items-center gap-4">

@@ -1,6 +1,6 @@
 /**
  * Server Actions用エラーハンドリングユーティリティ
- * ShutterHub v2 Sentry連携
+ * ShutterHub Sentry連携
  */
 
 import * as Sentry from '@sentry/nextjs';

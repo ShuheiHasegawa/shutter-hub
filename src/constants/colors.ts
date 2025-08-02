@@ -1,4 +1,4 @@
-// ShutterHub v2 カラーパレット
+// ShutterHub カラーパレット
 // detailed-requirements.mdcで定義されたブランドカラー
 
 export const colors = {

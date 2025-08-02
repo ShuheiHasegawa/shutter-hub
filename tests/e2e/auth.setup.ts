@@ -5,23 +5,21 @@ const authFile = 'tests/e2e/.auth/user.json';
 /**
  * 認証セットアップ
  * OAuth認証（Google/X/Discord）でテスト用ユーザーでログインし、認証状態を保存する
- * 注意: ShutterHub v2はOAuth専用のため、メール/パスワード認証はサポートしていません
+ * 注意: ShutterHubはOAuth専用のため、メール/パスワード認証はサポートしていません
  */
 setup('authenticate', async ({ page }) => {
-  console.log('🔐 テスト用ユーザー認証開始...');
+  // 🔐 テスト用ユーザー認証開始...
 
   // テスト用認証設定
   const oauthProvider = process.env.TEST_OAUTH_PROVIDER || 'google';
   const mockEnabled = process.env.TEST_OAUTH_MOCK_ENABLED === 'true';
 
-  console.log(
-    `🔗 OAuth認証開始 (Provider: ${oauthProvider}, Mock: ${mockEnabled})`
-  );
+  // 🔗 OAuth認証開始 (Provider: ${oauthProvider}, Mock: ${mockEnabled})
 
   try {
     if (mockEnabled) {
       // モック認証: 直接認証状態を作成
-      console.log('🎭 モック認証モード: 認証状態を直接作成中...');
+      // 🎭 モック認証モード: 認証状態を直接作成中...
 
       // モックユーザーデータを作成
       const mockUser = {
@@ -65,15 +63,15 @@ setup('authenticate', async ({ page }) => {
       // ページをリロードして認証状態を反映
       await page.reload({ waitUntil: 'domcontentloaded' });
 
-      console.log('✅ モック認証完了: 認証状態を設定しました');
+      //('✅ モック認証完了: 認証状態を設定しました');
     } else {
       // 実際のOAuth認証フロー
-      const baseURL =
+      const _baseURL =
         process.env.PLAYWRIGHT_BASE_URL ||
         process.env.NEXT_PUBLIC_APP_URL ||
         'http://localhost:8888';
-      console.log(`🌐 ベースURL: ${baseURL}`);
-      console.log('📍 サインインページへ遷移中...');
+      //(`🌐 ベースURL: ${baseURL}`);
+      //('📍 サインインページへ遷移中...');
 
       await page.goto('/auth/signin', {
         waitUntil: 'domcontentloaded',
@@ -81,24 +79,22 @@ setup('authenticate', async ({ page }) => {
       });
 
       // デバッグ情報
-      console.log(`📍 現在のURL: ${page.url()}`);
+      //(`📍 現在のURL: ${page.url()}`);
       await page.screenshot({
         path: 'test-results/signin-page.png',
         fullPage: true,
       });
 
       if (oauthProvider === 'google') {
-        console.log('🔵 Googleログインボタンをクリック...');
+        //('🔵 Googleログインボタンをクリック...');
         await page.click('button:has-text("Google")');
 
         // Google認証ページで自動的にテストアカウントでログイン
         await page.waitForURL('**/accounts.google.com/**', { timeout: 30000 });
-        console.log('📍 Google認証ページに到達');
+        //('📍 Google認証ページに到達');
 
         // 注意: 実際のGoogle認証は手動操作が必要
-        console.log(
-          '⚠️  実際のGoogle認証が必要です。モック認証を使用することを推奨します。'
-        );
+        // ⚠️  実際のGoogle認証が必要です。モック認証を使用することを推奨します。
         throw new Error(
           '実際のGoogle認証は手動操作が必要です。TEST_OAUTH_MOCK_ENABLED=trueを使用してください。'
         );
@@ -106,12 +102,12 @@ setup('authenticate', async ({ page }) => {
     }
 
     // 認証成功の確認：ヘッダーのユーザーアバターボタンの存在確認
-    console.log('👤 認証成功確認：ユーザーアバターボタンの検出中...');
+    //('👤 認証成功確認：ユーザーアバターボタンの検出中...');
 
     if (mockEnabled) {
       // モック認証の場合、認証状態の確認は簡略化
       await page.waitForSelector('body', { timeout: 5000 });
-      console.log('✅ モック認証状態確認完了');
+      //('✅ モック認証状態確認完了');
     } else {
       // 実際の認証の場合
       const userAvatarButton = page.locator(
@@ -120,13 +116,13 @@ setup('authenticate', async ({ page }) => {
       await expect(userAvatarButton).toBeVisible({ timeout: 15000 });
     }
 
-    console.log('✅ 認証成功: ユーザーアバターボタンが検出されました');
+    //('✅ 認証成功: ユーザーアバターボタンが検出されました');
 
     // 認証状態をファイルに保存
     await page.context().storageState({ path: authFile });
-    console.log(`💾 認証状態を保存: ${authFile}`);
+    //(`💾 認証状態を保存: ${authFile}`);
   } catch (error) {
-    console.error('❌ 認証テストエラー:', error);
+    // ❌ 認証テストエラー
 
     // エラー時のスクリーンショット
     await page.screenshot({
@@ -135,8 +131,8 @@ setup('authenticate', async ({ page }) => {
     });
 
     // 詳細情報
-    console.error(`📍 エラー時URL: ${page.url()}`);
-    console.error(`🔧 Provider: ${oauthProvider}, Mock: ${mockEnabled}`);
+    // 📍 エラー時URL: ${page.url()}
+    // 🔧 Provider: ${oauthProvider}, Mock: ${mockEnabled}
 
     throw error;
   }
