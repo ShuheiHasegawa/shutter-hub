@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { test, expect, Page } from '@playwright/test';
 import { waitForPageLoad } from './utils/test-helpers';
 
@@ -11,10 +12,12 @@ test.describe('シンプル即座撮影テスト', () => {
 
   test.beforeEach(async ({ browser }) => {
     clientPage = await browser.newPage();
-    
+
     // 位置情報のモック設定
     await clientPage.context().grantPermissions(['geolocation']);
-    await clientPage.context().setGeolocation({ latitude: 35.6762, longitude: 139.6503 }); // 東京駅
+    await clientPage
+      .context()
+      .setGeolocation({ latitude: 35.6762, longitude: 139.6503 }); // 東京駅
   });
 
   test.afterEach(async () => {
@@ -44,14 +47,18 @@ test.describe('シンプル即座撮影テスト', () => {
     await waitForPageLoad(clientPage);
 
     // 位置情報許可ボタンの存在確認
-    const locationButton = clientPage.locator('button:has-text("位置情報を許可")');
+    const locationButton = clientPage.locator(
+      'button:has-text("位置情報を許可")'
+    );
     await expect(locationButton).toBeVisible({ timeout: 10000 });
 
     // ボタンクリック
     await locationButton.click();
 
     // フォーム表示まで待機
-    await expect(clientPage.locator('button:has-text("ポートレート")')).toBeVisible({ timeout: 15000 });
+    await expect(
+      clientPage.locator('button:has-text("ポートレート")')
+    ).toBeVisible({ timeout: 15000 });
 
     console.log('✅ 位置情報許可からフォーム表示まで成功');
   });
@@ -64,9 +71,11 @@ test.describe('シンプル即座撮影テスト', () => {
 
     // 位置情報許可
     await clientPage.click('button:has-text("位置情報を許可")');
-    
+
     // フォーム表示まで待機
-    await clientPage.waitForSelector('button:has-text("ポートレート")', { timeout: 15000 });
+    await clientPage.waitForSelector('button:has-text("ポートレート")', {
+      timeout: 15000,
+    });
 
     // フォーム入力
     await clientPage.click('button:has-text("ポートレート")'); // 撮影タイプ選択
@@ -94,7 +103,9 @@ test.describe('シンプル即座撮影テスト', () => {
     console.log('📝 ゲスト情報入力完了');
 
     // 送信ボタンの存在確認（実際のボタンテキストに修正）
-    const submitButton = clientPage.locator('button:has-text("撮影リクエストを送信")');
+    const submitButton = clientPage.locator(
+      'button:has-text("撮影リクエストを送信")'
+    );
     await expect(submitButton).toBeVisible();
 
     console.log('✅ フォーム入力確認完了');
@@ -115,7 +126,7 @@ test.describe('シンプル即座撮影テスト', () => {
     const response = await fetch('https://api.stripe.com/v1/payment_intents', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${stripeKey}`,
+        Authorization: `Bearer ${stripeKey}`,
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: 'amount=1000&currency=jpy&payment_method_types[]=card',
@@ -129,12 +140,15 @@ test.describe('シンプル即座撮影テスト', () => {
     console.log(`📋 PaymentIntent ID: ${paymentIntent.id}`);
 
     // クリーンアップ（テスト用PaymentIntentをキャンセル）
-    await fetch(`https://api.stripe.com/v1/payment_intents/${paymentIntent.id}/cancel`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${stripeKey}`,
-      },
-    });
+    await fetch(
+      `https://api.stripe.com/v1/payment_intents/${paymentIntent.id}/cancel`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${stripeKey}`,
+        },
+      }
+    );
 
     console.log('🧹 テストPaymentIntentクリーンアップ完了');
   });
@@ -149,18 +163,19 @@ test.describe('シンプル即座撮影テスト', () => {
     // アラートの内容を確認（情報メッセージは許可）
     const alerts = await clientPage.locator('[role="alert"]').all();
     let hasErrorAlert = false;
-    
+
     for (const alert of alerts) {
       const alertText = await alert.textContent();
       console.log(`📋 検出されたアラート: "${alertText}"`);
-      
+
       // 実際のエラーかどうかを内容で判断
-      if (alertText && (
-        alertText.includes('エラー') || 
-        alertText.includes('失敗') || 
-        alertText.includes('接続できません') ||
-        alertText.includes('問題が発生')
-      )) {
+      if (
+        alertText &&
+        (alertText.includes('エラー') ||
+          alertText.includes('失敗') ||
+          alertText.includes('接続できません') ||
+          alertText.includes('問題が発生'))
+      ) {
         hasErrorAlert = true;
         break;
       }
