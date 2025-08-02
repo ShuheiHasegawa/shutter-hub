@@ -9,7 +9,7 @@ const __dirname = path.dirname(__filename);
 
 // MCP連携時のテスト環境設定読み込み
 if (process.env.MCP_ENABLED === 'true') {
-  dotenv.config({ path: path.resolve(__dirname, 'tests/e2e/.env.test') });
+  dotenv.config({ path: path.resolve(__dirname, 'tests/e2e/test.env') });
 }
 
 /**

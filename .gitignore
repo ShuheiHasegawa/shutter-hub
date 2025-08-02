@@ -40,3 +40,12 @@ next-env.d.ts
 
 # Sentry Config File
 .env.sentry-build-plugin
+
+# CI/CD関連
+test-results/
+playwright-report/
+coverage/
+.nyc_output/
+
+# GitHub Actions Artifacts（ローカル生成時）
+artifacts/
