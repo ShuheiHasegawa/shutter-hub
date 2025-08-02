@@ -18,9 +18,9 @@ CREATE TABLE instant_photo_requests (
   location_landmark TEXT, -- 近くの観光地
   
   -- リクエスト内容
-  request_type TEXT NOT NULL CHECK (request_type IN ('portrait', 'couple', 'family', 'group', 'landscape')),
-  urgency TEXT NOT NULL CHECK (urgency IN ('now', 'within_30min', 'within_1hour')),
-  duration INTEGER NOT NULL CHECK (duration IN (15, 30, 60)), -- 分
+  request_type TEXT NOT NULL CHECK (request_type IN ('portrait', 'couple', 'family', 'group', 'landscape', 'pet')),
+  urgency TEXT NOT NULL CHECK (urgency IN ('normal', 'urgent')),
+  duration INTEGER NOT NULL CHECK (duration IN (15, 30, 45, 60)), -- 分
   budget INTEGER NOT NULL,
   special_requests TEXT,
   
