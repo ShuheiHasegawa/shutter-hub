@@ -1,0 +1,325 @@
+name: 🔧 E2E Tests & Quality Assurance
+
+on:
+  # main ブランチへの push 時に自動実行（個人開発最適化）
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'supabase/**'
+      - 'package*.json'
+      - 'playwright.config.ts'
+      - '.github/workflows/**'
+
+  # 手動実行オプション
+  workflow_dispatch:
+    inputs:
+      test_suite:
+        description: '実行するテストスイート'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - enhanced-escrow-payment
+          - instant-photo-request
+          - booking-systems
+      browser:
+        description: 'ブラウザ選択'
+        required: false
+        default: 'chromium'
+        type: choice
+        options:
+          - chromium
+          - firefox
+          - webkit
+          - all
+      debug_mode:
+        description: 'デバッグモード'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  # Node.js設定
+  NODE_VERSION: '20'
+
+  # テスト設定
+  PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/ms-playwright
+
+  # アプリケーション設定
+  NEXT_PUBLIC_APP_URL: http://localhost:8888
+  PORT: 8888
+
+jobs:
+  # === 静的解析・型チェック ===
+  static-analysis:
+    name: 🔍 静的解析・型チェック
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: 📥 チェックアウト
+        uses: actions/checkout@v4
+
+      - name: 🔧 Node.js セットアップ
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 依存関係インストール
+        run: npm ci
+
+      - name: 🔍 ESLint チェック
+        run: npm run lint
+        continue-on-error: true # 個人開発では警告のみ
+
+      - name: 🎯 TypeScript 型チェック
+        run: npx tsc --noEmit
+        continue-on-error: true # 個人開発では警告のみ
+
+      - name: 🏗️ ビルドテスト
+        run: npm run build
+        env:
+          SKIP_ENV_VALIDATION: true
+
+  # === E2Eテスト実行 ===
+  e2e-tests:
+    name: 🎭 E2Eテスト実行
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: static-analysis
+    continue-on-error: true # 個人開発では失敗してもワークフロー継続
+
+    strategy:
+      fail-fast: false # 複数ブラウザテスト時、1つ失敗しても他を継続
+      matrix:
+        browser:
+          - ${{ (github.event.inputs.browser == 'all' && 'chromium') || github.event.inputs.browser || 'chromium' }}
+          - ${{ (github.event.inputs.browser == 'all' && 'firefox') || '' }}
+          - ${{ (github.event.inputs.browser == 'all' && 'webkit') || '' }}
+        exclude:
+          - browser: ''
+
+    steps:
+      - name: 📥 チェックアウト
+        uses: actions/checkout@v4
+
+      - name: 🔧 Node.js セットアップ
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 依存関係インストール
+        run: npm ci
+
+      - name: 🎭 Playwright セットアップ
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+
+      - name: 🗄️ Playwright キャッシュ
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.PLAYWRIGHT_BROWSERS_PATH }}
+          key: playwright-${{ matrix.browser }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            playwright-${{ matrix.browser }}-
+
+      - name: 🏗️ アプリケーションビルド
+        run: npm run build
+        env:
+          SKIP_ENV_VALIDATION: true
+
+      - name: 🚀 アプリケーション起動
+        run: npm start &
+        env:
+          # 本番用環境変数（Secrets使用）
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
+
+          # テスト用設定
+          NODE_ENV: test
+          SKIP_ENV_VALIDATION: true
+
+      - name: ⏳ アプリケーション起動待機
+        run: |
+          echo "アプリケーション起動待機中..."
+          for i in {1..30}; do
+            if curl -f http://localhost:8888 > /dev/null 2>&1; then
+              echo "✅ アプリケーション起動完了"
+              break
+            fi
+            echo "待機中... ($i/30)"
+            sleep 2
+          done
+
+      - name: 🎭 E2Eテスト実行
+        run: |
+          # テストスイート選択
+          if [ "${{ github.event.inputs.test_suite }}" = "all" ] || [ -z "${{ github.event.inputs.test_suite }}" ]; then
+            TEST_FILES="tests/e2e/*.spec.ts"
+          else
+            TEST_FILES="tests/e2e/${{ github.event.inputs.test_suite }}.spec.ts"
+          fi
+
+          # デバッグモード設定
+          if [ "${{ github.event.inputs.debug_mode }}" = "true" ]; then
+            DEBUG_FLAGS="--headed --debug"
+          else
+            DEBUG_FLAGS=""
+          fi
+
+          # テスト実行
+          MCP_ENABLED=true \
+          TEST_OAUTH_MOCK_ENABLED=true \
+          npx playwright test $TEST_FILES \
+            --project=${{ matrix.browser }} \
+            --reporter=html,json,junit \
+            $DEBUG_FLAGS
+        env:
+          # テスト用環境変数
+          PLAYWRIGHT_BASE_URL: http://localhost:8888
+          TEST_OAUTH_MOCK_ENABLED: true
+          TEST_OAUTH_PROVIDER: google
+          MCP_ENABLED: true
+          MCP_AUTO_CLEANUP: true
+
+          # Stripe テスト環境
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
+
+          # Supabase テスト環境
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+
+          # デバッグ設定
+          NEXT_PUBLIC_ENABLE_DEBUG_LOGGING: true
+          NEXT_PUBLIC_LOG_LEVEL: 3
+          PLAYWRIGHT_RETRIES: 2
+          PLAYWRIGHT_TIMEOUT: 45000
+        continue-on-error: true # 個人開発では失敗しても継続
+
+      - name: 📊 テスト結果アップロード
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report-${{ matrix.browser }}
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+
+      - name: 📋 テスト結果サマリー
+        if: always()
+        run: |
+          echo "## 🎭 E2Eテスト結果 (${{ matrix.browser }})" >> $GITHUB_STEP_SUMMARY
+
+          if [ -f "test-results/results.json" ]; then
+            # JSON結果パース（簡易版）
+            TOTAL=$(jq '.stats.expected + .stats.unexpected + .stats.skipped' test-results/results.json 2>/dev/null || echo "不明")
+            PASSED=$(jq '.stats.expected' test-results/results.json 2>/dev/null || echo "不明")
+            FAILED=$(jq '.stats.unexpected' test-results/results.json 2>/dev/null || echo "不明")
+            SKIPPED=$(jq '.stats.skipped' test-results/results.json 2>/dev/null || echo "不明")
+            
+            echo "- 🎯 総テスト数: $TOTAL" >> $GITHUB_STEP_SUMMARY
+            echo "- ✅ 成功: $PASSED" >> $GITHUB_STEP_SUMMARY
+            echo "- ❌ 失敗: $FAILED" >> $GITHUB_STEP_SUMMARY
+            echo "- ⏭️ スキップ: $SKIPPED" >> $GITHUB_STEP_SUMMARY
+            
+            if [ "$FAILED" != "0" ] && [ "$FAILED" != "不明" ]; then
+              echo "- ⚠️ **テスト失敗がありますが、個人開発モードのため継続します**" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "- ⚠️ テスト結果ファイルが見つかりません" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📊 詳細レポートは Artifacts の \`playwright-report-${{ matrix.browser }}\` をダウンロードしてください" >> $GITHUB_STEP_SUMMARY
+
+  # === 結果集約・通知 ===
+  summary:
+    name: 📊 結果集約・通知
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [static-analysis, e2e-tests]
+    timeout-minutes: 5
+
+    steps:
+      - name: 📊 ワークフロー結果サマリー
+        run: |
+          echo "## 🎯 ShutterHub v2 品質チェック結果" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # 静的解析結果
+          if [ "${{ needs.static-analysis.result }}" = "success" ]; then
+            echo "✅ **静的解析**: 成功" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ **静的解析**: 警告あり（個人開発モードのため継続）" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # E2Eテスト結果
+          if [ "${{ needs.e2e-tests.result }}" = "success" ]; then
+            echo "✅ **E2Eテスト**: 成功" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.e2e-tests.result }}" = "failure" ]; then
+            echo "⚠️ **E2Eテスト**: 失敗あり（個人開発モードのため継続）" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⏭️ **E2Eテスト**: スキップまたはキャンセル" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔧 個人開発最適化設定" >> $GITHUB_STEP_SUMMARY
+          echo "- ❌ **プッシュブロックなし**: 失敗時も \`main\` ブランチへのプッシュは継続" >> $GITHUB_STEP_SUMMARY
+          echo "- 📊 **詳細レポート**: テスト結果は Artifacts として保存" >> $GITHUB_STEP_SUMMARY
+          echo "- 🚀 **高速フィードバック**: 重要な問題のみ警告表示" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📋 次のアクション" >> $GITHUB_STEP_SUMMARY
+          echo "- 警告がある場合は、時間がある時に確認・修正" >> $GITHUB_STEP_SUMMARY
+          echo "- 緊急性の高い問題は即座に対応" >> $GITHUB_STEP_SUMMARY
+          echo "- テスト失敗は開発の妨げにならないよう継続" >> $GITHUB_STEP_SUMMARY
+
+          # コミット情報表示
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📝 コミット情報" >> $GITHUB_STEP_SUMMARY
+          echo "- **SHA**: \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **ブランチ**: \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **コミッター**: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+
+  # === セキュリティスキャン（オプション） ===
+  security-scan:
+    name: 🔒 セキュリティスキャン
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' # push時のみ実行
+    timeout-minutes: 10
+    continue-on-error: true # 失敗しても継続
+
+    steps:
+      - name: 📥 チェックアウト
+        uses: actions/checkout@v4
+
+      - name: 🔧 Node.js セットアップ
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 依存関係インストール
+        run: npm ci
+
+      - name: 🔒 npm audit チェック
+        run: |
+          echo "## 🔒 セキュリティスキャン結果" >> $GITHUB_STEP_SUMMARY
+
+          # npm audit実行
+          if npm audit --audit-level=high; then
+            echo "✅ **高リスク脆弱性**: なし" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ **高リスク脆弱性**: 検出されました（要確認）" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            npm audit --audit-level=high >> $GITHUB_STEP_SUMMARY || true
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          fi
+        continue-on-error: true

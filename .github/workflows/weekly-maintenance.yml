@@ -1,0 +1,378 @@
+name: 🔧 Weekly Maintenance & Health Check
+
+on:
+  # 毎週日曜日 3:00 AM JST (土曜日 18:00 UTC) に実行
+  schedule:
+    - cron: '0 18 * * 6'
+
+  # 手動実行オプション
+  workflow_dispatch:
+    inputs:
+      maintenance_type:
+        description: 'メンテナンス種類'
+        required: true
+        default: 'full'
+        type: choice
+        options:
+          - full
+          - security-only
+          - dependency-only
+          - health-check-only
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  # === 依存関係更新チェック ===
+  dependency-check:
+    name: 📦 依存関係更新チェック
+    runs-on: ubuntu-latest
+    if: github.event.inputs.maintenance_type == 'full' || github.event.inputs.maintenance_type == 'dependency-only' || github.event_name == 'schedule'
+    timeout-minutes: 15
+
+    steps:
+      - name: 📥 チェックアウト
+        uses: actions/checkout@v4
+
+      - name: 🔧 Node.js セットアップ
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 現在の依存関係チェック
+        run: |
+          echo "## 📦 依存関係チェック結果" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # 古い依存関係チェック
+          echo "### 🕰️ 更新可能な依存関係" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          npm outdated >> $GITHUB_STEP_SUMMARY || echo "すべて最新です" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+          # セキュリティ監査
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔒 セキュリティ監査" >> $GITHUB_STEP_SUMMARY
+          if npm audit --audit-level=moderate; then
+            echo "✅ **中リスク以上の脆弱性**: なし" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ **中リスク以上の脆弱性**: 検出" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            npm audit --audit-level=moderate >> $GITHUB_STEP_SUMMARY || true
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          fi
+        continue-on-error: true
+
+  # === セキュリティスキャン ===
+  security-scan:
+    name: 🔒 包括的セキュリティスキャン
+    runs-on: ubuntu-latest
+    if: github.event.inputs.maintenance_type == 'full' || github.event.inputs.maintenance_type == 'security-only' || github.event_name == 'schedule'
+    timeout-minutes: 20
+
+    steps:
+      - name: 📥 チェックアウト
+        uses: actions/checkout@v4
+
+      - name: 🔧 Node.js セットアップ
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 依存関係インストール
+        run: npm ci
+
+      - name: 🔍 コードスキャン（ESLint セキュリティルール）
+        run: |
+          echo "## 🔒 セキュリティスキャン結果" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # セキュリティ関連のESLintルールでスキャン
+          if npx eslint src/ --ext .ts,.tsx --no-eslintrc --config .eslintrc.json; then
+            echo "✅ **ESLint セキュリティチェック**: 問題なし" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ **ESLint セキュリティチェック**: 警告あり" >> $GITHUB_STEP_SUMMARY
+          fi
+        continue-on-error: true
+
+      - name: 🔐 環境変数・機密情報チェック
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔐 機密情報チェック" >> $GITHUB_STEP_SUMMARY
+
+          # ハードコードされたシークレットの簡易チェック
+          SECRET_PATTERNS="(password|secret|key|token|api_key).*=.*['\"][^'\"]*['\"]"
+
+          if grep -r -i -E "$SECRET_PATTERNS" src/ --include="*.ts" --include="*.tsx" --exclude-dir=node_modules; then
+            echo "⚠️ **機密情報の可能性**: 検出されました（要確認）" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "✅ **機密情報チェック**: 問題なし" >> $GITHUB_STEP_SUMMARY
+          fi
+        continue-on-error: true
+
+  # === パフォーマンス・ヘルスチェック ===
+  health-check:
+    name: 🏥 システムヘルスチェック
+    runs-on: ubuntu-latest
+    if: github.event.inputs.maintenance_type == 'full' || github.event.inputs.maintenance_type == 'health-check-only' || github.event_name == 'schedule'
+    timeout-minutes: 25
+
+    steps:
+      - name: 📥 チェックアウト
+        uses: actions/checkout@v4
+
+      - name: 🔧 Node.js セットアップ
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 依存関係インストール
+        run: npm ci
+
+      - name: 🏗️ ビルドパフォーマンステスト
+        run: |
+          echo "## 🏥 システムヘルスチェック結果" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # ビルド時間測定
+          echo "### ⚡ ビルドパフォーマンス" >> $GITHUB_STEP_SUMMARY
+
+          START_TIME=$(date +%s)
+          npm run build
+          END_TIME=$(date +%s)
+          BUILD_TIME=$((END_TIME - START_TIME))
+
+          echo "- **ビルド時間**: ${BUILD_TIME}秒" >> $GITHUB_STEP_SUMMARY
+
+          if [ $BUILD_TIME -gt 120 ]; then
+            echo "- ⚠️ **ビルド時間警告**: 2分を超えています" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- ✅ **ビルド時間**: 正常範囲" >> $GITHUB_STEP_SUMMARY
+          fi
+        env:
+          SKIP_ENV_VALIDATION: true
+
+      - name: 📊 バンドルサイズ分析
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📦 バンドルサイズ分析" >> $GITHUB_STEP_SUMMARY
+
+          # .next/static のサイズ確認
+          if [ -d ".next/static" ]; then
+            BUNDLE_SIZE=$(du -sh .next/static | cut -f1)
+            echo "- **静的アセットサイズ**: $BUNDLE_SIZE" >> $GITHUB_STEP_SUMMARY
+            
+            # 大きなファイルの確認
+            echo "- **大きなファイル（500KB以上）**:" >> $GITHUB_STEP_SUMMARY
+            find .next/static -size +500k -type f -exec ls -lh {} \; | awk '{print "  - " $9 ": " $5}' >> $GITHUB_STEP_SUMMARY || echo "  - なし" >> $GITHUB_STEP_SUMMARY
+          fi
+        continue-on-error: true
+
+      - name: 🌐 本番サイトレスポンス測定
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🌐 本番サイトパフォーマンス" >> $GITHUB_STEP_SUMMARY
+
+          # メインページのレスポンス時間測定
+          PRODUCTION_URL="https://shutter-hub-v2.vercel.app"
+
+          echo "🔍 測定対象: $PRODUCTION_URL"
+
+          if RESPONSE_TIME=$(curl -o /dev/null -s -w '%{time_total}' "$PRODUCTION_URL" 2>/dev/null); then
+            echo "- **メインページレスポンス**: ${RESPONSE_TIME}秒" >> $GITHUB_STEP_SUMMARY
+            
+            # パフォーマンス判定
+            if (( $(echo "$RESPONSE_TIME > 3.0" | bc -l) )); then
+              echo "- ⚠️ **レスポンス時間警告**: 3秒を超えています" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "- ✅ **レスポンス時間**: 正常範囲" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "- ⚠️ **接続エラー**: 本番サイトに接続できませんでした" >> $GITHUB_STEP_SUMMARY
+          fi
+        continue-on-error: true
+
+  # === データベースヘルスチェック ===
+  database-health:
+    name: 🗄️ データベースヘルスチェック
+    runs-on: ubuntu-latest
+    if: github.event.inputs.maintenance_type == 'full' || github.event.inputs.maintenance_type == 'health-check-only' || github.event_name == 'schedule'
+    timeout-minutes: 10
+
+    steps:
+      - name: 📥 チェックアウト
+        uses: actions/checkout@v4
+
+      - name: 🗄️ Supabase接続チェック
+        run: |
+          echo "## 🗄️ データベースヘルスチェック結果" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Supabase API接続確認
+          SUPABASE_URL="${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}"
+
+          if [ -n "$SUPABASE_URL" ]; then
+            echo "🔍 Supabase接続確認: $SUPABASE_URL"
+            
+            # REST API エンドポイント確認
+            if curl -f -s "${SUPABASE_URL}/rest/v1/" > /dev/null; then
+              echo "✅ **Supabase REST API**: 接続成功" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "❌ **Supabase REST API**: 接続失敗" >> $GITHUB_STEP_SUMMARY
+            fi
+            
+            # Auth API エンドポイント確認
+            if curl -f -s "${SUPABASE_URL}/auth/v1/settings" > /dev/null; then
+              echo "✅ **Supabase Auth API**: 接続成功" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "❌ **Supabase Auth API**: 接続失敗" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "⚠️ **Supabase URL**: 設定されていません" >> $GITHUB_STEP_SUMMARY
+          fi
+        continue-on-error: true
+
+  # === E2Eテスト（ライト版） ===
+  light-e2e-test:
+    name: 🎭 軽量E2Eテスト
+    runs-on: ubuntu-latest
+    if: github.event.inputs.maintenance_type == 'full' || github.event_name == 'schedule'
+    timeout-minutes: 20
+
+    steps:
+      - name: 📥 チェックアウト
+        uses: actions/checkout@v4
+
+      - name: 🔧 Node.js セットアップ
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 依存関係インストール
+        run: npm ci
+
+      - name: 🎭 Playwright セットアップ
+        run: npx playwright install --with-deps chromium
+
+      - name: 🏗️ アプリケーションビルド
+        run: npm run build
+        env:
+          SKIP_ENV_VALIDATION: true
+
+      - name: 🚀 アプリケーション起動
+        run: npm start &
+        env:
+          NODE_ENV: test
+          SKIP_ENV_VALIDATION: true
+
+      - name: ⏳ 起動待機
+        run: |
+          for i in {1..30}; do
+            if curl -f http://localhost:8888 > /dev/null 2>&1; then
+              echo "✅ アプリケーション起動完了"
+              break
+            fi
+            sleep 2
+          done
+
+      - name: 🎭 基本E2Eテスト実行
+        run: |
+          echo "## 🎭 軽量E2Eテスト結果" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # 基本的なページアクセステストのみ実行
+          MCP_ENABLED=true \
+          TEST_OAUTH_MOCK_ENABLED=true \
+          npx playwright test instant-photo-request.spec.ts \
+            --project=chromium \
+            --grep="基本アクセス|ページ表示" \
+            --reporter=line
+        env:
+          PLAYWRIGHT_BASE_URL: http://localhost:8888
+          TEST_OAUTH_MOCK_ENABLED: true
+        continue-on-error: true
+
+  # === レポート集約 ===
+  summary:
+    name: 📊 週次メンテナンス報告
+    runs-on: ubuntu-latest
+    if: always()
+    needs:
+      [
+        dependency-check,
+        security-scan,
+        health-check,
+        database-health,
+        light-e2e-test,
+      ]
+    timeout-minutes: 5
+
+    steps:
+      - name: 📊 週次メンテナンス完了報告
+        run: |
+          echo "# 🔧 週次メンテナンス完了報告" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**実行日時**: $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "**メンテナンス種類**: ${{ github.event.inputs.maintenance_type || 'full (scheduled)' }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # 各ジョブの実行結果
+          echo "## 📋 実行結果サマリー" >> $GITHUB_STEP_SUMMARY
+
+          # 依存関係チェック
+          if [ "${{ needs.dependency-check.result }}" = "success" ]; then
+            echo "✅ **依存関係チェック**: 完了" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.dependency-check.result }}" = "skipped" ]; then
+            echo "⏭️ **依存関係チェック**: スキップ" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ **依存関係チェック**: 警告あり" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # セキュリティスキャン
+          if [ "${{ needs.security-scan.result }}" = "success" ]; then
+            echo "✅ **セキュリティスキャン**: 完了" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.security-scan.result }}" = "skipped" ]; then
+            echo "⏭️ **セキュリティスキャン**: スキップ" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ **セキュリティスキャン**: 警告あり" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # ヘルスチェック
+          if [ "${{ needs.health-check.result }}" = "success" ]; then
+            echo "✅ **ヘルスチェック**: 完了" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.health-check.result }}" = "skipped" ]; then
+            echo "⏭️ **ヘルスチェック**: スキップ" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ **ヘルスチェック**: 警告あり" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # データベースヘルス
+          if [ "${{ needs.database-health.result }}" = "success" ]; then
+            echo "✅ **データベースヘルス**: 完了" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.database-health.result }}" = "skipped" ]; then
+            echo "⏭️ **データベースヘルス**: スキップ" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ **データベースヘルス**: 警告あり" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # E2Eテスト
+          if [ "${{ needs.light-e2e-test.result }}" = "success" ]; then
+            echo "✅ **軽量E2Eテスト**: 完了" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.light-e2e-test.result }}" = "skipped" ]; then
+            echo "⏭️ **軽量E2Eテスト**: スキップ" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ **軽量E2Eテスト**: 警告あり" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 🎯 推奨アクション" >> $GITHUB_STEP_SUMMARY
+          echo "- 警告がある項目は時間がある時に確認してください" >> $GITHUB_STEP_SUMMARY
+          echo "- セキュリティ警告は優先的に対応してください" >> $GITHUB_STEP_SUMMARY
+          echo "- 依存関係の更新は定期的に行ってください" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 📅 次回メンテナンス" >> $GITHUB_STEP_SUMMARY
+          echo "**予定**: 次の日曜日 3:00 AM JST (自動実行)" >> $GITHUB_STEP_SUMMARY
