@@ -135,18 +135,23 @@ export async function findNearbyPhotographers(
   longitude: number,
   radiusMeters: number = 1000,
   requestType?: string,
-  maxBudget?: number
+  maxBudget?: number,
+  urgency: string = 'normal'
 ): Promise<ApiResponse<NearbyPhotographer[]>> {
   try {
     const supabase = await createClient();
 
-    const { data, error } = await supabase.rpc('find_nearby_photographers', {
-      target_lat: latitude,
-      target_lng: longitude,
-      radius_meters: radiusMeters,
-      request_type: requestType,
-      max_budget: maxBudget,
-    });
+    const { data, error } = await supabase.rpc(
+      'find_nearby_photographers_with_urgency',
+      {
+        target_lat: latitude,
+        target_lng: longitude,
+        radius_meters: radiusMeters,
+        request_type: requestType,
+        max_budget: maxBudget,
+        urgency_level: urgency,
+      }
+    );
 
     if (error) {
       logger.error('近くのカメラマン検索エラー:', error);
