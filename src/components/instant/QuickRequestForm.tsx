@@ -7,13 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+// Select components removed - using button grids instead
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
@@ -56,9 +50,9 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
   const router = useRouter();
   const [formData, setFormData] = useState<QuickRequestFormData>({
     requestType: 'portrait',
-    urgency: 'within_1hour',
+    urgency: 'normal',
     duration: 30,
-    budget: 5000,
+    budget: 0,
     partySize: 2,
     specialRequests: '',
     guestName: '',
@@ -98,10 +92,8 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
     let additionalFees = 0;
 
     // 緊急料金
-    if (formData.urgency === 'now') {
-      additionalFees += 2000;
-    } else if (formData.urgency === 'within_30min') {
-      additionalFees += 1000;
+    if (formData.urgency === 'urgent') {
+      additionalFees += 1500;
     }
 
     // 休日料金（簡易チェック）
@@ -135,7 +127,8 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
         location.longitude,
         1000,
         formData.requestType,
-        priceBreakdown.totalPrice
+        priceBreakdown.totalPrice,
+        formData.urgency
       );
 
       if (result.success && result.data) {
@@ -159,6 +152,7 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
     location.latitude,
     location.longitude,
     formData.requestType,
+    formData.urgency,
     priceBreakdown.totalPrice,
   ]);
 
@@ -247,9 +241,11 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
     if (notifications.length > 0) {
       const latestNotification = notifications[0];
 
-      if (latestNotification.type === 'match_found') {
+      if (latestNotification.type === 'instant_photo_match_found') {
         setSubmitStatus('matched');
-        setMatchedBookingId(latestNotification.booking_id || null);
+        setMatchedBookingId(
+          (latestNotification.data.booking_id as string) || null
+        );
         setActiveTab('map'); // マッチング時は地図を表示
       }
     }
@@ -263,21 +259,17 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
   };
 
   const requestTypes = [
-    { value: 'portrait', label: 'ポートレート', icon: '👤', price: '¥3,000〜' },
-    { value: 'couple', label: 'カップル・友人', icon: '👫', price: '¥5,000〜' },
-    { value: 'family', label: 'ファミリー', icon: '👨‍👩‍👧‍👦', price: '¥8,000〜' },
-    { value: 'group', label: 'グループ', icon: '👥', price: '¥10,000〜' },
+    { value: 'portrait', label: 'ポートレート', icon: '👤' },
+    { value: 'couple', label: 'カップル・友人', icon: '👫' },
+    { value: 'family', label: 'ファミリー', icon: '👨‍👩‍👧‍👦' },
+    { value: 'group', label: 'グループ', icon: '👥' },
+    { value: 'pet', label: 'ペット撮影', icon: '🐶' },
+    { value: 'landscape', label: '風景撮影', icon: '🌄' },
   ];
 
   const urgencyOptions = [
-    { value: 'now', label: '今すぐ', extra: '+¥2,000', icon: '⚡' },
-    { value: 'within_30min', label: '30分以内', extra: '+¥1,000', icon: '🕐' },
-    {
-      value: 'within_1hour',
-      label: '1時間以内',
-      extra: '追加料金なし',
-      icon: '⏰',
-    },
+    { value: 'normal', label: '通常', extra: '追加料金なし', icon: '📋' },
+    { value: 'urgent', label: '重要', extra: '+¥1,500', icon: '⚡' },
   ];
 
   return (
@@ -427,127 +419,124 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
                     >
                       <div className="text-lg mb-1">{type.icon}</div>
                       <div className="text-sm font-medium">{type.label}</div>
-                      <div className="text-xs font-medium">{type.price}</div>
                     </button>
                   ))}
                 </div>
               </div>
 
-              {/* 緊急度と撮影時間 */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="urgency">緊急度</Label>
-                  <div className="space-y-2">
-                    {urgencyOptions.map(option => (
-                      <button
-                        key={option.value}
-                        type="button"
-                        className={`w-full p-3 border rounded-lg text-left transition-colors ${
-                          formData.urgency === option.value
-                            ? 'border-shutter-primary bg-shutter-primary/10'
-                            : 'border-border hover:border-muted-foreground'
-                        }`}
-                        onClick={() =>
-                          setFormData(prev => ({
-                            ...prev,
-                            urgency: option.value as RequestUrgency,
-                          }))
-                        }
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <span className="text-lg">{option.icon}</span>
-                            <span className="font-medium">{option.label}</span>
-                          </div>
-                          <Badge
-                            variant={
-                              option.value === 'now'
-                                ? 'destructive'
-                                : option.value === 'within_30min'
-                                  ? 'default'
-                                  : 'secondary'
-                            }
-                            className="text-xs font-medium"
-                          >
-                            {option.extra}
-                          </Badge>
+              {/* 緊急度 */}
+              <div className="space-y-3">
+                <Label htmlFor="urgency">緊急度</Label>
+                <div className="grid grid-cols-2 gap-3">
+                  {urgencyOptions.map(option => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      className={`p-3 border rounded-lg text-center transition-colors ${
+                        formData.urgency === option.value
+                          ? 'border-shutter-primary bg-shutter-primary/10'
+                          : 'border-border hover:border-muted-foreground'
+                      }`}
+                      onClick={() =>
+                        setFormData(prev => ({
+                          ...prev,
+                          urgency: option.value as RequestUrgency,
+                        }))
+                      }
+                    >
+                      <div className="space-y-1">
+                        <div className="text-lg">{option.icon}</div>
+                        <div className="text-sm font-medium">
+                          {option.label}
                         </div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="duration">撮影時間</Label>
-                  <Select
-                    value={formData.duration.toString()}
-                    onValueChange={value =>
-                      setFormData(prev => ({
-                        ...prev,
-                        duration: parseInt(value) as 15 | 30 | 60,
-                      }))
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="15">15分</SelectItem>
-                      <SelectItem value="30">30分</SelectItem>
-                      <SelectItem value="60">60分</SelectItem>
-                    </SelectContent>
-                  </Select>
+                        <Badge
+                          variant={
+                            option.value === 'urgent'
+                              ? 'destructive'
+                              : 'secondary'
+                          }
+                          className="text-xs"
+                        >
+                          {option.extra}
+                        </Badge>
+                      </div>
+                    </button>
+                  ))}
                 </div>
               </div>
 
-              {/* 予算と人数 */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="budget">基本予算</Label>
-                  <Select
-                    value={formData.budget.toString()}
-                    onValueChange={value =>
-                      setFormData(prev => ({
-                        ...prev,
-                        budget: parseInt(value),
-                      }))
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="3000">¥3,000</SelectItem>
-                      <SelectItem value="5000">¥5,000</SelectItem>
-                      <SelectItem value="8000">¥8,000</SelectItem>
-                      <SelectItem value="10000">¥10,000</SelectItem>
-                      <SelectItem value="15000">¥15,000</SelectItem>
-                    </SelectContent>
-                  </Select>
+              {/* 撮影時間 */}
+              <div className="space-y-3">
+                <Label htmlFor="duration">撮影時間</Label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {[15, 30, 45, 60].map(duration => (
+                    <button
+                      key={duration}
+                      type="button"
+                      className={`p-4 border rounded-lg text-center transition-colors ${
+                        formData.duration === duration
+                          ? 'border-shutter-primary bg-shutter-primary/10'
+                          : 'border-border hover:border-muted-foreground'
+                      }`}
+                      onClick={() =>
+                        setFormData(prev => ({
+                          ...prev,
+                          duration: duration as 15 | 30 | 45 | 60,
+                        }))
+                      }
+                    >
+                      <div className="text-base font-medium">{duration}分</div>
+                    </button>
+                  ))}
                 </div>
+              </div>
 
+              {/* 参加人数 */}
+              <div className="space-y-3">
+                <Label htmlFor="partySize">参加人数</Label>
+                <div className="grid grid-cols-5 gap-2">
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
+                    <button
+                      key={num}
+                      type="button"
+                      className={`p-3 border rounded-lg text-center transition-colors ${
+                        formData.partySize === num
+                          ? 'border-shutter-primary bg-shutter-primary/10'
+                          : 'border-border hover:border-muted-foreground'
+                      }`}
+                      onClick={() =>
+                        setFormData(prev => ({
+                          ...prev,
+                          partySize: num,
+                        }))
+                      }
+                    >
+                      <div className="text-base font-medium">{num}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 希望料金 */}
+              <div className="space-y-3">
+                <Label htmlFor="budget">希望料金</Label>
                 <div className="space-y-2">
-                  <Label htmlFor="partySize">参加人数</Label>
-                  <Select
-                    value={formData.partySize.toString()}
-                    onValueChange={value =>
+                  <Input
+                    type="number"
+                    min="0"
+                    placeholder="希望料金を入力（¥0以上）"
+                    value={formData.budget || ''}
+                    onChange={e =>
                       setFormData(prev => ({
                         ...prev,
-                        partySize: parseInt(value),
+                        budget: parseInt(e.target.value) || 0,
                       }))
                     }
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
-                        <SelectItem key={num} value={num.toString()}>
-                          {num}名
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    className="text-lg font-medium"
+                  />
+                  <p className="text-xs text-gray-500">
+                    ¥0の場合はカメラマンが料金を提示します
+                  </p>
                 </div>
               </div>
 
@@ -558,8 +547,16 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
                 </h4>
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between text-foreground">
-                    <span>基本料金</span>
-                    <span>¥{priceBreakdown.basePrice.toLocaleString()}</span>
+                    <span>希望料金</span>
+                    <span>
+                      {priceBreakdown.basePrice === 0 ? (
+                        <span className="text-sm text-gray-500">
+                          カメラマンが料金を提示
+                        </span>
+                      ) : (
+                        `¥${priceBreakdown.basePrice.toLocaleString()}`
+                      )}
+                    </span>
                   </div>
                   {priceBreakdown.additionalFees > 0 && (
                     <div className="flex justify-between text-shutter-warning font-medium">
@@ -572,7 +569,16 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
                   <Separator />
                   <div className="flex justify-between font-medium text-foreground">
                     <span>合計</span>
-                    <span>¥{priceBreakdown.totalPrice.toLocaleString()}</span>
+                    <span>
+                      {priceBreakdown.basePrice === 0 &&
+                      priceBreakdown.additionalFees === 0 ? (
+                        <span className="text-sm text-gray-500">
+                          カメラマンが料金を提示
+                        </span>
+                      ) : (
+                        `¥${priceBreakdown.totalPrice.toLocaleString()}`
+                      )}
+                    </span>
                   </div>
                 </div>
               </div>
