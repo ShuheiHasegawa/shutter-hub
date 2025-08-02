@@ -14,8 +14,9 @@ export type RequestType =
   | 'couple'
   | 'family'
   | 'group'
-  | 'landscape';
-export type RequestUrgency = 'now' | 'within_30min' | 'within_1hour';
+  | 'landscape'
+  | 'pet';
+export type RequestUrgency = 'normal' | 'urgent';
 export type RequestStatus =
   | 'pending'
   | 'matched'
@@ -45,7 +46,7 @@ export interface InstantPhotoRequest {
   // リクエスト内容
   request_type: RequestType;
   urgency: RequestUrgency;
-  duration: 15 | 30 | 60; // 分
+  duration: 15 | 30 | 45 | 60; // 分
   budget: number;
   special_requests?: string;
 
@@ -71,7 +72,7 @@ export interface CreateInstantPhotoRequestData {
   location_landmark?: string;
   request_type: RequestType;
   urgency: RequestUrgency;
-  duration: 15 | 30 | 60;
+  duration: 15 | 30 | 45 | 60;
   budget: number;
   special_requests?: string;
 }
@@ -228,7 +229,7 @@ export interface MatchingCriteria {
 export interface QuickRequestFormData {
   requestType: RequestType;
   urgency: RequestUrgency;
-  duration: 15 | 30 | 60;
+  duration: 15 | 30 | 45 | 60;
   budget: number;
   specialRequests: string;
   guestName: string;
