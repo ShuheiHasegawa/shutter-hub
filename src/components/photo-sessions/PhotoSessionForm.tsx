@@ -11,10 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
-import {
-  createPhotoSessionAction,
-  updatePhotoSessionAction,
-} from '@/app/actions/photo-session';
+// 通常の撮影会作成アクションは不要（スロット必須のため）
 import {
   createPhotoSessionWithSlotsAction,
   updatePhotoSessionWithSlotsAction,
@@ -35,7 +32,7 @@ import PhotoSessionSlotForm from '@/components/photo-sessions/PhotoSessionSlotFo
 import { ModelSelectionForm } from '@/components/photo-sessions/ModelSelectionForm';
 import { Label } from '@/components/ui/label';
 import { FormattedDateTime } from '@/components/ui/formatted-display';
-import { PriceInput } from '@/components/ui/price-input';
+// PriceInput は不要（スロットで料金設定するため）
 import { Check } from 'lucide-react';
 
 interface PhotoSessionFormProps {
@@ -73,8 +70,6 @@ export function PhotoSessionForm({
     end_time: initialData?.end_time
       ? new Date(initialData.end_time).toISOString().slice(0, 16)
       : '',
-    max_participants: initialData?.max_participants || 1,
-    price_per_person: initialData?.price_per_person || 0,
     booking_type: (initialData?.booking_type as BookingType) || 'first_come',
     allow_multiple_bookings: initialData?.allow_multiple_bookings || false,
     is_published: isDuplicating ? false : initialData?.is_published || false,
@@ -221,42 +216,18 @@ export function PhotoSessionForm({
       }
     }
 
-    // 撮影枠がない場合のみ日時バリデーションを実行
+    // スロット必須前提のため、スロットバリデーションのみ実行
     if (!hasSlots) {
-      if (!formData.start_time || !formData.end_time) {
-        toast({
-          title: tErrors('title'),
-          description: t('form.validation.dateTimeRequired'),
-          variant: 'destructive',
-        });
-        return;
-      }
-
-      const startTime = new Date(formData.start_time);
-      const endTime = new Date(formData.end_time);
-      const now = new Date();
-
-      if (startTime <= now) {
-        toast({
-          title: tErrors('title'),
-          description: t('form.validation.startTimeInvalid'),
-          variant: 'destructive',
-        });
-        return;
-      }
-
-      if (endTime <= startTime) {
-        toast({
-          title: tErrors('title'),
-          description: t('form.validation.endTimeInvalid'),
-          variant: 'destructive',
-        });
-        return;
-      }
+      toast({
+        title: tErrors('title'),
+        description: '撮影枠を最低1つ設定してください',
+        variant: 'destructive',
+      });
+      return;
     }
 
-    // 撮影枠がある場合でも、自動計算された日時の確認
-    if (hasSlots && (!formData.start_time || !formData.end_time)) {
+    // 撮影枠から自動計算された日時の確認
+    if (!formData.start_time || !formData.end_time) {
       toast({
         title: tErrors('title'),
         description: '撮影枠を設定してください。日時が自動計算されます。',
@@ -279,30 +250,27 @@ export function PhotoSessionForm({
           address: formData.address || undefined,
           start_time: startTime.toISOString(),
           end_time: endTime.toISOString(),
-          max_participants: formData.max_participants,
           booking_type: formData.booking_type,
           allow_multiple_bookings: formData.allow_multiple_bookings,
           booking_settings: bookingSettings as Record<string, unknown>,
           is_published: formData.is_published,
           image_urls: formData.image_urls,
           selected_models: selectedModels,
-          slots: hasSlots
-            ? photoSessionSlots.map(slot => ({
-                slot_number: slot.slot_number,
-                start_time: slot.start_time,
-                end_time: slot.end_time,
-                break_duration_minutes: slot.break_duration_minutes,
-                price_per_person: slot.price_per_person,
-                max_participants: slot.max_participants,
-                costume_image_url: slot.costume_image_url || undefined,
-                costume_image_hash: slot.costume_image_hash || undefined,
-                costume_description: slot.costume_description || undefined,
-                discount_type: slot.discount_type || 'none',
-                discount_value: slot.discount_value || 0,
-                discount_condition: slot.discount_condition || undefined,
-                notes: slot.notes || undefined,
-              }))
-            : undefined,
+          slots: photoSessionSlots.map(slot => ({
+            slot_number: slot.slot_number,
+            start_time: slot.start_time,
+            end_time: slot.end_time,
+            break_duration_minutes: slot.break_duration_minutes,
+            price_per_person: slot.price_per_person,
+            max_participants: slot.max_participants,
+            costume_image_url: slot.costume_image_url || undefined,
+            costume_image_hash: slot.costume_image_hash || undefined,
+            costume_description: slot.costume_description || undefined,
+            discount_type: slot.discount_type || 'none',
+            discount_value: slot.discount_value || 0,
+            discount_condition: slot.discount_condition || undefined,
+            notes: slot.notes || undefined,
+          })),
         };
 
         const result = await createBulkPhotoSessionsAction(bulkData);
@@ -330,96 +298,55 @@ export function PhotoSessionForm({
         return;
       }
 
-      // 撮影枠がある場合とない場合で使用するactionを切り替え
-      if (hasSlots) {
-        // 撮影枠制撮影会の場合
-        const sessionWithSlotsData: PhotoSessionWithSlotsData = {
-          title: formData.title,
-          description: formData.description || undefined,
-          location: formData.location,
-          address: formData.address || undefined,
-          start_time: startTime.toISOString(),
-          end_time: endTime.toISOString(),
-          max_participants: formData.max_participants,
-          price_per_person: formData.price_per_person,
-          booking_type: formData.booking_type,
-          allow_multiple_bookings: formData.allow_multiple_bookings,
-          booking_settings: bookingSettings as Record<string, unknown>,
-          is_published: formData.is_published,
-          image_urls: formData.image_urls,
-          slots: photoSessionSlots.map(slot => ({
-            slot_number: slot.slot_number,
-            start_time: slot.start_time,
-            end_time: slot.end_time,
-            break_duration_minutes: slot.break_duration_minutes,
-            price_per_person: slot.price_per_person,
-            max_participants: slot.max_participants,
-            costume_image_url: slot.costume_image_url || undefined,
-            costume_image_hash: slot.costume_image_hash || undefined,
-            costume_description: slot.costume_description || undefined,
-            discount_type: slot.discount_type || 'none',
-            discount_value: slot.discount_value || 0,
-            discount_condition: slot.discount_condition || undefined,
-            notes: slot.notes || undefined,
-          })),
-        };
+      // スロット必須のため、常にスロット付き撮影会として処理
+      const sessionWithSlotsData: PhotoSessionWithSlotsData = {
+        title: formData.title,
+        description: formData.description || undefined,
+        location: formData.location,
+        address: formData.address || undefined,
+        start_time: startTime.toISOString(),
+        end_time: endTime.toISOString(),
+        booking_type: formData.booking_type,
+        allow_multiple_bookings: formData.allow_multiple_bookings,
+        booking_settings: bookingSettings as Record<string, unknown>,
+        is_published: formData.is_published,
+        image_urls: formData.image_urls,
+        slots: photoSessionSlots.map(slot => ({
+          slot_number: slot.slot_number,
+          start_time: slot.start_time,
+          end_time: slot.end_time,
+          break_duration_minutes: slot.break_duration_minutes,
+          price_per_person: slot.price_per_person,
+          max_participants: slot.max_participants,
+          costume_image_url: slot.costume_image_url || undefined,
+          costume_image_hash: slot.costume_image_hash || undefined,
+          costume_description: slot.costume_description || undefined,
+          discount_type: slot.discount_type || 'none',
+          discount_value: slot.discount_value || 0,
+          discount_condition: slot.discount_condition || undefined,
+          notes: slot.notes || undefined,
+        })),
+      };
 
-        let result;
+      let result;
 
-        if (isEditing && initialData) {
-          result = await updatePhotoSessionWithSlotsAction(
-            initialData.id,
-            sessionWithSlotsData
-          );
-        } else {
-          result =
-            await createPhotoSessionWithSlotsAction(sessionWithSlotsData);
-        }
-
-        if (result.error) {
-          logger.error('撮影枠制撮影会保存エラー:', result.error);
-          toast({
-            title: tErrors('title'),
-            description: t('form.error.saveFailed'),
-            variant: 'destructive',
-          });
-          return;
-        }
+      if (isEditing && initialData) {
+        result = await updatePhotoSessionWithSlotsAction(
+          initialData.id,
+          sessionWithSlotsData
+        );
       } else {
-        // 通常の撮影会の場合
-        const sessionData = {
-          title: formData.title,
-          description: formData.description || undefined,
-          location: formData.location,
-          address: formData.address || undefined,
-          start_time: startTime.toISOString(),
-          end_time: endTime.toISOString(),
-          max_participants: formData.max_participants,
-          price_per_person: formData.price_per_person,
-          booking_type: formData.booking_type,
-          allow_multiple_bookings: formData.allow_multiple_bookings,
-          is_published: formData.is_published,
-          image_urls: formData.image_urls,
-          booking_settings: bookingSettings as Record<string, unknown>,
-        };
+        result = await createPhotoSessionWithSlotsAction(sessionWithSlotsData);
+      }
 
-        let result;
-
-        if (isEditing && initialData) {
-          result = await updatePhotoSessionAction(initialData.id, sessionData);
-        } else {
-          result = await createPhotoSessionAction(sessionData);
-        }
-
-        if (result.error) {
-          logger.error('撮影会保存エラー:', result.error);
-          toast({
-            title: tErrors('title'),
-            description: t('form.error.saveFailed'),
-            variant: 'destructive',
-          });
-          return;
-        }
+      if (result.error) {
+        logger.error('撮影会保存エラー:', result.error);
+        toast({
+          title: tErrors('title'),
+          description: t('form.error.saveFailed'),
+          variant: 'destructive',
+        });
+        return;
       }
 
       toast({
@@ -641,57 +568,7 @@ export function PhotoSessionForm({
             )}
           </div>
 
-          {/* 参加者・料金情報 */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">
-              {isOrganizer ? '参加者設定' : t('form.participantInfo')}
-            </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label
-                  htmlFor="max_participants"
-                  className="block text-sm font-medium mb-2"
-                >
-                  {t('form.maxParticipantsLabel')} {t('form.required')}
-                </label>
-                <Input
-                  id="max_participants"
-                  name="max_participants"
-                  type="number"
-                  min="1"
-                  max="100"
-                  value={formData.max_participants}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-
-              {/* 運営アカウント以外のみ表示 */}
-              {!isOrganizer && (
-                <div>
-                  <label
-                    htmlFor="price_per_person"
-                    className="block text-sm font-medium mb-2"
-                  >
-                    {t('form.priceLabel')} {t('form.required')}
-                  </label>
-                  <PriceInput
-                    id="price_per_person"
-                    name="price_per_person"
-                    value={formData.price_per_person}
-                    onChange={value => {
-                      setFormData(prev => ({
-                        ...prev,
-                        price_per_person: parseInt(value) || 0,
-                      }));
-                    }}
-                    required
-                  />
-                </div>
-              )}
-            </div>
-          </div>
+          {/* 参加者・料金情報は撮影枠で設定するため削除 */}
 
           {/* 運営アカウントのみ：モデル選択セクション */}
           {isOrganizer && (

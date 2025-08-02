@@ -126,7 +126,7 @@ export interface BulkPhotoSessionData {
   address?: string;
   start_time: string;
   end_time: string;
-  max_participants: number;
+  // max_participants はスロットから自動計算されるため削除
   booking_type: string;
   allow_multiple_bookings: boolean;
   booking_settings: Record<string, unknown>;
@@ -136,8 +136,8 @@ export interface BulkPhotoSessionData {
   // 一括作成用
   selected_models: SelectedModel[];
 
-  // 撮影枠（オプション）
-  slots?: CreatePhotoSessionSlotData[];
+  // 撮影枠（必須）
+  slots: CreatePhotoSessionSlotData[];
 }
 
 // 一括撮影会作成結果

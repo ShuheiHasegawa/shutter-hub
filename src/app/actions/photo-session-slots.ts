@@ -12,14 +12,13 @@ export interface PhotoSessionWithSlotsData {
   address?: string;
   start_time: string;
   end_time: string;
-  max_participants: number;
-  price_per_person: number;
+  // max_participants と price_per_person はスロットから自動計算
   booking_type?: string;
   allow_multiple_bookings?: boolean;
   booking_settings?: Record<string, unknown>;
   is_published: boolean;
   image_urls?: string[];
-  slots?: CreatePhotoSessionSlotData[];
+  slots: CreatePhotoSessionSlotData[]; // 必須に変更
 }
 
 export async function createPhotoSessionWithSlotsAction(
@@ -36,14 +35,18 @@ export async function createPhotoSessionWithSlotsAction(
       return { success: false, error: '認証が必要です' };
     }
 
-    // スロットがある場合は、撮影会の参加者数をスロットの合計に設定
-    let maxParticipants = data.max_participants;
-    if (data.slots && data.slots.length > 0) {
-      maxParticipants = data.slots.reduce(
-        (sum, slot) => sum + slot.max_participants,
-        0
-      );
-    }
+    // スロット必須のため、常にスロットから参加者数と料金を計算
+    const maxParticipants = data.slots.reduce(
+      (sum, slot) => sum + slot.max_participants,
+      0
+    );
+    const avgPricePerPerson =
+      data.slots.length > 0
+        ? Math.round(
+            data.slots.reduce((sum, slot) => sum + slot.price_per_person, 0) /
+              data.slots.length
+          )
+        : 0;
 
     // 撮影会を作成
     const { data: session, error: sessionError } = await supabase
@@ -56,7 +59,7 @@ export async function createPhotoSessionWithSlotsAction(
         start_time: data.start_time,
         end_time: data.end_time,
         max_participants: maxParticipants,
-        price_per_person: data.price_per_person,
+        price_per_person: avgPricePerPerson,
         booking_type: data.booking_type || 'first_come',
         allow_multiple_bookings: data.allow_multiple_bookings || false,
         booking_settings: data.booking_settings || {},
@@ -73,8 +76,8 @@ export async function createPhotoSessionWithSlotsAction(
       return { success: false, error: '撮影会の作成に失敗しました' };
     }
 
-    // スロットがある場合はスロットも作成
-    if (data.slots && data.slots.length > 0) {
+    // スロット必須のため、常にスロットを作成
+    if (data.slots.length > 0) {
       const slotsToInsert = data.slots.map(slot => ({
         ...slot,
         photo_session_id: session.id,
@@ -128,14 +131,18 @@ export async function updatePhotoSessionWithSlotsAction(
       return { success: false, error: '権限がありません' };
     }
 
-    // スロットがある場合は、撮影会の参加者数をスロットの合計に設定
-    let maxParticipants = data.max_participants;
-    if (data.slots && data.slots.length > 0) {
-      maxParticipants = data.slots.reduce(
-        (sum, slot) => sum + slot.max_participants,
-        0
-      );
-    }
+    // スロット必須のため、常にスロットから参加者数と料金を計算
+    const maxParticipants = data.slots.reduce(
+      (sum, slot) => sum + slot.max_participants,
+      0
+    );
+    const avgPricePerPerson =
+      data.slots.length > 0
+        ? Math.round(
+            data.slots.reduce((sum, slot) => sum + slot.price_per_person, 0) /
+              data.slots.length
+          )
+        : 0;
 
     // 撮影会を更新
     const { data: session, error: sessionError } = await supabase
@@ -148,7 +155,7 @@ export async function updatePhotoSessionWithSlotsAction(
         start_time: data.start_time,
         end_time: data.end_time,
         max_participants: maxParticipants,
-        price_per_person: data.price_per_person,
+        price_per_person: avgPricePerPerson,
         booking_type: data.booking_type || 'first_come',
         allow_multiple_bookings: data.allow_multiple_bookings || false,
         booking_settings: data.booking_settings || {},
@@ -170,8 +177,8 @@ export async function updatePhotoSessionWithSlotsAction(
       .delete()
       .eq('photo_session_id', sessionId);
 
-    // 新しいスロットを作成
-    if (data.slots && data.slots.length > 0) {
+    // 新しいスロットを作成（スロット必須）
+    if (data.slots.length > 0) {
       const slotsToInsert = data.slots.map(slot => ({
         ...slot,
         photo_session_id: sessionId,
