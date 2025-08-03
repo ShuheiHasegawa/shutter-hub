@@ -71,6 +71,26 @@
     --theme-text-secondary: 215.4 16.3% 46.9%; /* Shadcn muted-foreground - セカンダリテキスト */
     --theme-text-muted: 220 9% 46%; /* より薄いグレー - 控えめなテキスト */
 
+    /* セマンティックサーフェース（ライトモード） */
+    --surface-primary: var(--theme-primary);
+    --surface-primary-text: var(--theme-primary-foreground);
+    --surface-primary-0: var(--theme-secondary);
+    --surface-primary-0-text: var(--theme-secondary-foreground);
+    --surface-primary-1: var(--theme-primary);
+    --surface-primary-1-text: var(--theme-primary-foreground);
+    --surface-accent: var(--theme-accent);
+    --surface-accent-text: var(--theme-accent-foreground);
+    --surface-accent-0: var(--theme-secondary);
+    --surface-accent-0-text: var(--theme-secondary-foreground);
+    --surface-accent-1: var(--theme-accent);
+    --surface-accent-1-text: var(--theme-accent-foreground);
+    --surface-neutral: var(--theme-neutral);
+    --surface-neutral-text: var(--theme-neutral-foreground);
+    --surface-neutral-0: var(--theme-secondary);
+    --surface-neutral-0-text: var(--theme-secondary-foreground);
+    --surface-neutral-1: var(--theme-neutral);
+    --surface-neutral-1-text: var(--theme-neutral-foreground);
+
     /* ShutterHub セマンティックカラー */
     --success: 142 71% 45%; /* 予約成功・空きあり（緑系） */
     --success-foreground: 0 0% 100%;
@@ -152,6 +172,26 @@
     --theme-text-primary: 210 40% 98%; /* Shadcn dark foreground - メインテキスト */
     --theme-text-secondary: 215 20.2% 65.1%; /* Shadcn dark muted-foreground - セカンダリテキスト */
     --theme-text-muted: 217.9 10.6% 64.9%; /* より薄いグレー - 控えめなテキスト */
+
+    /* セマンティックサーフェース（ダークモード） */
+    --surface-primary: var(--theme-primary);
+    --surface-primary-text: var(--theme-primary-foreground);
+    --surface-primary-0: var(--theme-secondary);
+    --surface-primary-0-text: var(--theme-secondary-foreground);
+    --surface-primary-1: var(--theme-primary);
+    --surface-primary-1-text: var(--theme-primary-foreground);
+    --surface-accent: var(--theme-accent);
+    --surface-accent-text: var(--theme-accent-foreground);
+    --surface-accent-0: var(--theme-secondary);
+    --surface-accent-0-text: var(--theme-secondary-foreground);
+    --surface-accent-1: var(--theme-accent);
+    --surface-accent-1-text: var(--theme-accent-foreground);
+    --surface-neutral: var(--theme-neutral);
+    --surface-neutral-text: var(--theme-neutral-foreground);
+    --surface-neutral-0: var(--theme-secondary);
+    --surface-neutral-0-text: var(--theme-secondary-foreground);
+    --surface-neutral-1: var(--theme-neutral);
+    --surface-neutral-1-text: var(--theme-neutral-foreground);
 
     /* ShutterHub セマンティックカラー（ダークモード） */
     --success: 142 71% 45%; /* ダークモードでも視認性良好 */
