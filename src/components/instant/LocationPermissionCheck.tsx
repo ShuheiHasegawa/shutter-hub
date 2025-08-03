@@ -11,6 +11,7 @@ interface LocationPermissionCheckProps {
   error: string | null;
   onRequestLocation: () => void;
   onSkip: () => void;
+  onRetryWithLowAccuracy?: () => void;
 }
 
 export function LocationPermissionCheck({
@@ -19,6 +20,7 @@ export function LocationPermissionCheck({
   error,
   onRequestLocation,
   onSkip,
+  onRetryWithLowAccuracy,
 }: LocationPermissionCheckProps) {
   if (!isSupported) {
     return (
@@ -46,16 +48,60 @@ export function LocationPermissionCheck({
           <Alert variant="destructive">
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
-              位置情報の取得に失敗しました: {error}
+              {error || '位置情報の取得に失敗しました'}
             </AlertDescription>
           </Alert>
-          <div className="flex gap-2 mt-4">
-            <Button onClick={onRequestLocation} className="flex-1">
-              再試行
-            </Button>
-            <Button onClick={onSkip} variant="outline" className="flex-1">
-              スキップ
-            </Button>
+
+          <div className="mt-3 p-3 bg-muted rounded-md">
+            <h4 className="text-sm font-medium mb-2">対処法:</h4>
+            <ul className="text-xs text-muted-foreground space-y-1">
+              <li>• ブラウザのアドレスバーで位置情報を許可してください</li>
+              {error &&
+                (error.includes('kCLErrorLocationUnknown') ||
+                  error.includes('CoreLocationProvider') ||
+                  error.includes('iOS設定')) && (
+                  <>
+                    <li>
+                      • <strong>iOS端末の場合：</strong>
+                    </li>
+                    <li>
+                      {' '}
+                      → 「設定」アプリ &gt; 「プライバシーとセキュリティ」
+                    </li>
+                    <li> → 「位置情報サービス」を有効にする</li>
+                    <li> → 「Safari」を探してアクセス許可を確認</li>
+                    <li>• 端末を再起動してから再試行してください</li>
+                  </>
+                )}
+              <li>• GPS機能がオンになっているか確認してください</li>
+              <li>• 屋外や窓の近くで再試行してください</li>
+              <li>• Wi-Fi接続が安定していることを確認してください</li>
+            </ul>
+          </div>
+
+          <div className="space-y-2 mt-4">
+            <div className="flex gap-2">
+              <Button onClick={onRequestLocation} className="flex-1">
+                再試行
+              </Button>
+              <Button onClick={onSkip} variant="outline" className="flex-1">
+                スキップ
+              </Button>
+            </div>
+
+            {error &&
+              (error.includes('kCLErrorLocationUnknown') ||
+                error.includes('CoreLocationProvider') ||
+                error.includes('iOS設定')) &&
+              onRetryWithLowAccuracy && (
+                <Button
+                  onClick={onRetryWithLowAccuracy}
+                  variant="secondary"
+                  className="w-full text-xs"
+                >
+                  低精度モードで再試行（バッテリー節約）
+                </Button>
+              )}
           </div>
         </CardContent>
       </Card>
