@@ -93,80 +93,17 @@ const UploadTab: React.FC = () => {
     currentProject,
     isUploading,
     uploadProgress,
-    setUploading,
-    setUploadProgress,
+    uploadImages,
+    removeImageResource,
   } = usePhotobookEditorStore();
 
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = React.useState(false);
 
   // ファイル選択
-  const handleFileSelect = (files: FileList | null) => {
+  const handleFileSelect = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
-
-    setUploading(true);
-
-    // ファイル処理のシミュレーション
-    const processFiles = async () => {
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-
-        // 画像ファイルのチェック
-        if (!file.type.startsWith('image/')) {
-          // console.warn(`${file.name} は画像ファイルではありません`);
-          continue;
-        }
-
-        // ファイルサイズチェック（5MB制限）
-        if (file.size > 5 * 1024 * 1024) {
-          // console.warn(`${file.name} はファイルサイズが大きすぎます`);
-          continue;
-        }
-
-        try {
-          // プログレス更新
-          setUploadProgress((i / files.length) * 100);
-
-          // ファイルをBase64に変換（実際の実装ではSupabase Storageにアップロード）
-          const reader = new FileReader();
-          await new Promise(resolve => {
-            reader.onload = e => {
-              const _src = e.target?.result as string;
-
-              // プロジェクトのリソースに追加
-              if (currentProject) {
-                // const newImage = {
-                //   id: `img-${Date.now()}-${i}`,
-                //   name: file.name,
-                //   src,
-                //   size: file.size,
-                //   dimensions: { width: 0, height: 0 }, // 実際の実装では画像サイズを取得
-                //   format: file.type,
-                //   uploadedAt: new Date().toISOString(),
-                // };
-                // TODO: ストアにリソース追加機能を実装
-                // console.log('画像をアップロード:', newImage);
-              }
-
-              resolve(null);
-            };
-            reader.readAsDataURL(file);
-          });
-
-          // 少し待機（UX向上のため）
-          await new Promise(resolve => setTimeout(resolve, 100));
-        } catch {
-          // console.error(`${file.name} のアップロードに失敗:`, error);
-        }
-      }
-
-      setUploadProgress(100);
-      setTimeout(() => {
-        setUploading(false);
-      }, 500);
-    };
-
-    processFiles();
+    await uploadImages(files);
   };
 
   // ドラッグ&ドロップ
@@ -263,7 +200,21 @@ const UploadTab: React.FC = () => {
         ) : (
           <div className="space-y-2 max-h-80 overflow-y-auto">
             {uploadedImages.map(image => (
-              <DraggableUploadedImage key={image.id} image={image} />
+              <div key={image.id} className="relative group">
+                <DraggableUploadedImage image={image} />
+                {/* 削除ボタン */}
+                <button
+                  onClick={() => {
+                    if (window.confirm(`${image.name}を削除しますか？`)) {
+                      removeImageResource(image.id);
+                    }
+                  }}
+                  className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                  aria-label={`${image.name}を削除`}
+                >
+                  ×
+                </button>
+              </div>
             ))}
           </div>
         )}

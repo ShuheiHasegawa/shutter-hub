@@ -222,10 +222,13 @@ export const DraggableUploadedImage: React.FC<UploadedImageProps> = ({
         />
       </div>
 
-      {/* 画像名 */}
+      {/* 画像名とサイズ */}
       <div className="text-center">
         <p className="text-xs font-medium text-gray-700 truncate">
           {image.name}
+        </p>
+        <p className="text-xs text-gray-500">
+          {(image.size / 1024 / 1024).toFixed(1)}MB
         </p>
       </div>
     </div>

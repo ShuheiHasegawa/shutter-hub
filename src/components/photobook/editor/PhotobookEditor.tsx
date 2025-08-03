@@ -21,6 +21,7 @@ import {
 import DndProvider from './DndProvider';
 import EditorSidebar from './EditorSidebar';
 import EditableCanvas from './EditableCanvas';
+import { ToastProvider } from './ToastManager';
 import { cn } from '@/lib/utils';
 
 // ============================================
@@ -336,52 +337,54 @@ const PhotobookEditor: React.FC<PhotobookEditorProps> = ({
   }
 
   return (
-    <DndProvider>
-      <div className={cn('h-screen flex flex-col bg-gray-100', className)}>
-        {/* ツールバー */}
-        <EditorToolbar />
+    <ToastProvider>
+      <DndProvider>
+        <div className={cn('h-screen flex flex-col bg-gray-100', className)}>
+          {/* ツールバー */}
+          <EditorToolbar />
 
-        {/* ページナビゲーション */}
-        <PageNavigation />
+          {/* ページナビゲーション */}
+          <PageNavigation />
 
-        {/* メインエディターエリア */}
-        <div className="flex-1 flex overflow-hidden">
-          {/* サイドバー */}
-          <EditorSidebar />
+          {/* メインエディターエリア */}
+          <div className="flex-1 flex overflow-hidden">
+            {/* サイドバー */}
+            <EditorSidebar />
 
-          {/* キャンバスエリア */}
-          <div className="flex-1 flex flex-col">
-            <div className="flex-1 p-4">
-              <EditableCanvas className="w-full h-full" />
-            </div>
+            {/* キャンバスエリア */}
+            <div className="flex-1 flex flex-col">
+              <div className="flex-1 p-4">
+                <EditableCanvas className="w-full h-full" />
+              </div>
 
-            {/* ステータスバー */}
-            <div className="bg-white border-t px-4 py-2 text-sm text-gray-600">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <span>
-                    ページ {activePage?.pageNumber} /{' '}
-                    {currentProject.pages.length}
-                  </span>
-                  <span>要素: {activePage?.elements.length || 0}</span>
-                </div>
-                <div className="flex items-center space-x-4">
-                  <span>{currentProject.meta.accountTier} プラン</span>
-                  <span className="text-xs text-gray-500">
-                    最終保存:{' '}
-                    {currentProject.meta.lastSavedAt
-                      ? new Date(
-                          currentProject.meta.lastSavedAt
-                        ).toLocaleString()
-                      : '未保存'}
-                  </span>
+              {/* ステータスバー */}
+              <div className="bg-white border-t px-4 py-2 text-sm text-gray-600">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <span>
+                      ページ {activePage?.pageNumber} /{' '}
+                      {currentProject.pages.length}
+                    </span>
+                    <span>要素: {activePage?.elements.length || 0}</span>
+                  </div>
+                  <div className="flex items-center space-x-4">
+                    <span>{currentProject.meta.accountTier} プラン</span>
+                    <span className="text-xs text-gray-500">
+                      最終保存:{' '}
+                      {currentProject.meta.lastSavedAt
+                        ? new Date(
+                            currentProject.meta.lastSavedAt
+                          ).toLocaleString()
+                        : '未保存'}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    </DndProvider>
+      </DndProvider>
+    </ToastProvider>
   );
 };
 

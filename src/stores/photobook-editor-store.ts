@@ -92,6 +92,11 @@ interface PhotobookEditorActions {
   setUploading: (uploading: boolean) => void;
   setUploadProgress: (progress: number) => void;
 
+  // 画像リソース管理
+  addImageResource: (image: ImageResource) => void;
+  removeImageResource: (imageId: string) => void;
+  uploadImages: (files: FileList) => Promise<void>;
+
   // アカウント管理
   setAccountTier: (tier: AccountTier) => void;
   checkLimits: (operation: string) => boolean;
@@ -143,6 +148,60 @@ const ACCOUNT_LIMITS: Record<AccountTier, AccountLimits> = {
 
 const generateId = () =>
   `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+// サムネイル生成関数
+const createThumbnail = (
+  imageDataUrl: string,
+  maxWidth: number,
+  maxHeight: number
+): Promise<string> => {
+  return new Promise(resolve => {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+
+    img.onload = () => {
+      // アスペクト比を維持してリサイズ
+      const { width, height } = calculateThumbnailSize(
+        img.width,
+        img.height,
+        maxWidth,
+        maxHeight
+      );
+
+      canvas.width = width;
+      canvas.height = height;
+
+      ctx?.drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL('image/jpeg', 0.8));
+    };
+
+    img.src = imageDataUrl;
+  });
+};
+
+// サムネイルサイズ計算
+const calculateThumbnailSize = (
+  originalWidth: number,
+  originalHeight: number,
+  maxWidth: number,
+  maxHeight: number
+) => {
+  const aspectRatio = originalWidth / originalHeight;
+
+  let width = maxWidth;
+  let height = maxHeight;
+
+  if (aspectRatio > 1) {
+    // 横長の場合
+    height = maxWidth / aspectRatio;
+  } else {
+    // 縦長の場合
+    width = maxHeight * aspectRatio;
+  }
+
+  return { width, height };
+};
 
 const createDefaultProject = (title: string): PhotobookProject => ({
   meta: {
@@ -606,6 +665,118 @@ export const usePhotobookEditorStore = create<
           set(state => {
             state.uploadProgress = progress;
           });
+        },
+
+        // 画像リソース管理
+        addImageResource: (image: ImageResource) => {
+          set(state => {
+            if (state.currentProject) {
+              state.currentProject.resources.images.push(image);
+            }
+          });
+        },
+
+        removeImageResource: (imageId: string) => {
+          set(state => {
+            if (state.currentProject) {
+              state.currentProject.resources.images =
+                state.currentProject.resources.images.filter(
+                  img => img.id !== imageId
+                );
+            }
+          });
+        },
+
+        uploadImages: async (files: FileList) => {
+          const { setUploading, setUploadProgress, addImageResource } = get();
+
+          setUploading(true);
+
+          let successCount = 0;
+          let skipCount = 0;
+
+          try {
+            for (let i = 0; i < files.length; i++) {
+              const file = files[i];
+
+              // ファイル形式チェック
+              if (!file.type.startsWith('image/')) {
+                skipCount++;
+                continue;
+              }
+
+              // ファイルサイズチェック（10MB制限）
+              if (file.size > 10 * 1024 * 1024) {
+                skipCount++;
+                continue;
+              }
+
+              // プログレス更新
+              setUploadProgress((i / files.length) * 100);
+
+              // 画像をBase64に変換（実際の実装ではSupabase Storageにアップロード）
+              const imageDataUrl = await new Promise<string>(resolve => {
+                const reader = new FileReader();
+                reader.onload = e => {
+                  resolve(e.target?.result as string);
+                };
+                reader.readAsDataURL(file);
+              });
+
+              // 画像サイズ取得
+              const dimensions = await new Promise<{
+                width: number;
+                height: number;
+              }>(resolve => {
+                const img = new Image();
+                img.onload = () => {
+                  resolve({ width: img.width, height: img.height });
+                };
+                img.src = imageDataUrl;
+              });
+
+              // サムネイル生成（簡易版）
+              const thumbnailDataUrl = await createThumbnail(
+                imageDataUrl,
+                200,
+                200
+              );
+
+              // 画像リソースとして追加
+              const imageResource: ImageResource = {
+                id: `img-${Date.now()}-${i}`,
+                name: file.name,
+                src: imageDataUrl,
+                thumbnailSrc: thumbnailDataUrl,
+                size: file.size,
+                dimensions,
+                format: file.type,
+                uploadedAt: new Date().toISOString(),
+              };
+
+              addImageResource(imageResource);
+              successCount++;
+
+              // 少し待機（UX向上のため）
+              await new Promise(resolve => setTimeout(resolve, 100));
+            }
+
+            setUploadProgress(100);
+
+            // 結果通知（実際の実装ではtoast通知で表示）
+            if (successCount > 0) {
+              // console.log(`${successCount}枚の画像をアップロードしました`);
+            }
+            if (skipCount > 0) {
+              // console.warn(`${skipCount}枚の画像をスキップしました（形式またはサイズ制限）`);
+            }
+          } catch {
+            // console.error('画像アップロードエラー:', error);
+          } finally {
+            setTimeout(() => {
+              setUploading(false);
+            }, 500);
+          }
         },
 
         // アカウント管理
