@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Save,
@@ -239,6 +239,8 @@ const PhotobookEditor: React.FC<PhotobookEditorProps> = ({
   projectId,
   className,
 }) => {
+  const [isMounted, setIsMounted] = useState(false);
+
   const {
     createNewProject,
     loadProject,
@@ -250,19 +252,41 @@ const PhotobookEditor: React.FC<PhotobookEditorProps> = ({
   const currentProject = useCurrentProject();
   const activePage = useActivePage();
 
+  // 水和エラー回避のためのマウント確認
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   // プロジェクトの初期化
   useEffect(() => {
+    if (!isMounted) return;
+
     if (projectId) {
       loadProject(projectId);
     } else if (!currentProject) {
       createNewProject('新しいフォトブック');
     }
-  }, [projectId, currentProject, loadProject, createNewProject]);
+  }, [isMounted, projectId, currentProject, loadProject, createNewProject]);
 
   // 開発時の設定（実際の実装では認証から取得）
   useEffect(() => {
+    if (!isMounted) return;
     setAccountTier('premium');
-  }, [setAccountTier]);
+  }, [isMounted, setAccountTier]);
+
+  // サーバーサイドまたは未マウント時は最小限のローディングを表示
+  if (!isMounted) {
+    return (
+      <div
+        className={cn('flex items-center justify-center h-screen', className)}
+      >
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+          <p className="text-gray-600">読み込み中...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (isProjectLoading) {
     return (
