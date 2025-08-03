@@ -3,14 +3,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import React, { useRef, useEffect, useCallback, useState } from 'react';
-import { useDrop } from 'react-dnd';
 import {
   usePhotobookEditorStore,
   useActivePage,
 } from '@/stores/photobook-editor-store';
-import type { DragItem, PageElement } from '@/types/photobook-editor';
+import type { PageElement } from '@/types/photobook-editor';
 import { debugLogger } from '@/lib/utils/debug-logger';
 import { Stage, Layer, Rect, KonvaImage, KonvaText } from './KonvaComponents';
+import { useNativeDrop, type DragItem } from './NativeDndProvider';
 
 // ============================================
 // 型定義
@@ -263,41 +263,30 @@ const EditableCanvas: React.FC<EditableCanvasProps> = ({
 
   const activePage = useActivePage();
 
-  // ドロップ領域の設定
-  const [{ isOver, canDrop }, drop] = useDrop({
-    accept: ['layout-template', 'image-box', 'text-box', 'uploaded-image'],
-    drop: (item: DragItem, monitor) => {
+  // ネイティブドロップ領域の設定
+  const { isOver, canDrop, dropProps } = useNativeDrop(
+    ['layout-template', 'image-box', 'text-box', 'uploaded-image'],
+    (item: DragItem) => {
       try {
-        debugLogger.dnd.drop(item, { monitor: monitor.getDropResult() });
+        debugLogger.dnd.drop(item);
 
-        const dropPosition = monitor.getClientOffset();
-        if (!dropPosition || !stageRef.current) {
+        if (!stageRef.current || !activePage) {
           debugLogger.dnd.dropError(
-            new Error('Invalid drop position or stage ref'),
-            {
-              dropPosition,
-              stageRef: !!stageRef.current,
-            }
+            new Error('Invalid stage ref or active page'),
+            { stageRef: !!stageRef.current, activePage: !!activePage }
           );
           return;
         }
 
-        const stage = stageRef.current;
-        const stageBox = stage.container().getBoundingClientRect();
-
-        const x = ((dropPosition.x - stageBox.left) / stageSize.width) * 100;
-        const y = ((dropPosition.y - stageBox.top) / stageSize.height) * 100;
+        // デフォルト位置（中央付近）
+        const x = 30 + Math.random() * 40; // 30-70%の範囲
+        const y = 30 + Math.random() * 40; // 30-70%の範囲
 
         // ドロップされたアイテムに応じて要素を作成
         if (item.type === 'image-box' && activePage) {
           const newElement: Omit<PageElement, 'id'> = {
             type: 'image',
-            transform: {
-              x: Math.max(0, Math.min(80, x)),
-              y: Math.max(0, Math.min(80, y)),
-              width: 20,
-              height: 20,
-            },
+            transform: { x, y, width: 20, height: 20 },
             style: {
               opacity: 1,
               zIndex: activePage.elements.length,
@@ -305,21 +294,15 @@ const EditableCanvas: React.FC<EditableCanvasProps> = ({
             },
             data: {
               type: 'image',
-              src: '/images/no-image.png', // プレースホルダー画像
+              src: '/images/no-image.png',
               alt: '画像プレースホルダー',
             },
           };
-
           addElement(activePage.id, newElement);
         } else if (item.type === 'text-box' && activePage) {
           const newElement: Omit<PageElement, 'id'> = {
             type: 'text',
-            transform: {
-              x: Math.max(0, Math.min(60, x)),
-              y: Math.max(0, Math.min(90, y)),
-              width: 40,
-              height: 10,
-            },
+            transform: { x, y, width: 40, height: 10 },
             style: {
               opacity: 1,
               zIndex: activePage.elements.length,
@@ -334,17 +317,11 @@ const EditableCanvas: React.FC<EditableCanvasProps> = ({
               align: 'left',
             },
           };
-
           addElement(activePage.id, newElement);
         } else if (item.type === 'uploaded-image' && activePage && item.data) {
           const newElement: Omit<PageElement, 'id'> = {
             type: 'image',
-            transform: {
-              x: Math.max(0, Math.min(70, x)),
-              y: Math.max(0, Math.min(70, y)),
-              width: 30,
-              height: 30,
-            },
+            transform: { x, y, width: 30, height: 30 },
             style: {
               opacity: 1,
               zIndex: activePage.elements.length,
@@ -356,21 +333,13 @@ const EditableCanvas: React.FC<EditableCanvasProps> = ({
               alt: item.data.name || '画像',
             },
           };
-
           addElement(activePage.id, newElement);
         }
-
-        return { dropEffect: 'copy' };
       } catch (error) {
         debugLogger.dnd.dropError(error as Error, { item, stageSize });
-        return;
       }
-    },
-    collect: monitor => ({
-      isOver: monitor.isOver(),
-      canDrop: monitor.canDrop(),
-    }),
-  });
+    }
+  );
 
   // キャンバスサイズの自動調整
   useEffect(() => {
@@ -429,12 +398,12 @@ const EditableCanvas: React.FC<EditableCanvasProps> = ({
 
   return (
     <div
-      ref={drop}
       className={`relative overflow-hidden ${className}`}
       style={{
         backgroundColor: activePage.layout.backgroundColor || '#ffffff',
         border: isOver && canDrop ? '2px dashed #007bff' : '1px solid #e0e0e0',
       }}
+      {...dropProps}
     >
       <Stage
         ref={stageRef}

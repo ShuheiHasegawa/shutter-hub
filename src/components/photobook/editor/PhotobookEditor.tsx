@@ -18,7 +18,7 @@ import {
   useCurrentProject,
   useActivePage,
 } from '@/stores/photobook-editor-store';
-import DndProvider from './DndProvider';
+import { NativeDndProvider } from './NativeDndProvider';
 import EditorSidebar from './EditorSidebar';
 import EditableCanvas from './EditableCanvas';
 import { ToastProvider } from './ToastManager';
@@ -338,7 +338,7 @@ const PhotobookEditor: React.FC<PhotobookEditorProps> = ({
 
   return (
     <ToastProvider>
-      <DndProvider>
+      <NativeDndProvider>
         <div className={cn('h-screen flex flex-col bg-gray-100', className)}>
           {/* ツールバー */}
           <EditorToolbar />
@@ -383,7 +383,7 @@ const PhotobookEditor: React.FC<PhotobookEditorProps> = ({
             </div>
           </div>
         </div>
-      </DndProvider>
+      </NativeDndProvider>
     </ToastProvider>
   );
 };

@@ -3,7 +3,6 @@
 // Konvaコンポーネントを安全にラップして動的インポート問題を解決
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable react/display-name */
 
 import React from 'react';
 import dynamic from 'next/dynamic';
@@ -65,7 +64,7 @@ interface KonvaTextProps {
 }
 
 // ローディングコンポーネント
-const KonvaLoading: React.FC<{ className?: string }> = ({ className }) => (
+const KonvaLoading: React.FC<{ className?: string }> = ({ className = '' }) => (
   <div
     className={`w-full h-full bg-gray-100 animate-pulse flex items-center justify-center ${className}`}
   >
@@ -73,127 +72,76 @@ const KonvaLoading: React.FC<{ className?: string }> = ({ className }) => (
   </div>
 );
 
-// Stage コンポーネント
-const Stage = dynamic(
-  () =>
-    import('react-konva')
-      .then(mod => {
-        debugLogger.konva.stageInit();
-        const StageComponent = React.forwardRef<any, StageProps>(
-          (props, ref) => {
-            const KonvaStage = mod.Stage;
-            return <KonvaStage ref={ref} {...props} />;
-          }
-        );
-        StageComponent.displayName = 'DynamicStage';
-        return StageComponent;
-      })
-      .catch(error => {
-        debugLogger.konva.importError(error as Error, 'Stage');
-        // フォールバックコンポーネントを返す
-        return () => <KonvaLoading className="border border-red-300" />;
-      }),
-  {
-    ssr: false,
-    loading: () => <KonvaLoading />,
-  }
+// エラーフォールバックコンポーネント
+const KonvaErrorFallback: React.FC<{ error?: string }> = ({ error }) => (
+  <div className="w-full h-full bg-red-50 border border-red-300 flex items-center justify-center">
+    <div className="text-center">
+      <div className="text-red-600 text-sm font-medium">
+        Konva読み込みエラー
+      </div>
+      {error && <div className="text-red-500 text-xs mt-1">{error}</div>}
+    </div>
+  </div>
 );
 
-// Layer コンポーネント
-const Layer = dynamic(
-  () =>
-    import('react-konva')
-      .then(mod => {
-        const LayerComponent = React.forwardRef<any, LayerProps>(
-          (props, ref) => {
-            debugLogger.konva.layerCreated({ hasChildren: !!props.children });
-            const KonvaLayer = mod.Layer;
-            return <KonvaLayer ref={ref} {...props} />;
-          }
-        );
-        LayerComponent.displayName = 'DynamicLayer';
-        return LayerComponent;
-      })
-      .catch(error => {
-        debugLogger.konva.importError(error as Error, 'Layer');
-        // フォールバックコンポーネントを返す
-        return () => null;
-      }),
-  {
-    ssr: false,
-    loading: () => null,
-  }
-);
+// Konvaモジュールの安全なインポート関数
+const createKonvaComponent = <T,>(
+  componentName: string,
+  fallbackComponent?: React.ComponentType<T>
+) => {
+  return dynamic(
+    () => {
+      debugLogger.konva.stageInit();
+      return import('react-konva')
+        .then(konvaModule => {
+          // デバッグ: モジュール構造を確認
+          debugLogger.konva.layerCreated({
+            componentName,
+            moduleKeys: Object.keys(konvaModule),
+            hasDefault: 'default' in konvaModule,
+            hasComponent: componentName in konvaModule,
+          });
 
-// Rect コンポーネント
-const Rect = dynamic(
-  () =>
-    import('react-konva')
-      .then(mod => {
-        const RectComponent = React.forwardRef<any, RectProps>((props, ref) => {
-          const KonvaRect = mod.Rect;
-          return <KonvaRect ref={ref} {...props} />;
+          const Component =
+            konvaModule[componentName as keyof typeof konvaModule];
+
+          if (!Component) {
+            throw new Error(
+              `Component ${componentName} not found in react-konva`
+            );
+          }
+
+          // コンポーネントをラップ
+          const WrappedComponent = React.forwardRef<any, T>((props, ref) => {
+            return React.createElement(Component as any, { ...props, ref });
+          });
+
+          WrappedComponent.displayName = `Dynamic${componentName}`;
+          return WrappedComponent;
+        })
+        .catch(error => {
+          debugLogger.konva.importError(error as Error, componentName);
+
+          // フォールバックコンポーネントまたはエラー表示
+          return (
+            fallbackComponent ||
+            (() => <KonvaErrorFallback error={error.message} />)
+          );
         });
-        RectComponent.displayName = 'DynamicRect';
-        return RectComponent;
-      })
-      .catch(error => {
-        debugLogger.konva.importError(error as Error, 'Rect');
-        return () => null;
-      }),
-  {
-    ssr: false,
-    loading: () => null,
-  }
-);
+    },
+    {
+      ssr: false,
+      loading: () => <KonvaLoading />,
+    }
+  );
+};
 
-// Image コンポーネント
-const KonvaImage = dynamic(
-  () =>
-    import('react-konva')
-      .then(mod => {
-        const ImageComponent = React.forwardRef<any, KonvaImageProps>(
-          (props, ref) => {
-            const KonvaImageEl = mod.Image;
-            return <KonvaImageEl ref={ref} {...props} />;
-          }
-        );
-        ImageComponent.displayName = 'DynamicKonvaImage';
-        return ImageComponent;
-      })
-      .catch(error => {
-        debugLogger.konva.importError(error as Error, 'Image');
-        return () => null;
-      }),
-  {
-    ssr: false,
-    loading: () => null,
-  }
-);
-
-// Text コンポーネント
-const KonvaText = dynamic(
-  () =>
-    import('react-konva')
-      .then(mod => {
-        const TextComponent = React.forwardRef<any, KonvaTextProps>(
-          (props, ref) => {
-            const KonvaTextEl = mod.Text;
-            return <KonvaTextEl ref={ref} {...props} />;
-          }
-        );
-        TextComponent.displayName = 'DynamicKonvaText';
-        return TextComponent;
-      })
-      .catch(error => {
-        debugLogger.konva.importError(error as Error, 'Text');
-        return () => null;
-      }),
-  {
-    ssr: false,
-    loading: () => null,
-  }
-);
+// 各Konvaコンポーネントの生成
+const Stage = createKonvaComponent<StageProps>('Stage');
+const Layer = createKonvaComponent<LayerProps>('Layer');
+const Rect = createKonvaComponent<RectProps>('Rect');
+const KonvaImage = createKonvaComponent<KonvaImageProps>('Image');
+const KonvaText = createKonvaComponent<KonvaTextProps>('Text');
 
 export { Stage, Layer, Rect, KonvaImage, KonvaText };
 export type {

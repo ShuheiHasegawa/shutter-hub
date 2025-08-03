@@ -1,11 +1,11 @@
 'use client';
 
 import React from 'react';
-import { useDrag } from 'react-dnd';
 import { Image, Type, Square, Circle, Triangle, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { DragItem } from '@/types/photobook-editor';
-import { debugLogger } from '@/lib/utils/debug-logger';
+// import { debugLogger } from '@/lib/utils/debug-logger';
+import { useNativeDrag, type DragItem } from './NativeDndProvider';
+import type { ImageResource } from '@/types/photobook-editor';
 
 // ============================================
 // 基本ドラッグ要素コンポーネント
@@ -16,7 +16,6 @@ interface DraggableElementProps {
   data?: unknown;
   children: React.ReactNode;
   className?: string;
-  preview?: React.ReactNode;
 }
 
 const DraggableElement: React.FC<DraggableElementProps> = ({
@@ -24,40 +23,18 @@ const DraggableElement: React.FC<DraggableElementProps> = ({
   data,
   children,
   className,
-  preview,
 }) => {
-  const [{ isDragging }, drag, dragPreview] = useDrag({
-    type,
-    item: { type, id: `${type}-${Date.now()}`, data },
-    begin: () => {
-      const item = { type, id: `${type}-${Date.now()}`, data };
-      debugLogger.dnd.dragStart(item);
-      return item;
-    },
-    collect: monitor => ({
-      isDragging: monitor.isDragging(),
-    }),
-  });
-
-  // カスタムプレビューの設定
-  React.useEffect(() => {
-    if (preview) {
-      const previewElement = document.createElement('div');
-      previewElement.innerHTML = preview as string;
-      dragPreview(previewElement);
-    }
-  }, [dragPreview, preview]);
+  const { isDragging, dragProps } = useNativeDrag({ type, data });
 
   return (
     <div
-      ref={drag}
       className={cn(
-        'cursor-grab border-2 border-dashed border-gray-300 rounded-lg p-4 transition-all duration-200',
+        'select-none transition-opacity border-2 border-dashed border-gray-300 rounded-lg p-4',
         'hover:border-blue-400 hover:bg-blue-50',
-        'active:cursor-grabbing',
-        isDragging && 'opacity-50 transform scale-95',
+        isDragging ? 'opacity-50 transform scale-95' : 'opacity-100',
         className
       )}
+      {...dragProps}
     >
       {children}
     </div>
@@ -65,164 +42,93 @@ const DraggableElement: React.FC<DraggableElementProps> = ({
 };
 
 // ============================================
-// 個別ドラッグ要素
+// 具体的なドラッグ要素
 // ============================================
 
+// 画像ボックス
 export const DraggableImageBox: React.FC<{ className?: string }> = ({
   className,
 }) => (
   <DraggableElement type="image-box" className={className}>
     <div className="flex flex-col items-center space-y-2">
-      <Image className="h-8 w-8 text-gray-600" aria-label="画像アイコン" />
+      <Image className="h-8 w-8 text-blue-500" aria-label="画像ボックス" />
       <span className="text-sm font-medium text-gray-700">画像ボックス</span>
-      <span className="text-xs text-gray-500">ドラッグしてページに配置</span>
     </div>
   </DraggableElement>
 );
 
+// テキストボックス
 export const DraggableTextBox: React.FC<{ className?: string }> = ({
   className,
 }) => (
   <DraggableElement type="text-box" className={className}>
     <div className="flex flex-col items-center space-y-2">
-      <Type className="h-8 w-8 text-gray-600" />
+      <Type className="h-8 w-8 text-green-500" aria-label="テキストボックス" />
       <span className="text-sm font-medium text-gray-700">
         テキストボックス
       </span>
-      <span className="text-xs text-gray-500">ドラッグしてテキストを追加</span>
     </div>
   </DraggableElement>
 );
 
-export const DraggableShapeBox: React.FC<{
-  shapeType: 'rectangle' | 'circle' | 'triangle' | 'star';
+// 図形ボックス
+export const DraggableShapeBox: React.FC<{ className?: string }> = ({
+  className,
+}) => (
+  <DraggableElement type="shape-box" className={className}>
+    <div className="flex flex-col items-center space-y-2">
+      <div className="flex space-x-1">
+        <Square className="h-6 w-6 text-purple-500" aria-label="四角形" />
+        <Circle className="h-6 w-6 text-purple-500" aria-label="円形" />
+        <Triangle className="h-6 w-6 text-purple-500" aria-label="三角形" />
+      </div>
+      <span className="text-sm font-medium text-gray-700">図形</span>
+    </div>
+  </DraggableElement>
+);
+
+// レイアウトテンプレート
+export const DraggableLayoutTemplate: React.FC<{
+  layout: {
+    id: string;
+    name: string;
+    preview: string;
+  };
   className?: string;
-}> = ({ shapeType, className }) => {
-  const shapeIcons = {
-    rectangle: Square,
-    circle: Circle,
-    triangle: Triangle,
-    star: Star,
-  };
+}> = ({ layout, className }) => (
+  <DraggableElement type="layout-template" data={layout} className={className}>
+    <div className="flex flex-col items-center space-y-2">
+      <div className="w-16 h-12 bg-gray-200 rounded border flex items-center justify-center">
+        <span className="text-xs text-gray-500">{layout.name}</span>
+      </div>
+      <span className="text-sm font-medium text-gray-700">{layout.name}</span>
+    </div>
+  </DraggableElement>
+);
 
-  const shapeNames = {
-    rectangle: '四角形',
-    circle: '円',
-    triangle: '三角形',
-    star: '星',
-  };
-
-  const Icon = shapeIcons[shapeType];
+// アップロード済み画像
+export const DraggableUploadedImage: React.FC<{ image: ImageResource }> = ({
+  image,
+}) => {
+  const { isDragging, dragProps } = useNativeDrag({
+    type: 'uploaded-image',
+    data: image,
+  });
 
   return (
-    <DraggableElement
-      type="shape-box"
-      data={{ shapeType }}
-      className={className}
+    <div
+      className={cn(
+        'flex flex-col items-center space-y-2 p-2 border rounded-lg transition-opacity',
+        'hover:bg-gray-50',
+        isDragging ? 'opacity-50' : 'opacity-100'
+      )}
+      {...dragProps}
     >
-      <div className="flex flex-col items-center space-y-2">
-        <Icon className="h-8 w-8 text-gray-600" />
-        <span className="text-sm font-medium text-gray-700">
-          {shapeNames[shapeType]}
-        </span>
-        <span className="text-xs text-gray-500">ドラッグして図形を追加</span>
-      </div>
-    </DraggableElement>
-  );
-};
-
-// ============================================
-// レイアウトテンプレート要素
-// ============================================
-
-interface LayoutTemplateProps {
-  template: {
-    id: string;
-    name: string;
-    description: string;
-    photoPositions: Array<{
-      x: number;
-      y: number;
-      width: number;
-      height: number;
-      rotation?: number;
-    }>;
-  };
-  className?: string;
-}
-
-export const DraggableLayoutTemplate: React.FC<LayoutTemplateProps> = ({
-  template,
-  className,
-}) => (
-  <DraggableElement
-    type="layout-template"
-    data={template}
-    className={className}
-  >
-    <div className="flex flex-col space-y-3">
-      {/* テンプレートプレビュー */}
-      <div className="relative w-full h-20 bg-gray-100 rounded border">
-        {template.photoPositions.slice(0, 4).map((position, index) => (
-          <div
-            key={index}
-            className="absolute border border-gray-400 bg-gray-200"
-            style={{
-              left: `${position.x}%`,
-              top: `${position.y}%`,
-              width: `${position.width}%`,
-              height: `${position.height}%`,
-              transform: position.rotation
-                ? `rotate(${position.rotation}deg)`
-                : undefined,
-            }}
-          />
-        ))}
-        {template.photoPositions.length > 4 && (
-          <div className="absolute bottom-1 right-1 text-xs text-gray-500 bg-white px-1 rounded">
-            +{template.photoPositions.length - 4}
-          </div>
-        )}
-      </div>
-
-      {/* テンプレート情報 */}
-      <div className="text-center">
-        <h4 className="text-sm font-medium text-gray-700">{template.name}</h4>
-        <p className="text-xs text-gray-500 mt-1">{template.description}</p>
-      </div>
-    </div>
-  </DraggableElement>
-);
-
-// ============================================
-// アップロード済み画像要素
-// ============================================
-
-interface UploadedImageProps {
-  image: {
-    id: string;
-    name: string;
-    src: string;
-    thumbnailSrc?: string;
-  };
-  className?: string;
-}
-
-export const DraggableUploadedImage: React.FC<UploadedImageProps> = ({
-  image,
-  className,
-}) => (
-  <DraggableElement
-    type="uploaded-image"
-    data={image}
-    className={cn('p-2', className)}
-  >
-    <div className="flex flex-col space-y-2">
-      {/* 画像サムネイル */}
-      <div className="relative w-full h-20 bg-gray-100 rounded overflow-hidden">
+      <div className="w-24 h-24 overflow-hidden rounded-md bg-gray-200 flex items-center justify-center">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={image.thumbnailSrc || image.src}
-          alt={image.name || 'アップロード画像'}
+          alt={image.name}
           className="w-full h-full object-cover"
           loading="lazy"
         />
@@ -238,44 +144,22 @@ export const DraggableUploadedImage: React.FC<UploadedImageProps> = ({
         </p>
       </div>
     </div>
-  </DraggableElement>
-);
-
-// ============================================
-// カスタムドラッグプレビュー
-// ============================================
-
-export const CustomDragPreview: React.FC<{
-  type: string;
-  children: React.ReactNode;
-}> = ({ type, children }) => {
-  return (
-    <div className="bg-white border-2 border-blue-400 rounded-lg shadow-lg p-2 opacity-90">
-      <div className="text-xs text-blue-600 font-medium mb-1">{type}</div>
-      {children}
-    </div>
   );
 };
 
-// ============================================
-// ドラッグヘルパー
-// ============================================
+// スター装飾
+export const DraggableDecoration: React.FC<{ className?: string }> = ({
+  className,
+}) => (
+  <DraggableElement type="decoration" className={className}>
+    <div className="flex flex-col items-center space-y-2">
+      <Star
+        className="h-8 w-8 text-yellow-500 fill-current"
+        aria-label="装飾"
+      />
+      <span className="text-sm font-medium text-gray-700">装飾</span>
+    </div>
+  </DraggableElement>
+);
 
-export const useDragState = () => {
-  const [isDragging, setIsDragging] = React.useState(false);
-
-  React.useEffect(() => {
-    const handleDragStart = () => setIsDragging(true);
-    const handleDragEnd = () => setIsDragging(false);
-
-    document.addEventListener('dragstart', handleDragStart);
-    document.addEventListener('dragend', handleDragEnd);
-
-    return () => {
-      document.removeEventListener('dragstart', handleDragStart);
-      document.removeEventListener('dragend', handleDragEnd);
-    };
-  }, []);
-
-  return isDragging;
-};
+export default DraggableElement;
