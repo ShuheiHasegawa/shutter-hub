@@ -3,40 +3,35 @@
 import React, { useEffect } from 'react';
 import { DndProvider as ReactDndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { TouchBackend } from 'react-dnd-touch-backend';
-import { MultiBackend, createTransition } from 'react-dnd-multi-backend';
+// import { TouchBackend } from 'react-dnd-touch-backend';
+// import { MultiBackend, createTransition } from 'react-dnd-multi-backend';
 import { debugLogger } from '@/lib/utils/debug-logger';
 
 // ============================================
-// マルチバックエンド設定（PC・タッチデバイス対応）
+// 安定したDnDバックエンド設定（HTML5Backend のみ）
 // ============================================
 
-const HTML5toTouch = {
-  backends: [
-    {
-      id: 'html5',
-      backend: HTML5Backend,
-      transition: createTransition('pointer', (event: PointerEvent) => {
-        return event.type === 'pointerdown' && event.pointerType !== 'touch';
-      }),
-    },
-    {
-      id: 'touch',
-      backend: TouchBackend,
-      options: {
-        enableMouseEvents: true,
-        // タッチ操作の設定
-        delayTouchStart: 200, // 200msの遅延でドラッグ開始
-        delayMouseStart: 0,
-        touchSlop: 5, // 5px移動後にドラッグ認識
-      },
-      preview: true,
-      transition: createTransition('pointer', (event: PointerEvent) => {
-        return event.type === 'pointerdown' && event.pointerType === 'touch';
-      }),
-    },
-  ],
-};
+// TODO: マルチバックエンド対応は安定性確保後に再実装
+// const HTML5toTouch = {
+//   backends: [
+//     {
+//       id: 'html5',
+//       backend: HTML5Backend,
+//       transition: createTransition('mouseenter', (event: MouseEvent) => {
+//         return event.type === 'mouseenter';
+//       }),
+//     },
+//     {
+//       id: 'touch',
+//       backend: TouchBackend,
+//       options: { enableMouseEvents: true },
+//       preview: true,
+//       transition: createTransition('touchstart', (event: TouchEvent) => {
+//         return event.type === 'touchstart';
+//       }),
+//     },
+//   ],
+// };
 
 // ============================================
 // DnDプロバイダーコンポーネント
@@ -64,11 +59,7 @@ const DndProvider: React.FC<DndProviderProps> = ({ children }) => {
     };
   }, []);
 
-  return (
-    <ReactDndProvider backend={MultiBackend} options={HTML5toTouch}>
-      {children}
-    </ReactDndProvider>
-  );
+  return <ReactDndProvider backend={HTML5Backend}>{children}</ReactDndProvider>;
 };
 
 export default DndProvider;

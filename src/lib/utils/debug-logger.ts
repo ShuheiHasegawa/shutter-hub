@@ -123,12 +123,13 @@ class PhotobookDebugLogger {
         error,
       }),
 
-    importError: (error: Error, component?: string) =>
+    importError: (error: Error, componentName: string) =>
       this.addLog({
         timestamp: this.formatTimestamp(),
         level: 'ERROR',
         component: 'Konva',
-        action: `コンポーネントインポートエラー: ${component}`,
+        action: `${componentName}インポートエラー`,
+        data: { componentName },
         error,
       }),
   };

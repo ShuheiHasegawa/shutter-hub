@@ -75,21 +75,24 @@ const KonvaLoading: React.FC<{ className?: string }> = ({ className }) => (
 
 // Stage コンポーネント
 const Stage = dynamic(
-  async () => {
-    try {
-      debugLogger.konva.stageInit();
-      const mod = await import('react-konva');
-      return {
-        default: React.forwardRef<any, StageProps>((props, ref) => {
-          const StageComponent = mod.Stage;
-          return <StageComponent ref={ref} {...props} />;
-        }),
-      };
-    } catch (error) {
-      debugLogger.konva.importError(error as Error, 'Stage');
-      throw error;
-    }
-  },
+  () =>
+    import('react-konva')
+      .then(mod => {
+        debugLogger.konva.stageInit();
+        const StageComponent = React.forwardRef<any, StageProps>(
+          (props, ref) => {
+            const KonvaStage = mod.Stage;
+            return <KonvaStage ref={ref} {...props} />;
+          }
+        );
+        StageComponent.displayName = 'DynamicStage';
+        return StageComponent;
+      })
+      .catch(error => {
+        debugLogger.konva.importError(error as Error, 'Stage');
+        // フォールバックコンポーネントを返す
+        return () => <KonvaLoading className="border border-red-300" />;
+      }),
   {
     ssr: false,
     loading: () => <KonvaLoading />,
@@ -98,21 +101,24 @@ const Stage = dynamic(
 
 // Layer コンポーネント
 const Layer = dynamic(
-  async () => {
-    try {
-      const mod = await import('react-konva');
-      return {
-        default: React.forwardRef<any, LayerProps>((props, ref) => {
-          const LayerComponent = mod.Layer;
-          debugLogger.konva.layerCreated({ hasChildren: !!props.children });
-          return <LayerComponent ref={ref} {...props} />;
-        }),
-      };
-    } catch (error) {
-      debugLogger.konva.importError(error as Error, 'Layer');
-      throw error;
-    }
-  },
+  () =>
+    import('react-konva')
+      .then(mod => {
+        const LayerComponent = React.forwardRef<any, LayerProps>(
+          (props, ref) => {
+            debugLogger.konva.layerCreated({ hasChildren: !!props.children });
+            const KonvaLayer = mod.Layer;
+            return <KonvaLayer ref={ref} {...props} />;
+          }
+        );
+        LayerComponent.displayName = 'DynamicLayer';
+        return LayerComponent;
+      })
+      .catch(error => {
+        debugLogger.konva.importError(error as Error, 'Layer');
+        // フォールバックコンポーネントを返す
+        return () => null;
+      }),
   {
     ssr: false,
     loading: () => null,
@@ -121,20 +127,20 @@ const Layer = dynamic(
 
 // Rect コンポーネント
 const Rect = dynamic(
-  async () => {
-    try {
-      const mod = await import('react-konva');
-      return {
-        default: React.forwardRef<any, RectProps>((props, ref) => {
-          const RectComponent = mod.Rect;
-          return <RectComponent ref={ref} {...props} />;
-        }),
-      };
-    } catch (error) {
-      debugLogger.konva.importError(error as Error, 'Rect');
-      throw error;
-    }
-  },
+  () =>
+    import('react-konva')
+      .then(mod => {
+        const RectComponent = React.forwardRef<any, RectProps>((props, ref) => {
+          const KonvaRect = mod.Rect;
+          return <KonvaRect ref={ref} {...props} />;
+        });
+        RectComponent.displayName = 'DynamicRect';
+        return RectComponent;
+      })
+      .catch(error => {
+        debugLogger.konva.importError(error as Error, 'Rect');
+        return () => null;
+      }),
   {
     ssr: false,
     loading: () => null,
@@ -143,20 +149,22 @@ const Rect = dynamic(
 
 // Image コンポーネント
 const KonvaImage = dynamic(
-  async () => {
-    try {
-      const mod = await import('react-konva');
-      return {
-        default: React.forwardRef<any, KonvaImageProps>((props, ref) => {
-          const ImageComponent = mod.Image;
-          return <ImageComponent ref={ref} {...props} />;
-        }),
-      };
-    } catch (error) {
-      debugLogger.konva.importError(error as Error, 'Image');
-      throw error;
-    }
-  },
+  () =>
+    import('react-konva')
+      .then(mod => {
+        const ImageComponent = React.forwardRef<any, KonvaImageProps>(
+          (props, ref) => {
+            const KonvaImageEl = mod.Image;
+            return <KonvaImageEl ref={ref} {...props} />;
+          }
+        );
+        ImageComponent.displayName = 'DynamicKonvaImage';
+        return ImageComponent;
+      })
+      .catch(error => {
+        debugLogger.konva.importError(error as Error, 'Image');
+        return () => null;
+      }),
   {
     ssr: false,
     loading: () => null,
@@ -165,20 +173,22 @@ const KonvaImage = dynamic(
 
 // Text コンポーネント
 const KonvaText = dynamic(
-  async () => {
-    try {
-      const mod = await import('react-konva');
-      return {
-        default: React.forwardRef<any, KonvaTextProps>((props, ref) => {
-          const TextComponent = mod.Text;
-          return <TextComponent ref={ref} {...props} />;
-        }),
-      };
-    } catch (error) {
-      debugLogger.konva.importError(error as Error, 'Text');
-      throw error;
-    }
-  },
+  () =>
+    import('react-konva')
+      .then(mod => {
+        const TextComponent = React.forwardRef<any, KonvaTextProps>(
+          (props, ref) => {
+            const KonvaTextEl = mod.Text;
+            return <KonvaTextEl ref={ref} {...props} />;
+          }
+        );
+        TextComponent.displayName = 'DynamicKonvaText';
+        return TextComponent;
+      })
+      .catch(error => {
+        debugLogger.konva.importError(error as Error, 'Text');
+        return () => null;
+      }),
   {
     ssr: false,
     loading: () => null,
