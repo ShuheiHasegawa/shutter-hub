@@ -1,34 +1,26 @@
+'use client';
+
 import React from 'react';
 import { samplePhotobook } from '@/constants/samplePhotobookData';
 import Image from 'next/image';
 import Link from 'next/link';
-import { BookOpen, Eye, Calendar, User } from 'lucide-react';
+import {
+  BookOpen,
+  Eye,
+  Calendar,
+  User,
+  Edit3,
+  Trash2,
+  MoreVertical,
+} from 'lucide-react';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
-import { Metadata } from 'next';
-
-export const metadata: Metadata = {
-  title: 'フォトブック・ライブラリ | ShutterHub',
-  description:
-    'プロフェッショナルな写真集のサンプルをご覧ください。美しい本棚風のレイアウトでフォトブックを閲覧できます。',
-  keywords: [
-    'フォトブック',
-    '写真集',
-    'ライブラリ',
-    'サンプル',
-    'ポートフォリオ',
-    'ShutterHub',
-  ],
-  openGraph: {
-    title: 'フォトブック・ライブラリ | ShutterHub',
-    description: 'プロフェッショナルな写真集のサンプルをご覧ください',
-    type: 'website',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'フォトブック・ライブラリ | ShutterHub',
-    description: 'プロフェッショナルな写真集のサンプルをご覧ください',
-  },
-};
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 export default function PhotobooksPage() {
   // サンプルフォトブックを配列として扱う（本棚表示のため）
@@ -68,16 +60,62 @@ export default function PhotobooksPage() {
                   {samplePhotobooks.map(photobook => (
                     <div
                       key={photobook.id}
-                      className="group cursor-pointer transform transition-all duration-300 hover:-translate-y-2 hover:rotate-1"
+                      className="group transform transition-all duration-300 hover:-translate-y-2 hover:rotate-1 relative"
                     >
+                      {/* アクションボタン（右上） */}
+                      <div className="absolute top-2 right-2 z-10 opacity-100 transition-opacity duration-200">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0"
+                            >
+                              <MoreVertical className="h-4 w-4" />
+                              <span className="sr-only">
+                                アクションメニュー
+                              </span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-40">
+                            <DropdownMenuItem
+                              onClick={e => {
+                                e.preventDefault();
+                                window.location.href = `/photobooks/${photobook.id}/edit`;
+                              }}
+                            >
+                              <Edit3 className="mr-2 h-4 w-4" />
+                              編集
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={e => {
+                                e.preventDefault();
+                                // TODO: 削除確認ダイアログの実装
+                                if (
+                                  window.confirm(
+                                    'このフォトブックを削除しますか？'
+                                  )
+                                ) {
+                                  // 削除処理を実装
+                                }
+                              }}
+                              className="text-red-600 focus:text-red-600"
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              削除
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+
                       {/* フォトブックカード */}
                       <Link
                         href={`/photobook/view/${photobook.id}`}
                         className="block"
                       >
-                        <div className="bg-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300">
+                        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300">
                           {/* カバー画像 */}
-                          <div className="aspect-[3/4] rounded-t-lg overflow-hidden bg-gray-100">
+                          <div className="aspect-[3/4] rounded-t-lg overflow-hidden bg-gray-100 dark:bg-gray-700">
                             {photobook.coverPhoto ? (
                               <Image
                                 src={photobook.coverPhoto.src}
@@ -89,21 +127,21 @@ export default function PhotobooksPage() {
                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                               />
                             ) : (
-                              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
-                                <BookOpen className="h-12 w-12 text-gray-400" />
+                              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800">
+                                <BookOpen className="h-12 w-12 text-gray-400 dark:text-gray-500" />
                               </div>
                             )}
                           </div>
 
                           {/* フォトブック情報 */}
                           <div className="p-4">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-2 truncate">
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2 truncate">
                               {photobook.title}
                             </h3>
 
                             {photobook.description && (
                               <p
-                                className="text-sm text-gray-600 mb-3 overflow-hidden"
+                                className="text-sm text-gray-600 dark:text-gray-300 mb-3 overflow-hidden"
                                 style={{
                                   display: '-webkit-box',
                                   WebkitLineClamp: 2,
@@ -115,7 +153,7 @@ export default function PhotobooksPage() {
                             )}
 
                             <div className="space-y-2">
-                              <div className="flex items-center text-xs text-gray-500">
+                              <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
                                 <Calendar className="h-3 w-3 mr-1" />
                                 {new Date(
                                   photobook.createdAt
@@ -123,12 +161,12 @@ export default function PhotobooksPage() {
                               </div>
 
                               <div className="flex items-center justify-between">
-                                <div className="flex items-center text-xs text-gray-500">
+                                <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
                                   <User className="h-3 w-3 mr-1" />
                                   <span>サンプル作品</span>
                                 </div>
 
-                                <div className="flex items-center text-xs text-blue-600">
+                                <div className="flex items-center text-xs text-blue-600 dark:text-blue-400">
                                   <Eye className="h-3 w-3 mr-1" />
                                   <span>閲覧する</span>
                                 </div>

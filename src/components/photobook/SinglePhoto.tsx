@@ -5,7 +5,13 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { ZoomIn, ZoomOut, Maximize2 } from 'lucide-react';
 import { Photo, PhotoPosition } from '@/types/photobook';
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { VisuallyHidden } from '@/components/ui/visually-hidden';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -92,6 +98,9 @@ const SinglePhoto: React.FC<SinglePhotoProps> = ({
             </div>
           </DialogTrigger>
           <DialogContent className="max-w-4xl max-h-[90vh] p-0">
+            <VisuallyHidden>
+              <DialogTitle>画像拡大表示</DialogTitle>
+            </VisuallyHidden>
             <div className="relative w-full h-full flex flex-col">
               <div className="flex-1 relative overflow-hidden">
                 <div

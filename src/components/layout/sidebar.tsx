@@ -22,7 +22,6 @@ import {
   MessageCircle,
   Hash,
   Book,
-  Edit3,
   Users,
 } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
@@ -51,7 +50,6 @@ export function Sidebar({ className }: SidebarProps) {
   const { profile } = useProfile();
   const [openSections, setOpenSections] = useState<string[]>([
     'photo-sessions',
-    'photobook',
   ]);
 
   const toggleSection = (section: string) => {
@@ -100,19 +98,8 @@ export function Sidebar({ className }: SidebarProps) {
     },
     {
       title: t('photobook'),
+      href: '/photobooks',
       icon: Book,
-      children: [
-        {
-          title: t('photobookView'),
-          href: '/photobooks',
-          icon: Book,
-        },
-        {
-          title: t('photobookEdit'),
-          href: '/photobooks/create',
-          icon: Edit3,
-        },
-      ],
     },
     {
       title: 'メッセージ',
@@ -256,7 +243,6 @@ export function MobileSidebarTrigger() {
   const { profile } = useProfile();
   const [openSections, setOpenSections] = useState<string[]>([
     'photo-sessions',
-    'photobook',
   ]);
 
   const toggleSection = (section: string) => {
@@ -310,19 +296,8 @@ export function MobileSidebarTrigger() {
     },
     {
       title: t('photobook'),
+      href: '/photobooks',
       icon: Book,
-      children: [
-        {
-          title: t('photobookView'),
-          href: '/photobooks',
-          icon: Book,
-        },
-        {
-          title: t('photobookEdit'),
-          href: '/photobooks/create',
-          icon: Edit3,
-        },
-      ],
     },
     {
       title: 'メッセージ',

@@ -10,7 +10,7 @@ const nextConfig: NextConfig = {
       bodySizeLimit: '50mb', // フォトブック用高画質画像対応（10MB→50MB）
     },
   },
-  
+
   // 画像最適化設定（フォトブック対応強化）
   images: {
     remotePatterns: [
@@ -97,6 +97,13 @@ const nextConfig: NextConfig = {
 
   // バンドル最適化
   webpack: (config, { dev, isServer }) => {
+    // Konvaのサーバーサイドレンダリング問題を解決
+    if (isServer) {
+      config.externals = config.externals || [];
+      config.externals.push('konva');
+      config.externals.push('canvas');
+    }
+
     // プロダクション時のバンドル分析・最適化
     if (!dev && !isServer) {
       config.optimization.splitChunks = {
@@ -118,7 +125,7 @@ const nextConfig: NextConfig = {
         },
       };
     }
-    
+
     return config;
   },
 };
