@@ -65,6 +65,12 @@ export function PublicHeader() {
           {/* Navigation */}
           <nav className="hidden md:flex items-center gap-6">
             <Link
+              href="/"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              ホーム
+            </Link>
+            <Link
               href="/instant"
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
