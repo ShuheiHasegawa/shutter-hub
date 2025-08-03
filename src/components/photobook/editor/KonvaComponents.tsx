@@ -63,26 +63,46 @@ interface KonvaTextProps {
   draggable?: boolean;
 }
 
-// ローディングコンポーネント
+// ローディングコンポーネント（Konva外で使用）
 const KonvaLoading: React.FC<{ className?: string }> = ({ className = '' }) => (
   <div
     className={`w-full h-full bg-gray-100 animate-pulse flex items-center justify-center ${className}`}
+    style={{ minHeight: '400px' }}
   >
-    <div className="text-gray-500 text-sm">キャンバス読み込み中...</div>
+    <div className="text-gray-500 text-sm">Konvaキャンバス読み込み中...</div>
   </div>
 );
 
-// エラーフォールバックコンポーネント
-const KonvaErrorFallback: React.FC<{ error?: string }> = ({ error }) => (
-  <div className="w-full h-full bg-red-50 border border-red-300 flex items-center justify-center">
+// エラーフォールバックコンポーネント（Konva外で使用）
+const _KonvaErrorFallback: React.FC<{ error?: string }> = ({ error }) => (
+  <div
+    className="w-full h-full bg-red-50 border border-red-300 flex items-center justify-center"
+    style={{ minHeight: '400px' }}
+  >
     <div className="text-center">
       <div className="text-red-600 text-sm font-medium">
         Konva読み込みエラー
       </div>
-      {error && <div className="text-red-500 text-xs mt-1">{error}</div>}
+      {error && (
+        <div className="text-red-500 text-xs mt-1 max-w-md">{error}</div>
+      )}
     </div>
   </div>
 );
+
+// Konva内で使用する安全なフォールバック（プレーンなKonvaコンポーネント）
+const KonvaEmptyRect: React.FC = () => {
+  try {
+    // 動的にRectを作成する必要がある場合の安全な方法
+    return React.createElement('rect', {
+      width: 0,
+      height: 0,
+      fill: 'transparent',
+    });
+  } catch {
+    return null;
+  }
+};
 
 // Konvaモジュールの安全なインポート関数
 const createKonvaComponent = <T,>(
@@ -117,16 +137,15 @@ const createKonvaComponent = <T,>(
           });
 
           WrappedComponent.displayName = `Dynamic${componentName}`;
-          return WrappedComponent;
+          return { default: WrappedComponent }; // CRITICAL: next/dynamic expects { default: Component }
         })
         .catch(error => {
           debugLogger.konva.importError(error as Error, componentName);
 
-          // フォールバックコンポーネントまたはエラー表示
-          return (
-            fallbackComponent ||
-            (() => <KonvaErrorFallback error={error.message} />)
-          );
+          // フォールバックコンポーネントまたは安全なKonva要素
+          return {
+            default: fallbackComponent || (() => <KonvaEmptyRect />),
+          };
         });
     },
     {

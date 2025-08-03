@@ -242,7 +242,9 @@ const EditableCanvas: React.FC<EditableCanvasProps> = ({
   onElementUpdate,
 }) => {
   const stageRef = useRef<any>(null);
+  const layerRef = useRef<any>(null);
   const [stageSize, setStageSize] = useState({ width: 800, height: 600 });
+  const [isKonvaReady, setIsKonvaReady] = useState(false);
 
   // コンポーネントのライフサイクルログ
   useEffect(() => {
@@ -270,11 +272,18 @@ const EditableCanvas: React.FC<EditableCanvasProps> = ({
       try {
         debugLogger.dnd.drop(item);
 
-        if (!stageRef.current || !activePage) {
-          debugLogger.dnd.dropError(
-            new Error('Invalid stage ref or active page'),
-            { stageRef: !!stageRef.current, activePage: !!activePage }
-          );
+        if (
+          !stageRef.current ||
+          !layerRef.current ||
+          !activePage ||
+          !isKonvaReady
+        ) {
+          debugLogger.dnd.dropError(new Error('Invalid refs or not ready'), {
+            stageRef: !!stageRef.current,
+            layerRef: !!layerRef.current,
+            activePage: !!activePage,
+            isKonvaReady,
+          });
           return;
         }
 
@@ -417,55 +426,81 @@ const EditableCanvas: React.FC<EditableCanvasProps> = ({
             stageSize,
             zoomLevel: editorState.zoomLevel,
           });
+          setIsKonvaReady(true);
         }}
         onError={error => {
           debugLogger.konva.renderError(error, { stageSize });
+          setIsKonvaReady(false);
         }}
       >
-        <Layer>
-          {/* グリッド表示 */}
-          <GridLayer
-            width={stageSize.width}
-            height={stageSize.height}
-            gridSize={20}
-            visible={editorState.showGrid}
-          />
+        <Layer ref={layerRef}>
+          {/* Konvaの準備ができていない場合は基本要素のみ表示 */}
+          {!isKonvaReady ? (
+            <Rect
+              x={0}
+              y={0}
+              width={stageSize.width}
+              height={stageSize.height}
+              fill="transparent"
+              listening={false}
+            />
+          ) : (
+            <>
+              {/* グリッド表示 */}
+              {editorState.showGrid && (
+                <GridLayer
+                  width={stageSize.width}
+                  height={stageSize.height}
+                  gridSize={20}
+                  visible={true}
+                />
+              )}
 
-          {/* ページ要素の描画 */}
-          {activePage.elements
-            .filter(element => element.style.visible !== false)
-            .sort((a, b) => (a.style.zIndex || 0) - (b.style.zIndex || 0))
-            .map(element => {
-              const isSelected = editorState.selectedElements.includes(
-                element.id
-              );
+              {/* ページ要素の描画 */}
+              {activePage &&
+                activePage.elements
+                  .filter(element => element.style.visible !== false)
+                  .sort((a, b) => (a.style.zIndex || 0) - (b.style.zIndex || 0))
+                  .map(element => {
+                    try {
+                      const isSelected = editorState.selectedElements.includes(
+                        element.id
+                      );
 
-              if (element.type === 'image') {
-                return (
-                  <KonvaImageElement
-                    key={element.id}
-                    element={element}
-                    isSelected={isSelected}
-                    onSelect={handleElementSelect}
-                    onUpdate={handleElementUpdate}
-                    stageSize={stageSize}
-                  />
-                );
-              } else if (element.type === 'text') {
-                return (
-                  <KonvaTextElement
-                    key={element.id}
-                    element={element}
-                    isSelected={isSelected}
-                    onSelect={handleElementSelect}
-                    onUpdate={handleElementUpdate}
-                    stageSize={stageSize}
-                  />
-                );
-              }
+                      if (element.type === 'image') {
+                        return (
+                          <KonvaImageElement
+                            key={element.id}
+                            element={element}
+                            isSelected={isSelected}
+                            onSelect={handleElementSelect}
+                            onUpdate={handleElementUpdate}
+                            stageSize={stageSize}
+                          />
+                        );
+                      } else if (element.type === 'text') {
+                        return (
+                          <KonvaTextElement
+                            key={element.id}
+                            element={element}
+                            isSelected={isSelected}
+                            onSelect={handleElementSelect}
+                            onUpdate={handleElementUpdate}
+                            stageSize={stageSize}
+                          />
+                        );
+                      }
 
-              return null;
-            })}
+                      return null;
+                    } catch (error) {
+                      debugLogger.konva.renderError(error, {
+                        elementId: element.id,
+                      });
+                      return null;
+                    }
+                  })}
+            </>
+          )}
         </Layer>
       </Stage>
 
