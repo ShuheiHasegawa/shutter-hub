@@ -55,13 +55,17 @@ const LayoutTab: React.FC = () => {
           単一ページテンプレート
         </h3>
         <div className="space-y-2 max-h-60 overflow-y-auto">
-          {singlePageTemplates.map(template => (
+          {singlePageTemplates?.map(template => (
             <DraggableLayoutTemplate
               key={template.id}
               template={template}
               className="p-2"
             />
-          ))}
+          )) || (
+            <div className="text-sm text-gray-500 p-4">
+              テンプレートを読み込んでいます...
+            </div>
+          )}
         </div>
       </div>
 
@@ -71,13 +75,17 @@ const LayoutTab: React.FC = () => {
           見開きテンプレート
         </h3>
         <div className="space-y-2 max-h-40 overflow-y-auto">
-          {spreadTemplates.map(template => (
+          {spreadTemplates?.map(template => (
             <DraggableLayoutTemplate
               key={template.id}
               template={template}
               className="p-2"
             />
-          ))}
+          )) || (
+            <div className="text-sm text-gray-500 p-4">
+              テンプレートを読み込んでいます...
+            </div>
+          )}
         </div>
       </div>
     </div>

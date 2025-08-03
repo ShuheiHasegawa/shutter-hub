@@ -89,19 +89,23 @@ export const DraggableShapeBox: React.FC<{ className?: string }> = ({
 
 // レイアウトテンプレート
 export const DraggableLayoutTemplate: React.FC<{
-  layout: {
+  template: {
     id: string;
     name: string;
-    preview: string;
+    description?: string;
   };
   className?: string;
-}> = ({ layout, className }) => (
-  <DraggableElement type="layout-template" data={layout} className={className}>
+}> = ({ template, className }) => (
+  <DraggableElement
+    type="layout-template"
+    data={template}
+    className={className}
+  >
     <div className="flex flex-col items-center space-y-2">
       <div className="w-16 h-12 bg-gray-200 rounded border flex items-center justify-center">
-        <span className="text-xs text-gray-500">{layout.name}</span>
+        <span className="text-xs text-gray-500">{template.name}</span>
       </div>
-      <span className="text-sm font-medium text-gray-700">{layout.name}</span>
+      <span className="text-sm font-medium text-gray-700">{template.name}</span>
     </div>
   </DraggableElement>
 );
