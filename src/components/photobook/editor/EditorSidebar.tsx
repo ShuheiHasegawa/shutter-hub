@@ -3,9 +3,7 @@
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Upload, Layout, Settings, Image, X } from 'lucide-react';
+import { Layout, Image, X, Upload } from 'lucide-react';
 import { usePhotobookEditorStore } from '@/stores/photobook-editor-store';
 import {
   DraggableImageBox,
@@ -31,7 +29,7 @@ const LayoutTab: React.FC = () => {
     <div className="space-y-6">
       {/* 基本要素 */}
       <div>
-        <h3 className="text-sm font-semibold text-gray-700 mb-3">基本要素</h3>
+        <h3 className="text-sm font-semibold mb-3">基本要素</h3>
         <div className="grid grid-cols-1 gap-3">
           <DraggableImageBox />
           <DraggableTextBox />
@@ -40,7 +38,7 @@ const LayoutTab: React.FC = () => {
 
       {/* 図形 */}
       <div>
-        <h3 className="text-sm font-semibold text-gray-700 mb-3">図形</h3>
+        <h3 className="text-sm font-semibold mb-3">図形</h3>
         <div className="grid grid-cols-2 gap-2">
           <DraggableShapeBox shapeType="rectangle" className="p-2" />
           <DraggableShapeBox shapeType="circle" className="p-2" />
@@ -51,9 +49,7 @@ const LayoutTab: React.FC = () => {
 
       {/* レイアウトテンプレート */}
       <div>
-        <h3 className="text-sm font-semibold text-gray-700 mb-3">
-          単一ページテンプレート
-        </h3>
+        <h3 className="text-sm font-semibold mb-3">単一ページテンプレート</h3>
         <div className="space-y-2 max-h-60 overflow-y-auto">
           {singlePageTemplates?.map(template => (
             <DraggableLayoutTemplate
@@ -62,7 +58,7 @@ const LayoutTab: React.FC = () => {
               className="p-2"
             />
           )) || (
-            <div className="text-sm text-gray-500 p-4">
+            <div className="text-sm opacity-70 p-4">
               テンプレートを読み込んでいます...
             </div>
           )}
@@ -71,9 +67,7 @@ const LayoutTab: React.FC = () => {
 
       {/* 見開きテンプレート */}
       <div>
-        <h3 className="text-sm font-semibold text-gray-700 mb-3">
-          見開きテンプレート
-        </h3>
+        <h3 className="text-sm font-semibold mb-3">見開きテンプレート</h3>
         <div className="space-y-2 max-h-40 overflow-y-auto">
           {spreadTemplates?.map(template => (
             <DraggableLayoutTemplate
@@ -82,7 +76,7 @@ const LayoutTab: React.FC = () => {
               className="p-2"
             />
           )) || (
-            <div className="text-sm text-gray-500 p-4">
+            <div className="text-sm opacity-70 p-4">
               テンプレートを読み込んでいます...
             </div>
           )}
@@ -202,6 +196,7 @@ const UploadTab: React.FC = () => {
             <Image
               className="h-12 w-12 mx-auto mb-2 opacity-50"
               aria-label="画像なしアイコン"
+              alt=""
             />
             <p className="text-sm">まだ画像がありません</p>
           </div>
@@ -231,96 +226,7 @@ const UploadTab: React.FC = () => {
   );
 };
 
-// ============================================
-// プロパティタブコンポーネント
-// ============================================
-
-const PropertiesTab: React.FC = () => {
-  const { editorState, setZoom, toggleGrid, toggleGuides, toggleSnapToGrid } =
-    usePhotobookEditorStore();
-
-  return (
-    <div className="space-y-6">
-      {/* ビュー設定 */}
-      <div>
-        <h3 className="text-sm font-semibold text-gray-700 mb-3">ビュー設定</h3>
-        <div className="space-y-3">
-          <div>
-            <Label htmlFor="zoom" className="text-xs">
-              ズーム: {Math.round(editorState.zoomLevel * 100)}%
-            </Label>
-            <Input
-              id="zoom"
-              type="range"
-              min="0.1"
-              max="5"
-              step="0.1"
-              value={editorState.zoomLevel}
-              onChange={e => setZoom(parseFloat(e.target.value))}
-              className="mt-1"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="show-grid"
-                checked={editorState.showGrid}
-                onChange={toggleGrid}
-                className="rounded border-gray-300"
-              />
-              <Label htmlFor="show-grid" className="text-sm">
-                グリッド表示
-              </Label>
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="show-guides"
-                checked={editorState.showGuides}
-                onChange={toggleGuides}
-                className="rounded border-gray-300"
-              />
-              <Label htmlFor="show-guides" className="text-sm">
-                ガイド表示
-              </Label>
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="snap-to-grid"
-                checked={editorState.snapToGrid}
-                onChange={toggleSnapToGrid}
-                className="rounded border-gray-300"
-              />
-              <Label htmlFor="snap-to-grid" className="text-sm">
-                グリッドスナップ
-              </Label>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 選択要素情報 */}
-      <div>
-        <h3 className="text-sm font-semibold text-gray-700 mb-3">選択要素</h3>
-        {editorState.selectedElements.length === 0 ? (
-          <p className="text-sm text-gray-500">要素が選択されていません</p>
-        ) : (
-          <div className="space-y-2">
-            <p className="text-sm">
-              {editorState.selectedElements.length}個の要素を選択中
-            </p>
-            {/* TODO: 選択要素の詳細プロパティ編集 */}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
+// プロパティ設定は右上の歯車アイコンに移動済み
 
 // ============================================
 // メインサイドバーコンポーネント
@@ -363,22 +269,16 @@ const EditorSidebar: React.FC<EditorSidebarProps> = ({ className }) => {
       <div className="flex-1 overflow-hidden">
         <Tabs
           value={activeTab}
-          onValueChange={value =>
-            setActiveTab(value as 'layout' | 'upload' | 'properties')
-          }
+          onValueChange={value => setActiveTab(value as 'layout' | 'upload')}
         >
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="layout" className="text-xs">
               <Layout className="h-4 w-4 mr-1" />
               レイアウト
             </TabsTrigger>
             <TabsTrigger value="upload" className="text-xs">
-              <Upload className="h-4 w-4 mr-1" />
-              アップロード
-            </TabsTrigger>
-            <TabsTrigger value="properties" className="text-xs">
-              <Settings className="h-4 w-4 mr-1" />
-              プロパティ
+              <Image className="h-4 w-4 mr-1" />
+              画像
             </TabsTrigger>
           </TabsList>
 
@@ -389,10 +289,6 @@ const EditorSidebar: React.FC<EditorSidebarProps> = ({ className }) => {
 
             <TabsContent value="upload" className="mt-0">
               <UploadTab />
-            </TabsContent>
-
-            <TabsContent value="properties" className="mt-0">
-              <PropertiesTab />
             </TabsContent>
           </div>
         </Tabs>

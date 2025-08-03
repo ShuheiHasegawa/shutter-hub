@@ -12,6 +12,7 @@ import {
   Eye,
   EyeOff,
   Grid3X3,
+  Settings,
 } from 'lucide-react';
 import {
   usePhotobookEditorStore,
@@ -176,6 +177,16 @@ const EditorToolbar: React.FC = () => {
         <Button size="sm" className="flex items-center space-x-1">
           <Download className="h-4 w-4" />
           <span className="hidden sm:inline">エクスポート</span>
+        </Button>
+
+        {/* プロパティ設定 */}
+        <Button
+          variant="outline"
+          size="sm"
+          className="p-2"
+          title="プロパティ設定"
+        >
+          <Settings className="h-4 w-4" />
         </Button>
       </div>
     </div>
@@ -351,8 +362,8 @@ const PhotobookEditor: React.FC<PhotobookEditorProps> = ({
             {/* サイドバー */}
             <EditorSidebar />
 
-            {/* キャンバスエリア */}
-            <div className="flex-1 flex flex-col">
+            {/* キャンバスエリア - サイドバーと同じ幅に調整 */}
+            <div className="w-80 flex flex-col border-l border-gray-200">
               <div className="flex-1 p-4">
                 <EditableCanvas className="w-full h-full" />
               </div>
