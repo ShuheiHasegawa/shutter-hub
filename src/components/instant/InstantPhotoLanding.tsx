@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Input } from '@/components/ui/input';
+
 import { LocationPermissionCheck } from './LocationPermissionCheck';
 import { QuickRequestForm } from './QuickRequestForm';
 import { HowItWorks } from './HowItWorks';
@@ -20,11 +21,12 @@ export function InstantPhotoLanding() {
   const [hasRequestedLocation, setHasRequestedLocation] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
-  const { location, error, isLoading, isSupported } = useGeolocation({
+  const { location, error, isLoading, isSupported, refetch } = useGeolocation({
     enableHighAccuracy: true,
-    timeout: 15000,
+    timeout: 30000, // 30秒に延長
     maximumAge: 300000, // 5分間キャッシュ
     watch: false,
+    immediate: false, // 手動トリガーに変更
   });
 
   useEffect(() => {
@@ -39,17 +41,23 @@ export function InstantPhotoLanding() {
 
   const handleLocationRequest = () => {
     setHasRequestedLocation(true);
+    refetch(); // 位置情報取得を開始
+  };
+
+  const handleRetryWithLowAccuracy = () => {
+    // 低精度モードで再試行（実装は将来的に拡張可能）
+    refetch();
   };
 
   const handleSkipLocation = () => {
-    setStep('info');
+    setStep('form');
   };
 
   return (
-    <div className="bg-gradient-to-b from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="bg-gradient-to-b from-surface-primary-0 via-background to-surface-accent-0 dark:from-surface-primary-1 dark:via-surface-neutral dark:to-surface-accent-1">
       {/* Hero Section */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-indigo-600/10" />
+        <div className="absolute inset-0 bg-gradient-to-br from-surface-primary/10 to-surface-accent/10" />
 
         <div className="relative container mx-auto px-4 py-16 lg:py-24">
           <div className="text-center max-w-4xl mx-auto">
@@ -119,6 +127,7 @@ export function InstantPhotoLanding() {
                       error={error?.message || null}
                       onRequestLocation={handleLocationRequest}
                       onSkip={handleSkipLocation}
+                      onRetryWithLowAccuracy={handleRetryWithLowAccuracy}
                     />
                   )}
 
@@ -126,23 +135,74 @@ export function InstantPhotoLanding() {
                     <QuickRequestForm location={location} />
                   )}
 
+                  {step === 'form' && !location && (
+                    <Card>
+                      <CardContent className="pt-6 text-center">
+                        <div className="mb-4">
+                          <MapPin className="h-12 w-12 mx-auto text-shutter-info mb-4" />
+                          <h3 className="text-lg font-semibold mb-2 text-foreground">
+                            手動で場所を入力
+                          </h3>
+                          <p className="text-muted-foreground text-sm">
+                            撮影希望エリアを入力してください。
+                          </p>
+                        </div>
+
+                        <div className="space-y-4">
+                          <Input
+                            type="text"
+                            placeholder="例：渋谷駅周辺、東京タワー近く"
+                            className="w-full"
+                          />
+                          <div className="space-y-3">
+                            <Button className="w-full">カメラマンを検索</Button>
+                            <Button
+                              onClick={handleLocationRequest}
+                              variant="outline"
+                              className="w-full"
+                            >
+                              <MapPin className="h-4 w-4 mr-2" />
+                              位置情報を使用
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
                   {step === 'info' && (
                     <Card>
-                      <CardContent className="pt-6">
-                        <Alert>
-                          <MapPin className="h-4 w-4" />
-                          <AlertDescription>
-                            位置情報を有効にすると、より正確な検索結果が得られます。
-                            <Button
-                              variant="link"
-                              size="sm"
-                              className="ml-2 p-0 h-auto"
-                              onClick={handleLocationRequest}
-                            >
-                              位置情報を有効にする
-                            </Button>
-                          </AlertDescription>
-                        </Alert>
+                      <CardContent className="pt-6 text-center">
+                        <div className="mb-4">
+                          <MapPin className="h-12 w-12 mx-auto text-shutter-info mb-4" />
+                          <h3 className="text-lg font-semibold mb-2 text-foreground">
+                            より正確な検索結果のために
+                          </h3>
+                          <p className="text-muted-foreground text-sm">
+                            位置情報を有効にすると、お近くのカメラマンをより精度高く見つけることができます。
+                          </p>
+                        </div>
+
+                        <div className="space-y-3">
+                          <Button
+                            onClick={handleLocationRequest}
+                            className="w-full"
+                          >
+                            <MapPin className="h-4 w-4 mr-2" />
+                            位置情報を有効にする
+                          </Button>
+                          <Button
+                            onClick={handleSkipLocation}
+                            variant="outline"
+                            className="w-full"
+                          >
+                            手動で場所を入力
+                          </Button>
+                        </div>
+
+                        <p className="text-xs text-muted-foreground mt-4">
+                          位置情報は撮影マッチングにのみ使用され、保存されません。
+                        </p>
                       </CardContent>
                     </Card>
                   )}
@@ -206,7 +266,7 @@ export function InstantPhotoLanding() {
       </section>
 
       {/* Testimonials */}
-      <section className="py-16 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800">
+      <section className="py-16 bg-gradient-to-r from-surface-primary-0 to-surface-accent-0 dark:from-surface-primary-1 dark:to-surface-accent-1">
         <TestimonialCarousel />
       </section>
 
@@ -253,7 +313,7 @@ export function InstantPhotoLanding() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900 dark:to-indigo-900">
+      <section className="py-16 bg-gradient-to-r from-surface-primary-0 to-surface-accent-0 dark:from-surface-primary-1 dark:to-surface-accent-1">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-4">
             今すぐ撮影を依頼してみませんか？
