@@ -11,6 +11,7 @@ interface UseGeolocationOptions {
   timeout?: number;
   maximumAge?: number;
   watch?: boolean; // 継続的な位置情報監視
+  immediate?: boolean; // 即座に取得を開始するか
 }
 
 interface UseGeolocationReturn {
@@ -30,6 +31,7 @@ export function useGeolocation(
     timeout = 10000,
     maximumAge = 60000,
     watch = false,
+    immediate = true,
   } = options;
 
   const [location, setLocation] = useState<LocationData | null>(null);
@@ -78,9 +80,38 @@ export function useGeolocation(
           } as GeolocationPosition);
         },
         err => {
+          let detailedMessage = err.message;
+
+          // エラーコードに応じてより分かりやすいメッセージを提供
+          switch (err.code) {
+            case 1: // PERMISSION_DENIED
+              detailedMessage =
+                'ユーザーが位置情報の使用を拒否しました。ブラウザの設定で位置情報を許可してください。';
+              break;
+            case 2: // POSITION_UNAVAILABLE
+              // iOS Safari特有のkCLErrorLocationUnknownエラーを検出
+              if (
+                err.message.includes('kCLErrorLocationUnknown') ||
+                err.message.includes('CoreLocationProvider') ||
+                err.message.includes('CoreLocation framework')
+              ) {
+                detailedMessage =
+                  'iOS設定で位置情報サービスが無効になっているか、Safari の位置情報アクセスが制限されています。「設定 > プライバシーとセキュリティ > 位置情報サービス」で Safari を有効にしてください。';
+              } else {
+                detailedMessage =
+                  '位置情報を取得できませんでした。GPS設定を確認するか、屋外で再試行してください。';
+              }
+              break;
+            case 3: // TIMEOUT
+              detailedMessage = `位置情報の取得がタイムアウトしました（${timeout}ms）。もう一度お試しください。`;
+              break;
+            default:
+              detailedMessage = `位置情報の取得に失敗しました: ${err.message}`;
+          }
+
           reject({
             code: err.code,
-            message: err.message,
+            message: detailedMessage,
           } as GeolocationError);
         },
         positionOptions
@@ -181,7 +212,7 @@ export function useGeolocation(
 
   useEffect(() => {
     // クライアントサイドかつGeolocationがサポートされている場合のみ実行
-    if (!isSupported) return;
+    if (!isSupported || !immediate) return;
 
     if (watch) {
       startWatching();
@@ -193,7 +224,7 @@ export function useGeolocation(
       stopWatching();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSupported, watch, enableHighAccuracy, timeout, maximumAge]);
+  }, [isSupported, immediate, watch, enableHighAccuracy, timeout, maximumAge]);
 
   return {
     location,
