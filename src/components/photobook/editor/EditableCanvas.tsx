@@ -4,29 +4,13 @@
 
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { useDrop } from 'react-dnd';
-import dynamic from 'next/dynamic';
 import {
   usePhotobookEditorStore,
   useActivePage,
 } from '@/stores/photobook-editor-store';
 import type { DragItem, PageElement } from '@/types/photobook-editor';
-
-// Konvaを動的インポートしてSSRエラーを回避
-const Stage = dynamic(() => import('react-konva').then(mod => mod.Stage), {
-  ssr: false,
-});
-const Layer = dynamic(() => import('react-konva').then(mod => mod.Layer), {
-  ssr: false,
-});
-const Rect = dynamic(() => import('react-konva').then(mod => mod.Rect), {
-  ssr: false,
-});
-const KonvaImage = dynamic(() => import('react-konva').then(mod => mod.Image), {
-  ssr: false,
-});
-const KonvaText = dynamic(() => import('react-konva').then(mod => mod.Text), {
-  ssr: false,
-});
+import { debugLogger } from '@/lib/utils/debug-logger';
+import { Stage, Layer, Rect, KonvaImage, KonvaText } from './KonvaComponents';
 
 // ============================================
 // 型定義
@@ -260,6 +244,14 @@ const EditableCanvas: React.FC<EditableCanvasProps> = ({
   const stageRef = useRef<any>(null);
   const [stageSize, setStageSize] = useState({ width: 800, height: 600 });
 
+  // コンポーネントのライフサイクルログ
+  useEffect(() => {
+    debugLogger.editor.mount('EditableCanvas');
+    return () => {
+      debugLogger.editor.unmount('EditableCanvas');
+    };
+  }, []);
+
   // Store状態
   const {
     editorState,
@@ -275,88 +267,104 @@ const EditableCanvas: React.FC<EditableCanvasProps> = ({
   const [{ isOver, canDrop }, drop] = useDrop({
     accept: ['layout-template', 'image-box', 'text-box', 'uploaded-image'],
     drop: (item: DragItem, monitor) => {
-      const dropPosition = monitor.getClientOffset();
-      if (!dropPosition || !stageRef.current) return;
+      try {
+        debugLogger.dnd.drop(item, { monitor: monitor.getDropResult() });
 
-      const stage = stageRef.current;
-      const stageBox = stage.container().getBoundingClientRect();
+        const dropPosition = monitor.getClientOffset();
+        if (!dropPosition || !stageRef.current) {
+          debugLogger.dnd.dropError(
+            new Error('Invalid drop position or stage ref'),
+            {
+              dropPosition,
+              stageRef: !!stageRef.current,
+            }
+          );
+          return;
+        }
 
-      const x = ((dropPosition.x - stageBox.left) / stageSize.width) * 100;
-      const y = ((dropPosition.y - stageBox.top) / stageSize.height) * 100;
+        const stage = stageRef.current;
+        const stageBox = stage.container().getBoundingClientRect();
 
-      // ドロップされたアイテムに応じて要素を作成
-      if (item.type === 'image-box' && activePage) {
-        const newElement: Omit<PageElement, 'id'> = {
-          type: 'image',
-          transform: {
-            x: Math.max(0, Math.min(80, x)),
-            y: Math.max(0, Math.min(80, y)),
-            width: 20,
-            height: 20,
-          },
-          style: {
-            opacity: 1,
-            zIndex: activePage.elements.length,
-            visible: true,
-          },
-          data: {
+        const x = ((dropPosition.x - stageBox.left) / stageSize.width) * 100;
+        const y = ((dropPosition.y - stageBox.top) / stageSize.height) * 100;
+
+        // ドロップされたアイテムに応じて要素を作成
+        if (item.type === 'image-box' && activePage) {
+          const newElement: Omit<PageElement, 'id'> = {
             type: 'image',
-            src: '/images/no-image.png', // プレースホルダー画像
-            alt: '画像プレースホルダー',
-          },
-        };
+            transform: {
+              x: Math.max(0, Math.min(80, x)),
+              y: Math.max(0, Math.min(80, y)),
+              width: 20,
+              height: 20,
+            },
+            style: {
+              opacity: 1,
+              zIndex: activePage.elements.length,
+              visible: true,
+            },
+            data: {
+              type: 'image',
+              src: '/images/no-image.png', // プレースホルダー画像
+              alt: '画像プレースホルダー',
+            },
+          };
 
-        addElement(activePage.id, newElement);
-      } else if (item.type === 'text-box' && activePage) {
-        const newElement: Omit<PageElement, 'id'> = {
-          type: 'text',
-          transform: {
-            x: Math.max(0, Math.min(60, x)),
-            y: Math.max(0, Math.min(90, y)),
-            width: 40,
-            height: 10,
-          },
-          style: {
-            opacity: 1,
-            zIndex: activePage.elements.length,
-            visible: true,
-          },
-          data: {
+          addElement(activePage.id, newElement);
+        } else if (item.type === 'text-box' && activePage) {
+          const newElement: Omit<PageElement, 'id'> = {
             type: 'text',
-            content: 'テキストを入力',
-            fontSize: 16,
-            fontFamily: 'Arial',
-            color: '#000000',
-            align: 'left',
-          },
-        };
+            transform: {
+              x: Math.max(0, Math.min(60, x)),
+              y: Math.max(0, Math.min(90, y)),
+              width: 40,
+              height: 10,
+            },
+            style: {
+              opacity: 1,
+              zIndex: activePage.elements.length,
+              visible: true,
+            },
+            data: {
+              type: 'text',
+              content: 'テキストを入力',
+              fontSize: 16,
+              fontFamily: 'Arial',
+              color: '#000000',
+              align: 'left',
+            },
+          };
 
-        addElement(activePage.id, newElement);
-      } else if (item.type === 'uploaded-image' && activePage && item.data) {
-        const newElement: Omit<PageElement, 'id'> = {
-          type: 'image',
-          transform: {
-            x: Math.max(0, Math.min(70, x)),
-            y: Math.max(0, Math.min(70, y)),
-            width: 30,
-            height: 30,
-          },
-          style: {
-            opacity: 1,
-            zIndex: activePage.elements.length,
-            visible: true,
-          },
-          data: {
+          addElement(activePage.id, newElement);
+        } else if (item.type === 'uploaded-image' && activePage && item.data) {
+          const newElement: Omit<PageElement, 'id'> = {
             type: 'image',
-            src: item.data.src,
-            alt: item.data.name || '画像',
-          },
-        };
+            transform: {
+              x: Math.max(0, Math.min(70, x)),
+              y: Math.max(0, Math.min(70, y)),
+              width: 30,
+              height: 30,
+            },
+            style: {
+              opacity: 1,
+              zIndex: activePage.elements.length,
+              visible: true,
+            },
+            data: {
+              type: 'image',
+              src: item.data.src,
+              alt: item.data.name || '画像',
+            },
+          };
 
-        addElement(activePage.id, newElement);
+          addElement(activePage.id, newElement);
+        }
+
+        return { dropEffect: 'copy' };
+      } catch (error) {
+        debugLogger.dnd.dropError(error as Error, { item, stageSize });
+        return;
       }
-
-      return { dropEffect: 'copy' };
     },
     collect: monitor => ({
       isOver: monitor.isOver(),
@@ -435,6 +443,15 @@ const EditableCanvas: React.FC<EditableCanvasProps> = ({
         onClick={handleStageClick}
         scaleX={editorState.zoomLevel}
         scaleY={editorState.zoomLevel}
+        onContentLoad={() => {
+          debugLogger.konva.stageReady({
+            stageSize,
+            zoomLevel: editorState.zoomLevel,
+          });
+        }}
+        onError={error => {
+          debugLogger.konva.renderError(error, { stageSize });
+        }}
       >
         <Layer>
           {/* グリッド表示 */}

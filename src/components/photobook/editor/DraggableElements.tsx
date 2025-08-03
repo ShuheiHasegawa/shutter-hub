@@ -5,6 +5,7 @@ import { useDrag } from 'react-dnd';
 import { Image, Type, Square, Circle, Triangle, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { DragItem } from '@/types/photobook-editor';
+import { debugLogger } from '@/lib/utils/debug-logger';
 
 // ============================================
 // 基本ドラッグ要素コンポーネント
@@ -28,6 +29,11 @@ const DraggableElement: React.FC<DraggableElementProps> = ({
   const [{ isDragging }, drag, dragPreview] = useDrag({
     type,
     item: { type, id: `${type}-${Date.now()}`, data },
+    begin: () => {
+      const item = { type, id: `${type}-${Date.now()}`, data };
+      debugLogger.dnd.dragStart(item);
+      return item;
+    },
     collect: monitor => ({
       isDragging: monitor.isDragging(),
     }),

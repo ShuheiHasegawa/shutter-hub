@@ -1,10 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { DndProvider as ReactDndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { TouchBackend } from 'react-dnd-touch-backend';
 import { MultiBackend, createTransition } from 'react-dnd-multi-backend';
+import { debugLogger } from '@/lib/utils/debug-logger';
 
 // ============================================
 // マルチバックエンド設定（PC・タッチデバイス対応）
@@ -46,6 +47,23 @@ interface DndProviderProps {
 }
 
 const DndProvider: React.FC<DndProviderProps> = ({ children }) => {
+  useEffect(() => {
+    debugLogger.dnd.providerInit();
+
+    // バックエンドエラーの監視
+    const handleDragError = (error: ErrorEvent) => {
+      if (error.message?.includes('drop') || error.message?.includes('dnd')) {
+        debugLogger.dnd.backendError(new Error(error.message));
+      }
+    };
+
+    window.addEventListener('error', handleDragError);
+
+    return () => {
+      window.removeEventListener('error', handleDragError);
+    };
+  }, []);
+
   return (
     <ReactDndProvider backend={MultiBackend} options={HTML5toTouch}>
       {children}
