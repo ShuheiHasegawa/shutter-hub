@@ -27,7 +27,7 @@ interface PhotobookEditorState {
 
   // UI状態
   sidebarOpen: boolean;
-  activeTab: 'layout' | 'upload' | 'properties';
+  activeTab: 'layout' | 'template' | 'upload';
   isPreviewMode: boolean;
 
   // 履歴管理
@@ -77,7 +77,7 @@ interface PhotobookEditorActions {
 
   // UI状態管理
   setSidebarOpen: (open: boolean) => void;
-  setActiveTab: (tab: 'layout' | 'upload' | 'properties') => void;
+  setActiveTab: (tab: 'layout' | 'template' | 'upload') => void;
   setPreviewMode: (preview: boolean) => void;
   setZoom: (zoom: number) => void;
   toggleGrid: () => void;

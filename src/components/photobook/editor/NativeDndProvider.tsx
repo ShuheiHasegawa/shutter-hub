@@ -95,13 +95,13 @@ export const NativeDndProvider: React.FC<NativeDndProviderProps> = ({
 
   const handleDrop = (
     event: React.MouseEvent,
-    onDrop?: (item: DragItem) => void
+    onDrop?: (item: DragItem, dropEvent?: React.MouseEvent) => void
   ): boolean => {
     event.preventDefault();
 
     if (dragState.isDragging && dragState.draggedItem && onDrop) {
       try {
-        onDrop(dragState.draggedItem);
+        onDrop(dragState.draggedItem, event);
         debugLogger.dnd.drop(dragState.draggedItem, {
           position: { x: event.clientX, y: event.clientY },
         });
@@ -166,7 +166,7 @@ export const useNativeDrag = (item: DragItem) => {
 
 export const useNativeDrop = (
   acceptTypes: string[],
-  onDrop: (item: DragItem) => void
+  onDrop: (item: DragItem, dropEvent?: React.MouseEvent) => void
 ) => {
   const context = useContext(NativeDndContext);
   if (!context) {

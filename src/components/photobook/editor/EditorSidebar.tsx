@@ -3,12 +3,11 @@
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Layout, Image, X, Upload } from 'lucide-react';
+import { Layout, Image, Upload, FileText } from 'lucide-react';
 import { usePhotobookEditorStore } from '@/stores/photobook-editor-store';
 import {
   DraggableImageBox,
   DraggableTextBox,
-  DraggableShapeBox,
   DraggableLayoutTemplate,
   DraggableUploadedImage,
 } from './DraggableElements';
@@ -29,14 +28,15 @@ const LayoutTab: React.FC = () => {
     <div className="space-y-6">
       {/* 基本要素 */}
       <div>
-        <h3 className="text-sm font-semibold mb-3">基本要素</h3>
+        <h3 className="text-sm font-semibold mb-3 text-primary">基本要素</h3>
         <div className="grid grid-cols-1 gap-3">
           <DraggableImageBox />
           <DraggableTextBox />
         </div>
       </div>
 
-      {/* 図形 */}
+      {/* 図形 - 一時的に無効化 */}
+      {/* 
       <div>
         <h3 className="text-sm font-semibold mb-3">図形</h3>
         <div className="grid grid-cols-2 gap-2">
@@ -46,11 +46,22 @@ const LayoutTab: React.FC = () => {
           <DraggableShapeBox shapeType="star" className="p-2" />
         </div>
       </div>
+      */}
+    </div>
+  );
+};
 
-      {/* レイアウトテンプレート */}
+// ============================================
+// テンプレートタブコンポーネント
+// ============================================
+
+const TemplateTab: React.FC = () => {
+  return (
+    <div className="space-y-6">
+      {/* 単一ページテンプレート */}
       <div>
         <h3 className="text-sm font-semibold mb-3">単一ページテンプレート</h3>
-        <div className="space-y-2 max-h-60 overflow-y-auto">
+        <div className="space-y-2">
           {singlePageTemplates?.map(template => (
             <DraggableLayoutTemplate
               key={template.id}
@@ -68,7 +79,7 @@ const LayoutTab: React.FC = () => {
       {/* 見開きテンプレート */}
       <div>
         <h3 className="text-sm font-semibold mb-3">見開きテンプレート</h3>
-        <div className="space-y-2 max-h-40 overflow-y-auto">
+        <div className="space-y-2">
           {spreadTemplates?.map(template => (
             <DraggableLayoutTemplate
               key={template.id}
@@ -131,9 +142,7 @@ const UploadTab: React.FC = () => {
     <div className="space-y-6">
       {/* ファイルアップロード */}
       <div>
-        <h3 className="text-sm font-semibold text-gray-700 mb-3">
-          画像アップロード
-        </h3>
+        <h3 className="text-sm font-semibold mb-3">画像アップロード</h3>
 
         {/* ドラッグ&ドロップエリア */}
         <div
@@ -187,7 +196,7 @@ const UploadTab: React.FC = () => {
 
       {/* アップロード済み画像 */}
       <div>
-        <h3 className="text-sm font-semibold text-gray-700 mb-3">
+        <h3 className="text-sm font-semibold mb-3">
           アップロード済み画像 ({uploadedImages.length})
         </h3>
 
@@ -196,7 +205,6 @@ const UploadTab: React.FC = () => {
             <Image
               className="h-12 w-12 mx-auto mb-2 opacity-50"
               aria-label="画像なしアイコン"
-              alt=""
             />
             <p className="text-sm">まだ画像がありません</p>
           </div>
@@ -256,22 +264,20 @@ const EditorSidebar: React.FC<EditorSidebarProps> = ({ className }) => {
   }
 
   return (
-    <div className={cn('w-80 bg-white border-r flex flex-col', className)}>
-      {/* ヘッダー */}
-      <div className="flex items-center justify-between p-4 border-b">
-        <h2 className="text-lg font-semibold">編集パネル</h2>
-        <Button variant="ghost" size="sm" onClick={() => setSidebarOpen(false)}>
-          <X className="h-4 w-4" />
-        </Button>
-      </div>
-
+    <div className={cn('w-80 bg-white flex flex-col', className)}>
       {/* タブコンテンツ */}
       <div className="flex-1 overflow-hidden">
         <Tabs
           value={activeTab}
-          onValueChange={value => setActiveTab(value as 'layout' | 'upload')}
+          onValueChange={value =>
+            setActiveTab(value as 'layout' | 'template' | 'upload')
+          }
         >
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="template" className="text-xs">
+              <FileText className="h-4 w-4 mr-1" />
+              テンプレート
+            </TabsTrigger>
             <TabsTrigger value="layout" className="text-xs">
               <Layout className="h-4 w-4 mr-1" />
               レイアウト
@@ -285,6 +291,10 @@ const EditorSidebar: React.FC<EditorSidebarProps> = ({ className }) => {
           <div className="p-4 overflow-y-auto h-full">
             <TabsContent value="layout" className="mt-0">
               <LayoutTab />
+            </TabsContent>
+
+            <TabsContent value="template" className="mt-0">
+              <TemplateTab />
             </TabsContent>
 
             <TabsContent value="upload" className="mt-0">

@@ -354,16 +354,16 @@ const PhotobookEditor: React.FC<PhotobookEditorProps> = ({
           {/* ツールバー */}
           <EditorToolbar />
 
-          {/* ページナビゲーション */}
-          <PageNavigation />
-
           {/* メインエディターエリア */}
           <div className="flex-1 flex overflow-hidden">
             {/* サイドバー */}
             <EditorSidebar />
 
-            {/* キャンバスエリア - サイドバーと同じ幅に調整 */}
-            <div className="w-80 flex flex-col border-l border-gray-200">
+            {/* キャンバスエリア - サイドバー除く全横幅 */}
+            <div className="flex-1 flex flex-col border-l border-gray-200">
+              {/* ページナビゲーション - キャンバスエリア上部 */}
+              <PageNavigation />
+
               <div className="flex-1 p-4">
                 <EditableCanvas className="w-full h-full" />
               </div>

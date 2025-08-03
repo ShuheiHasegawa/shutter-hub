@@ -281,7 +281,7 @@ const EditableCanvas: React.FC<EditableCanvasProps> = ({
   // ネイティブドロップ領域の設定
   const { isOver, canDrop, dropProps } = useNativeDrop(
     ['layout-template', 'image-box', 'text-box', 'uploaded-image'],
-    (item: DragItem) => {
+    (item: DragItem, dropEvent?: React.MouseEvent) => {
       try {
         debugLogger.dnd.drop(item);
 
@@ -341,21 +341,150 @@ const EditableCanvas: React.FC<EditableCanvasProps> = ({
           };
           addElement(activePage.id, newElement);
         } else if (item.type === 'uploaded-image' && activePage && item.data) {
-          const newElement: Omit<PageElement, 'id'> = {
-            type: 'image',
-            transform: { x, y, width: 30, height: 30 },
-            style: {
-              opacity: 1,
-              zIndex: activePage.elements.length,
-              visible: true,
-            },
-            data: {
+          // 画像アップロード時：ドロップ位置の画像ボックスを検出
+          let targetImageBox: PageElement | null = null;
+
+          if (dropEvent && stageRef.current) {
+            const stage = stageRef.current;
+            const rect = stage.container().getBoundingClientRect();
+            const pointerPosition = {
+              x: dropEvent.clientX - rect.left,
+              y: dropEvent.clientY - rect.top,
+            };
+
+            // ページ要素から直接画像ボックスを検出
+            const relativeX = (pointerPosition.x / stageSize.width) * 100;
+            const relativeY = (pointerPosition.y / stageSize.height) * 100;
+
+            debugLogger.dnd.drop({
+              ...item,
+              message: `ドロップ位置: ${relativeX.toFixed(1)}%, ${relativeY.toFixed(1)}%`,
+            });
+
+            // 画像要素の中でドロップ位置に重なるものを検索
+            for (const element of activePage.elements) {
+              if (element.type === 'image') {
+                const { x, y, width, height } = element.transform;
+
+                if (
+                  relativeX >= x &&
+                  relativeX <= x + width &&
+                  relativeY >= y &&
+                  relativeY <= y + height
+                ) {
+                  targetImageBox = element;
+                  debugLogger.dnd.drop({
+                    ...item,
+                    message: `画像ボックス「${element.id}」を検出 (${x}%, ${y}%, ${width}%, ${height}%)`,
+                  });
+                  break;
+                }
+              }
+            }
+          }
+
+          if (targetImageBox) {
+            // 既存の画像ボックスに画像を適用（サイズは変更しない）
+            updateElement(targetImageBox.id, {
+              data: {
+                ...targetImageBox.data,
+                src: item.data.src,
+                alt: item.data.name || '画像',
+              },
+            });
+
+            debugLogger.dnd.drop({
+              ...item,
+              message: `画像「${item.data.name}」を既存の画像ボックスに配置`,
+            });
+          } else {
+            // 新しい画像要素を作成
+            const newElement: Omit<PageElement, 'id'> = {
               type: 'image',
-              src: item.data.src,
-              alt: item.data.name || '画像',
-            },
-          };
-          addElement(activePage.id, newElement);
+              transform: { x, y, width: 30, height: 30 },
+              style: {
+                opacity: 1,
+                zIndex: activePage.elements.length,
+                visible: true,
+              },
+              data: {
+                type: 'image',
+                src: item.data.src,
+                alt: item.data.name || '画像',
+              },
+            };
+            addElement(activePage.id, newElement);
+
+            debugLogger.dnd.drop({
+              ...item,
+              message: `画像「${item.data.name}」を新しい画像ボックスとして配置`,
+            });
+          }
+        } else if (item.type === 'layout-template' && activePage && item.data) {
+          // テンプレートドロップ時：既存画像を新レイアウトに再配置
+          const template = item.data;
+          if (
+            template.photoPositions &&
+            Array.isArray(template.photoPositions)
+          ) {
+            // 既存の画像要素を取得
+            const existingImages = activePage.elements.filter(
+              element => element.type === 'image'
+            );
+
+            // 既存の画像を新しいテンプレート位置に再配置
+            existingImages.forEach((element, index) => {
+              if (index < template.photoPositions.length) {
+                const position = template.photoPositions[index];
+                updateElement(element.id, {
+                  transform: {
+                    ...element.transform,
+                    x: position.x,
+                    y: position.y,
+                    width: position.width,
+                    height: position.height,
+                  },
+                });
+              }
+            });
+
+            // 不足分の画像ボックスを新規追加
+            const additionalBoxesNeeded = Math.max(
+              0,
+              template.photoPositions.length - existingImages.length
+            );
+
+            for (let i = 0; i < additionalBoxesNeeded; i++) {
+              const positionIndex = existingImages.length + i;
+              const position = template.photoPositions[positionIndex];
+
+              const newElement: Omit<PageElement, 'id'> = {
+                type: 'image',
+                transform: {
+                  x: position.x,
+                  y: position.y,
+                  width: position.width,
+                  height: position.height,
+                },
+                style: {
+                  opacity: 1,
+                  zIndex: activePage.elements.length + i,
+                  visible: true,
+                },
+                data: {
+                  type: 'image',
+                  src: '/images/no-image.png',
+                  alt: `テンプレート画像${positionIndex + 1}`,
+                },
+              };
+              addElement(activePage.id, newElement);
+            }
+
+            debugLogger.dnd.drop({
+              ...item,
+              message: `テンプレート「${template.name}」を適用: ${existingImages.length}個の画像を再配置、${additionalBoxesNeeded}個の画像ボックスを新規追加`,
+            });
+          }
         }
       } catch (error) {
         debugLogger.dnd.dropError(error as Error, { item, stageSize });
@@ -422,8 +551,8 @@ const EditableCanvas: React.FC<EditableCanvasProps> = ({
     <div
       className={`relative overflow-hidden ${className}`}
       style={{
-        backgroundColor: activePage.layout.backgroundColor || '#ffffff',
-        border: isOver && canDrop ? '2px dashed #007bff' : '1px solid #e0e0e0',
+        backgroundColor: '#e5e7eb', // Photoshopライクなグレー背景
+        border: isOver && canDrop ? '2px dashed #007bff' : 'none',
       }}
       {...dropProps}
     >
@@ -439,108 +568,123 @@ const EditableCanvas: React.FC<EditableCanvasProps> = ({
         </div>
       )}
 
-      {/* KonvaのStageは準備完了時のみレンダリング */}
-      <Stage
-        ref={stageRef}
-        width={stageSize.width}
-        height={stageSize.height}
-        onClick={handleStageClick}
-        scaleX={editorState.zoomLevel}
-        scaleY={editorState.zoomLevel}
-        style={{ display: isKonvaReady ? 'block' : 'none' }}
-        onContentLoad={() => {
-          debugLogger.konva.stageReady({
-            stageSize,
-            zoomLevel: editorState.zoomLevel,
-          });
-          setIsKonvaReady(true);
-        }}
-        onError={error => {
-          debugLogger.konva.renderError(error, { stageSize });
-          setIsKonvaReady(false);
-        }}
-      >
-        <Layer ref={layerRef}>
-          {/* Konvaの準備ができていない場合は基本要素のみ表示 */}
-          {!isKonvaReady ? (
-            <Rect
-              x={0}
-              y={0}
-              width={stageSize.width}
-              height={stageSize.height}
-              fill="transparent"
-              listening={false}
-            />
-          ) : (
-            <>
-              {/* グリッド表示 */}
-              {editorState.showGrid && (
-                <GridLayer
+      {/* ページキャンバス - Photoshopライクなデザイン */}
+      <div className="w-full h-full flex items-center justify-center p-8">
+        <div
+          className="relative shadow-xl"
+          style={{
+            backgroundColor: activePage.layout.backgroundColor || '#ffffff',
+            border: '1px solid #d1d5db',
+            borderRadius: '4px',
+            width: `${stageSize.width}px`,
+            height: `${stageSize.height}px`,
+          }}
+        >
+          {/* KonvaのStageは準備完了時のみレンダリング */}
+          <Stage
+            ref={stageRef}
+            width={stageSize.width}
+            height={stageSize.height}
+            onClick={handleStageClick}
+            scaleX={editorState.zoomLevel}
+            scaleY={editorState.zoomLevel}
+            style={{ display: isKonvaReady ? 'block' : 'none' }}
+            onContentLoad={() => {
+              debugLogger.konva.stageReady({
+                stageSize,
+                zoomLevel: editorState.zoomLevel,
+              });
+              setIsKonvaReady(true);
+            }}
+            onError={error => {
+              debugLogger.konva.renderError(error, { stageSize });
+              setIsKonvaReady(false);
+            }}
+          >
+            <Layer ref={layerRef}>
+              {/* Konvaの準備ができていない場合は基本要素のみ表示 */}
+              {!isKonvaReady ? (
+                <Rect
+                  x={0}
+                  y={0}
                   width={stageSize.width}
                   height={stageSize.height}
-                  gridSize={20}
-                  visible={true}
+                  fill="transparent"
+                  listening={false}
                 />
+              ) : (
+                <>
+                  {/* グリッド表示 */}
+                  {editorState.showGrid && (
+                    <GridLayer
+                      width={stageSize.width}
+                      height={stageSize.height}
+                      gridSize={20}
+                      visible={true}
+                    />
+                  )}
+
+                  {/* ページ要素の描画 */}
+                  {activePage &&
+                    activePage.elements
+                      .filter(element => element.style.visible !== false)
+                      .sort(
+                        (a, b) => (a.style.zIndex || 0) - (b.style.zIndex || 0)
+                      )
+                      .map(element => {
+                        try {
+                          const isSelected =
+                            editorState.selectedElements.includes(element.id);
+
+                          if (element.type === 'image') {
+                            return (
+                              <KonvaImageElement
+                                key={element.id}
+                                element={element}
+                                isSelected={isSelected}
+                                onSelect={handleElementSelect}
+                                onUpdate={handleElementUpdate}
+                                stageSize={stageSize}
+                              />
+                            );
+                          } else if (element.type === 'text') {
+                            return (
+                              <KonvaTextElement
+                                key={element.id}
+                                element={element}
+                                isSelected={isSelected}
+                                onSelect={handleElementSelect}
+                                onUpdate={handleElementUpdate}
+                                stageSize={stageSize}
+                              />
+                            );
+                          }
+
+                          return null;
+                        } catch (error) {
+                          debugLogger.konva.renderError(error, {
+                            elementId: element.id,
+                          });
+                          return null;
+                        }
+                      })}
+                </>
               )}
+            </Layer>
+          </Stage>
 
-              {/* ページ要素の描画 */}
-              {activePage &&
-                activePage.elements
-                  .filter(element => element.style.visible !== false)
-                  .sort((a, b) => (a.style.zIndex || 0) - (b.style.zIndex || 0))
-                  .map(element => {
-                    try {
-                      const isSelected = editorState.selectedElements.includes(
-                        element.id
-                      );
-
-                      if (element.type === 'image') {
-                        return (
-                          <KonvaImageElement
-                            key={element.id}
-                            element={element}
-                            isSelected={isSelected}
-                            onSelect={handleElementSelect}
-                            onUpdate={handleElementUpdate}
-                            stageSize={stageSize}
-                          />
-                        );
-                      } else if (element.type === 'text') {
-                        return (
-                          <KonvaTextElement
-                            key={element.id}
-                            element={element}
-                            isSelected={isSelected}
-                            onSelect={handleElementSelect}
-                            onUpdate={handleElementUpdate}
-                            stageSize={stageSize}
-                          />
-                        );
-                      }
-
-                      return null;
-                    } catch (error) {
-                      debugLogger.konva.renderError(error, {
-                        elementId: element.id,
-                      });
-                      return null;
-                    }
-                  })}
-            </>
+          {/* ドロップ時のオーバーレイ */}
+          {isOver && canDrop && (
+            <div className="absolute inset-0 bg-blue-500 bg-opacity-10 border-2 border-dashed border-blue-500 flex items-center justify-center">
+              <div className="bg-white px-4 py-2 rounded-lg shadow-lg">
+                <p className="text-blue-600 font-medium">
+                  ここにドロップしてください
+                </p>
+              </div>
+            </div>
           )}
-        </Layer>
-      </Stage>
-
-      {/* ドロップ時のオーバーレイ */}
-      {isOver && canDrop && (
-        <div className="absolute inset-0 bg-blue-500 bg-opacity-10 border-2 border-dashed border-blue-500 flex items-center justify-center">
-          <div className="bg-white px-4 py-2 rounded-lg shadow-lg">
-            <p className="text-blue-600 font-medium">
-              ここにドロップしてください
-            </p>
-          </div>
         </div>
-      )}
+      </div>
 
       {/* ズームレベル表示 */}
       <div className="absolute bottom-2 right-2 bg-white px-2 py-1 rounded shadow text-sm">
