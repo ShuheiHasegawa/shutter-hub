@@ -254,6 +254,19 @@ const EditableCanvas: React.FC<EditableCanvasProps> = ({
     };
   }, []);
 
+  // Konvaの遅延初期化（動的インポート完了を待つ）
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!isKonvaReady) {
+        debugLogger.konva.stageInit();
+        // 短時間後に再評価
+        setIsKonvaReady(true);
+      }
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [isKonvaReady]);
+
   // Store状態
   const {
     editorState,
@@ -414,6 +427,19 @@ const EditableCanvas: React.FC<EditableCanvasProps> = ({
       }}
       {...dropProps}
     >
+      {/* Konva読み込み中の安全な表示 */}
+      {!isKonvaReady && (
+        <div
+          className="w-full h-full flex items-center justify-center bg-gray-50"
+          style={{ minHeight: '400px' }}
+        >
+          <div className="text-gray-500 text-sm">
+            エディターを初期化しています...
+          </div>
+        </div>
+      )}
+
+      {/* KonvaのStageは準備完了時のみレンダリング */}
       <Stage
         ref={stageRef}
         width={stageSize.width}
@@ -421,6 +447,7 @@ const EditableCanvas: React.FC<EditableCanvasProps> = ({
         onClick={handleStageClick}
         scaleX={editorState.zoomLevel}
         scaleY={editorState.zoomLevel}
+        style={{ display: isKonvaReady ? 'block' : 'none' }}
         onContentLoad={() => {
           debugLogger.konva.stageReady({
             stageSize,

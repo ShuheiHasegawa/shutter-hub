@@ -63,8 +63,10 @@ interface KonvaTextProps {
   draggable?: boolean;
 }
 
-// ローディングコンポーネント（Konva外で使用）
-const KonvaLoading: React.FC<{ className?: string }> = ({ className = '' }) => (
+// ローディングコンポーネント（未使用だが将来の拡張用に保持）
+const _KonvaLoading: React.FC<{ className?: string }> = ({
+  className = '',
+}) => (
   <div
     className={`w-full h-full bg-gray-100 animate-pulse flex items-center justify-center ${className}`}
     style={{ minHeight: '400px' }}
@@ -150,7 +152,7 @@ const createKonvaComponent = <T,>(
     },
     {
       ssr: false,
-      loading: () => <KonvaLoading />,
+      loading: () => null, // Konva読み込み中はnullを返す
     }
   );
 };
