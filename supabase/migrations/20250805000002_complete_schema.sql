@@ -1,6 +1,6 @@
--- Migration: 002_complete_schema
+-- Migration: 20250805000002_complete_schema
 -- Description: Complete database schema for ShutterHub (統合版)
--- Created: 2024-12-01
+-- Created: 2025-08-05
 -- Includes: 抽選システム、管理抽選システム、優先予約システム、キャンセル待ちシステム
 
 -- =============================================================================
@@ -132,7 +132,7 @@ CREATE TABLE waitlist_entries (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   photo_session_id UUID REFERENCES photo_sessions(id) ON DELETE CASCADE,
   user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
-  position INTEGER NOT NULL,
+  queue_position INTEGER NOT NULL,
   status TEXT DEFAULT 'waiting' CHECK (status IN ('waiting', 'promoted', 'expired', 'cancelled')),
   
   -- 自動繰り上げ設定
@@ -184,8 +184,8 @@ CREATE TABLE waitlist_history (
   user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
   
   action TEXT NOT NULL, -- 'joined', 'promoted', 'expired', 'cancelled', 'position_changed'
-  old_position INTEGER,
-  new_position INTEGER,
+  old_queue_position INTEGER,
+  new_queue_position INTEGER,
   old_status TEXT,
   new_status TEXT,
   reason TEXT,
@@ -248,7 +248,7 @@ CREATE INDEX idx_priority_booking_settings_photo_session ON priority_booking_set
 CREATE INDEX idx_waitlist_entries_photo_session ON waitlist_entries(photo_session_id);
 CREATE INDEX idx_waitlist_entries_user ON waitlist_entries(user_id);
 CREATE INDEX idx_waitlist_entries_status ON waitlist_entries(status);
-CREATE INDEX idx_waitlist_entries_position ON waitlist_entries(photo_session_id, position);
+CREATE INDEX idx_waitlist_entries_position ON waitlist_entries(photo_session_id, queue_position);
 CREATE INDEX idx_waitlist_settings_photo_session ON waitlist_settings(photo_session_id);
 CREATE INDEX idx_waitlist_history_entry ON waitlist_history(waitlist_entry_id);
 CREATE INDEX idx_waitlist_history_photo_session ON waitlist_history(photo_session_id);
@@ -497,7 +497,7 @@ CREATE OR REPLACE FUNCTION join_waitlist(
 ) RETURNS TABLE (
   success BOOLEAN,
   message TEXT,
-  position INTEGER,
+  queue_position INTEGER,
   waitlist_entry_id UUID
 ) AS $$
 DECLARE
@@ -505,7 +505,7 @@ DECLARE
   settings_record waitlist_settings%ROWTYPE;
   current_bookings INTEGER := 0;
   current_waitlist_size INTEGER := 0;
-  new_position INTEGER;
+  new_queue_position INTEGER;
   new_entry_id UUID;
 BEGIN
   -- 撮影会情報を取得
@@ -585,22 +585,22 @@ BEGIN
   END IF;
   
   -- 新しい順位を計算
-  SELECT COALESCE(MAX(position), 0) + 1 INTO new_position
+  SELECT COALESCE(MAX(queue_position), 0) + 1 INTO new_queue_position
   FROM waitlist_entries 
   WHERE photo_session_id = target_photo_session_id 
   AND status = 'waiting';
   
   -- キャンセル待ちエントリーを作成
-  INSERT INTO waitlist_entries (
-    photo_session_id, 
-    user_id, 
-    position, 
+    INSERT INTO waitlist_entries (
+    photo_session_id,
+    user_id,
+    queue_position,
     message,
     auto_promote
   ) VALUES (
-    target_photo_session_id, 
-    target_user_id, 
-    new_position, 
+    target_photo_session_id,
+    target_user_id,
+    new_queue_position,
     user_message,
     true
   ) RETURNING id INTO new_entry_id;
@@ -611,7 +611,7 @@ BEGIN
     photo_session_id,
     user_id,
     action,
-    new_position,
+    new_queue_position,
     new_status,
     reason
   ) VALUES (
@@ -619,12 +619,12 @@ BEGIN
     target_photo_session_id,
     target_user_id,
     'joined',
-    new_position,
+    new_queue_position,
     'waiting',
     'ユーザーがキャンセル待ちに登録'
   );
   
-  RETURN QUERY SELECT true, 'キャンセル待ちに登録しました', new_position, new_entry_id;
+  RETURN QUERY SELECT true, 'キャンセル待ちに登録しました', new_queue_position, new_entry_id;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -692,7 +692,7 @@ BEGIN
     WHERE photo_session_id = target_photo_session_id 
     AND status = 'waiting'
     AND auto_promote = true
-    ORDER BY position ASC
+    ORDER BY queue_position ASC
     LIMIT available_slots
   LOOP
     -- エントリーを繰り上げ状態に更新
@@ -710,7 +710,7 @@ BEGIN
       photo_session_id,
       user_id,
       action,
-      old_position,
+      old_queue_position,
       old_status,
       new_status,
       reason
@@ -719,7 +719,7 @@ BEGIN
       target_photo_session_id,
       waitlist_record.user_id,
       'promoted',
-      waitlist_record.position,
+      waitlist_record.queue_position,
       'waiting',
       'promoted',
       '空きが発生したため自動繰り上げ'
@@ -748,11 +748,11 @@ BEGIN
   
   -- 残りのキャンセル待ちの順位を更新
   UPDATE waitlist_entries 
-  SET position = position - promoted_count
+      SET queue_position = queue_position - promoted_count
   WHERE photo_session_id = target_photo_session_id 
   AND status = 'waiting'
-  AND position > (
-    SELECT MIN(position) FROM waitlist_entries 
+  AND queue_position > (
+    SELECT MIN(queue_position) FROM waitlist_entries 
     WHERE photo_session_id = target_photo_session_id 
     AND status = 'promoted'
   );
@@ -771,7 +771,7 @@ CREATE OR REPLACE FUNCTION cancel_waitlist_entry(
 ) AS $$
 DECLARE
   entry_record waitlist_entries%ROWTYPE;
-  affected_position INTEGER;
+  affected_queue_position INTEGER;
 BEGIN
   -- エントリーを取得
   SELECT * INTO entry_record 
@@ -785,7 +785,7 @@ BEGIN
     RETURN;
   END IF;
   
-  affected_position := entry_record.position;
+  affected_queue_position := entry_record.queue_position;
   
   -- エントリーをキャンセル状態に更新
   UPDATE waitlist_entries 
@@ -800,7 +800,7 @@ BEGIN
     photo_session_id,
     user_id,
     action,
-    old_position,
+    old_queue_position,
     old_status,
     new_status,
     reason
@@ -809,7 +809,7 @@ BEGIN
     entry_record.photo_session_id,
     target_user_id,
     'cancelled',
-    affected_position,
+    affected_queue_position,
     entry_record.status,
     'cancelled',
     'ユーザーによるキャンセル'
@@ -817,10 +817,10 @@ BEGIN
   
   -- 後続の待ち順位を繰り上げ
   UPDATE waitlist_entries 
-  SET position = position - 1
+  SET queue_position = queue_position - 1
   WHERE photo_session_id = entry_record.photo_session_id 
   AND status = 'waiting'
-  AND position > affected_position;
+  AND queue_position > affected_queue_position;
   
   RETURN QUERY SELECT true, 'キャンセル待ちをキャンセルしました';
 END;
