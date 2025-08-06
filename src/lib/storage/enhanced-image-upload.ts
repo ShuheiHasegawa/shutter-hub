@@ -5,19 +5,19 @@
 
 import { createClient } from '@/lib/supabase/client';
 import Logger from '@/lib/logger';
-import { 
-  validateImageFile, 
-  IMAGE_QUALITY_CONFIGS, 
+import {
+  validateImageFile,
+  IMAGE_QUALITY_CONFIGS,
   generateFileHash,
   type ImageMetadata,
-  type OptimizedImageUrls
+  type OptimizedImageUrls,
 } from '@/lib/image-optimization';
 
 export interface EnhancedUploadOptions {
   category: 'profile' | 'photoSession' | 'photobook' | 'social';
   generatePrintVersion?: boolean; // フォトブック用高画質版生成
-  enableDeduplication?: boolean;  // 重複ファイル検出
-  watermark?: boolean;           // 透かし追加
+  enableDeduplication?: boolean; // 重複ファイル検出
+  watermark?: boolean; // 透かし追加
   userId: string;
   relatedId?: string; // photo_session_id, photobook_id など
 }
@@ -39,7 +39,7 @@ export async function uploadEnhancedImage(
   options: EnhancedUploadOptions
 ): Promise<EnhancedUploadResult> {
   const startTime = Date.now();
-  
+
   try {
     Logger.info('Enhanced image upload started', {
       component: 'enhanced-image-upload',
@@ -47,7 +47,7 @@ export async function uploadEnhancedImage(
       fileName: file.name,
       fileSize: file.size,
       category: options.category,
-      userId: options.userId
+      userId: options.userId,
     });
 
     // 1. ファイルバリデーション
@@ -57,18 +57,16 @@ export async function uploadEnhancedImage(
         component: 'enhanced-image-upload',
         action: 'validation-failed',
         error: validation.error,
-        fileName: file.name
+        fileName: file.name,
       });
       return { success: false, error: validation.error };
     }
 
-    const supabase = createClient();
-    
     // 2. ファイルハッシュ生成（重複検出用）
     let fileHash: string | undefined;
     if (options.enableDeduplication) {
       fileHash = await generateFileHash(file);
-      
+
       // 重複チェック
       const duplicateCheck = await checkDuplicate(fileHash, options.userId);
       if (duplicateCheck.exists) {
@@ -76,14 +74,14 @@ export async function uploadEnhancedImage(
           component: 'enhanced-image-upload',
           action: 'duplicate-detected',
           hash: fileHash,
-          existingUrls: duplicateCheck.urls
+          existingUrls: duplicateCheck.urls,
         });
-        
+
         return {
           success: true,
           urls: duplicateCheck.urls,
           duplicateDetected: true,
-          originalHash: fileHash
+          originalHash: fileHash,
         };
       }
     }
@@ -95,12 +93,12 @@ export async function uploadEnhancedImage(
 
     // 4. メタデータ抽出
     const originalDimensions = await getImageDimensions(file);
-    
+
     // 5. マルチ品質版アップロード
     const uploadResults = await uploadMultipleVersions(
-      file, 
-      basePath, 
-      fileExtension, 
+      file,
+      basePath,
+      fileExtension,
       options,
       originalDimensions
     );
@@ -112,16 +110,20 @@ export async function uploadEnhancedImage(
     // 6. メタデータ保存
     const metadata: ImageMetadata = {
       originalSize: file.size,
-      processedSizes: uploadResults.sizes!,
+      processedSizes: uploadResults.sizes as {
+        web: number;
+        print?: number;
+        thumbnail: number;
+      },
       dimensions: {
         original: originalDimensions,
         web: uploadResults.dimensions!.web,
         print: uploadResults.dimensions?.print,
-        thumbnail: uploadResults.dimensions!.thumbnail
+        thumbnail: uploadResults.dimensions!.thumbnail,
       },
       formats: uploadResults.formats!,
       createdAt: new Date().toISOString(),
-      hash: fileHash
+      hash: fileHash,
     };
 
     await saveImageMetadata(uploadResults.urls!.web, metadata, options);
@@ -133,16 +135,15 @@ export async function uploadEnhancedImage(
       duration,
       metadata,
       urls: uploadResults.urls,
-      category: options.category
+      category: options.category,
     });
 
     return {
       success: true,
       urls: uploadResults.urls,
       metadata,
-      originalHash: fileHash
+      originalHash: fileHash,
     };
-
   } catch (error) {
     const duration = Date.now() - startTime;
     Logger.error('Enhanced image upload failed', error as Error, {
@@ -150,12 +151,12 @@ export async function uploadEnhancedImage(
       action: 'upload-failed',
       duration,
       fileName: file.name,
-      category: options.category
+      category: options.category,
     });
 
-    return { 
-      success: false, 
-      error: 'アップロード処理中にエラーが発生しました' 
+    return {
+      success: false,
+      error: 'アップロード処理中にエラーが発生しました',
     };
   }
 }
@@ -164,11 +165,11 @@ export async function uploadEnhancedImage(
  * ストレージパス生成
  */
 function generateStoragePath(
-  options: EnhancedUploadOptions, 
+  options: EnhancedUploadOptions,
   timestamp: number
 ): string {
   const { category, userId, relatedId } = options;
-  
+
   switch (category) {
     case 'profile':
       return `${userId}/profile/${timestamp}`;
@@ -196,24 +197,14 @@ async function uploadMultipleVersions(
   const supabase = createClient();
   const config = IMAGE_QUALITY_CONFIGS[options.category];
   const bucket = getBucketName(options.category);
-  
-  const results: {
-    success: boolean;
-    error?: string;
-    urls?: OptimizedImageUrls;
-    sizes?: { web: number; print?: number; thumbnail: number };
-    dimensions?: {
-      web: { width: number; height: number };
-      print?: { width: number; height: number };
-      thumbnail: { width: number; height: number };
-    };
-    formats?: string[];
-  } = { success: false };
 
   try {
-    const urls: OptimizedImageUrls = {};
-    const sizes = {} as any;
-    const dimensions = {} as any;
+    const urls: OptimizedImageUrls = {
+      web: '',
+      thumbnail: '',
+    };
+    const sizes: Record<string, number> = {};
+    const dimensions: Record<string, { width: number; height: number }> = {};
     const formats: string[] = [];
 
     // Web版アップロード
@@ -222,7 +213,7 @@ async function uploadMultipleVersions(
       .from(bucket)
       .upload(webPath, file, {
         cacheControl: '31536000', // 1年キャッシュ
-        upsert: true
+        upsert: true,
       });
 
     if (webUpload.error) throw webUpload.error;
@@ -230,12 +221,12 @@ async function uploadMultipleVersions(
     const { data: webUrlData } = supabase.storage
       .from(bucket)
       .getPublicUrl(webUpload.data.path);
-    
+
     urls.web = webUrlData.publicUrl;
     sizes.web = file.size; // 実際の圧縮後サイズは後で更新
     dimensions.web = calculateResizedDimensions(
-      originalDimensions, 
-      config.web.maxWidth, 
+      originalDimensions,
+      config.web.maxWidth,
       config.web.maxHeight
     );
     formats.push(config.web.format);
@@ -247,7 +238,7 @@ async function uploadMultipleVersions(
         .from(bucket)
         .upload(printPath, file, {
           cacheControl: '31536000',
-          upsert: true
+          upsert: true,
         });
 
       if (printUpload.error) throw printUpload.error;
@@ -255,7 +246,7 @@ async function uploadMultipleVersions(
       const { data: printUrlData } = supabase.storage
         .from(bucket)
         .getPublicUrl(printUpload.data.path);
-      
+
       urls.print = printUrlData.publicUrl;
       sizes.print = file.size;
       dimensions.print = calculateResizedDimensions(
@@ -272,7 +263,7 @@ async function uploadMultipleVersions(
       .from(bucket)
       .upload(thumbPath, file, {
         cacheControl: '31536000',
-        upsert: true
+        upsert: true,
       });
 
     if (thumbUpload.error) throw thumbUpload.error;
@@ -280,12 +271,12 @@ async function uploadMultipleVersions(
     const { data: thumbUrlData } = supabase.storage
       .from(bucket)
       .getPublicUrl(thumbUpload.data.path);
-    
+
     urls.thumbnail = thumbUrlData.publicUrl;
     sizes.thumbnail = Math.round(file.size * 0.1); // 推定
     dimensions.thumbnail = {
       width: config.thumbnail.width,
-      height: config.thumbnail.height
+      height: config.thumbnail.height,
     };
 
     return {
@@ -293,19 +284,18 @@ async function uploadMultipleVersions(
       urls,
       sizes,
       dimensions,
-      formats
+      formats,
     };
-
   } catch (error) {
     Logger.error('Multiple versions upload failed', error as Error, {
       component: 'enhanced-image-upload',
       action: 'multi-upload-failed',
-      basePath
+      basePath,
     });
 
     return {
       success: false,
-      error: '複数品質版の生成に失敗しました'
+      error: '複数品質版の生成に失敗しました',
     };
   }
 }
@@ -332,19 +322,19 @@ function getBucketName(category: string): string {
  * 最適フォーマット決定
  */
 function getOptimalFormat(
-  configFormat: string, 
+  configFormat: string,
   originalExtension: string
 ): string {
   // HEIC/HEIF -> JPG
   if (['heic', 'heif'].includes(originalExtension)) {
     return 'jpg';
   }
-  
+
   // PNG with transparency -> keep PNG, otherwise use config
   if (originalExtension === 'png') {
     return configFormat === 'webp' ? 'webp' : 'png';
   }
-  
+
   return configFormat === 'webp' ? 'webp' : 'jpg';
 }
 
@@ -357,23 +347,23 @@ function calculateResizedDimensions(
   maxHeight: number
 ): { width: number; height: number } {
   const aspectRatio = original.width / original.height;
-  
+
   let newWidth = original.width;
   let newHeight = original.height;
-  
+
   if (newWidth > maxWidth) {
     newWidth = maxWidth;
     newHeight = newWidth / aspectRatio;
   }
-  
+
   if (newHeight > maxHeight) {
     newHeight = maxHeight;
     newWidth = newHeight * aspectRatio;
   }
-  
+
   return {
     width: Math.round(newWidth),
-    height: Math.round(newHeight)
+    height: Math.round(newHeight),
   };
 }
 
@@ -386,17 +376,17 @@ async function getImageDimensions(
   return new Promise((resolve, reject) => {
     const img = new Image();
     const url = URL.createObjectURL(file);
-    
+
     img.onload = () => {
       URL.revokeObjectURL(url);
       resolve({ width: img.width, height: img.height });
     };
-    
+
     img.onerror = () => {
       URL.revokeObjectURL(url);
       reject(new Error('画像の読み込みに失敗しました'));
     };
-    
+
     img.src = url;
   });
 }
@@ -405,12 +395,12 @@ async function getImageDimensions(
  * 重複チェック
  */
 async function checkDuplicate(
-  hash: string, 
+  hash: string,
   userId: string
 ): Promise<{ exists: boolean; urls?: OptimizedImageUrls }> {
   try {
     const supabase = createClient();
-    
+
     const { data, error } = await supabase
       .from('image_metadata')
       .select('web_url, print_url, thumbnail_url')
@@ -428,8 +418,8 @@ async function checkDuplicate(
       urls: {
         web: existing.web_url,
         print: existing.print_url || undefined,
-        thumbnail: existing.thumbnail_url
-      }
+        thumbnail: existing.thumbnail_url,
+      },
     };
   } catch {
     return { exists: false };
@@ -446,7 +436,7 @@ async function saveImageMetadata(
 ): Promise<void> {
   try {
     const supabase = createClient();
-    
+
     await supabase.from('image_metadata').insert({
       user_id: options.userId,
       web_url: webUrl,
@@ -457,17 +447,17 @@ async function saveImageMetadata(
       formats: metadata.formats,
       category: options.category,
       related_id: options.relatedId,
-      created_at: metadata.createdAt
+      created_at: metadata.createdAt,
     });
   } catch (error) {
     Logger.warning('Failed to save image metadata', {
       component: 'enhanced-image-upload',
       action: 'metadata-save-failed',
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     });
   }
 }
 
 export default {
-  uploadEnhancedImage
+  uploadEnhancedImage,
 };

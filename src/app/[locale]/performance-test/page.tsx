@@ -11,9 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
-import {
-  useProgressiveLoading,
-} from '@/components/ui/lazy-loading';
+import { useProgressiveLoading } from '@/components/ui/lazy-loading';
 import { uploadEnhancedImage } from '@/lib/storage/enhanced-image-upload';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -22,11 +20,11 @@ import {
   Image as ImageIcon,
   BarChart3,
   Upload,
-
   Gauge,
   CheckCircle,
   AlertCircle,
 } from 'lucide-react';
+import Image from 'next/image';
 import Logger from '@/lib/logger';
 
 interface PerformanceMetrics {
@@ -49,7 +47,13 @@ export default function PerformanceTestPage() {
   const [metrics, setMetrics] = useState<PerformanceMetrics[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [testResults, setTestResults] = useState<any>(null);
+  const [testResults, setTestResults] = useState<{
+    totalTime: number;
+    averageLoadTime: number;
+    totalSavings: number;
+    cacheHitRate: number;
+    webpUsage: number;
+  } | null>(null);
 
   const { visibleItems, hasMore, reset } = useProgressiveLoading(
     sampleImages,
@@ -68,7 +72,7 @@ export default function PerformanceTestPage() {
     });
 
     try {
-      const results = [];
+      const results: PerformanceMetrics[] = [];
 
       for (let i = 0; i < 10; i++) {
         const imageStartTime = performance.now();
@@ -126,7 +130,7 @@ export default function PerformanceTestPage() {
 
   const simulateImageLoad = (src: string): Promise<void> => {
     return new Promise(resolve => {
-      const img = new Image();
+      const img = new window.Image();
       img.onload = () => resolve();
       img.onerror = () => resolve();
       img.src = src;
@@ -308,8 +312,8 @@ export default function PerformanceTestPage() {
                 </div>
 
                 <div className="grid grid-cols-4 gap-4">
-                  {visibleItems.map((item) => (
-                    <img
+                  {visibleItems.map(item => (
+                    <Image
                       key={item.id}
                       src={item.src}
                       alt={item.alt}
