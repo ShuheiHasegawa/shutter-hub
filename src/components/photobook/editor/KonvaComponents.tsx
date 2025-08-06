@@ -10,6 +10,7 @@ import { debugLogger } from '@/lib/utils/debug-logger';
 
 // Konvaコンポーネントの型定義
 interface StageProps {
+  ref?: React.RefObject<any>;
   width: number;
   height: number;
   scaleX?: number;
@@ -33,22 +34,35 @@ interface RectProps {
   stroke?: string;
   strokeWidth?: number;
   opacity?: number;
+  listening?: boolean;
 }
 
 interface KonvaImageProps {
+  ref?: React.RefObject<any>;
+  id?: string;
+  name?: string;
   x: number;
   y: number;
   width: number;
   height: number;
   image?: HTMLImageElement;
+  rotation?: number;
+  scaleX?: number;
+  scaleY?: number;
+  stroke?: string;
+  strokeWidth?: number;
   opacity?: number;
   onClick?: (e: any) => void;
   onDragEnd?: (e: any) => void;
   onTransformEnd?: (e: any) => void;
   draggable?: boolean;
+  listening?: boolean;
 }
 
 interface KonvaTextProps {
+  ref?: React.RefObject<any>;
+  id?: string;
+  name?: string;
   x: number;
   y: number;
   text: string;
@@ -56,6 +70,13 @@ interface KonvaTextProps {
   fontFamily?: string;
   fill?: string;
   align?: string;
+  rotation?: number;
+  scaleX?: number;
+  scaleY?: number;
+  stroke?: string;
+  strokeWidth?: number;
+  height?: number;
+  width?: number;
   opacity?: number;
   onClick?: (e: any) => void;
   onDragEnd?: (e: any) => void;
@@ -133,13 +154,8 @@ const createKonvaComponent = <T,>(
             );
           }
 
-          // コンポーネントをラップ
-          const WrappedComponent = React.forwardRef<any, T>((props, ref) => {
-            return React.createElement(Component as any, { ...props, ref });
-          });
-
-          WrappedComponent.displayName = `Dynamic${componentName}`;
-          return { default: WrappedComponent }; // CRITICAL: next/dynamic expects { default: Component }
+          // 直接コンポーネントを返す
+          return { default: Component as React.ComponentType<T> };
         })
         .catch(error => {
           debugLogger.konva.importError(error as Error, componentName);

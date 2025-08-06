@@ -124,7 +124,10 @@ export async function createBulkPhotoSessionsAction(
         p_address: data.address || null,
         p_start_time: data.start_time,
         p_end_time: data.end_time,
-        p_max_participants: data.max_participants,
+        p_max_participants: data.slots.reduce(
+          (total, slot) => total + slot.max_participants,
+          0
+        ),
         p_booking_type: data.booking_type,
         p_allow_multiple_bookings: data.allow_multiple_bookings,
         p_booking_settings: data.booking_settings,

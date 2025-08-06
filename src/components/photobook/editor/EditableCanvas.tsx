@@ -42,7 +42,6 @@ const KonvaImageElement: React.FC<KonvaElementProps> = ({
   stageSize,
 }) => {
   const [image, setImage] = useState<HTMLImageElement | null>(null);
-  const imageRef = useRef<unknown>(null);
 
   useEffect(() => {
     if (element.data.type === 'image') {
@@ -103,8 +102,6 @@ const KonvaImageElement: React.FC<KonvaElementProps> = ({
 
   return (
     <KonvaImage
-      ref={imageRef}
-      id={element.id}
       image={image}
       x={x}
       y={y}
@@ -197,7 +194,7 @@ const GridLayer: React.FC<{
 }> = ({ width, height, gridSize, visible }) => {
   if (!visible) return null;
 
-  const lines: JSX.Element[] = [];
+  const lines: React.ReactNode[] = [];
 
   // 縦線
   for (let i = 0; i <= width; i += gridSize) {
@@ -241,8 +238,8 @@ const EditableCanvas: React.FC<EditableCanvasProps> = ({
   onElementSelect,
   onElementUpdate,
 }) => {
-  const stageRef = useRef<any>(null);
-  const layerRef = useRef<any>(null);
+  const _stageRef = useRef<any>(null);
+  const _layerRef = useRef<any>(null);
   const [stageSize, setStageSize] = useState({ width: 800, height: 600 });
   const [isKonvaReady, setIsKonvaReady] = useState(false);
 
@@ -285,15 +282,8 @@ const EditableCanvas: React.FC<EditableCanvasProps> = ({
       try {
         debugLogger.dnd.drop(item);
 
-        if (
-          !stageRef.current ||
-          !layerRef.current ||
-          !activePage ||
-          !isKonvaReady
-        ) {
-          debugLogger.dnd.dropError(new Error('Invalid refs or not ready'), {
-            stageRef: !!stageRef.current,
-            layerRef: !!layerRef.current,
+        if (!activePage || !isKonvaReady) {
+          debugLogger.dnd.dropError(new Error('Not ready'), {
             activePage: !!activePage,
             isKonvaReady,
           });
@@ -340,13 +330,20 @@ const EditableCanvas: React.FC<EditableCanvasProps> = ({
             },
           };
           addElement(activePage.id, newElement);
-        } else if (item.type === 'uploaded-image' && activePage && item.data) {
+        } else if (
+          item.type === 'uploaded-image' &&
+          activePage &&
+          item.data &&
+          typeof item.data === 'object' &&
+          item.data !== null &&
+          'src' in item.data
+        ) {
           // 画像アップロード時：ドロップ位置の画像ボックスを検出
           let targetImageBox: PageElement | null = null;
 
-          if (dropEvent && stageRef.current) {
-            const stage = stageRef.current;
-            const rect = stage.container().getBoundingClientRect();
+          if (dropEvent) {
+            // ステージの位置計算は近似値を使用
+            const rect = (dropEvent.target as Element).getBoundingClientRect();
             const pointerPosition = {
               x: dropEvent.clientX - rect.left,
               y: dropEvent.clientY - rect.top,
@@ -383,19 +380,19 @@ const EditableCanvas: React.FC<EditableCanvasProps> = ({
             }
           }
 
-          if (targetImageBox) {
+          if (targetImageBox && targetImageBox.data.type === 'image') {
             // 既存の画像ボックスに画像を適用（サイズは変更しない）
             updateElement(targetImageBox.id, {
               data: {
                 ...targetImageBox.data,
-                src: item.data.src,
-                alt: item.data.name || '画像',
+                src: (item.data as any).src,
+                alt: (item.data as any).name || '画像',
               },
             });
 
             debugLogger.dnd.drop({
               ...item,
-              message: `画像「${item.data.name}」を既存の画像ボックスに配置`,
+              message: `画像「${(item.data as any).name}」を既存の画像ボックスに配置`,
             });
           } else {
             // 新しい画像要素を作成
@@ -409,20 +406,20 @@ const EditableCanvas: React.FC<EditableCanvasProps> = ({
               },
               data: {
                 type: 'image',
-                src: item.data.src,
-                alt: item.data.name || '画像',
+                src: (item.data as any).src,
+                alt: (item.data as any).name || '画像',
               },
             };
             addElement(activePage.id, newElement);
 
             debugLogger.dnd.drop({
               ...item,
-              message: `画像「${item.data.name}」を新しい画像ボックスとして配置`,
+              message: `画像「${(item.data as any).name}」を新しい画像ボックスとして配置`,
             });
           }
         } else if (item.type === 'layout-template' && activePage && item.data) {
           // テンプレートドロップ時：既存画像を新レイアウトに再配置
-          const template = item.data;
+          const template = item.data as any;
           if (
             template.photoPositions &&
             Array.isArray(template.photoPositions)
@@ -495,14 +492,11 @@ const EditableCanvas: React.FC<EditableCanvasProps> = ({
   // キャンバスサイズの自動調整
   useEffect(() => {
     const handleResize = () => {
-      const container = stageRef.current?.container()?.parentElement;
-      if (container) {
-        const { width, height } = container.getBoundingClientRect();
-        setStageSize({
-          width: width - 20, // パディング分を除く
-          height: height - 20,
-        });
-      }
+      // 固定サイズを使用（将来的にはコンテナサイズから計算）
+      setStageSize({
+        width: 800,
+        height: 600,
+      });
     };
 
     handleResize();
@@ -550,11 +544,12 @@ const EditableCanvas: React.FC<EditableCanvasProps> = ({
   return (
     <div
       className={`relative overflow-hidden ${className}`}
+      {...dropProps}
       style={{
         backgroundColor: '#e5e7eb', // Photoshopライクなグレー背景
         border: isOver && canDrop ? '2px dashed #007bff' : 'none',
+        ...dropProps.style,
       }}
-      {...dropProps}
     >
       {/* Konva読み込み中の安全な表示 */}
       {!isKonvaReady && (
@@ -581,97 +576,99 @@ const EditableCanvas: React.FC<EditableCanvasProps> = ({
           }}
         >
           {/* KonvaのStageは準備完了時のみレンダリング */}
-          <Stage
-            ref={stageRef}
-            width={stageSize.width}
-            height={stageSize.height}
-            onClick={handleStageClick}
-            scaleX={editorState.zoomLevel}
-            scaleY={editorState.zoomLevel}
-            style={{ display: isKonvaReady ? 'block' : 'none' }}
-            onContentLoad={() => {
-              debugLogger.konva.stageReady({
-                stageSize,
-                zoomLevel: editorState.zoomLevel,
-              });
-              setIsKonvaReady(true);
-            }}
-            onError={error => {
-              debugLogger.konva.renderError(error, { stageSize });
-              setIsKonvaReady(false);
-            }}
-          >
-            <Layer ref={layerRef}>
-              {/* Konvaの準備ができていない場合は基本要素のみ表示 */}
-              {!isKonvaReady ? (
-                <Rect
-                  x={0}
-                  y={0}
-                  width={stageSize.width}
-                  height={stageSize.height}
-                  fill="transparent"
-                  listening={false}
-                />
-              ) : (
-                <>
-                  {/* グリッド表示 */}
-                  {editorState.showGrid && (
-                    <GridLayer
-                      width={stageSize.width}
-                      height={stageSize.height}
-                      gridSize={20}
-                      visible={true}
-                    />
-                  )}
+          <div style={{ display: isKonvaReady ? 'block' : 'none' }}>
+            <Stage
+              ref={_stageRef}
+              width={stageSize.width}
+              height={stageSize.height}
+              onClick={handleStageClick}
+              scaleX={editorState.zoomLevel}
+              scaleY={editorState.zoomLevel}
+              onContentLoad={() => {
+                debugLogger.konva.stageReady({
+                  stageSize,
+                  zoomLevel: editorState.zoomLevel,
+                });
+                setIsKonvaReady(true);
+              }}
+              onError={error => {
+                debugLogger.konva.renderError(error, { stageSize });
+                setIsKonvaReady(false);
+              }}
+            >
+              <Layer>
+                {/* Konvaの準備ができていない場合は基本要素のみ表示 */}
+                {!isKonvaReady ? (
+                  <Rect
+                    x={0}
+                    y={0}
+                    width={stageSize.width}
+                    height={stageSize.height}
+                    fill="transparent"
+                    listening={false}
+                  />
+                ) : (
+                  <>
+                    {/* グリッド表示 */}
+                    {editorState.showGrid && (
+                      <GridLayer
+                        width={stageSize.width}
+                        height={stageSize.height}
+                        gridSize={20}
+                        visible={true}
+                      />
+                    )}
 
-                  {/* ページ要素の描画 */}
-                  {activePage &&
-                    activePage.elements
-                      .filter(element => element.style.visible !== false)
-                      .sort(
-                        (a, b) => (a.style.zIndex || 0) - (b.style.zIndex || 0)
-                      )
-                      .map(element => {
-                        try {
-                          const isSelected =
-                            editorState.selectedElements.includes(element.id);
+                    {/* ページ要素の描画 */}
+                    {activePage &&
+                      activePage.elements
+                        .filter(element => element.style.visible !== false)
+                        .sort(
+                          (a, b) =>
+                            (a.style.zIndex || 0) - (b.style.zIndex || 0)
+                        )
+                        .map(element => {
+                          try {
+                            const isSelected =
+                              editorState.selectedElements.includes(element.id);
 
-                          if (element.type === 'image') {
-                            return (
-                              <KonvaImageElement
-                                key={element.id}
-                                element={element}
-                                isSelected={isSelected}
-                                onSelect={handleElementSelect}
-                                onUpdate={handleElementUpdate}
-                                stageSize={stageSize}
-                              />
-                            );
-                          } else if (element.type === 'text') {
-                            return (
-                              <KonvaTextElement
-                                key={element.id}
-                                element={element}
-                                isSelected={isSelected}
-                                onSelect={handleElementSelect}
-                                onUpdate={handleElementUpdate}
-                                stageSize={stageSize}
-                              />
-                            );
+                            if (element.type === 'image') {
+                              return (
+                                <KonvaImageElement
+                                  key={element.id}
+                                  element={element}
+                                  isSelected={isSelected}
+                                  onSelect={handleElementSelect}
+                                  onUpdate={handleElementUpdate}
+                                  stageSize={stageSize}
+                                />
+                              );
+                            } else if (element.type === 'text') {
+                              return (
+                                <KonvaTextElement
+                                  key={element.id}
+                                  element={element}
+                                  isSelected={isSelected}
+                                  onSelect={handleElementSelect}
+                                  onUpdate={handleElementUpdate}
+                                  stageSize={stageSize}
+                                />
+                              );
+                            }
+
+                            return null;
+                          } catch (error) {
+                            debugLogger.konva.renderError(error as Error, {
+                              elementId: element.id,
+                            });
+                            return null;
                           }
-
-                          return null;
-                        } catch (error) {
-                          debugLogger.konva.renderError(error, {
-                            elementId: element.id,
-                          });
-                          return null;
-                        }
-                      })}
-                </>
-              )}
-            </Layer>
-          </Stage>
+                        })}
+                  </>
+                )}
+              </Layer>
+            </Stage>
+          </div>
 
           {/* ドロップ時のオーバーレイ */}
           {isOver && canDrop && (

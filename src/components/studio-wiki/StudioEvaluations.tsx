@@ -7,8 +7,27 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
-import { StudioEvaluationForm } from './StudioEvaluationForm';
-import { StudioEvaluation as StudioEvaluationType } from '@/types/database';
+// import { StudioEvaluationForm } from './StudioEvaluationForm';
+// import { StudioEvaluation as StudioEvaluationType } from '@/types/database';
+
+// 一時的な型定義（StudioWiki実装時に正式な型に置き換え）
+interface StudioEvaluationType {
+  id: string;
+  studio_id: string;
+  user_id: string;
+  photo_session_id?: string;
+  evaluation_photos?: string[];
+  user_role: 'model' | 'photographer' | 'organizer';
+  overall_rating: number;
+  location_rating: number;
+  equipment_rating: number;
+  staff_rating: number;
+  cleanliness_rating: number;
+  value_rating: number;
+  comment?: string;
+  created_at: string;
+  updated_at: string;
+}
 import {
   UserIcon,
   CameraIcon,
@@ -39,7 +58,7 @@ interface StudioEvaluationsProps {
 }
 
 export function StudioEvaluations({
-  studioId,
+  studioId: _studioId,
   evaluations,
   averageRatings,
   userCanEvaluate,
@@ -229,16 +248,9 @@ export function StudioEvaluations({
 
       {/* 評価投稿フォーム */}
       {showEvaluationForm && (
-        <StudioEvaluationForm
-          studioId={studioId}
-          photoSessionId="" // TODO: 実際のphotoSessionIdを取得
-          userRole="model" // TODO: 実際のuserRoleを取得
-          onSubmit={() => {
-            setShowEvaluationForm(false);
-            // TODO: 評価リストを更新
-          }}
-          onCancel={() => setShowEvaluationForm(false)}
-        />
+        <div className="p-4 text-center text-muted-foreground">
+          評価フォームは準備中です
+        </div>
       )}
 
       {/* 評価一覧 */}
@@ -325,11 +337,13 @@ function EvaluationCard({ evaluation }: { evaluation: StudioEvaluationType }) {
                     {roleIcon}
                     {getRoleLabel(evaluation.user_role)}
                   </Badge>
+                  {/* TODO: is_verified プロパティを追加後に有効化
                   {evaluation.is_verified && (
                     <Badge variant="outline" className="text-xs">
                       ✓ 参加確認済み
                     </Badge>
                   )}
+                  */}
                 </div>
                 <div className="text-xs text-gray-500 mt-1">
                   {new Date(evaluation.created_at).toLocaleDateString('ja-JP')}
@@ -348,11 +362,11 @@ function EvaluationCard({ evaluation }: { evaluation: StudioEvaluationType }) {
 
           {/* 詳細評価 */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-            {evaluation.accessibility_rating && (
+            {evaluation.location_rating && (
               <div className="flex justify-between">
                 <span className="text-gray-600">アクセス</span>
                 <span className="font-medium">
-                  {evaluation.accessibility_rating.toFixed(1)}
+                  {evaluation.location_rating.toFixed(1)}
                 </span>
               </div>
             )}
@@ -364,19 +378,19 @@ function EvaluationCard({ evaluation }: { evaluation: StudioEvaluationType }) {
                 </span>
               </div>
             )}
-            {evaluation.staff_support_rating && (
+            {evaluation.staff_rating && (
               <div className="flex justify-between">
                 <span className="text-gray-600">サポート</span>
                 <span className="font-medium">
-                  {evaluation.staff_support_rating.toFixed(1)}
+                  {evaluation.staff_rating.toFixed(1)}
                 </span>
               </div>
             )}
-            {evaluation.cost_performance_rating && (
+            {evaluation.value_rating && (
               <div className="flex justify-between">
                 <span className="text-gray-600">コスパ</span>
                 <span className="font-medium">
-                  {evaluation.cost_performance_rating.toFixed(1)}
+                  {evaluation.value_rating.toFixed(1)}
                 </span>
               </div>
             )}
@@ -398,19 +412,21 @@ function EvaluationCard({ evaluation }: { evaluation: StudioEvaluationType }) {
                   評価写真
                 </div>
                 <div className="flex gap-2 overflow-x-auto">
-                  {evaluation.evaluation_photos.map((photo, index) => (
-                    <div
-                      key={index}
-                      className="relative w-20 h-20 flex-shrink-0"
-                    >
-                      <Image
-                        src={photo}
-                        alt={`評価写真${index + 1}`}
-                        fill
-                        className="object-cover rounded-lg"
-                      />
-                    </div>
-                  ))}
+                  {evaluation.evaluation_photos.map(
+                    (photo: string, index: number) => (
+                      <div
+                        key={index}
+                        className="relative w-20 h-20 flex-shrink-0"
+                      >
+                        <Image
+                          src={photo}
+                          alt={`評価写真${index + 1}`}
+                          fill
+                          className="object-cover rounded-lg"
+                        />
+                      </div>
+                    )
+                  )}
                 </div>
               </div>
             )}

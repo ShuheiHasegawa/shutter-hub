@@ -88,7 +88,10 @@ const getThemeVariant = (
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, colorMode, asChild = false, ...props }, ref) => {
     const Comp = asChild ? Slot : 'button';
-    const finalVariant = getThemeVariant(variant, colorMode);
+    const finalVariant = getThemeVariant(
+      variant || 'default',
+      colorMode || 'standard'
+    );
 
     return (
       <Comp

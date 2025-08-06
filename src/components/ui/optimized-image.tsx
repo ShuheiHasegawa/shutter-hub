@@ -277,11 +277,11 @@ function generateBlurDataURL(): string {
  * 画像プリロード関数
  */
 export function preloadImage(
-  src: string, 
+  src: string,
   category?: 'profile' | 'photoSession' | 'photobook' | 'social'
 ): Promise<void> {
   return new Promise((resolve, reject) => {
-    const img = new Image();
+    const img = new window.Image();
     const optimizedSrc = category
       ? getOptimizedImageUrl(src, 'web', category)
       : src;

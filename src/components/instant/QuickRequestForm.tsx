@@ -92,8 +92,19 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
     let additionalFees = 0;
 
     // 緊急料金
-    if (formData.urgency === 'urgent') {
-      additionalFees += 1500;
+    switch (formData.urgency) {
+      case 'now':
+        additionalFees += 2000;
+        break;
+      case 'within_30min':
+        additionalFees += 1500;
+        break;
+      case 'within_1hour':
+        additionalFees += 1000;
+        break;
+      default:
+        additionalFees += 0;
+        break;
     }
 
     // 休日料金（簡易チェック）
@@ -269,7 +280,9 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
 
   const urgencyOptions = [
     { value: 'normal', label: '通常', extra: '追加料金なし', icon: '📋' },
-    { value: 'urgent', label: '重要', extra: '+¥1,500', icon: '⚡' },
+    { value: 'now', label: '今すぐ', extra: '+¥2,000', icon: '⚡' },
+    { value: 'within_30min', label: '30分以内', extra: '+¥1,500', icon: '🔥' },
+    { value: 'within_1hour', label: '1時間以内', extra: '+¥1,000', icon: '⏰' },
   ];
 
   return (
@@ -451,9 +464,7 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
                         </div>
                         <Badge
                           variant={
-                            option.value === 'urgent'
-                              ? 'destructive'
-                              : 'secondary'
+                            option.value === 'now' ? 'destructive' : 'secondary'
                           }
                           className="text-xs"
                         >

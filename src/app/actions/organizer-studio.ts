@@ -3,11 +3,28 @@
 import { createClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/utils/logger';
 import { revalidatePath } from 'next/cache';
-import {
-  OrganizerStudio,
-  SelectedStudio,
-  StudioRelationshipType,
-} from '@/types/database';
+// 一時的な型定義（スタジオWiki実装時に正式な型に置き換え）
+type StudioRelationshipType = 'preferred' | 'partner' | 'exclusive';
+
+interface SelectedStudio {
+  studio_id: string;
+  relationship_type: StudioRelationshipType;
+  priority_level?: number;
+  usage_rate?: number;
+  contract_start_date?: string;
+  contract_end_date?: string;
+  notes?: string;
+}
+
+interface OrganizerStudio {
+  id: string;
+  organizer_id: string;
+  studio_id: string;
+  relationship_type: StudioRelationshipType;
+  created_at: string;
+  updated_at: string;
+  [key: string]: unknown;
+}
 
 // =============================================================================
 // Organizer Studio Management (ModelSelection同様)

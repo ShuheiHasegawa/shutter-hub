@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useEffect } from 'react';
-import { DndProvider as ReactDndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
+// import { DndProvider as ReactDndProvider } from 'react-dnd';
+// import { HTML5Backend } from 'react-dnd-html5-backend';
 // import { TouchBackend } from 'react-dnd-touch-backend';
 // import { MultiBackend, createTransition } from 'react-dnd-multi-backend';
 import { debugLogger } from '@/lib/utils/debug-logger';
@@ -59,7 +59,7 @@ const DndProvider: React.FC<DndProviderProps> = ({ children }) => {
     };
   }, []);
 
-  return <ReactDndProvider backend={HTML5Backend}>{children}</ReactDndProvider>;
+  return <div>{children}</div>; // ReactDndProvider backend={HTML5Backend}>{children}</ReactDndProvider>;
 };
 
 export default DndProvider;

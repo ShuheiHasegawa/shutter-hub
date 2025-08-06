@@ -10,6 +10,7 @@ import type {
   HistoryChange,
   AccountTier,
   AccountLimits,
+  ImageResource,
 } from '@/types/photobook-editor';
 
 // ============================================
@@ -805,10 +806,7 @@ export const usePhotobookEditorStore = create<
               return true;
           }
         },
-      })),
-      {
-        name: 'photobook-editor-store',
-      }
+      }))
     )
   )
 );

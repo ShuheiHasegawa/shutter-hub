@@ -8,6 +8,7 @@
 import { useState, useEffect, useRef, ReactNode } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import Image from 'next/image';
 import Logger from '@/lib/logger';
 
 export interface LazyLoadOptions {
@@ -178,7 +179,7 @@ export function LazyImage({
             <span>画像を読み込めませんでした</span>
           </div>
         ) : (
-          <img
+          <Image
             src={src}
             alt={alt}
             width={width}
@@ -200,7 +201,7 @@ export function LazyImage({
 /**
  * ギャラリー用遅延読み込みコンポーネント
  */
-export function LazyGalleryGrid({
+export function LazyGalleryGrid<T = unknown>({
   items,
   renderItem,
   columns = 3,
@@ -208,17 +209,17 @@ export function LazyGalleryGrid({
   className,
   onItemLoad,
 }: {
-  items: any[];
-  renderItem: (item: any, index: number) => ReactNode;
+  items: T[];
+  renderItem: (item: T, index: number) => ReactNode;
   columns?: number;
   gap?: number;
   className?: string;
   onItemLoad?: (index: number) => void;
 }) {
-  const [loadedItems, setLoadedItems] = useState<Set<number>>(new Set());
+  const [_loadedItems, _setLoadedItems] = useState<Set<number>>(new Set());
 
   const handleItemLoad = (index: number) => {
-    setLoadedItems(prev => new Set(prev).add(index));
+    _setLoadedItems(prev => new Set(prev).add(index));
     onItemLoad?.(index);
   };
 
@@ -347,10 +348,12 @@ export function useProgressiveLoading<T>(
   };
 }
 
-export default {
+const lazyLoadingComponents = {
   LazyLoad,
   LazyImage,
   LazyGalleryGrid,
   InfiniteScroll,
   useProgressiveLoading,
 };
+
+export default lazyLoadingComponents;

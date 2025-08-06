@@ -492,7 +492,7 @@ export async function exportUserData() {
 
     // ユーザーの全データを収集
     const [profileData, bookingsData, messagesData, consentsData] =
-      (await Promise.all([
+      await Promise.all([
         // プロフィール情報
         supabase.from('profiles').select('*').eq('id', user.id).single(),
 
@@ -508,7 +508,7 @@ export async function exportUserData() {
 
         // 同意履歴
         supabase.from('user_consents').select('*').eq('user_id', user.id),
-      ])) as const;
+      ]);
 
     const exportData: UserDataExport = {
       user_info: {

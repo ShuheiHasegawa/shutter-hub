@@ -458,6 +458,8 @@ async function saveImageMetadata(
   }
 }
 
-export default {
+const enhancedImageUpload = {
   uploadEnhancedImage,
 };
+
+export default enhancedImageUpload;

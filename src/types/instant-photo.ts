@@ -16,7 +16,7 @@ export type RequestType =
   | 'group'
   | 'landscape'
   | 'pet';
-export type RequestUrgency = 'normal' | 'urgent';
+export type RequestUrgency = 'now' | 'within_30min' | 'within_1hour' | 'normal';
 export type RequestStatus =
   | 'pending'
   | 'matched'

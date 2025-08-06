@@ -23,9 +23,9 @@ import { GdprRequestForm } from '@/components/legal/gdpr-request-form';
 import { DataExportButton } from '@/components/legal/data-export-button';
 
 interface GdprPageProps {
-  params: {
+  params: Promise<{
     locale: string;
-  };
+  }>;
 }
 
 const gdprRightIcons = {
@@ -76,6 +76,7 @@ const rightLabels = {
 };
 
 export default async function GdprPage({ params }: GdprPageProps) {
+  const resolvedParams = await params;
   const requestsResult = await getUserGdprRequests();
   const requests = requestsResult.success ? requestsResult.data : [];
 
@@ -195,7 +196,7 @@ export default async function GdprPage({ params }: GdprPageProps) {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {requests.length === 0 ? (
+              {requests?.length === 0 ? (
                 <div className="text-center py-8">
                   <CheckCircle2 className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
                   <p className="text-sm text-muted-foreground">
@@ -204,9 +205,15 @@ export default async function GdprPage({ params }: GdprPageProps) {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {requests.map(request => {
-                    const Icon = gdprRightIcons[request.request_type];
-                    const iconColor = gdprRightColors[request.request_type];
+                  {requests?.map(request => {
+                    const Icon =
+                      gdprRightIcons[
+                        request.request_type as keyof typeof gdprRightIcons
+                      ];
+                    const iconColor =
+                      gdprRightColors[
+                        request.request_type as keyof typeof gdprRightColors
+                      ];
 
                     return (
                       <div key={request.id} className="p-4 rounded-lg border">
@@ -217,20 +224,32 @@ export default async function GdprPage({ params }: GdprPageProps) {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between mb-2">
                               <h4 className="font-semibold text-sm">
-                                {rightLabels[request.request_type]}
+                                {
+                                  rightLabels[
+                                    request.request_type as keyof typeof rightLabels
+                                  ]
+                                }
                               </h4>
                               <Badge
                                 variant="secondary"
-                                className={statusColors[request.status]}
+                                className={
+                                  statusColors[
+                                    request.status as keyof typeof statusColors
+                                  ]
+                                }
                               >
-                                {statusLabels[request.status]}
+                                {
+                                  statusLabels[
+                                    request.status as keyof typeof statusLabels
+                                  ]
+                                }
                               </Badge>
                             </div>
 
                             <p className="text-xs text-muted-foreground mb-2">
                               提出日:{' '}
                               {new Date(request.created_at).toLocaleDateString(
-                                params.locale
+                                resolvedParams.locale
                               )}
                             </p>
 
@@ -245,7 +264,7 @@ export default async function GdprPage({ params }: GdprPageProps) {
                                 回答期限:{' '}
                                 {new Date(
                                   request.response_due_date
-                                ).toLocaleDateString(params.locale)}
+                                ).toLocaleDateString(resolvedParams.locale)}
                               </span>
 
                               {request.export_file_url && (
@@ -350,7 +369,8 @@ export default async function GdprPage({ params }: GdprPageProps) {
 }
 
 // メタデータ
-export async function generateMetadata(_: GdprPageProps) {
+export async function generateMetadata({ params }: GdprPageProps) {
+  const _resolvedParams = await params;
   return {
     title: 'データ保護権利 | ShutterHub',
     description:

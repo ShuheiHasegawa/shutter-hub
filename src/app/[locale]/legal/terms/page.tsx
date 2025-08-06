@@ -12,16 +12,20 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 interface TermsPageProps {
-  params: {
+  params: Promise<{
     locale: string;
-  };
-  searchParams: {
+  }>;
+  searchParams: Promise<{
     version?: string;
-  };
+  }>;
 }
 
 export default async function TermsPage({ params }: TermsPageProps) {
-  const result = await getLegalDocument('terms_of_service', params.locale);
+  const resolvedParams = await params;
+  const result = await getLegalDocument(
+    'terms_of_service',
+    resolvedParams.locale
+  );
 
   if (!result.success || !result.data) {
     notFound();
@@ -45,7 +49,7 @@ export default async function TermsPage({ params }: TermsPageProps) {
             <span>
               有効日:{' '}
               {new Date(document.effective_date!).toLocaleDateString(
-                params.locale
+                resolvedParams.locale
               )}
             </span>
           </div>
@@ -54,14 +58,14 @@ export default async function TermsPage({ params }: TermsPageProps) {
             <div>
               公開日:{' '}
               {new Date(document.published_at).toLocaleDateString(
-                params.locale
+                resolvedParams.locale
               )}
             </div>
           )}
 
           <div className="flex items-center gap-1">
             <Badge variant="secondary">
-              {params.locale === 'ja' ? '日本語' : 'English'}
+              {resolvedParams.locale === 'ja' ? '日本語' : 'English'}
             </Badge>
           </div>
         </div>
@@ -138,7 +142,11 @@ export default async function TermsPage({ params }: TermsPageProps) {
 
 // メタデータ
 export async function generateMetadata({ params }: TermsPageProps) {
-  const result = await getLegalDocument('terms_of_service', params.locale);
+  const resolvedParams = await params;
+  const result = await getLegalDocument(
+    'terms_of_service',
+    resolvedParams.locale
+  );
 
   return {
     title: result.data?.title || 'ShutterHub 利用規約',

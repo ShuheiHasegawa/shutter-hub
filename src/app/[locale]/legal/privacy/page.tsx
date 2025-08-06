@@ -21,13 +21,17 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 interface PrivacyPageProps {
-  params: {
+  params: Promise<{
     locale: string;
-  };
+  }>;
 }
 
 export default async function PrivacyPage({ params }: PrivacyPageProps) {
-  const result = await getLegalDocument('privacy_policy', params.locale);
+  const resolvedParams = await params;
+  const result = await getLegalDocument(
+    'privacy_policy',
+    resolvedParams.locale
+  );
 
   if (!result.success || !result.data) {
     notFound();
@@ -51,7 +55,7 @@ export default async function PrivacyPage({ params }: PrivacyPageProps) {
             <span>
               有効日:{' '}
               {new Date(document.effective_date!).toLocaleDateString(
-                params.locale
+                resolvedParams.locale
               )}
             </span>
           </div>
@@ -60,7 +64,7 @@ export default async function PrivacyPage({ params }: PrivacyPageProps) {
             <div>
               公開日:{' '}
               {new Date(document.published_at).toLocaleDateString(
-                params.locale
+                resolvedParams.locale
               )}
             </div>
           )}
@@ -275,7 +279,11 @@ export default async function PrivacyPage({ params }: PrivacyPageProps) {
 
 // メタデータ
 export async function generateMetadata({ params }: PrivacyPageProps) {
-  const result = await getLegalDocument('privacy_policy', params.locale);
+  const resolvedParams = await params;
+  const result = await getLegalDocument(
+    'privacy_policy',
+    resolvedParams.locale
+  );
 
   return {
     title: result.data?.title || 'ShutterHub プライバシーポリシー',
