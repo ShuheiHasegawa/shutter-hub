@@ -29,13 +29,13 @@ interface StudioEvaluationType {
   updated_at: string;
 }
 import {
-  UserIcon,
-  CameraIcon,
-  BuildingOfficeIcon,
-  PlusIcon,
-  PhotoIcon,
-} from '@heroicons/react/24/outline';
-import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
+  User,
+  Camera,
+  Building,
+  Plus,
+  Image as ImageIcon,
+  Star,
+} from 'lucide-react';
 import Image from 'next/image';
 
 interface StudioEvaluationsProps {
@@ -139,7 +139,7 @@ export function StudioEvaluations({
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <UserIcon className="w-4 h-4 text-pink-500" />
+                  <User className="w-4 h-4 text-pink-500" />
                   <span className="text-sm">モデル</span>
                 </div>
                 <div className="text-right">
@@ -154,7 +154,7 @@ export function StudioEvaluations({
 
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <CameraIcon className="w-4 h-4 text-blue-500" />
+                  <Camera className="w-4 h-4 text-blue-500" />
                   <span className="text-sm">カメラマン</span>
                 </div>
                 <div className="text-right">
@@ -169,7 +169,7 @@ export function StudioEvaluations({
 
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <BuildingOfficeIcon className="w-4 h-4 text-green-500" />
+                  <Building className="w-4 h-4 text-green-500" />
                   <span className="text-sm">運営者</span>
                 </div>
                 <div className="text-right">
@@ -238,7 +238,7 @@ export function StudioEvaluations({
                 onClick={() => setShowEvaluationForm(true)}
                 className="bg-blue-600 hover:bg-blue-700"
               >
-                <PlusIcon className="w-4 h-4 mr-2" />
+                <Plus className="w-4 h-4 mr-2" />
                 評価を投稿
               </Button>
             </div>
@@ -303,9 +303,9 @@ export function StudioEvaluations({
 // 個別評価カード
 function EvaluationCard({ evaluation }: { evaluation: StudioEvaluationType }) {
   const roleIcon = {
-    model: <UserIcon className="w-4 h-4 text-pink-500" />,
-    photographer: <CameraIcon className="w-4 h-4 text-blue-500" />,
-    organizer: <BuildingOfficeIcon className="w-4 h-4 text-green-500" />,
+    model: <User className="w-4 h-4 text-pink-500" />,
+    photographer: <Camera className="w-4 h-4 text-blue-500" />,
+    organizer: <Building className="w-4 h-4 text-green-500" />,
   }[evaluation.user_role];
 
   const roleColor = {
@@ -408,7 +408,7 @@ function EvaluationCard({ evaluation }: { evaluation: StudioEvaluationType }) {
             evaluation.evaluation_photos.length > 0 && (
               <div className="space-y-2">
                 <div className="flex items-center gap-1 text-sm text-gray-600">
-                  <PhotoIcon className="w-4 h-4" />
+                  <ImageIcon className="w-4 h-4" />
                   評価写真
                 </div>
                 <div className="flex gap-2 overflow-x-auto">
@@ -449,11 +449,12 @@ function StarRating({
   return (
     <div className="flex">
       {[1, 2, 3, 4, 5].map(star => (
-        <StarIconSolid
+        <Star
           key={star}
           className={`${sizeClass} ${
             star <= rating ? 'text-yellow-400' : 'text-gray-200'
           }`}
+          fill={star <= rating ? 'currentColor' : 'none'}
         />
       ))}
     </div>
