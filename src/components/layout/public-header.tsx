@@ -9,17 +9,26 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Camera, Moon, Sun, Palette } from 'lucide-react';
+import { Camera, Moon, Sun, Palette, User, LogOut } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useTheme } from '@/hooks/useTheme';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Link } from '@/i18n/routing';
+import { useAuth } from '@/hooks/useAuth';
+import { useProfile } from '@/hooks/useProfile';
 
 export function PublicHeader() {
   const { settings, setPalette, toggleDarkMode, availablePalettes } =
     useTheme();
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
+  const { logout } = useAuth();
+  const { user, avatarUrl, displayName } = useProfile();
+
+  const handleSignOut = async () => {
+    await logout();
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -39,7 +48,8 @@ export function PublicHeader() {
             <div className="flex items-center gap-2">
               <div className="h-9 w-9" /> {/* パレット選択ボタン */}
               <div className="h-9 w-9" /> {/* ダークモード切り替えボタン */}
-              <div className="h-9 w-20 ml-2" /> {/* ログインボタン */}
+              <div className="h-8 w-8 ml-2" />{' '}
+              {/* ユーザーアイコン/ログインボタン */}
             </div>
           </div>
         </div>
@@ -140,17 +150,61 @@ export function PublicHeader() {
               <span className="sr-only">ダークモード切り替え</span>
             </Button>
 
-            {/* Login Button */}
-            <Button
-              variant="default"
-              size="sm"
-              onClick={() => {
-                router.push('/login');
-              }}
-              className="ml-2"
-            >
-              ログイン
-            </Button>
+            {/* User Authentication */}
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="relative h-8 w-8 rounded-full ml-2"
+                  >
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={avatarUrl || ''} alt={displayName} />
+                      <AvatarFallback>
+                        <User className="h-4 w-4" />
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <div className="flex items-center justify-start gap-2 p-2">
+                    <div className="flex flex-col space-y-1 leading-none">
+                      <p className="font-medium">{displayName}</p>
+                      <p className="w-[200px] truncate text-sm text-muted-foreground">
+                        {user?.email}
+                      </p>
+                    </div>
+                  </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => router.push('/dashboard')}>
+                    <User className="mr-2 h-4 w-4" />
+                    <span>ダッシュボード</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/profile">
+                      <User className="mr-2 h-4 w-4" />
+                      <span>プロフィール</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>ログアウト</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => {
+                  router.push('/login');
+                }}
+                className="ml-2"
+              >
+                ログイン
+              </Button>
+            )}
           </div>
         </div>
       </div>
