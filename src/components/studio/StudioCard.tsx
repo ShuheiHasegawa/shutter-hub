@@ -61,14 +61,16 @@ export function StudioCard({
       } else if (i === fullStars && hasHalfStar) {
         stars.push(
           <div key={i} className="relative">
-            <StarIcon className="w-4 h-4 text-gray-300" />
+            <StarIcon className="w-4 h-4 text-theme-text-muted" />
             <div className="absolute inset-0 overflow-hidden w-1/2">
               <StarIconSolid className="w-4 h-4 text-yellow-400" />
             </div>
           </div>
         );
       } else {
-        stars.push(<StarIcon key={i} className="w-4 h-4 text-gray-300" />);
+        stars.push(
+          <StarIcon key={i} className="w-4 h-4 text-theme-text-muted" />
+        );
       }
     }
 
@@ -84,7 +86,7 @@ export function StudioCard({
     >
       <CardHeader className="p-0">
         {/* メイン画像 */}
-        <div className="aspect-video relative bg-gray-100 rounded-t-lg overflow-hidden">
+        <div className="aspect-video relative bg-theme-neutral/10 rounded-t-lg overflow-hidden">
           {studio.featuredPhotos && studio.featuredPhotos.length > 0 ? (
             <Image
               src={studio.featuredPhotos[0].image_url}
@@ -95,7 +97,7 @@ export function StudioCard({
             />
           ) : (
             <div className="flex items-center justify-center h-full">
-              <BuildingOfficeIcon className="w-16 h-16 text-gray-400" />
+              <BuildingOfficeIcon className="w-16 h-16 text-theme-text-muted" />
             </div>
           )}
 
@@ -135,17 +137,17 @@ export function StudioCard({
 
         {/* 基本情報 */}
         <div className="space-y-2 mb-4">
-          <div className="flex items-center gap-2 text-sm text-gray-600">
+          <div className="flex items-center gap-2 text-sm text-theme-text-secondary">
             <MapPinIcon className="w-4 h-4 flex-shrink-0" />
             <span className="truncate">{studio.address}</span>
           </div>
 
-          <div className="flex items-center gap-2 text-sm text-gray-600">
+          <div className="flex items-center gap-2 text-sm text-theme-text-secondary">
             <UsersIcon className="w-4 h-4 flex-shrink-0" />
             <span>最大{studio.max_capacity || '-'}名</span>
           </div>
 
-          <div className="flex items-center gap-2 text-sm text-gray-600">
+          <div className="flex items-center gap-2 text-sm text-theme-text-secondary">
             <CurrencyYenIcon className="w-4 h-4 flex-shrink-0" />
             <span>{formatPriceRange()}</span>
           </div>
@@ -155,7 +157,7 @@ export function StudioCard({
         {studio.evaluation_count > 0 && (
           <div className="flex items-center gap-2 mb-3">
             <div className="flex">{renderStars(studio.average_rating)}</div>
-            <span className="text-sm text-gray-600">
+            <span className="text-sm text-theme-text-secondary">
               {studio.average_rating.toFixed(1)} ({studio.evaluation_count}件)
             </span>
           </div>
@@ -164,13 +166,13 @@ export function StudioCard({
         {/* 設備アイコン */}
         <div className="flex items-center gap-3 mb-4">
           {studio.parking_available && (
-            <div className="flex items-center gap-1 text-xs text-gray-500">
+            <div className="flex items-center gap-1 text-xs text-theme-text-muted">
               <TruckIcon className="w-4 h-4" />
               <span>駐車場</span>
             </div>
           )}
           {studio.wifi_available && (
-            <div className="flex items-center gap-1 text-xs text-gray-500">
+            <div className="flex items-center gap-1 text-xs text-theme-text-muted">
               <WifiIcon className="w-4 h-4" />
               <span>Wi-Fi</span>
             </div>
@@ -178,7 +180,7 @@ export function StudioCard({
         </div>
 
         {/* 統計情報 */}
-        <div className="flex justify-between text-xs text-gray-500 border-t pt-2">
+        <div className="flex justify-between text-xs text-theme-text-muted border-t border-theme-neutral/20 pt-2">
           <span>写真 {studio.photo_count}枚</span>
           <span>機材 {studio.equipment_count}点</span>
         </div>

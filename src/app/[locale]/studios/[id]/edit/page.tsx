@@ -96,7 +96,9 @@ export default function StudioEditPage() {
           </Link>
 
           <h1 className="text-3xl font-bold">スタジオ編集</h1>
-          <p className="text-gray-600 mt-2">{studio.name}の情報を編集します</p>
+          <p className="text-theme-text-secondary mt-2">
+            {studio.name}の情報を編集します
+          </p>
         </div>
 
         {/* 編集フォーム */}

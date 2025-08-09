@@ -113,12 +113,12 @@ export function StudiosList({
   if (studios.length === 0 && !loading) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500 text-lg">
+        <p className="text-theme-text-secondary text-lg">
           {triggerSearch
             ? '条件に一致するスタジオが見つかりません'
             : '検索条件を設定して「検索」ボタンを押してください'}
         </p>
-        <p className="text-gray-400 text-sm mt-2">
+        <p className="text-theme-text-muted text-sm mt-2">
           {triggerSearch
             ? '検索条件を変更してお試しください'
             : 'キーワードや都道府県を選択してスタジオを検索できます'}

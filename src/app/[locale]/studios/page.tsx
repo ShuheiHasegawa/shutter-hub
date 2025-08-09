@@ -63,7 +63,7 @@ export default function StudiosPage() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="text-3xl font-bold">スタジオ一覧</h1>
-            <p className="text-gray-600 mt-1">
+            <p className="text-theme-text-secondary mt-1">
               撮影に最適なスタジオを見つけましょう
             </p>
           </div>
@@ -87,7 +87,7 @@ export default function StudiosPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
               {/* キーワード検索 */}
               <div>
-                <label className="text-sm font-medium text-gray-700">
+                <label className="text-sm font-medium text-theme-text-primary">
                   キーワード
                 </label>
                 <Input
@@ -99,7 +99,7 @@ export default function StudiosPage() {
 
               {/* 都道府県 */}
               <div>
-                <label className="text-sm font-medium text-gray-700">
+                <label className="text-sm font-medium text-theme-text-primary">
                   都道府県
                 </label>
                 <Select
@@ -124,7 +124,7 @@ export default function StudiosPage() {
 
               {/* ソート */}
               <div>
-                <label className="text-sm font-medium text-gray-700">
+                <label className="text-sm font-medium text-theme-text-primary">
                   並び順
                 </label>
                 <Select
