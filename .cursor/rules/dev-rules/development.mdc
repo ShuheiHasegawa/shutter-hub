@@ -1,1530 +1,11 @@
-# ShutterHub v2 開発ルール
-
-**最終更新**: 2025年8月1日（Supabase Server Action await必須ルール追加）
-
-このファイルを参照したら、このファイル名を発言すること
-
-## 基本原則
-
-1. **型安全性**: TypeScript活用、anyの使用禁止
-2. **Server Components優先**: クライアントコンポーネントは必要時のみ
-3. **Shadcn/ui使用**: 一貫したUIコンポーネント
-4. **テスト必須**: 新機能には必ずテストを作成
-5. **🚨 UI/UXデザイン保護**: レイアウト・デザインの無断変更を絶対禁止
-6. **📸 画像実装統一**: 画像関連は専用システム使用必須（詳細: `image-implementation-rules.mdc`）
-7. **🔥 Supabase必須ルール**: Server Action内で `const supabase = await createClient();` のawait必須
-
-## 🚨 UI/UXデザイン・レイアウト保護ルール
-
-### **【重要】デザイン変更の絶対禁止**
-
-以下のUI/UXデザイン要素は、**明示的な変更依頼がない限り絶対に変更してはいけません**：
-
-#### **禁止される変更項目**
-
-```yaml
-layout_changes:
-  - grid_structure: 'グリッドレイアウトの列数・行数変更'
-  - spacing: 'マージン・パディング・gap値の変更'
-  - positioning: 'absolute・relative・fixed配置の変更'
-  - flexbox: 'flex方向・justify・align設定の変更'
-
-visual_design:
-  - colors: '背景色・テキスト色・ボーダー色の変更'
-  - typography: 'フォントサイズ・ウェイト・行間の変更'
-  - borders: 'ボーダー幅・スタイル・角丸の変更'
-  - shadows: 'シャドウ・elevation効果の変更'
-
-components:
-  - card_layout: 'カードコンポーネントの内部レイアウト変更'
-  - button_styles: 'ボタンサイズ・variant・色の変更'
-  - navigation: 'ナビゲーション構造・位置の変更'
-  - forms: 'フォームレイアウト・入力フィールド配置変更'
-
-responsive:
-  - breakpoints: 'レスポンシブブレイクポイントの変更'
-  - mobile_layout: 'モバイル専用レイアウトの変更'
-  - desktop_layout: 'デスクトップ専用レイアウトの変更'
-```
-
-#### **変更許可が必要な場合**
-
-```yaml
-required_approval:
-  explicit_request:
-    - 'ユーザーから「レイアウトを変更してください」等の明示的依頼'
-    - '「デザインを修正してください」等の具体的指示'
-    - '「色を変更してください」等の明確な要求'
-
-  approval_process:
-    1: '変更理由を明確に説明'
-    2: '変更前後の比較を提示'
-    3: 'ユーザーの承認を得てから実装'
-    4: '変更範囲を最小限に限定'
-```
-
-#### **例外的に許可される変更**
-
-```yaml
-allowed_changes:
-  bug_fixes:
-    - '表示崩れの修正（元のデザインへの復元）'
-    - 'レスポンシブ対応の不具合修正'
-    - 'ダークモード対応の不整合修正'
-
-  accessibility:
-    - '色のコントラスト不足の修正'
-    - 'フォーカス表示の改善'
-    - 'スクリーンリーダー対応'
-
-  performance:
-    - 'CSS最適化（見た目は維持）'
-    - '不要なスタイルの削除'
-```
-
-#### **実装時の必須チェック**
-
-```yaml
-pre_implementation_check:
-  question_yourself:
-    - 'この変更はユーザーから明示的に依頼されたか？'
-    - 'レイアウト・デザインに影響する変更はないか？'
-    - '既存の見た目を維持できているか？'
-    - '本当にこの変更が必要か？'
-
-  if_uncertain:
-    - '変更が必要な理由を明確に説明する'
-    - 'ユーザーに変更の許可を求める'
-    - '実装を停止して確認を取る'
-```
-
-#### **違反時の対応**
-
-```yaml
-violation_response:
-  immediate_action:
-    - '変更を即座に元に戻す'
-    - 'なぜ変更したかを報告する'
-    - '再発防止策を検討する'
-
-  prevention:
-    - '実装前に必ずこのルールを確認'
-    - '迷った場合は必ず質問する'
-    - '機能実装とデザイン変更を分離して考える'
-```
-
-### **成功例・失敗例**
-
-#### ✅ **正しい対応例**
-
-```typescript
-// ユーザー: "機能を追加してください"
-// → デザインは既存のまま、機能のみ追加
-
-// ユーザー: "バグを修正してください"
-// → 表示崩れを元のデザインに戻す
-
-// ユーザー: "レスポンシブ対応してください"
-// → 既存デザインを維持したまま各画面サイズに対応
-```
-
-#### ❌ **違反例**
-
-```typescript
-// ユーザー: "検索機能を追加してください"
-// → 勝手にレイアウトを変更、色を変更、間隔を調整 ← 禁止
-
-// ユーザー: "バグを修正してください"
-// → ついでにデザインを「改善」 ← 禁止
-
-// ユーザー: "パフォーマンスを向上してください"
-// → UIの配置を「最適化」 ← 禁止
-```
-
-### **このルールの重要性**
-
-- **一貫性の維持**: 予期しないデザイン変更を防ぐ
-- **ユーザー体験**: 慣れ親しんだUIを保持
-- **開発効率**: 不要な見た目の議論を回避
-- **品質管理**: 明確な変更管理プロセス
-
-## ディレクトリ構造
-
-```
-src/
-├── app/                    # Next.js App Router
-│   ├── [locale]/          # 多言語対応ルート
-│   │   ├── (auth)/        # 認証が必要なルート
-│   │   ├── (public)/      # 公開ルート
-│   │   └── api/           # APIエンドポイント
-│   └── actions/           # Server Actions
-├── components/
-│   ├── ui/                # Shadcn/ui コンポーネント
-│   ├── features/          # 機能別コンポーネント
-│   └── layouts/           # レイアウトコンポーネント
-├── hooks/                 # カスタムフック
-├── lib/                   # ユーティリティ
-│   ├── supabase/         # Supabase関連
-│   ├── utils/            # 汎用ユーティリティ
-│   └── validations/      # Zodスキーマ
-├── types/                # 型定義
-├── i18n/                 # 多言語化設定
-├── constants/            # 定数定義
-└── styles/               # グローバルスタイル
-
-supabase/
-├── migrations/           # データベースマイグレーション
-│   ├── 20241201000001_initial_schema.sql
-│   ├── 20241201000002_complete_schema.sql
-│   └── ...               # タイムスタンプ順のマイグレーション
-└── config.toml          # Supabase設定
-
-messages/                 # 多言語化メッセージ
-├── ja.json              # 日本語
-├── en.json              # 英語
-└── [locale].json        # 追加言語
-
-rules/                   # 開発ルール・プロンプト
-├── dev-rules/           # 開発ルール
-└── prompts/             # 機能別プロンプト
-```
-
-## 命名規則
-
-- **コンポーネント**: PascalCase（例: `UserProfile.tsx`）
-- **関数・変数**: camelCase（例: `getUserProfile`）
-- **定数**: UPPER_SNAKE_CASE（例: `MAX_RETRY_COUNT`）
-- **ファイル**: kebab-case（例: `user-profile.tsx`）
-
-## コンポーネント設計
-
-### Server Components（デフォルト）
-
-```typescript
-// app/events/page.tsx
-import { createClient } from '@/lib/supabase/server';
-
-export default async function EventsPage() {
-  const supabase = createClient();
-  const { data: events } = await supabase
-    .from('events')
-    .select('*');
-
-  return <EventList events={events} />;
-}
-```
-
-### Client Components（必要時のみ）
-
-```typescript
-// components/features/EventForm.tsx
-'use client';
-
-import { useForm } from 'react-hook-form';
-import { Button } from '@/components/ui/button';
-
-export function EventForm() {
-  // インタラクティブな処理
-}
-```
-
-## 📸 画像実装統一ルール（重要）
-
-### **【必須】画像関連の専用システム使用**
-
-画像の表示・アップロード・処理を行う場合は、**必ず専用の最適化システムを使用する**こと。生のNext.js ImageやHTMLのimg要素の使用は禁止。
-
-#### **詳細ルールファイル**
-
-```typescript
-// 完全なルールは専用ファイルを参照
-.cursor/rules/dev-rules/image-implementation-rules.mdc
-```
-
-#### **必須使用コンポーネント**
-
-```typescript
-// 画像表示
-import {
-  OptimizedImage, // 汎用最適化画像
-  PhotobookImage, // フォトブック用高画質
-  ProfileImage, // プロフィール画像
-  GalleryImage, // ギャラリー画像
-  SocialImage, // SNS投稿画像
-} from '@/components/ui/optimized-image';
-
-// 遅延読み込み
-import {
-  LazyGalleryGrid, // ギャラリー表示
-  InfiniteScroll, // 無限スクロール
-  LazyLoad, // 汎用遅延読み込み
-} from '@/components/ui/lazy-loading';
-
-// アップロード
-import { uploadEnhancedImage } from '@/lib/storage/enhanced-image-upload';
-```
-
-#### **✅ 正しい実装例**
-
-```typescript
-// ✅ カテゴリ別最適化画像
-<OptimizedImage
-  src={imageUrl}
-  alt="説明文"
-  category="photoSession"  // 必須カテゴリ指定
-  priority={false}
-  loading="lazy"
-/>
-
-// ✅ フォトブック用高画質画像
-<PhotobookImage
-  src={imageUrl}
-  alt="フォトブック画像"
-  showPrintQuality={false}  // Web表示時はfalse
-  width={800}
-  height={600}
-/>
-
-// ✅ 大量画像の遅延読み込み
-<LazyGalleryGrid
-  items={images}
-  renderItem={(image) => (
-    <OptimizedImage
-      src={image.src}
-      alt={image.alt}
-      category="photoSession"
-    />
-  )}
-  columns={3}
-/>
-
-// ✅ 強化アップロードシステム
-const result = await uploadEnhancedImage(file, {
-  category: 'photobook',
-  generatePrintVersion: true,  // 高画質版生成
-  enableDeduplication: true,   // 重複検出
-  userId: currentUser.id
-});
-```
-
-#### **❌ 禁止される実装例**
-
-```typescript
-// ❌ 生のNext.js Image使用
-import Image from 'next/image';
-<Image src={src} alt={alt} width={100} height={100} />
-
-// ❌ HTMLのimg要素
-<img src={src} alt={alt} />
-
-// ❌ カテゴリ未指定
-<OptimizedImage src={src} alt={alt} /> // categoryが必須
-
-// ❌ 直接Supabase Storage使用
-await supabase.storage.from('bucket').upload(path, file);
-
-// ❌ 大量画像で遅延読み込み無し
-{images.map(img => <OptimizedImage key={img.id} {...img} />)}
-```
-
-#### **画像カテゴリ分類（必須）**
-
-```typescript
-type ImageCategory =
-  | 'profile' // プロフィール画像（15MB制限）
-  | 'photoSession' // 撮影会画像（25MB制限）
-  | 'photobook' // フォトブック用（50MB制限・高画質）
-  | 'social'; // SNS投稿（10MB制限）
-```
-
-#### **パフォーマンス要件**
-
-```yaml
-必須達成指標:
-  画像読み込み時間: < 500ms (profile), < 1s (gallery 10枚)
-  圧縮率: > 50% (最低), > 70% (目標)
-  キャッシュヒット率: > 85%
-  Lighthouse Performance: > 90点
-```
-
-### **重要な注意事項**
-
-1. **core files変更禁止**
-
-   - `image-optimization.ts`
-   - `enhanced-image-upload.ts`
-   - `optimized-image.tsx`
-   - `lazy-loading.tsx`
-
-2. **設定値変更禁止**
-
-   - 品質設定の独断変更
-   - ファイルサイズ制限の緩和
-   - キャッシュ戦略の変更
-
-3. **相談必須事項**
-   - 新しい画像カテゴリの追加
-   - パフォーマンス設定の変更
-   - セキュリティ要件の変更
-
-詳細は `image-implementation-rules.mdc` を必ず確認すること。
-
-## 🚨 プロフィール表示統一ルール
-
-### **【重要】UserProfileDisplayコンポーネント必須使用**
-
-プロフィール表示（アバター + 名前 + 役割）を行う場合は、**必ず`UserProfileDisplay`コンポーネントを使用する**こと。個別実装は禁止。
-
-#### **必須使用コンポーネント**
-
-```typescript
-import { UserProfileDisplay } from '@/components/ui/user-profile-display';
-```
-
-#### **✅ 正しい実装例**
-
-```typescript
-// ✅ UserProfileDisplayコンポーネントを使用
-<UserProfileDisplay
-  user={{
-    id: user.id,
-    display_name: user.display_name,
-    avatar_url: user.avatar_url,
-    user_type: user.user_type,
-    is_verified: user.is_verified,
-  }}
-  size="md"
-  showRole={true}
-  showVerified={true}
-  clickable={true}
-  className="hover:bg-muted/50"
-/>
-```
-
-#### **❌ 禁止される実装例**
-
-```typescript
-// ❌ 個別のAvatar + 名前 + 役割実装は禁止
-<div className="flex items-center gap-3">
-  <Avatar className="h-10 w-10">
-    <AvatarImage src={user.avatar_url} />
-    <AvatarFallback>{user.display_name?.[0]}</AvatarFallback>
-  </Avatar>
-  <div>
-    <p className="font-medium">{user.display_name}</p>
-    <Badge variant="secondary">{user.user_type}</Badge>
-  </div>
-</div>
-
-// ❌ 部分的な実装も禁止
-<Avatar>...</Avatar>
-<span>{user.display_name}</span>
-```
-
-### **適用対象箇所**
-
-以下の箇所では必ず`UserProfileDisplay`を使用すること：
-
-#### **必須適用箇所**
-
-- 投稿カード（PostCard）の投稿者情報
-- 撮影会詳細（PhotoSessionDetail）の主催者情報
-- ユーザー検索結果（UserSearchResults）
-- チャット・メッセージの送信者情報
-- コメント・レビューの投稿者情報
-- フォロワー・フォロー中リスト
-- 参加者リスト
-- ダッシュボードのユーザー情報表示
-
-#### **例外的に個別実装が許可される場合**
-
-```yaml
-exceptions:
-  special_layouts:
-    - 'ユーザープロフィール詳細ページのメイン表示'
-    - '認証フォームのアカウント作成'
-    - '管理画面の特殊なユーザー管理UI'
-
-  approval_required:
-    - '例外実装前に必ず理由を説明'
-    - 'UserProfileDisplayでは対応できない特殊要件の明示'
-    - '代替案の検討と却下理由の記載'
-```
-
-### **コンポーネント仕様**
-
-#### **基本プロパティ**
-
-```typescript
-interface UserProfileDisplayProps {
-  user: {
-    id: string; // 必須：プロフィールページ遷移用
-    display_name: string | null; // 必須：表示名
-    avatar_url: string | null; // 必須：アバター画像URL
-    user_type?: string; // オプション：photographer/model/organizer
-    is_verified?: boolean; // オプション：認証済みマーク
-  };
-  size?: 'sm' | 'md' | 'lg'; // サイズ（デフォルト: md）
-  showRole?: boolean; // 役割表示（デフォルト: true）
-  showVerified?: boolean; // 認証マーク表示（デフォルト: true）
-  clickable?: boolean; // クリック可能（デフォルト: true）
-  className?: string; // 追加スタイル
-}
-```
-
-#### **サイズバリエーション**
-
-```typescript
-// 小サイズ（リスト・チャット用）
-<UserProfileDisplay user={user} size="sm" />
-
-// 中サイズ（標準・カード用）
-<UserProfileDisplay user={user} size="md" />
-
-// 大サイズ（ヘッダー・重要表示用）
-<UserProfileDisplay user={user} size="lg" />
-```
-
-#### **表示制御オプション**
-
-```typescript
-// 役割非表示（シンプル表示）
-<UserProfileDisplay user={user} showRole={false} />
-
-// クリック無効（静的表示）
-<UserProfileDisplay user={user} clickable={false} />
-
-// 認証マーク非表示
-<UserProfileDisplay user={user} showVerified={false} />
-```
-
-### **実装時の必須チェックリスト**
-
-- [ ] プロフィール表示でUserProfileDisplayコンポーネントを使用しているか
-- [ ] 個別のAvatar + 名前 + 役割実装をしていないか
-- [ ] 適切なサイズ（sm/md/lg）を選択しているか
-- [ ] クリック遷移が必要な場合にclickable={true}を設定しているか
-- [ ] 不要な表示要素（役割・認証マーク）を適切に制御しているか
-
-### **移行ガイドライン**
-
-#### **既存コードの段階的置き換え**
-
-1. **高頻度使用箇所**: 投稿カード、撮影会詳細、ユーザー検索（優先度：高）
-2. **中頻度使用箇所**: チャット、コメント、参加者リスト（優先度：中）
-3. **低頻度使用箇所**: 管理画面、特殊表示（優先度：低）
-
-#### **置き換え作業手順**
-
-```typescript
-// 1. 既存の個別実装を特定
-grep -r "Avatar.*display_name" src/components/
-
-// 2. UserProfileDisplayインポート追加
-import { UserProfileDisplay } from '@/components/ui/user-profile-display';
-
-// 3. 個別実装をコンポーネントに置き換え
-// 4. 不要なインポート削除（Avatar, Badge等）
-// 5. 動作確認・テスト実行
-```
-
-### **違反時の対応**
-
-```yaml
-violation_response:
-  immediate_action:
-    - '個別実装を即座にUserProfileDisplayに置き換え'
-    - 'なぜ個別実装したかを報告'
-    - '再発防止策を検討'
-
-  prevention:
-    - '実装前に必ずこのルールを確認'
-    - 'プロフィール表示 = UserProfileDisplay使用を徹底'
-    - '迷った場合は必ず質問する'
-```
-
-### **このルールの重要性**
-
-- **一貫性の維持**: 全画面で統一されたプロフィール表示
-- **保守性向上**: 一箇所の修正で全体に反映
-- **機能統一**: クリック遷移、サイズ対応、アクセシビリティの統一
-- **開発効率**: プロフィール表示実装時間の大幅短縮
-- **品質保証**: テスト済みコンポーネントによる安定性確保
-
-## Next.js 15 型定義ルール
-
-### ページコンポーネントの型定義（必須）
-
-Next.js 15では、`params`と`searchParams`は**Promise型**として定義する必要があります。
-
-#### 正しい型定義
-
-```typescript
-// ✅ 正しい記述方法（Next.js 15準拠）
-interface PageProps {
-  params: Promise<{
-    id: string;
-    locale: string;
-  }>;
-  searchParams: Promise<{
-    view?: string;
-    filter?: string;
-  }>;
-}
-
-export default async function Page({ params, searchParams }: PageProps) {
-  const resolvedParams = await params;
-  const resolvedSearchParams = await searchParams;
-
-  // resolvedParams.id を使用
-  // resolvedSearchParams.view を使用
-}
-```
-
-#### 間違った型定義（使用禁止）
-
-```typescript
-// ❌ 古い記述方法（Next.js 14以前）
-interface PageProps {
-  params: {
-    id: string;
-    locale: string;
-  };
-  searchParams: {
-    view?: string;
-  };
-}
-```
-
-#### generateMetadata関数でも同様
-
-```typescript
-export async function generateMetadata({
-  params,
-}: PageProps): Promise<Metadata> {
-  const resolvedParams = await params;
-
-  const { data } = await supabase
-    .from('table')
-    .select('title')
-    .eq('id', resolvedParams.id)
-    .single();
-
-  return {
-    title: data?.title || 'Default Title',
-  };
-}
-```
-
-### 実装時の注意点
-
-1. **必ずawaitで解決**: `params`と`searchParams`は使用前に必ずawaitする
-2. **型エラーの早期発見**: TypeScriptエラーが出た場合は即座にPromise型に修正
-3. **一貫性の維持**: プロジェクト全体でNext.js 15の型定義に統一
-
-## スタイリング
-
-### 優先順位
-
-1. **Tailwind CSS**: 基本スタイリング
-2. **cn()ユーティリティ**: 条件付きクラス
-3. **CSS Variables**: テーマカスタマイズ
-
-### 実装例
-
-```tsx
-import { cn } from '@/lib/utils/cn';
-
-<Button
-  className={cn('w-full', isLoading && 'opacity-50 cursor-not-allowed')}
-  disabled={isLoading}
->
-  {isLoading ? '処理中...' : '送信'}
-</Button>;
-```
-
-## デザインシステム・カラーパレット
-
-### 基本原則
-
-- **定義済みカラーパレットの使用**: `src/constants/colors.ts`に定義されたカラーを使用
-- **シンプルで一貫性のある配色**: 過度なグラデーションや複雑な配色は避ける
-- **ダークモード対応必須**: すべてのコンポーネントでライト/ダークモード対応
-
-### カラーパレット使用ガイド
-
-#### ブランドカラー
-
-```typescript
-// src/constants/colors.ts より
-primary: '#6F5091'; // プライマリー（紫）
-secondary: '#101820'; // セカンダリー（ダークグレー）
-```
-
-#### テキストカラー
-
-```tsx
-// ライトモード
-text-gray-900           // 見出し・重要なテキスト
-text-gray-700           // 本文・説明文
-text-gray-600           // 補助テキスト（避ける）
-text-gray-500           // プレースホルダー・非活性
-
-// ダークモード対応
-text-gray-900 dark:text-white      // 見出し
-text-gray-700 dark:text-gray-300   // 本文
-text-gray-600 dark:text-gray-400   // 補助（使用を避ける）
-```
-
-#### 背景色
-
-```tsx
-// カード・コンテナ
-bg-white dark:bg-gray-800          // 標準的なカード
-bg-gray-50 dark:bg-gray-900        // セクション背景
-bg-blue-50 dark:bg-blue-900/20     // アクセント背景
-
-// グラデーション（控えめに使用）
-bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20
-```
-
-### 実装ルール
-
-#### 1. コントラストの確保
-
-```tsx
-// ❌ 悪い例: 薄い背景に薄いテキスト
-<div className="bg-gray-100">
-  <p className="text-gray-400">見えにくいテキスト</p>
-</div>
-
-// ✅ 良い例: 適切なコントラスト
-<div className="bg-gray-100 dark:bg-gray-800">
-  <p className="text-gray-900 dark:text-white">読みやすいテキスト</p>
-</div>
-```
-
-#### 2. アイコンカラー
-
-```tsx
-// セマンティックカラー
-<MapPin className="h-6 w-6 text-blue-600" />      // 位置情報
-<Clock className="h-6 w-6 text-green-600" />      // 時間
-<Shield className="h-6 w-6 text-purple-600" />    // セキュリティ
-<Camera className="h-6 w-6 text-orange-600" />    // 撮影
-```
-
-#### 3. ステータスカラー
-
-```tsx
-// 成功・エラー・警告
-text-green-600 dark:text-green-400   // 成功
-text-red-600 dark:text-red-400       // エラー
-text-yellow-600 dark:text-yellow-400 // 警告
-text-blue-600 dark:text-blue-400     // 情報
-```
-
-### 禁止事項
-
-1. **text-gray-600の単独使用**: 必ずダークモード対応を追加
-2. **複雑なグラデーション**: 3色以上のグラデーションは避ける
-3. **インラインでの色指定**: Tailwindクラスを使用
-4. **不透明度の過度な使用**: 読みやすさを優先
-
-### チェックリスト
-
-- [ ] すべてのテキストにダークモード対応クラスがあるか
-- [ ] カードやコンテナに背景色のダークモード対応があるか
-- [ ] コントラスト比は十分か（WCAG AA基準）
-- [ ] アイコンの色は意味と一致しているか
-
-## データ操作
-
-### Server Actions
-
-**🚨 重要：Supabase createClient() は必ず await 必須**
-
-```typescript
-// app/actions/event.ts
-'use server';
-
-import { createClient } from '@/lib/supabase/server';
-import { revalidatePath } from 'next/cache';
-
-export async function createEvent(formData: FormData) {
-  // 🚨 必須：createClient() は async 関数のため await が必要
-  const supabase = await createClient();
-
-  // バリデーション
-  const validatedData = eventSchema.parse({
-    title: formData.get('title'),
-  });
-
-  // データ作成
-  const { error } = await supabase.from('events').insert(validatedData);
-
-  if (error) throw error;
-  revalidatePath('/events');
-}
-```
-
-#### **📋 Server Action開発チェックリスト**
-
-**必須確認事項：**
-
-```yaml
-supabase_client:
-  - ✅ 'const supabase = await createClient();' でawait使用
-  - ❌ 'const supabase = createClient();' はエラーの原因
-
-error_handling:
-  - ✅ withServerActionErrorHandler でラップ済み
-  - ✅ 適切なエラーメッセージとログ出力
-  - ✅ revalidatePath での画面更新
-
-type_safety:
-  - ✅ 入力データの型定義・バリデーション
-  - ✅ 戻り値の型定義（ServerActionResult使用）
-```
-
-#### **よくあるエラーと対策**
-
-```typescript
-// ❌ 間違い：awaitなし → "supabase.from is not a function"
-const supabase = createClient();
-
-// ✅ 正解：awaitあり → 正常動作
-const supabase = await createClient();
-
-// ❌ 間違い：エラーハンドラーなし
-export async function badAction() {}
-
-// ✅ 正解：エラーハンドラーあり
-export const goodAction = withServerActionErrorHandler(async () => {}, {
-  actionName: 'goodAction',
-  component: 'example',
-});
-```
-
-#### **🔍 開発時必須チェック（毎回実行）**
-
-Server Action作成・修正時は以下を必ず確認：
-
-```bash
-# 1. コード内でのチェック
-grep -r "const supabase = createClient()" src/app/actions/
-# ↑ この検索でヒットした場合は全て await を追加
-
-# 2. 正しいパターンの確認
-grep -r "const supabase = await createClient()" src/app/actions/
-# ↑ 全てのSupabase使用箇所がこのパターンであることを確認
-```
-
-**実装前チェックリスト:**
-
-```yaml
-before_coding:
-  - [ ] "const supabase = await createClient();" でawait使用
-  - [ ] withServerActionErrorHandler でラップ
-  - [ ] actionName と component を正しく設定
-
-during_coding:
-  - [ ] TypeScript エラーなし
-  - [ ] リンターエラーなし
-  - [ ] console.log の削除
-
-after_coding:
-  - [ ] テスト実行成功
-  - [ ] ブラウザで動作確認
-  - [ ] "supabase.from is not a function" エラーなし
-```
-
-### クライアントサイドフェッチ（SWR）
-
-```typescript
-// hooks/useEvents.ts
-import useSWR from 'swr';
-
-export function useEvents() {
-  return useSWR('events', fetcher, {
-    revalidateOnFocus: false,
-  });
-}
-```
-
-## エラーハンドリング
-
-### エラーバウンダリ
-
-```typescript
-// app/error.tsx
-'use client';
-
-export default function Error({ error, reset }) {
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen">
-      <h2 className="text-2xl font-bold mb-4">エラーが発生しました</h2>
-      <Button onClick={reset}>再試行</Button>
-    </div>
-  );
-}
-```
-
-### トースト通知
-
-```typescript
-import { toast } from 'sonner';
-
-try {
-  await createEvent(formData);
-  toast.success('イベントを作成しました');
-} catch (error) {
-  toast.error('エラーが発生しました');
-}
-```
-
-## フォーム実装
-
-```typescript
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
-
-const form = useForm({
-  resolver: zodResolver(eventSchema),
+---
+alwaysApply: true
+---
+
+variant: 'destructive',
 });
 
-<Form {...form}>
-  <FormField
-    control={form.control}
-    name="title"
-    render={({ field }) => (
-      <FormItem>
-        <FormLabel>タイトル</FormLabel>
-        <FormControl>
-          <Input {...field} />
-        </FormControl>
-        <FormMessage />
-      </FormItem>
-    )}
-  />
-</Form>
-```
-
-## テスト
-
-### 単体テスト
-
-```typescript
-// __tests__/utils/formatDate.test.ts
-import { formatDate } from '@/lib/utils/formatDate';
-
-describe('formatDate', () => {
-  it('should format date correctly', () => {
-    const date = new Date('2024-01-01');
-    expect(formatDate(date)).toBe('2024年1月1日');
-  });
-});
-```
-
-### コンポーネントテスト
-
-```typescript
-// __tests__/components/EventCard.test.tsx
-import { render, screen } from '@testing-library/react';
-import { EventCard } from '@/components/features/EventCard';
-
-describe('EventCard', () => {
-  it('should render event title', () => {
-    render(<EventCard event={mockEvent} />);
-    expect(screen.getByText(mockEvent.title)).toBeInTheDocument();
-  });
-});
-```
-
-### テスト実行・報告
-
-- テスト完了後は実行報告書を作成
-- カバレッジ80%以上を目標
-- 失敗時は原因特定と修正を実施
-
-## セキュリティ
-
-### 認証・認可
-
-- すべての保護ルートでセッション確認
-- Row Level Security (RLS) の適切な設定
-- サーバーサイドでの権限チェック
-
-### 入力検証
-
-```typescript
-// Zodスキーマによる検証
-const eventSchema = z.object({
-  title: z.string().min(1).max(100),
-  date: z.string().datetime(),
-});
-
-// サーバーサイドで必ず検証
-const validated = eventSchema.parse(input);
-```
-
-## パフォーマンス
-
-### 画像最適化
-
-```tsx
-import Image from 'next/image';
-
-<Image
-  src="/images/event.jpg"
-  alt="イベント画像"
-  width={800}
-  height={600}
-  loading="lazy"
-/>;
-```
-
-### コード分割
-
-```typescript
-import dynamic from 'next/dynamic';
-
-const HeavyComponent = dynamic(
-  () => import('@/components/HeavyComponent'),
-  { loading: () => <Skeleton /> }
-);
-```
-
-## Git コミット規則
-
-### 基本原則
-
-- **コミット文は必ず日本語で記述する**
-- **プレフィックス付きのシンプルな実装要約とする**
-- **英語でのコミット文は禁止**
-
-### コミット文フォーマット
-
-```
-<type>: <実装内容の要約>
-
-タイプ一覧:
-feat: 新機能追加
-fix: バグ修正
-docs: ドキュメント更新
-style: コードスタイル修正
-refactor: リファクタリング
-test: テスト追加・修正
-chore: その他の作業
-
-例:
-feat: フォトブックポートフォリオシステムをプロフィール統合で実装
-fix: ユーザー認証のセッション切れ問題を修正
-docs: セットアップ手順にSupabase設定を追加
-style: ESLintエラーを修正してコード品質を向上
-refactor: photo-consentコンポーネントの型安全性を改善
-test: フォトブック作成機能のテストケースを追加
-chore: 依存関係を更新してセキュリティを強化
-```
-
-### コミット文ルール詳細
-
-1. **必ず日本語**: 英語でのコミット文は一切禁止
-2. **簡潔性**: 1行で実装内容が理解できる長さ
-3. **具体性**: 何を実装・修正したかを明確に記述
-4. **統一性**: チーム全体でフォーマットを統一
-
-## 依存関係管理ルール
-
-### 基本原則
-
-- **依存関係の追加・更新時は必ず互換性を確認**
-- **Vercelデプロイエラーを防ぐための事前チェック必須**
-- **ピア依存関係の競合は事前に解決**
-
-### 必須手順
-
-#### 1. 新しい依存関係の追加時
-
-```bash
-# 1. 依存関係の互換性確認
-npm info [package-name] peerDependencies
-
-# 2. 既存依存関係との競合チェック
-npm install [package-name] --dry-run
-
-# 3. 競合がある場合は --legacy-peer-deps で解決
-npm install [package-name] --legacy-peer-deps
-
-# 4. ビルドテスト必須
-npm run build
-```
-
-#### 2. 依存関係更新時
-
-```bash
-# 1. 段階的更新（一度に全て更新しない）
-npm update [specific-package]
-
-# 2. 更新後は必ずビルドテスト
-npm run build
-
-# 3. エラーが発生した場合は即座に修正
-```
-
-#### 3. 競合解決の優先順位
-
-1. **バージョン調整**: 互換性のあるバージョンに変更
-2. **--legacy-peer-deps**: .npmrcファイルで設定
-3. **代替パッケージ**: 競合が解決できない場合は代替を検討
-
-### .npmrcファイルの管理
-
-```
-legacy-peer-deps=true
-auto-install-peers=true
-```
-
-- **必須設定**: Vercelデプロイ時の競合回避
-- **プロジェクトルートに配置**: 全環境で統一設定
-
-### よくある競合パターンと解決法
-
-#### React バージョン競合
-
-```bash
-# 問題: React 19 vs パッケージがReact 18を要求
-# 解決: --legacy-peer-deps で回避
-npm install --legacy-peer-deps
-```
-
-#### date-fns バージョン競合
-
-```bash
-# 問題: date-fns v4 vs react-day-picker が v3を要求
-# 解決: date-fnsをダウングレード
-npm install date-fns@^3.6.0 --legacy-peer-deps
-```
-
-#### TypeScript バージョン競合
-
-```bash
-# 問題: TypeScript v5 vs パッケージがv4を要求
-# 解決: 段階的更新または代替パッケージ検討
-```
-
-### API変更への対応
-
-#### react-day-picker API変更例
-
-```tsx
-// 旧API (v8.x)
-components={{
-  IconLeft: ({ className, ...props }) => <ChevronLeft />,
-  IconRight: ({ className, ...props }) => <ChevronRight />,
-}}
-
-// 新API (v9.x)
-components={{
-  Chevron: ({ orientation, className, ...props }) => {
-    const Icon = orientation === 'left' ? ChevronLeft : ChevronRight;
-    return <Icon className={cn('h-4 w-4', className)} {...props} />;
-  },
-}}
-```
-
-### 禁止事項
-
-1. **依存関係の無計画な一括更新**
-2. **ビルドテストなしでの依存関係変更**
-3. **競合エラーの放置**
-4. **--force フラグの安易な使用**
-
-### 必須チェックリスト
-
-- [ ] 新規依存関係追加時の互換性確認
-- [ ] ビルドテスト実行
-- [ ] .npmrcファイルの適切な設定
-- [ ] Vercelデプロイテスト
-- [ ] API変更への対応確認
-
-## 禁止事項
-
-1. **any型の使用**（unknown を使用）
-2. **🚨【重要】console.log の直接使用禁止**（Logger使用必須）
-3. **ハードコードされた秘密情報**
-4. **インラインスタイルの過度な使用**
-5. **適切なローディング表示なしの非同期処理**
-6. **依存関係の無計画な更新**（上記ルール参照）
-7. **ハードコードされた日本語・英語テキスト**（多言語化必須）
-   - 静的テキストのハードコード禁止
-   - **条件分岐テキストのハードコード禁止**（`condition ? '日本語' : '日本語'`）
-   - **データベースフィールドに基づく表示テキストのハードコード禁止**
-8. **🚨【絶対禁止】明示的依頼なしのUI/UXデザイン変更**
-9. **🎨【新規追加】Tailwind色クラス直接使用禁止**（カラーシステム統一必須）
-10. **📅【新規追加】手動での日付入力禁止**（システム日付コマンド使用必須）
-
-### �� **Logger使用必須ルール（重要・自動検出機能付き）**
-
-#### **console.log直接使用の絶対禁止**
-
-```yaml
-prohibited_logging:
-  direct_console_usage:
-    - 'console.log() の直接使用' # ❌ ESLintエラー
-    - 'console.error() の直接使用' # ❌ ESLintエラー
-    - 'console.warn() の直接使用' # ❌ ESLintエラー
-    - 'console.info() の直接使用' # ❌ ESLintエラー
-    - 'console.debug() の直接使用' # ❌ ESLintエラー
-
-  automatic_detection:
-    - 'ESLint: no-console ルール（エラーレベル）'
-    - 'npm run lint で自動検出'
-    - 'コミット前チェック'
-    - 'CI/CDパイプライン統合'
-
-  enforcement_tools:
-    - 'ESLint設定: eslint.config.mjs'
-    - 'Logger移行スクリプト: scripts/migrate-to-logger.js'
-    - 'プロジェクト統計: 589箇所をLogger化完了（2025年7月18日）'
-```
-
-#### **必須Logger使用パターン**
-
-```typescript
-// ✅ 正しい使用方法
-import { logger } from '@/lib/utils/logger';
-
-// 基本ログ
-logger.debug('デバッグ情報', { userId, action });
-logger.info('処理完了', { result });
-logger.warn('注意事項', { details });
-logger.error('エラー発生', error);
-
-// グループログ
-logger.group('撮影会作成処理');
-logger.debug('バリデーション開始');
-logger.info('データベース更新');
-logger.groupEnd();
-
-// 時間測定
-logger.time('API呼び出し');
-// 処理実行
-logger.timeEnd('API呼び出し');
-```
-
-#### **❌ 禁止されるパターン（ESLintエラー）**
-
-```typescript
-// ❌ 絶対禁止 - ESLintエラーになります
-console.log('ユーザー情報:', user);
-console.error('エラー:', error);
-console.warn('警告:', warning);
-
-// ❌ 条件付きでも禁止 - ESLintエラーになります
-if (process.env.NODE_ENV === 'development') {
-  console.log('デバッグ情報'); // 条件付きでも禁止
-}
-```
-
-#### **自動修正ツール**
-
-```bash
-# Logger移行スクリプト実行
-node scripts/migrate-to-logger.js
-
-# 実行結果例（2025年7月18日実績）
-# 📊 処理結果:
-#    処理ファイル数: 115/250
-#    総置き換え数: 589箇所
-#    logger import自動追加: 114ファイル
-```
-
-#### **技術的利点**
-
-```yaml
-technical_benefits:
-  production_safety:
-    - '本番環境での自動無効化（環境変数制御）'
-    - 'パフォーマンスオーバーヘッドなし'
-    - 'セキュリティ情報漏洩防止'
-
-  development_efficiency:
-    - '詳細なデバッグ情報とグループ化'
-    - '実行時間測定機能（logger.time/timeEnd）'
-    - '構造化されたエラー情報'
-    - 'ログレベル制御（DEBUG, INFO, WARN, ERROR）'
-
-  maintenance:
-    - '一元化されたログ管理'
-    - '本番環境での問題調査機能'
-    - 'ログ出力の一貫性確保'
-```
-
-#### **環境変数設定**
-
-```bash
-# 開発環境設定
-NEXT_PUBLIC_ENABLE_DEBUG_LOGGING=true
-NEXT_PUBLIC_LOG_LEVEL=debug
-
-# 本番環境設定（自動無効化）
-NEXT_PUBLIC_ENABLE_DEBUG_LOGGING=false
-# または設定しない（デフォルトでfalse）
-```
-
-#### **実装チェックリスト**
-
-- [ ] console.logの代わりにlogger.debug()を使用
-- [ ] エラーログにはlogger.error()を使用
-- [ ] 重要な処理にはlogger.group()でグループ化
-- [ ] 性能測定にはlogger.time()/timeEnd()を使用
-- [ ] 環境変数でログ出力制御を設定
-- [ ] `npm run lint`でno-consoleエラーがないことを確認
-
-### 🎨 **カラーシステム統一ルール（新規追加）**
-
-#### **絶対禁止事項**
-
-```yaml
-prohibited_color_usage:
-  tailwind_colors:
-    - 'green-500, green-600, green-700等のTailwind色直接使用'
-    - 'blue-500, blue-600, blue-700等のTailwind色直接使用'
-    - 'red-500, red-600, red-700等のTailwind色直接使用'
-    - 'yellow-500, yellow-600, yellow-700等のTailwind色直接使用'
-    - 'purple-500, purple-600, purple-700等のTailwind色直接使用'
-
-  hardcoded_hex:
-    - '#FF0000, #00FF00, #0000FF等のHEX色直接指定'
-    - 'rgb(255, 0, 0), hsl(120, 100%, 50%)等の色直接指定'
-```
-
-#### **必須使用クラス**
-
-```yaml
-required_semantic_classes:
-  status_colors:
-    - 'text-success, bg-success': 成功・空きあり・承認済み等
-    - 'text-warning, bg-warning': 注意・待機・保留等
-    - 'text-info, bg-info': 情報・リンク・詳細等
-    - 'text-error, bg-error': エラー・満席・拒否等
-    - 'text-available, bg-available': 空きあり状態
-    - 'text-booked, bg-booked': 満席・予約済み状態
-    - 'text-pending, bg-pending': 待機・保留状態
-
-  component_usage:
-    - 'Badge, Button等のvariant属性を優先使用'
-    - 'Shadcn/ui標準のprimary, secondary, destructive等を活用'
-```
-
-#### **新規実装時の必須手順**
-
-```yaml
-implementation_checklist:
-  before_coding:
-    - [ ] "セマンティック色で表現可能か確認"
-    - [ ] "Shadcn/uiのvariantで対応可能か確認"
-    - [ ] "新しい色が必要な場合はCSS Variables追加を検討"
-
-  during_coding:
-    - [ ] "green-500等のTailwind色を使用していないか確認"
-    - [ ] "条件分岐で色を切り替える場合もセマンティック色使用"
-    - [ ] "ダークモード対応が自動的に機能するか確認"
-
-  before_commit:
-    - [ ] "grep検索でTailwind色使用をチェック"
-    - [ ] "ビルドテストでエラーがないか確認"
-    - [ ] "ダークモード切り替えで色が適切に変わるか確認"
-```
-
-#### **検出・修正方法**
-
-```bash
-# 新規実装でのTailwind色使用検出
-grep -r "green-[0-9]\|blue-[0-9]\|red-[0-9]\|yellow-[0-9]" src/components/
-
-# セマンティック色への置き換え例
-# green-500 → text-success または bg-success
-# blue-600 → text-info または bg-info
-# red-500 → text-error または bg-error
-# yellow-500 → text-warning または bg-warning
-```
-
-#### **例外的に許可される使用**
-
-```yaml
-allowed_exceptions:
-  gray_colors:
-    - 'text-gray-500, bg-gray-100等のグレー系は継続使用可能'
-    - '白黒系（white, black）は継続使用可能'
-
-  brand_colors:
-    - '既存のshutter-primary, shutter-secondary等は継続使用可能'
-    - 'CSS Variablesで定義された色は推奨'
-```
-
-#### **違反時の対応**
-
-```yaml
-violation_response:
-  immediate_action:
-    - 'Tailwind色使用箇所を即座にセマンティック色に置き換え'
-    - 'なぜセマンティック色を使用しなかったかを報告'
-    - '再発防止策を検討'
-
-  prevention:
-    - '実装前に必ずこのルールを確認'
-    - '迷った場合は必ずセマンティック色を使用'
-    - '新しい色が必要な場合はCSS Variables追加を提案'
-```
-
-#### **このルールの重要性**
-
-- **ダークモード自動対応**: CSS Variablesによる自動テーマ切り替え
-- **ブランド統一**: 一貫した色使用によるデザイン品質向上
-- **保守性向上**: 一箇所の変更で全体配色変更可能
-- **将来拡張性**: カスタムテーマ機能への対応準備
-- **開発効率**: 色選択の迷いを排除し、統一されたシステム使用
-
-### 🚨 **UI/UXデザイン変更の絶対禁止（重要）**
-
-以下の行為は**明示的な変更依頼がない限り絶対に禁止**です：
-
-#### **絶対禁止事項**
-
-```yaml
-layout_modifications:
-  - 'グリッドレイアウトの列数・行数変更'
-  - 'マージン・パディング・gap値の変更'
-  - 'flexbox設定（justify・align・direction）の変更'
-  - 'カードコンポーネント内部レイアウトの変更'
-
-visual_modifications:
-  - '背景色・テキスト色・ボーダー色の変更'
-  - 'フォントサイズ・ウェイト・行間の変更'
-  - 'ボーダー幅・スタイル・角丸の変更'
-  - 'シャドウ・elevation効果の変更'
-
-component_modifications:
-  - 'ボタンサイズ・variant・色の変更'
-  - 'ナビゲーション構造・位置の変更'
-  - 'フォームレイアウト・入力フィールド配置変更'
-  - 'アイコンサイズ・色・配置の変更'
-```
-
-#### **違反例（禁止）**
-
-```typescript
-// ❌ 明示的依頼なしでの変更例
-// ユーザー: "検索機能を追加してください"
-// → 勝手にレイアウト変更、色変更、間隔調整 ← 絶対禁止
-
-// ❌ 「改善」名目での無断変更
-// ユーザー: "バグを修正してください"
-// → ついでにデザインを「改善」 ← 絶対禁止
-
-// ❌ 機能追加時の無断デザイン変更
-// → 既存の見た目を維持したまま機能のみ追加すべき
-```
-
-#### **許可される場合の条件**
-
-```yaml
-explicit_user_request:
-  required_phrases:
-    - 'レイアウトを変更してください'
-    - 'デザインを修正してください'
-    - '色を変更してください'
-    - '間隔を調整してください'
-    - '見た目を変更してください'
-
-  approval_process: 1. "変更理由を明確に説明する"
-    2. "変更前後の比較を提示する"
-    3. "ユーザーの明示的承認を得る"
-    4. "変更範囲を最小限に限定する"
-```
-
-#### **例外的に許可される変更**
-
-```yaml
-bug_fixes:
-  - '表示崩れの修正（元のデザインへの復元）'
-  - 'レスポンシブ対応の不具合修正'
-  - 'ダークモード対応の不整合修正'
-
-accessibility:
-  - '色のコントラスト不足の修正'
-  - 'フォーカス表示の改善'
-  - 'スクリーンリーダー対応'
-
-performance:
-  - 'CSS最適化（見た目は完全に維持）'
-  - '不要なスタイルの削除'
-```
-
-#### **実装前の必須チェック**
-
-**実装開始前に以下を必ず自問してください：**
-
-1. **"この変更はユーザーから明示的に依頼されたか？"**
-2. **"レイアウト・デザインに影響する変更はないか？"**
-3. **"既存の見た目を完全に維持できているか？"**
-4. **"本当にこの変更が必要か？"**
-
-**迷った場合は必ず実装を停止してユーザーに確認を取る**
-
-## 推奨事項
-
-1. **早期リターン**で可読性向上
-2. **カスタムフック**でロジックの再利用
-3. **メモ化**によるパフォーマンス最適化
-4. **アクセシビリティファースト**の実装
-
-## 多言語化ルール
-
-### 基本原則
-
-- **すべてのユーザー向けテキストは多言語化対応必須**
-- **ハードコードされた日本語・英語テキストは禁止**
-- **next-intl を使用した統一的な多言語化**
-
-### 実装ルール
-
-#### 1. テキストの多言語化
-
-```tsx
-// ❌ 悪い例
-<Button>予約する</Button>
-<p>この撮影会は満席です</p>
-
-// ✅ 良い例
-import { useTranslations } from 'next-intl';
-
-const t = useTranslations('booking');
-<Button>{t('reserve')}</Button>
-<p>{t('sessionFull')}</p>
-```
-
-#### 2. エラーメッセージの多言語化
-
-```tsx
-// ❌ 悪い例
-toast({
-  title: 'エラー',
-  description: '予約に失敗しました',
-  variant: 'destructive',
-});
-
-// ✅ 良い例
-const t = useTranslations('errors');
-toast({
-  title: t('title'),
-  description: t('bookingFailed'),
-  variant: 'destructive',
-});
-```
+````
 
 #### 3. 日付・時刻の多言語化
 
@@ -1536,7 +17,7 @@ const options = { locale: 'ja-JP' };
 import { useLocale } from 'next-intl';
 const locale = useLocale();
 const options = { locale };
-```
+````
 
 #### 4. 条件付きテキストの多言語化
 
@@ -3157,9 +1638,190 @@ formatDateRange(startDate, endDate);
 - **一貫性**: プロジェクト全体で統一されたフォーマット関数使用
 - **保守性**: シンプルで理解しやすい実装
 
-## エラーハンドリング
+## 🚨 **MCP連携強制チェック（追加ルール）**
 
-- **一貫性**: プロジェクト全体で統一されたフォーマット関数使用
-- **保守性**: シンプルで理解しやすい実装
+### **実装前の必須確認**
+
+データベース関連の実装を開始する前に、以下の質問を自分自身に行い、すべて「YES」であることを確認してください：
+
+```yaml
+MCP連携チェックリスト:
+  - [ ] "マイグレーションファイルを作成したか？"
+  - [ ] "MCP連携でマイグレーションを適用したか？"
+  - [ ] "手動でSQL実行していないか？"
+  - [ ] "npxコマンドを使用していないか？"
+  - [ ] "ローカルでのDB検証を避けているか？"
+```
+
+### **禁止される行動パターン**
+
+```yaml
+絶対に行ってはいけないこと: ❌ "npx supabase db reset" の実行
+  ❌ "npx supabase migration up" の実行
+  ❌ ローカルSupabaseを使った検証
+  ❌ 手動でのSQL文実行（MCP以外）
+  ❌ "データベースをリセットして..." という発言
+  ❌ "ローカルでテストして..." という発言
+
+必須の行動パターン: ✅ mcp_supabase_apply_migration の使用
+  ✅ mcp_supabase_execute_sql の使用
+  ✅ mcp_supabase_list_tables での確認
+  ✅ mcp_supabase_list_migrations での状況確認
+```
+
+### **エラー時の対応手順**
+
+1. **DB関連エラー発生時**:
+
+   ```
+   ❌ 悪い対応: "ローカルでリセットしましょう"
+   ✅ 正しい対応: "MCP連携でスキーマを確認します"
+   ```
+
+2. **マイグレーション必要時**:
+
+   ```
+   ❌ 悪い対応: "npx supabase db pushで適用"
+   ✅ 正しい対応: "mcp_supabase_apply_migrationで適用"
+   ```
+
+3. **テーブル構造確認時**:
+   ```
+   ❌ 悪い対応: "psqlコマンドで確認"
+   ✅ 正しい対応: "mcp_supabase_list_tablesで確認"
+   ```
+
+### **自動違反チェック**
+
+実装中に以下のフレーズが頭に浮かんだら、**即座に停止**してMCP連携手順に切り替える：
+
+- "データベースをリセット"
+- "ローカルで検証"
+- "npx supabase"
+- "手動でSQL実行"
+- "psqlコマンド"
+
+### **ルール遵守の効果**
+
+- **確実性**: 本番環境と同じデータベースでの検証
+- **効率性**: 手戻りのない一発適用
+- **安全性**: 手動ミスの完全排除
+- **一貫性**: 開発・本番環境の完全一致
+
+## 📝 **コミットメッセージ・ルール強化**
+
+### **基本原則**
+
+- **日本語必須**: すべてのコミットメッセージは日本語で記述する
+- **適切な分割**: 論理的な単位でコミットを分割する
+- **動作確認必須**: コミット前に機能が正常動作することを確認する
+
+### **コミットメッセージ形式**
+
+```yaml
+format:
+  structure: "[type]: [変更内容の要約]
+
+[詳細説明]
+- [変更点1]
+- [変更点2]
+- [変更点3]"
+
+types:
+  feat: "新機能追加"
+  fix: "バグ修正"
+  refactor: "リファクタリング"
+  style: "スタイル・UI調整"
+  docs: "ドキュメント更新"
+  test: "テスト追加・修正"
+  chore: "その他の変更"
+  perf: "パフォーマンス改善"
+```
+
+### **コミット分割基準**
+
+```yaml
+separate_commits_for:
+  - "機能追加とバグ修正"
+  - "フロントエンドとバックエンド"
+  - "データベーススキーマと型定義"
+  - "ルール追加と実装変更"
+  - "設定ファイルとソースコード"
+
+single_commit_for:
+  - "同一機能の関連ファイル群"
+  - "型定義とその使用箇所"
+  - "ドキュメントとその関連実装"
+```
+
+### **コミット前必須チェック**
+
+```yaml
+pre_commit_checklist:
+  functionality:
+    - [ ] "修正した機能が正常に動作するか？"
+    - [ ] "エラーメッセージが表示されないか？"
+    - [ ] "ページが正常に表示されるか？"
+    
+  code_quality:
+    - [ ] "ESLintエラーがないか？"
+    - [ ] "TypeScriptエラーがないか？"
+    - [ ] "ビルドが成功するか？"
+    
+  documentation:
+    - [ ] "TODOリストが更新されているか？"
+    - [ ] "変更内容が適切に記録されているか？"
+```
+
+### **良いコミットメッセージ例**
+
+```bash
+# ✅ 良い例
+git commit -m "fix: スタジオ作成ページのSelect.Item空文字列エラー修正
+
+Select.Itemのvalue=\"\"をvalue=\"all\"に変更
+- studios/page.tsxの都道府県フィルター修正
+- studio.tsのフィルター処理でall値対応
+- 一時的な定数フォールバック追加"
+
+git commit -m "feat: MCP連携強制チェックルール追加
+
+development.mdcに新ルールセクション追加
+- DB操作時のMCP連携必須化
+- 手動マイグレーション禁止
+- エラー時対応手順明文化"
+```
+
+### **悪いコミットメッセージ例**
+
+```bash
+# ❌ 悪い例
+git commit -m "fix"
+git commit -m "update files"
+git commit -m "WIP"
+git commit -m "Fixed various bugs and added features"
+```
+
+### **自動化対応**
+
+```yaml
+automated_checks:
+  pre_commit_hooks:
+    - "ESLint自動修正"
+    - "Prettier自動フォーマット"
+    - "TypeScript型チェック"
+    
+  commit_message_validation:
+    - "日本語メッセージ必須"
+    - "最小文字数制限（10文字以上）"
+    - "typeプレフィックス必須"
+```
+
+### **このルールの効果**
+
+- **明確な変更履歴**: 後から変更内容を追跡しやすい
+- **効率的なレビュー**: 論理的に分割されたコミット
+- **品質保証**: 動作確認済みの変更のみコミット
+- **チーム協業**: 一貫したコミット形式
 
 ## エラーハンドリング
