@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { getStudioDetailAction } from '@/app/actions/studio';
+import { StudioEditHistory } from '@/components/studio/StudioEditHistory';
 import {
   StudioWithStats,
   StudioPhoto,
@@ -219,11 +220,12 @@ export default function StudioDetailPage() {
 
             {/* タブコンテンツ */}
             <Tabs defaultValue="overview" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-5">
                 <TabsTrigger value="overview">概要</TabsTrigger>
                 <TabsTrigger value="photos">写真</TabsTrigger>
                 <TabsTrigger value="equipment">設備</TabsTrigger>
                 <TabsTrigger value="evaluations">評価</TabsTrigger>
+                <TabsTrigger value="history">履歴</TabsTrigger>
               </TabsList>
 
               <TabsContent value="overview" className="space-y-4">
@@ -389,6 +391,10 @@ export default function StudioDetailPage() {
                     )}
                   </CardContent>
                 </Card>
+              </TabsContent>
+
+              <TabsContent value="history">
+                <StudioEditHistory studioId={studioId} />
               </TabsContent>
             </Tabs>
           </div>

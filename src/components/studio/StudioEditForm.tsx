@@ -1,0 +1,556 @@
+'use client';
+
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Loader2, Save, X, Info } from 'lucide-react';
+import { toast } from 'sonner';
+import { updateStudioAction } from '@/app/actions/studio';
+import { StudioWithStats } from '@/types/database';
+import { PREFECTURES } from '@/constants/japan';
+import { VALIDATION } from '@/constants/common';
+
+interface StudioEditFormProps {
+  studio: StudioWithStats;
+  onSuccess: () => void;
+  onCancel: () => void;
+}
+
+const formSchema = z.object({
+  name: z
+    .string()
+    .min(VALIDATION.name.minLength, 'スタジオ名は必須です')
+    .max(
+      VALIDATION.name.maxLength,
+      `スタジオ名は${VALIDATION.name.maxLength}文字以内で入力してください`
+    ),
+  description: z
+    .string()
+    .max(
+      VALIDATION.description.maxLength,
+      `説明は${VALIDATION.description.maxLength}文字以内で入力してください`
+    )
+    .optional(),
+  address: z
+    .string()
+    .min(1, '住所は必須です')
+    .max(200, '住所は200文字以内で入力してください'),
+  prefecture: z.string().min(1, '都道府県を選択してください'),
+  access_info: z
+    .string()
+    .max(300, 'アクセス情報は300文字以内で入力してください')
+    .optional(),
+  phone: z
+    .string()
+    .regex(/^[\d\-\(\)\+\s]*$/, '有効な電話番号を入力してください')
+    .optional(),
+  email: z.string().email('有効なメールアドレスを入力してください').optional(),
+  website_url: z.string().url('有効なURLを入力してください').optional(),
+  hourly_rate_min: z
+    .number()
+    .min(0, '料金は0以上で入力してください')
+    .optional(),
+  hourly_rate_max: z
+    .number()
+    .min(0, '料金は0以上で入力してください')
+    .optional(),
+  total_area: z.number().min(0, '面積は0以上で入力してください').optional(),
+  max_capacity: z
+    .number()
+    .min(1, '最大収容人数は1以上で入力してください')
+    .optional(),
+  parking_available: z.boolean(),
+  wifi_available: z.boolean(),
+  air_conditioning: z.boolean(),
+  natural_light: z.boolean(),
+});
+
+type FormData = z.infer<typeof formSchema>;
+
+export function StudioEditForm({
+  studio,
+  onSuccess,
+  onCancel,
+}: StudioEditFormProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const form = useForm<FormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: studio.name || '',
+      description: studio.description || '',
+      address: studio.address || '',
+      prefecture: studio.prefecture || '',
+      access_info: studio.access_info || '',
+      phone: studio.phone || '',
+      email: studio.email || '',
+      website_url: studio.website_url || '',
+      hourly_rate_min: studio.hourly_rate_min || undefined,
+      hourly_rate_max: studio.hourly_rate_max || undefined,
+      total_area: studio.total_area || undefined,
+      max_capacity: studio.max_capacity || undefined,
+      parking_available: studio.parking_available || false,
+      wifi_available: studio.wifi_available || false,
+      air_conditioning: studio.air_conditioning || false,
+      natural_light: studio.natural_light || false,
+    },
+  });
+
+  const handleSubmit = async (data: FormData) => {
+    try {
+      setIsSubmitting(true);
+      setError(null);
+
+      // 空文字をundefinedに変換（Studioタイプに合わせる）
+      const formData = {
+        ...data,
+        description: data.description || undefined,
+        access_info: data.access_info || undefined,
+        phone: data.phone || undefined,
+        email: data.email || undefined,
+        website_url: data.website_url || undefined,
+      };
+
+      const result = await updateStudioAction(studio.id, formData);
+
+      if (result.success) {
+        toast.success('スタジオ情報を更新しました');
+        onSuccess();
+      } else {
+        setError(result.error || 'スタジオの更新に失敗しました');
+      }
+    } catch {
+      setError('スタジオの更新中にエラーが発生しました');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {error && (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+          {/* 基本情報 */}
+          <Card>
+            <CardHeader>
+              <CardTitle>基本情報</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>スタジオ名 *</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="スタジオ名を入力" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>説明</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        {...field}
+                        value={field.value || ''}
+                        placeholder="スタジオの説明・特徴を入力"
+                        rows={4}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </CardContent>
+          </Card>
+
+          {/* 住所・アクセス */}
+          <Card>
+            <CardHeader>
+              <CardTitle>住所・アクセス</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <FormField
+                control={form.control}
+                name="prefecture"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>都道府県 *</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="都道府県を選択" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {PREFECTURES.map(pref => (
+                          <SelectItem key={pref} value={pref}>
+                            {pref}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="address"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>住所 *</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="詳細住所を入力" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="access_info"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>アクセス情報</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        {...field}
+                        value={field.value || ''}
+                        placeholder="最寄り駅からの行き方など"
+                        rows={3}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </CardContent>
+          </Card>
+
+          {/* 連絡先 */}
+          <Card>
+            <CardHeader>
+              <CardTitle>連絡先</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>電話番号</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        value={field.value || ''}
+                        placeholder="03-1234-5678"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>メールアドレス</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        value={field.value || ''}
+                        type="email"
+                        placeholder="contact@studio.com"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="website_url"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>ウェブサイト</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        value={field.value || ''}
+                        type="url"
+                        placeholder="https://www.studio.com"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </CardContent>
+          </Card>
+
+          {/* 料金・設備 */}
+          <Card>
+            <CardHeader>
+              <CardTitle>料金・設備</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="hourly_rate_min"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>最低料金（円/時）</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          type="number"
+                          min="0"
+                          value={field.value || ''}
+                          onChange={e =>
+                            field.onChange(
+                              e.target.value
+                                ? Number(e.target.value)
+                                : undefined
+                            )
+                          }
+                          placeholder="3000"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="hourly_rate_max"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>最高料金（円/時）</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          type="number"
+                          min="0"
+                          value={field.value || ''}
+                          onChange={e =>
+                            field.onChange(
+                              e.target.value
+                                ? Number(e.target.value)
+                                : undefined
+                            )
+                          }
+                          placeholder="8000"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="total_area"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>総面積（㎡）</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          type="number"
+                          min="0"
+                          value={field.value || ''}
+                          onChange={e =>
+                            field.onChange(
+                              e.target.value
+                                ? Number(e.target.value)
+                                : undefined
+                            )
+                          }
+                          placeholder="50"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="max_capacity"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>最大収容人数（人）</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          type="number"
+                          min="1"
+                          value={field.value || ''}
+                          onChange={e =>
+                            field.onChange(
+                              e.target.value
+                                ? Number(e.target.value)
+                                : undefined
+                            )
+                          }
+                          placeholder="20"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* 設備チェックボックス */}
+              <div className="space-y-3">
+                <h4 className="font-medium">設備・サービス</h4>
+                <div className="grid grid-cols-2 gap-3">
+                  <FormField
+                    control={form.control}
+                    name="parking_available"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormLabel>駐車場あり</FormLabel>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="wifi_available"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormLabel>Wi-Fi完備</FormLabel>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="air_conditioning"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormLabel>エアコン完備</FormLabel>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="natural_light"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormLabel>自然光利用可能</FormLabel>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 注意事項 */}
+          <Alert>
+            <Info className="h-4 w-4" />
+            <AlertDescription>
+              スタジオ情報の変更は履歴として保存されます。重要な変更を行う際は慎重に入力してください。
+            </AlertDescription>
+          </Alert>
+
+          {/* フォームアクション */}
+          <div className="flex gap-3 justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+              disabled={isSubmitting}
+            >
+              <X className="w-4 h-4 mr-2" />
+              キャンセル
+            </Button>
+
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Save className="w-4 h-4 mr-2" />
+              )}
+              {isSubmitting ? '保存中...' : '保存'}
+            </Button>
+          </div>
+        </form>
+      </Form>
+    </div>
+  );
+}

@@ -22,7 +22,7 @@ export default function CreateStudioPage() {
 
   return (
     <DashboardLayout>
-      <div className="container mx-auto px-4 py-6 max-w-4xl">
+      <div className="container mx-auto max-w-4xl">
         {/* ヘッダー */}
         <div className="mb-6">
           <Link href="/studios">
@@ -31,11 +31,6 @@ export default function CreateStudioPage() {
               スタジオ一覧に戻る
             </Button>
           </Link>
-
-          <h1 className="text-3xl font-bold">新しいスタジオを追加</h1>
-          <p className="text-gray-600 mt-1">
-            撮影会で利用するスタジオの情報を登録してください
-          </p>
         </div>
 
         {/* フォーム */}

@@ -54,6 +54,8 @@ const getPageTitle = (pathname: string): string => {
     '/analytics': 'アナリティクス',
     '/users/search': 'ユーザー検索',
     '/photobooks': 'フォトブック',
+    '/studios': 'スタジオ',
+    '/studios/create': 'スタジオ作成',
     '/admin': '管理画面',
   };
 
