@@ -118,14 +118,16 @@ export function StudioEditHistory({ studioId }: StudioEditHistoryProps) {
       </CardHeader>
       <CardContent>
         {history.length === 0 ? (
-          <p className="text-gray-500 text-center py-8">編集履歴がありません</p>
+          <p className="text-theme-text-muted text-center py-8">
+            編集履歴がありません
+          </p>
         ) : (
           <div className="space-y-4">
             {history.map(entry => (
               <div key={entry.id} className="border rounded-lg p-4">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-2">
-                    <User className="w-4 h-4 text-gray-500" />
+                    <User className="w-4 h-4 text-theme-text-muted" />
                     <span className="font-medium">
                       {(
                         entry as StudioEditHistoryType & {
@@ -135,19 +137,21 @@ export function StudioEditHistory({ studioId }: StudioEditHistoryProps) {
                     </span>
                     <Badge variant="outline">編集</Badge>
                   </div>
-                  <div className="flex items-center gap-1 text-sm text-gray-500">
+                  <div className="flex items-center gap-1 text-sm text-theme-text-muted">
                     <Clock className="w-4 h-4" />
                     {formatDate(entry.created_at)}
                   </div>
                 </div>
 
                 {entry.change_summary && (
-                  <p className="text-gray-700 mb-3">{entry.change_summary}</p>
+                  <p className="text-theme-text-primary mb-3">
+                    {entry.change_summary}
+                  </p>
                 )}
 
                 {entry.changed_fields && entry.changed_fields.length > 0 && (
                   <div className="space-y-1 text-sm bg-gray-50 p-3 rounded">
-                    <h5 className="font-medium text-gray-700 mb-2">
+                    <h5 className="font-medium text-theme-text-primary mb-2">
                       変更内容:
                     </h5>
                     {renderChanges(entry)}

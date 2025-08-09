@@ -98,14 +98,14 @@ export default function StudioDetailPage() {
       } else if (i === fullStars && hasHalfStar) {
         stars.push(
           <div key={i} className="relative">
-            <Star className="w-4 h-4 text-gray-300" />
+            <Star className="w-4 h-4 text-theme-text-muted" />
             <div className="absolute inset-0 overflow-hidden w-1/2">
               <Star className="w-4 h-4 text-yellow-400 fill-current" />
             </div>
           </div>
         );
       } else {
-        stars.push(<Star key={i} className="w-4 h-4 text-gray-300" />);
+        stars.push(<Star key={i} className="w-4 h-4 text-theme-text-muted" />);
       }
     }
 
@@ -186,7 +186,7 @@ export default function StudioDetailPage() {
                   <span className="text-lg font-medium">
                     {averageRatings.overall.toFixed(1)}
                   </span>
-                  <span className="text-gray-600">
+                  <span className="text-theme-text-secondary">
                     ({studio.evaluation_count}件のレビュー)
                   </span>
                 </div>
@@ -235,11 +235,11 @@ export default function StudioDetailPage() {
                   </CardHeader>
                   <CardContent>
                     {studio.description ? (
-                      <p className="text-gray-700 leading-relaxed">
+                      <p className="text-theme-text-primary leading-relaxed">
                         {studio.description}
                       </p>
                     ) : (
-                      <p className="text-gray-500 italic">
+                      <p className="text-theme-text-muted italic">
                         説明が登録されていません
                       </p>
                     )}
@@ -254,13 +254,15 @@ export default function StudioDetailPage() {
                     <div className="grid grid-cols-2 gap-4">
                       {studio.total_area && (
                         <div>
-                          <span className="text-sm text-gray-600">総面積</span>
+                          <span className="text-sm text-theme-text-secondary">
+                            総面積
+                          </span>
                           <p className="font-medium">{studio.total_area}㎡</p>
                         </div>
                       )}
                       {studio.max_capacity && (
                         <div>
-                          <span className="text-sm text-gray-600">
+                          <span className="text-sm text-theme-text-secondary">
                             最大収容人数
                           </span>
                           <p className="font-medium">{studio.max_capacity}名</p>
@@ -294,7 +296,7 @@ export default function StudioDetailPage() {
                         ))}
                       </div>
                     ) : (
-                      <p className="text-gray-500 text-center py-8">
+                      <p className="text-theme-text-muted text-center py-8">
                         写真が登録されていません
                       </p>
                     )}
@@ -317,11 +319,11 @@ export default function StudioDetailPage() {
                               <Badge variant="outline">{item.category}</Badge>
                             </div>
                             {item.description && (
-                              <p className="text-gray-600 text-sm mb-2">
+                              <p className="text-theme-text-secondary text-sm mb-2">
                                 {item.description}
                               </p>
                             )}
-                            <div className="flex items-center gap-4 text-sm text-gray-500">
+                            <div className="flex items-center gap-4 text-sm text-theme-text-muted">
                               <span>数量: {item.quantity}点</span>
                               {item.rental_fee && (
                                 <span>
@@ -337,7 +339,7 @@ export default function StudioDetailPage() {
                         ))}
                       </div>
                     ) : (
-                      <p className="text-gray-500 text-center py-8">
+                      <p className="text-theme-text-muted text-center py-8">
                         設備情報が登録されていません
                       </p>
                     )}
@@ -372,11 +374,11 @@ export default function StudioDetailPage() {
                               </Badge>
                             </div>
                             {evaluation.comment && (
-                              <p className="text-gray-700">
+                              <p className="text-theme-text-primary">
                                 {evaluation.comment}
                               </p>
                             )}
-                            <p className="text-xs text-gray-500 mt-2">
+                            <p className="text-xs text-theme-text-muted mt-2">
                               {new Date(
                                 evaluation.created_at
                               ).toLocaleDateString('ja-JP')}
@@ -385,7 +387,7 @@ export default function StudioDetailPage() {
                         ))}
                       </div>
                     ) : (
-                      <p className="text-gray-500 text-center py-8">
+                      <p className="text-theme-text-muted text-center py-8">
                         まだレビューがありません
                       </p>
                     )}
@@ -409,34 +411,38 @@ export default function StudioDetailPage() {
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <div className="flex items-start gap-2">
-                    <MapPin className="w-4 h-4 mt-1 text-gray-500 flex-shrink-0" />
+                    <MapPin className="w-4 h-4 mt-1 text-theme-text-muted flex-shrink-0" />
                     <div>
-                      <p className="text-sm text-gray-600">住所</p>
+                      <p className="text-sm text-theme-text-secondary">住所</p>
                       <p className="font-medium">{studio.address}</p>
                     </div>
                   </div>
 
                   {studio.access_info && (
                     <div className="mt-2">
-                      <p className="text-sm text-gray-600">アクセス</p>
+                      <p className="text-sm text-theme-text-secondary">
+                        アクセス
+                      </p>
                       <p className="text-sm">{studio.access_info}</p>
                     </div>
                   )}
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <DollarSign className="w-4 h-4 text-gray-500" />
+                  <DollarSign className="w-4 h-4 text-theme-text-muted" />
                   <div>
-                    <p className="text-sm text-gray-600">料金</p>
+                    <p className="text-sm text-theme-text-secondary">料金</p>
                     <p className="font-medium">{formatPriceRange()}</p>
                   </div>
                 </div>
 
                 {studio.max_capacity && (
                   <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4 text-gray-500" />
+                    <Users className="w-4 h-4 text-theme-text-muted" />
                     <div>
-                      <p className="text-sm text-gray-600">最大収容人数</p>
+                      <p className="text-sm text-theme-text-secondary">
+                        最大収容人数
+                      </p>
                       <p className="font-medium">{studio.max_capacity}名</p>
                     </div>
                   </div>
@@ -469,7 +475,7 @@ export default function StudioDetailPage() {
                 <CardContent className="space-y-3">
                   {studio.phone && (
                     <div className="flex items-center gap-2">
-                      <Phone className="w-4 h-4 text-gray-500" />
+                      <Phone className="w-4 h-4 text-theme-text-muted" />
                       <a
                         href={`tel:${studio.phone}`}
                         className="text-blue-600 hover:underline"
@@ -481,7 +487,7 @@ export default function StudioDetailPage() {
 
                   {studio.email && (
                     <div className="flex items-center gap-2">
-                      <Mail className="w-4 h-4 text-gray-500" />
+                      <Mail className="w-4 h-4 text-theme-text-muted" />
                       <a
                         href={`mailto:${studio.email}`}
                         className="text-blue-600 hover:underline"
@@ -493,7 +499,7 @@ export default function StudioDetailPage() {
 
                   {studio.website_url && (
                     <div className="flex items-center gap-2">
-                      <Globe className="w-4 h-4 text-gray-500" />
+                      <Globe className="w-4 h-4 text-theme-text-muted" />
                       <a
                         href={studio.website_url}
                         target="_blank"
