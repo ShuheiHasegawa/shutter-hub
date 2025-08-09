@@ -29,6 +29,7 @@ export async function getStudiosAction(
   error?: string;
 }> {
   try {
+    Logger.info('getStudiosAction called', { filters });
     const supabase = await createClient();
 
     let query = supabase
@@ -36,7 +37,7 @@ export async function getStudiosAction(
       .select(
         `
         *,
-        studio_photos!inner(
+        studio_photos(
           id,
           image_url,
           image_filename,
@@ -48,7 +49,7 @@ export async function getStudiosAction(
         )
       `
       )
-      .eq('verification_status', 'verified')
+      .in('verification_status', ['verified', 'pending'])
       .order('created_at', { ascending: false });
 
     // フィルタリング
@@ -105,6 +106,12 @@ export async function getStudiosAction(
 
     const { data, error, count } = await query;
 
+    Logger.info('Database query result', {
+      dataCount: data?.length || 0,
+      totalCount: count,
+      error: error?.message,
+    });
+
     if (error) {
       Logger.error('スタジオ一覧取得エラー:', error);
       return { success: false, error: 'スタジオ一覧の取得に失敗しました' };
@@ -136,6 +143,11 @@ export async function getStudiosAction(
         };
       }
     );
+
+    Logger.info('getStudiosAction success', {
+      studiosCount: studios.length,
+      totalCount: count || studios.length,
+    });
 
     return {
       success: true,
@@ -188,7 +200,7 @@ export async function getStudioDetailAction(studioId: string): Promise<{
         .from('studios')
         .select('*')
         .eq('id', studioId)
-        .eq('verification_status', 'verified')
+        .in('verification_status', ['verified', 'pending'])
         .single(),
 
       supabase
