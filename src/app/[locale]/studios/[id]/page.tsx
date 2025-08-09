@@ -17,19 +17,18 @@ import {
   StudioEvaluation,
 } from '@/types/database';
 import {
-  MapPinIcon,
-  UsersIcon,
-  CurrencyYenIcon,
-  StarIcon,
-  TruckIcon,
-  WifiIcon,
-  PhoneIcon,
-  EnvelopeIcon,
-  GlobeAltIcon,
-  ArrowLeftIcon,
-  PencilIcon,
-} from '@heroicons/react/24/outline';
-import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
+  MapPin,
+  Users,
+  DollarSign,
+  Star,
+  Truck,
+  Wifi,
+  Phone,
+  Mail,
+  Globe,
+  ArrowLeft,
+  Pencil,
+} from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -93,19 +92,19 @@ export default function StudioDetailPage() {
     for (let i = 0; i < 5; i++) {
       if (i < fullStars) {
         stars.push(
-          <StarIconSolid key={i} className="w-4 h-4 text-yellow-400" />
+          <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
         );
       } else if (i === fullStars && hasHalfStar) {
         stars.push(
           <div key={i} className="relative">
-            <StarIcon className="w-4 h-4 text-gray-300" />
+            <Star className="w-4 h-4 text-gray-300" />
             <div className="absolute inset-0 overflow-hidden w-1/2">
-              <StarIconSolid className="w-4 h-4 text-yellow-400" />
+              <Star className="w-4 h-4 text-yellow-400 fill-current" />
             </div>
           </div>
         );
       } else {
-        stars.push(<StarIcon key={i} className="w-4 h-4 text-gray-300" />);
+        stars.push(<Star key={i} className="w-4 h-4 text-gray-300" />);
       }
     }
 
@@ -164,7 +163,7 @@ export default function StudioDetailPage() {
         <div className="mb-6">
           <Link href="/studios">
             <Button variant="ghost" className="mb-4">
-              <ArrowLeftIcon className="w-4 h-4 mr-2" />
+              <ArrowLeft className="w-4 h-4 mr-2" />
               スタジオ一覧に戻る
             </Button>
           </Link>
@@ -195,7 +194,7 @@ export default function StudioDetailPage() {
 
             <Link href={`/studios/${studio.id}/edit`}>
               <Button variant="outline">
-                <PencilIcon className="w-4 h-4 mr-2" />
+                <Pencil className="w-4 h-4 mr-2" />
                 編集
               </Button>
             </Link>
@@ -404,7 +403,7 @@ export default function StudioDetailPage() {
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <div className="flex items-start gap-2">
-                    <MapPinIcon className="w-4 h-4 mt-1 text-gray-500 flex-shrink-0" />
+                    <MapPin className="w-4 h-4 mt-1 text-gray-500 flex-shrink-0" />
                     <div>
                       <p className="text-sm text-gray-600">住所</p>
                       <p className="font-medium">{studio.address}</p>
@@ -420,7 +419,7 @@ export default function StudioDetailPage() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <CurrencyYenIcon className="w-4 h-4 text-gray-500" />
+                  <DollarSign className="w-4 h-4 text-gray-500" />
                   <div>
                     <p className="text-sm text-gray-600">料金</p>
                     <p className="font-medium">{formatPriceRange()}</p>
@@ -429,7 +428,7 @@ export default function StudioDetailPage() {
 
                 {studio.max_capacity && (
                   <div className="flex items-center gap-2">
-                    <UsersIcon className="w-4 h-4 text-gray-500" />
+                    <Users className="w-4 h-4 text-gray-500" />
                     <div>
                       <p className="text-sm text-gray-600">最大収容人数</p>
                       <p className="font-medium">{studio.max_capacity}名</p>
@@ -441,13 +440,13 @@ export default function StudioDetailPage() {
                 <div className="flex gap-4 pt-2">
                   {studio.parking_available && (
                     <div className="flex items-center gap-1 text-sm text-green-600">
-                      <TruckIcon className="w-4 h-4" />
+                      <Truck className="w-4 h-4" />
                       <span>駐車場</span>
                     </div>
                   )}
                   {studio.wifi_available && (
                     <div className="flex items-center gap-1 text-sm text-blue-600">
-                      <WifiIcon className="w-4 h-4" />
+                      <Wifi className="w-4 h-4" />
                       <span>Wi-Fi</span>
                     </div>
                   )}
@@ -464,7 +463,7 @@ export default function StudioDetailPage() {
                 <CardContent className="space-y-3">
                   {studio.phone && (
                     <div className="flex items-center gap-2">
-                      <PhoneIcon className="w-4 h-4 text-gray-500" />
+                      <Phone className="w-4 h-4 text-gray-500" />
                       <a
                         href={`tel:${studio.phone}`}
                         className="text-blue-600 hover:underline"
@@ -476,7 +475,7 @@ export default function StudioDetailPage() {
 
                   {studio.email && (
                     <div className="flex items-center gap-2">
-                      <EnvelopeIcon className="w-4 h-4 text-gray-500" />
+                      <Mail className="w-4 h-4 text-gray-500" />
                       <a
                         href={`mailto:${studio.email}`}
                         className="text-blue-600 hover:underline"
@@ -488,7 +487,7 @@ export default function StudioDetailPage() {
 
                   {studio.website_url && (
                     <div className="flex items-center gap-2">
-                      <GlobeAltIcon className="w-4 h-4 text-gray-500" />
+                      <Globe className="w-4 h-4 text-gray-500" />
                       <a
                         href={studio.website_url}
                         target="_blank"
