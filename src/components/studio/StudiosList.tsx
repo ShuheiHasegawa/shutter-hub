@@ -15,6 +15,7 @@ interface StudiosListProps {
   selectedStudioIds?: string[];
   showSelection?: boolean;
   limit?: number;
+  triggerSearch?: boolean; // 検索実行フラグ
 }
 
 export function StudiosList({
@@ -23,9 +24,10 @@ export function StudiosList({
   selectedStudioIds = [],
   showSelection = false,
   limit = 20,
+  triggerSearch = false,
 }: StudiosListProps) {
   const [studios, setStudios] = useState<StudioWithStats[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -65,12 +67,14 @@ export function StudiosList({
     }
   };
 
-  // フィルターが変更されたら再取得
+  // 検索実行フラグがtrueの時のみ取得
   useEffect(() => {
-    setCurrentPage(1);
-    fetchStudios(1, false);
+    if (triggerSearch) {
+      setCurrentPage(1);
+      fetchStudios(1, false);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters]);
+  }, [triggerSearch, filters]);
 
   const handleLoadMore = () => {
     const nextPage = currentPage + 1;
@@ -106,14 +110,18 @@ export function StudiosList({
     );
   }
 
-  if (studios.length === 0) {
+  if (studios.length === 0 && !loading) {
     return (
       <div className="text-center py-12">
         <p className="text-gray-500 text-lg">
-          条件に一致するスタジオが見つかりません
+          {triggerSearch
+            ? '条件に一致するスタジオが見つかりません'
+            : '検索条件を設定して「検索」ボタンを押してください'}
         </p>
         <p className="text-gray-400 text-sm mt-2">
-          検索条件を変更してお試しください
+          {triggerSearch
+            ? '検索条件を変更してお試しください'
+            : 'キーワードや都道府県を選択してスタジオを検索できます'}
         </p>
       </div>
     );

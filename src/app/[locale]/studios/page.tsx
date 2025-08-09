@@ -28,6 +28,7 @@ export default function StudiosPage() {
     sort_by: DEFAULT_STUDIO_SEARCH.sort_by,
     sort_order: DEFAULT_STUDIO_SEARCH.sort_order,
   });
+  const [triggerSearch, setTriggerSearch] = useState(false);
 
   const handleSearchChange = (
     field: keyof StudioSearchFilters,
@@ -37,6 +38,12 @@ export default function StudiosPage() {
       ...prev,
       [field]: value,
     }));
+    // 検索を未実行状態に戻す（フィルター変更時）
+    setTriggerSearch(false);
+  };
+
+  const handleSearch = () => {
+    setTriggerSearch(true);
   };
 
   const handleReset = () => {
@@ -46,6 +53,7 @@ export default function StudiosPage() {
       sort_by: DEFAULT_STUDIO_SEARCH.sort_by,
       sort_order: DEFAULT_STUDIO_SEARCH.sort_order,
     });
+    setTriggerSearch(false);
   };
 
   return (
@@ -76,7 +84,7 @@ export default function StudiosPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
               {/* キーワード検索 */}
               <div>
                 <label className="text-sm font-medium text-gray-700">
@@ -148,12 +156,16 @@ export default function StudiosPage() {
                 </Select>
               </div>
 
-              {/* リセットボタン */}
-              <div className="flex items-end">
+              {/* 検索・リセットボタン */}
+              <div className="flex items-end space-x-2">
+                <Button onClick={handleSearch} className="flex-1">
+                  <MagnifyingGlassIcon className="w-4 h-4 mr-2" />
+                  検索
+                </Button>
                 <Button
                   variant="outline"
                   onClick={handleReset}
-                  className="w-full"
+                  className="flex-1"
                 >
                   リセット
                 </Button>
@@ -163,7 +175,7 @@ export default function StudiosPage() {
         </Card>
 
         {/* スタジオ一覧 */}
-        <StudiosList filters={filters} />
+        <StudiosList filters={filters} triggerSearch={triggerSearch} />
       </div>
     </DashboardLayout>
   );
