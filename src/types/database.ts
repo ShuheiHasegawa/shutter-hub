@@ -347,6 +347,8 @@ export interface Studio {
   max_capacity?: number;
   parking_available: boolean;
   wifi_available: boolean;
+  air_conditioning?: boolean;
+  natural_light?: boolean;
   business_hours?: Record<string, string>;
   regular_holidays?: string[];
   hourly_rate_min?: number;
@@ -428,13 +430,11 @@ export interface RoleSpecificRatings {
 export interface StudioEditHistory {
   id: string;
   studio_id: string;
-  editor_id: string;
-  editor_type: 'user' | 'admin';
-  action: 'create' | 'update' | 'delete';
+  edited_by: string;
   old_values?: Record<string, unknown>;
   new_values?: Record<string, unknown>;
-  edit_reason?: string;
-  admin_notes?: string;
+  changed_fields?: string[];
+  change_summary?: string;
   created_at: string;
 }
 

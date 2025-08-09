@@ -1,8 +1,7 @@
 ---
-description: 
-globs: 
 alwaysApply: false
 ---
+
 # 認証プロバイダー設定ガイド
 
 このファイルを参照したら、このファイル名を発言すること
@@ -10,10 +9,12 @@ alwaysApply: false
 ## 初回リリース対象プロバイダー
 
 ### 🔴 最優先（必須）
+
 1. **Google** - 信頼性・普及率
 2. **X (Twitter)** - 業界親和性
 
 ### 🟡 中優先（推奨）
+
 3. **Discord** - 若年層・コミュニティ
 4. **LINE** - 日本市場特化
 
@@ -22,6 +23,7 @@ alwaysApply: false
 ### 1. Google OAuth設定
 
 #### Google Cloud Console設定
+
 ```bash
 1. Google Cloud Console (https://console.cloud.google.com/) にアクセス
 2. 新しいプロジェクトを作成 or 既存プロジェクト選択
@@ -31,6 +33,7 @@ alwaysApply: false
 ```
 
 #### リダイレクトURI設定
+
 ```
 承認済みのリダイレクトURI:
 - http://localhost:3000/auth/callback (開発環境)
@@ -39,12 +42,14 @@ alwaysApply: false
 ```
 
 #### 環境変数
+
 ```env
 GOOGLE_CLIENT_ID=your_google_client_id
 GOOGLE_CLIENT_SECRET=your_google_client_secret
 ```
 
 #### Supabase設定
+
 ```sql
 -- Supabase Dashboard > Authentication > Providers > Google
 -- Enable Google provider
@@ -55,6 +60,7 @@ GOOGLE_CLIENT_SECRET=your_google_client_secret
 ### 2. X (Twitter) OAuth設定
 
 #### Twitter Developer Portal設定
+
 ```bash
 1. Twitter Developer Portal (https://developer.twitter.com/) にアクセス
 2. 新しいアプリを作成
@@ -64,6 +70,7 @@ GOOGLE_CLIENT_SECRET=your_google_client_secret
 ```
 
 #### コールバックURL設定
+
 ```
 Callback URLs:
 - http://localhost:3000/auth/callback
@@ -72,12 +79,14 @@ Callback URLs:
 ```
 
 #### 環境変数
+
 ```env
 TWITTER_CLIENT_ID=your_twitter_client_id
 TWITTER_CLIENT_SECRET=your_twitter_client_secret
 ```
 
 #### Supabase設定
+
 ```sql
 -- Supabase Dashboard > Authentication > Providers > Twitter
 -- Enable Twitter provider
@@ -88,6 +97,7 @@ TWITTER_CLIENT_SECRET=your_twitter_client_secret
 ### 3. Discord OAuth設定
 
 #### Discord Developer Portal設定
+
 ```bash
 1. Discord Developer Portal (https://discord.com/developers/applications) にアクセス
 2. 「New Application」でアプリ作成
@@ -97,6 +107,7 @@ TWITTER_CLIENT_SECRET=your_twitter_client_secret
 ```
 
 #### リダイレクトURI設定
+
 ```
 Redirects:
 - http://localhost:3000/auth/callback
@@ -105,12 +116,14 @@ Redirects:
 ```
 
 #### 環境変数
+
 ```env
 DISCORD_CLIENT_ID=your_discord_client_id
 DISCORD_CLIENT_SECRET=your_discord_client_secret
 ```
 
 #### Supabase設定
+
 ```sql
 -- Supabase Dashboard > Authentication > Providers > Discord
 -- Enable Discord provider
@@ -121,6 +134,7 @@ DISCORD_CLIENT_SECRET=your_discord_client_secret
 ### 4. LINE OAuth設定
 
 #### LINE Developers設定
+
 ```bash
 1. LINE Developers (https://developers.line.biz/) にアクセス
 2. 新しいプロバイダー作成
@@ -130,6 +144,7 @@ DISCORD_CLIENT_SECRET=your_discord_client_secret
 ```
 
 #### コールバックURL設定
+
 ```
 Callback URL:
 - http://localhost:3000/auth/callback
@@ -138,12 +153,14 @@ Callback URL:
 ```
 
 #### 環境変数
+
 ```env
 LINE_CLIENT_ID=your_line_channel_id
 LINE_CLIENT_SECRET=your_line_channel_secret
 ```
 
 #### Supabase設定
+
 ```sql
 -- Supabase Dashboard > Authentication > Providers > LINE
 -- Enable LINE provider
@@ -154,6 +171,7 @@ LINE_CLIENT_SECRET=your_line_channel_secret
 ## 共通実装コード
 
 ### OAuth認証コンポーネント
+
 ```typescript
 // components/auth/OAuthButtons.tsx
 "use client";
@@ -192,7 +210,7 @@ export function OAuthButtons() {
         <Icons.google className="mr-2 h-4 w-4" />
         Google
       </Button>
-      
+
       <Button
         variant="outline"
         onClick={() => handleOAuthSignIn('twitter')}
@@ -201,7 +219,7 @@ export function OAuthButtons() {
         <Icons.twitter className="mr-2 h-4 w-4" />
         X
       </Button>
-      
+
       <Button
         variant="outline"
         onClick={() => handleOAuthSignIn('discord')}
@@ -210,7 +228,7 @@ export function OAuthButtons() {
         <Icons.discord className="mr-2 h-4 w-4" />
         Discord
       </Button>
-      
+
       <Button
         variant="outline"
         onClick={() => handleOAuthSignIn('line')}
@@ -225,11 +243,12 @@ export function OAuthButtons() {
 ```
 
 ### コールバックページ
+
 ```typescript
 // app/auth/callback/page.tsx
-import { createClient } from "@/lib/supabase/server";
-import { NextRequest } from "next/server";
-import { redirect } from "next/navigation";
+import { createClient } from '@/lib/supabase/server';
+import { NextRequest } from 'next/server';
+import { redirect } from 'next/navigation';
 
 export default async function AuthCallback({
   searchParams,
@@ -239,8 +258,10 @@ export default async function AuthCallback({
   const supabase = createClient();
 
   if (searchParams.code) {
-    const { error } = await supabase.auth.exchangeCodeForSession(searchParams.code);
-    
+    const { error } = await supabase.auth.exchangeCodeForSession(
+      searchParams.code
+    );
+
     if (error) {
       redirect('/auth/error');
     }
@@ -252,6 +273,7 @@ export default async function AuthCallback({
 ```
 
 ### アイコンコンポーネント
+
 ```typescript
 // components/ui/icons.tsx
 export const Icons = {
@@ -305,18 +327,21 @@ export const Icons = {
 ## 実装チェックリスト
 
 ### 🔴 必須（最優先）
+
 - [ ] Google OAuth設定完了
 - [ ] X (Twitter) OAuth設定完了
 - [ ] 基本的なOAuth認証フロー実装
 - [ ] コールバックページ実装
 
 ### 🟡 推奨（中優先）
+
 - [ ] Discord OAuth設定完了
 - [ ] LINE OAuth設定完了
 - [ ] エラーハンドリング実装
 - [ ] ローディング状態実装
 
 ### 🟢 オプション（低優先）
+
 - [ ] 認証プロバイダー選択の記憶機能
 - [ ] アカウント連携機能
 - [ ] プロフィール情報の自動取得

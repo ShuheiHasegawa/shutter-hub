@@ -10,6 +10,7 @@ import {
   StudioEvaluation,
   StudioWithStats,
   StudioSearchFilters,
+  StudioEditHistory,
 } from '@/types/database';
 import { DEFAULT_STUDIO_SEARCH } from '@/constants/studio';
 
@@ -445,6 +446,7 @@ export async function updateStudioAction(
         );
     }
 
+    // スタジオ更新
     const { data: studio, error } = await supabase
       .from('studios')
       .update(updateData)
@@ -457,6 +459,27 @@ export async function updateStudioAction(
       return { success: false, error: 'スタジオの更新に失敗しました' };
     }
 
+    // 履歴保存
+    try {
+      const { error: historyError } = await supabase
+        .from('studio_edit_history')
+        .insert({
+          studio_id: studioId,
+          edited_by: user.id,
+          old_values: existingStudio,
+          new_values: studio,
+          changed_fields: Object.keys(formData),
+          change_summary: `スタジオ情報を更新しました（${Object.keys(formData).join('、')}）`,
+        });
+
+      if (historyError) {
+        Logger.error('履歴保存エラー:', historyError);
+        // 履歴保存失敗でも更新は成功として扱う
+      }
+    } catch (historyErr) {
+      Logger.error('履歴保存例外:', historyErr);
+    }
+
     revalidatePath('/studios');
     revalidatePath(`/studios/${studioId}`);
     Logger.info('スタジオ更新成功:', { studioId, userId: user.id });
@@ -467,6 +490,48 @@ export async function updateStudioAction(
     return {
       success: false,
       error: 'スタジオ更新中にエラーが発生しました',
+    };
+  }
+}
+
+/**
+ * スタジオ編集履歴を取得する
+ */
+export async function getStudioEditHistoryAction(studioId: string): Promise<{
+  success: boolean;
+  history?: StudioEditHistory[];
+  error?: string;
+}> {
+  try {
+    const supabase = await createClient();
+
+    const { data: history, error } = await supabase
+      .from('studio_edit_history')
+      .select(
+        `
+        *,
+        editor:users!edited_by(
+          id,
+          display_name,
+          email
+        )
+      `
+      )
+      .eq('studio_id', studioId)
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    if (error) {
+      Logger.error('履歴取得エラー:', error);
+      return { success: false, error: '履歴の取得に失敗しました' };
+    }
+
+    return { success: true, history: history || [] };
+  } catch (error) {
+    Logger.error('履歴取得失敗:', error);
+    return {
+      success: false,
+      error: '履歴取得中にエラーが発生しました',
     };
   }
 }

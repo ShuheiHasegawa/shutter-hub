@@ -23,6 +23,7 @@ import {
   Hash,
   Book,
   Users,
+  Building,
 } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
 import {
@@ -93,6 +94,22 @@ export function Sidebar({ className }: SidebarProps) {
           title: t('bookings'),
           href: '/bookings',
           icon: Calendar,
+        },
+      ],
+    },
+    {
+      title: 'スタジオ',
+      icon: Building,
+      children: [
+        {
+          title: 'スタジオ一覧',
+          href: '/studios',
+          icon: List,
+        },
+        {
+          title: 'スタジオ作成',
+          href: '/studios/create',
+          icon: Plus,
         },
       ],
     },

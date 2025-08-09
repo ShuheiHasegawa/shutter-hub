@@ -1,8 +1,7 @@
 ---
-description: 
-globs: 
-alwaysApply: true
+alwaysApply: false
 ---
+
 # Supabase 認証実装ガイド
 
 このファイルを参照したら、このファイル名を発言すること
@@ -19,29 +18,30 @@ SUPABASE_SERVICE_ROLE_KEY=eyJxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 ```typescript
 // src/middleware.ts
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-import { updateSession } from "@/lib/supabase/middleware";
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { updateSession } from '@/lib/supabase/middleware';
 
 export const middleware = (req: NextRequest) => {
   return updateSession(req);
 };
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|images|favicon.ico).*)"],
+  matcher: ['/((?!api|_next/static|_next/image|images|favicon.ico).*)'],
 };
 ```
 
 ## Supabaseクライアント設定
 
 ### サーバーサイド
+
 ```typescript
 // lib/supabase/server.ts
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
-import { cookies } from 'next/headers'
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 
 export function createClient() {
-  const cookieStore = cookies()
+  const cookieStore = cookies();
 
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -49,53 +49,55 @@ export function createClient() {
     {
       cookies: {
         get(name: string) {
-          return cookieStore.get(name)?.value
+          return cookieStore.get(name)?.value;
         },
         set(name: string, value: string, options: CookieOptions) {
           try {
-            cookieStore.set({ name, value, ...options })
+            cookieStore.set({ name, value, ...options });
           } catch (error) {
             // Server Componentからの呼び出し時は無視
           }
         },
         remove(name: string, options: CookieOptions) {
           try {
-            cookieStore.set({ name, value: '', ...options })
+            cookieStore.set({ name, value: '', ...options });
           } catch (error) {
             // Server Componentからの呼び出し時は無視
           }
         },
       },
     }
-  )
+  );
 }
 ```
 
 ### クライアントサイド
+
 ```typescript
 // lib/supabase/client.ts
-import { createBrowserClient } from '@supabase/ssr'
+import { createBrowserClient } from '@supabase/ssr';
 
 export function createClient() {
   return createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  );
 }
 ```
 
 ### ミドルウェアユーティリティ
+
 ```typescript
 // lib/supabase/middleware.ts
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
-import { NextResponse, type NextRequest } from 'next/server'
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import { NextResponse, type NextRequest } from 'next/server';
 
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({
     request: {
       headers: request.headers,
     },
-  })
+  });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -103,54 +105,55 @@ export async function updateSession(request: NextRequest) {
     {
       cookies: {
         get(name: string) {
-          return request.cookies.get(name)?.value
+          return request.cookies.get(name)?.value;
         },
         set(name: string, value: string, options: CookieOptions) {
           request.cookies.set({
             name,
             value,
             ...options,
-          })
+          });
           response = NextResponse.next({
             request: {
               headers: request.headers,
             },
-          })
+          });
           response.cookies.set({
             name,
             value,
             ...options,
-          })
+          });
         },
         remove(name: string, options: CookieOptions) {
           request.cookies.set({
             name,
             value: '',
             ...options,
-          })
+          });
           response = NextResponse.next({
             request: {
               headers: request.headers,
             },
-          })
+          });
           response.cookies.set({
             name,
             value: '',
             ...options,
-          })
+          });
         },
       },
     }
-  )
+  );
 
-  await supabase.auth.getUser()
-  return response
+  await supabase.auth.getUser();
+  return response;
 }
 ```
 
 ## 認証コンポーネント
 
 ### サインイン/サインアップ
+
 ```typescript
 // components/auth/AuthForm.tsx
 "use client";
@@ -174,7 +177,7 @@ export function AuthForm() {
       email,
       password,
     });
-    
+
     if (error) {
       toast.error("サインインに失敗しました");
     } else {
@@ -189,7 +192,7 @@ export function AuthForm() {
       email,
       password,
     });
-    
+
     if (error) {
       toast.error("サインアップに失敗しました");
     } else {
@@ -217,15 +220,15 @@ export function AuthForm() {
           onChange={(e) => setPassword(e.target.value)}
         />
         <div className="space-y-2">
-          <Button 
-            onClick={handleSignIn} 
+          <Button
+            onClick={handleSignIn}
             loading={loading}
             className="w-full"
           >
             サインイン
           </Button>
-          <Button 
-            onClick={handleSignUp} 
+          <Button
+            onClick={handleSignUp}
             variant="outline"
             loading={loading}
             className="w-full"
@@ -242,6 +245,7 @@ export function AuthForm() {
 ## 認証チェック
 
 ### サーバーサイド
+
 ```typescript
 // app/(auth)/dashboard/page.tsx
 import { createClient } from "@/lib/supabase/server";
@@ -265,13 +269,14 @@ export default async function DashboardPage() {
 ```
 
 ### クライアントサイド
+
 ```typescript
 // hooks/useAuth.ts
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { createClient } from "@/lib/supabase/client";
-import type { User } from "@supabase/supabase-js";
+import { useState, useEffect } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import type { User } from '@supabase/supabase-js';
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
@@ -280,19 +285,21 @@ export function useAuth() {
 
   useEffect(() => {
     const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       setUser(user);
       setLoading(false);
     };
 
     getUser();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setUser(session?.user || null);
-        setLoading(false);
-      }
-    );
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user || null);
+      setLoading(false);
+    });
 
     return () => subscription.unsubscribe();
   }, [supabase.auth]);
@@ -315,7 +322,8 @@ export function useAuth() {
 
 #### 🎯 **必須プロバイダー（優先度：高）**
 
-1. **Google** 
+1. **Google**
+
    - **理由**: 最も普及、信頼性が高い
    - **ターゲット**: 全ユーザー層（特に一般ユーザー）
    - **メリット**: Gmail、Googleフォト連携可能性
@@ -332,6 +340,7 @@ export function useAuth() {
 #### 🎨 **推奨プロバイダー（優先度：中）**
 
 3. **Discord**
+
    - **理由**: クリエイター・コミュニティで急速に普及
    - **ターゲット**: 若年層モデル、アマチュアカメラマン
    - **メリット**: コミュニティ機能との連携可能性
@@ -346,6 +355,7 @@ export function useAuth() {
    - **実装コスト**: 中
 
 #### ❌ **初回リリースでは見送り**
+
 - **GitHub**: 開発者向けすぎる、ターゲット層と不一致
 - **Facebook**: 若年層離れ、プライバシー懸念
 - **Instagram**: Meta Business API複雑、初回には重い
@@ -360,8 +370,8 @@ const handleGoogleSignIn = async () => {
   const { error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${window.location.origin}/auth/callback`
-    }
+      redirectTo: `${window.location.origin}/auth/callback`,
+    },
   });
 };
 
@@ -370,8 +380,8 @@ const handleTwitterSignIn = async () => {
   const { error } = await supabase.auth.signInWithOAuth({
     provider: 'twitter',
     options: {
-      redirectTo: `${window.location.origin}/auth/callback`
-    }
+      redirectTo: `${window.location.origin}/auth/callback`,
+    },
   });
 };
 
@@ -380,8 +390,8 @@ const handleDiscordSignIn = async () => {
   const { error } = await supabase.auth.signInWithOAuth({
     provider: 'discord',
     options: {
-      redirectTo: `${window.location.origin}/auth/callback`
-    }
+      redirectTo: `${window.location.origin}/auth/callback`,
+    },
   });
 };
 
@@ -390,8 +400,8 @@ const handleLineSignIn = async () => {
   const { error } = await supabase.auth.signInWithOAuth({
     provider: 'line',
     options: {
-      redirectTo: `${window.location.origin}/auth/callback`
-    }
+      redirectTo: `${window.location.origin}/auth/callback`,
+    },
   });
 };
 ```
