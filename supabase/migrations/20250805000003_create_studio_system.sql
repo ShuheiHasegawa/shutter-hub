@@ -111,13 +111,15 @@ CREATE TABLE studio_equipment (
 CREATE TABLE studio_photos (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   studio_id UUID REFERENCES studios(id) ON DELETE CASCADE NOT NULL,
-  photo_url TEXT NOT NULL,
+  image_url TEXT NOT NULL,
+  image_filename TEXT,
+  alt_text TEXT,
   caption TEXT,
   category TEXT CHECK (category IN (
-    'interior', 'equipment', 'exterior', 'sample_work', 'changing_room', 'other'
+    'exterior', 'interior', 'equipment', 'lighting_setup', 'sample_work', 'other'
   )),
-  sort_order INTEGER DEFAULT 0,
-  is_featured BOOLEAN DEFAULT false, -- メイン写真として使用
+  photo_type TEXT DEFAULT 'general',
+  display_order INTEGER DEFAULT 0,
   uploaded_by UUID REFERENCES auth.users(id),
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -256,7 +258,7 @@ CREATE INDEX idx_studio_equipment_category ON studio_equipment(category);
 -- スタジオ写真
 CREATE INDEX idx_studio_photos_studio_id ON studio_photos(studio_id);
 CREATE INDEX idx_studio_photos_category ON studio_photos(category);
-CREATE INDEX idx_studio_photos_featured ON studio_photos(is_featured) WHERE is_featured = true;
+CREATE INDEX idx_studio_photos_display_order ON studio_photos(display_order);
 
 -- 撮影会-スタジオ連携
 CREATE INDEX idx_photo_session_studios_photo_session_id ON photo_session_studios(photo_session_id);

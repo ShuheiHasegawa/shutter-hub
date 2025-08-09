@@ -303,6 +303,220 @@ export interface WaitlistEntryWithPhotoSession extends WaitlistEntry {
   photo_session: PhotoSessionWithOrganizer;
 }
 
+// =============================================================================
+// Studio System Types
+// =============================================================================
+
+export type StudioEquipmentCategory =
+  | 'lighting'
+  | 'camera'
+  | 'backdrop'
+  | 'props'
+  | 'furniture'
+  | 'audio'
+  | 'other';
+
+export type StudioPhotoCategory =
+  | 'exterior'
+  | 'interior'
+  | 'equipment'
+  | 'lighting_setup'
+  | 'sample_work'
+  | 'other';
+
+export type StudioRelationshipType =
+  | 'preferred'
+  | 'partner'
+  | 'exclusive'
+  | 'blocked';
+
+export interface Studio {
+  id: string;
+  name: string;
+  description?: string;
+  address: string;
+  prefecture: string;
+  city: string;
+  access_info?: string;
+  phone?: string;
+  email?: string;
+  website_url?: string;
+  latitude?: number;
+  longitude?: number;
+  total_area?: number;
+  max_capacity?: number;
+  parking_available: boolean;
+  wifi_available: boolean;
+  business_hours?: Record<string, string>;
+  regular_holidays?: string[];
+  hourly_rate_min?: number;
+  hourly_rate_max?: number;
+  normalized_name: string;
+  normalized_address: string;
+  location_hash: string;
+  verification_status: 'pending' | 'verified' | 'rejected' | 'suspended';
+  admin_notes?: string;
+  created_at: string;
+  updated_at: string;
+  created_by: string;
+}
+
+export interface StudioEquipment {
+  id: string;
+  studio_id: string;
+  category: StudioEquipmentCategory;
+  name: string;
+  description?: string;
+  quantity: number;
+  rental_fee?: number;
+  is_included: boolean;
+  condition_notes?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface StudioPhoto {
+  id: string;
+  studio_id: string;
+  image_url: string;
+  image_filename?: string;
+  alt_text?: string;
+  caption?: string;
+  category?: StudioPhotoCategory;
+  photo_type?: string;
+  display_order: number;
+  uploaded_by?: string;
+  created_at: string;
+}
+
+export interface StudioEvaluation {
+  id: string;
+  studio_id: string;
+  photo_session_id: string;
+  user_id: string;
+  user_role: 'model' | 'photographer' | 'organizer';
+  overall_rating: number;
+  accessibility_rating?: number;
+  cleanliness_rating?: number;
+  staff_support_rating?: number;
+  cost_performance_rating?: number;
+  role_specific_ratings?: RoleSpecificRatings;
+  comment?: string;
+  evaluation_photos?: string[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface RoleSpecificRatings {
+  model?: {
+    changing_room_quality?: number;
+    privacy_protection?: number;
+    safety_measures?: number;
+  };
+  photographer?: {
+    lighting_quality?: number;
+    equipment_availability?: number;
+    shooting_space?: number;
+  };
+  organizer?: {
+    booking_ease?: number;
+    staff_cooperation?: number;
+    venue_flexibility?: number;
+  };
+}
+
+export interface StudioEditHistory {
+  id: string;
+  studio_id: string;
+  editor_id: string;
+  editor_type: 'user' | 'admin';
+  action: 'create' | 'update' | 'delete';
+  old_values?: Record<string, unknown>;
+  new_values?: Record<string, unknown>;
+  edit_reason?: string;
+  admin_notes?: string;
+  created_at: string;
+}
+
+export interface OrganizerStudio {
+  id: string;
+  organizer_id: string;
+  studio_id: string;
+  relationship_type: StudioRelationshipType;
+  priority_level: number;
+  usage_rate?: number;
+  contact_person?: string;
+  contact_phone?: string;
+  contact_email?: string;
+  contact_notes?: string;
+  contract_start_date?: string;
+  contract_end_date?: string;
+  status: 'active' | 'inactive' | 'suspended';
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PhotoSessionStudio {
+  id: string;
+  photo_session_id: string;
+  studio_id: string;
+  usage_date: string;
+  start_time: string;
+  end_time: string;
+  total_cost?: number;
+  usage_notes?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// Utility types
+export interface SelectedStudio {
+  studio_id: string;
+  name: string;
+  address: string;
+  hourly_rate: number;
+  max_capacity: number;
+  relationship_type: StudioRelationshipType;
+  contact_person?: string;
+  contact_notes?: string;
+  priority_level?: number;
+}
+
+export interface StudioWithStats extends Studio {
+  featuredPhotos: StudioPhoto[];
+  equipment_count: number;
+  photo_count: number;
+  evaluation_count: number;
+  average_rating: number;
+}
+
+export interface StudioSearchFilters {
+  query?: string;
+  prefecture?: string;
+  city?: string;
+  min_capacity?: number;
+  max_capacity?: number;
+  min_hourly_rate?: number;
+  max_hourly_rate?: number;
+  parking_available?: boolean;
+  wifi_available?: boolean;
+  equipment?: StudioEquipmentCategory[];
+  sort_by?: 'name' | 'rating' | 'price' | 'distance' | 'created_at';
+  sort_order?: 'asc' | 'desc';
+  page?: number;
+  limit?: number;
+}
+
+export interface StudioDuplicateCheckResult {
+  is_duplicate: boolean;
+  similar_studios: Array<{
+    studio: Studio;
+    similarity_score: number;
+    similarity_reasons: string[];
+  }>;
+  confidence_level: 'high' | 'medium' | 'low';
+}
+
 // Supabase Database型定義
 export interface Database {
   public: {
