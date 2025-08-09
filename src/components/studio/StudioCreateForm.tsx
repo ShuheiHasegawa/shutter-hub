@@ -21,21 +21,9 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { createStudioAction } from '@/app/actions/studio';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
-import { InformationCircleIcon } from '@heroicons/react/24/outline';
-// 一時的にコメントアウトしてエラー箇所を特定
-// import { PREFECTURES } from '@/constants/japan';
-// import { VALIDATION } from '@/constants/common';
-
-// 一時的なフォールバック定数
-const PREFECTURES = ['東京都', '大阪府', '神奈川県', '愛知県', '兵庫県'];
-const VALIDATION = {
-  name: { minLength: 1, maxLength: 100 },
-  description: { maxLength: 500 },
-  address: { minLength: 1, maxLength: 200 },
-  phone: { pattern: /^[\d-+()]*$/ },
-  email: { pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ },
-  url: { pattern: /^https?:\/\/.+/ },
-};
+import { Info } from 'lucide-react';
+import { PREFECTURES } from '@/constants/japan';
+import { VALIDATION } from '@/constants/common';
 
 const formSchema = z.object({
   name: z
@@ -439,7 +427,7 @@ export function StudioCreateForm({
 
       {/* 注意事項 */}
       <Alert>
-        <InformationCircleIcon className="h-4 w-4" />
+        <Info className="h-4 w-4" />
         <AlertDescription>
           作成されたスタジオ情報は管理者による承認後に公開されます。
           承認には1-3営業日かかる場合があります。

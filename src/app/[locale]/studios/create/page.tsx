@@ -4,9 +4,10 @@ import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { StudioCreateForm } from '@/components/studio/StudioCreateForm';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeftIcon } from '@heroicons/react/24/outline';
+import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { ErrorBoundary } from 'react-error-boundary';
 
 export default function CreateStudioPage() {
   const router = useRouter();
@@ -26,7 +27,7 @@ export default function CreateStudioPage() {
         <div className="mb-6">
           <Link href="/studios">
             <Button variant="ghost" className="mb-4">
-              <ArrowLeftIcon className="w-4 h-4 mr-2" />
+              <ArrowLeft className="w-4 h-4 mr-2" />
               スタジオ一覧に戻る
             </Button>
           </Link>
@@ -43,10 +44,29 @@ export default function CreateStudioPage() {
             <CardTitle>スタジオ情報入力</CardTitle>
           </CardHeader>
           <CardContent>
-            <StudioCreateForm
-              onSuccess={handleSuccess}
-              onCancel={handleCancel}
-            />
+            <ErrorBoundary
+              fallback={
+                <div className="p-4 text-center">
+                  <h3 className="text-lg font-semibold text-red-600 mb-2">
+                    エラーが発生しました
+                  </h3>
+                  <p className="text-gray-600 mb-4">
+                    フォームの読み込み中に問題が発生しました。
+                  </p>
+                  <Button onClick={() => window.location.reload()}>
+                    ページを再読み込み
+                  </Button>
+                </div>
+              }
+              onError={() => {
+                // ErrorBoundary fallback will handle the error display
+              }}
+            >
+              <StudioCreateForm
+                onSuccess={handleSuccess}
+                onCancel={handleCancel}
+              />
+            </ErrorBoundary>
           </CardContent>
         </Card>
       </div>
