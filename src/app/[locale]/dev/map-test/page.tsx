@@ -1,7 +1,23 @@
 'use client';
 
 import { useState } from 'react';
-import { MapPicker } from '@/components/ui/map-picker';
+import dynamic from 'next/dynamic';
+
+// SSRエラー回避のため動的インポート
+const MapPicker = dynamic(
+  () =>
+    import('@/components/ui/map-picker').then(mod => ({
+      default: mod.MapPicker,
+    })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[400px] bg-gray-100 rounded-lg flex items-center justify-center">
+        地図を読み込み中...
+      </div>
+    ),
+  }
+);
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
