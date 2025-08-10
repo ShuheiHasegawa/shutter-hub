@@ -80,7 +80,7 @@ export function StudioCard({
   return (
     <Card
       className={`hover:shadow-lg transition-all duration-200 cursor-pointer ${
-        isSelected ? 'ring-2 ring-primary' : ''
+        isSelected ? 'ring-2 ring-theme-primary' : ''
       }`}
       onClick={handleClick}
     >
@@ -104,12 +104,14 @@ export function StudioCard({
           {/* バッジ */}
           <div className="absolute top-2 left-2 flex gap-2">
             {studio.verification_status === 'verified' && (
-              <Badge className="bg-green-500 text-white text-xs">
+              <Badge className="bg-theme-primary text-theme-primary-foreground text-xs">
                 認証済み
               </Badge>
             )}
             {studio.average_rating > 4.5 && (
-              <Badge className="bg-yellow-500 text-white text-xs">高評価</Badge>
+              <Badge className="bg-theme-accent text-theme-accent-foreground text-xs">
+                高評価
+              </Badge>
             )}
           </div>
 
@@ -119,8 +121,8 @@ export function StudioCard({
               <div
                 className={`w-6 h-6 rounded border-2 flex items-center justify-center ${
                   isSelected
-                    ? 'bg-primary border-primary text-white'
-                    : 'bg-white border-gray-300'
+                    ? 'bg-theme-primary border-theme-primary text-theme-primary-foreground'
+                    : 'bg-theme-background border-theme-neutral/40'
                 }`}
               >
                 {isSelected && '✓'}
