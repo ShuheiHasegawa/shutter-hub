@@ -432,8 +432,13 @@ export async function updateStudioAction(
       updateData.normalized_name = formData.name.toLowerCase().trim();
     }
 
-    if (formData.address) {
-      updateData.normalized_address = formData.address.toLowerCase().trim();
+    if (formData.address || formData.prefecture || formData.city) {
+      const prefecture = formData.prefecture || existingStudio.prefecture;
+      const city = formData.city || existingStudio.city;
+      const address = formData.address || existingStudio.address;
+      updateData.normalized_address = `${prefecture}${city}${address}`
+        .toLowerCase()
+        .trim();
     }
 
     if (formData.name || formData.address) {
