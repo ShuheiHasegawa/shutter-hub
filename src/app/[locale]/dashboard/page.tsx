@@ -250,11 +250,10 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
 
-            {/* 最近のアクティビティ */}
-            <RecentActivityComponent
-              activities={recentActivity}
-              isLoading={dashboardLoading}
-            />
+            {/* カメラマン向け即座撮影ダッシュボード */}
+            {profile.user_type === 'photographer' && (
+              <PhotographerInstantDashboard userId={user.id} />
+            )}
           </div>
 
           {/* 右カラム */}
@@ -265,10 +264,11 @@ export default function DashboardPage() {
               isLoading={dashboardLoading}
             />
 
-            {/* カメラマン向け即座撮影ダッシュボード */}
-            {profile.user_type === 'photographer' && (
-              <PhotographerInstantDashboard userId={user.id} />
-            )}
+            {/* 最近のアクティビティ */}
+            <RecentActivityComponent
+              activities={recentActivity}
+              isLoading={dashboardLoading}
+            />
           </div>
         </div>
       </div>

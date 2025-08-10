@@ -274,7 +274,7 @@ export async function getRecentActivity(
       });
     });
 
-    // 主催者の場合：最近作成したフォトセッション
+    // 主催者の場合：最近作成した撮影会
     if (userType === 'organizer') {
       const { data: recentSessions } = await supabase
         .from('photo_sessions')
@@ -287,7 +287,7 @@ export async function getRecentActivity(
         activities.push({
           id: session.id,
           type: 'session_created',
-          title: 'フォトセッション作成',
+          title: '撮影会作成',
           description: `「${session.title}」を作成しました`,
           timestamp: session.created_at,
           relatedId: session.id,
@@ -327,7 +327,7 @@ export async function getUpcomingEvents(
     const events: UpcomingEvent[] = [];
     const now = new Date();
 
-    // 今後のフォトセッション（参加者として）
+    // 今後の撮影会（参加者として）
     const { data: upcomingBookings } = await supabase
       .from('bookings')
       .select(
@@ -362,7 +362,7 @@ export async function getUpcomingEvents(
       }
     });
 
-    // 主催者の場合：主催予定のフォトセッション
+    // 主催者の場合：主催予定の撮影会
     if (userType === 'organizer') {
       const { data: hostingSessions } = await supabase
         .from('photo_sessions')

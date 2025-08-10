@@ -131,10 +131,10 @@ export function UpcomingEvents({ events, isLoading }: UpcomingEventsProps) {
             <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <p className="text-gray-600">今後の予定はありません</p>
             <p className="text-sm text-gray-500 mt-2">
-              新しいフォトセッションを予約してみましょう。
+              新しい撮影会を予約してみましょう。
             </p>
             <Button className="mt-4" asChild>
-              <Link href="/ja/photo-sessions">フォトセッションを探す</Link>
+              <Link href="/ja/photo-sessions">撮影会を探す</Link>
             </Button>
           </div>
         </CardContent>
