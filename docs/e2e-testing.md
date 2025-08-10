@@ -32,19 +32,34 @@ ShutterHub v2では、複雑な予約システム（5種類）とエスクロー
 - **デバイス**: デスクトップ、モバイル（Pixel 5、iPhone 12）
 - **言語**: TypeScript
 
-### ファイル構成
+### ファイル構成（2024年12月更新）
 ```
 tests/
 ├── e2e/
+│   ├── auth/                      # 認証・権限管理テスト
+│   │   ├── login.spec.ts          # ログイン・ログアウト
+│   │   └── permissions.spec.ts    # 権限チェック
+│   ├── studios/                   # スタジオ機能テスト
+│   │   ├── studio-create.spec.ts  # スタジオ作成
+│   │   ├── studio-edit.spec.ts    # スタジオ編集・権限
+│   │   └── studio-list.spec.ts    # 一覧・検索
+│   ├── dashboard/                 # ダッシュボード機能テスト
+│   │   └── dashboard-navigation.spec.ts
+│   ├── instant/                   # 即座撮影機能テスト
+│   │   └── instant-request.spec.ts
+│   ├── dev/                       # 開発・デバッグ用テスト
+│   │   └── database-validation.spec.ts
+│   ├── booking-systems.spec.ts    # 予約システムテスト（455行）
+│   ├── escrow-payment.spec.ts     # エスクロー決済テスト（350行）
 │   ├── auth.setup.ts              # 認証セットアップ
 │   ├── global-setup.ts            # テスト環境初期化
 │   ├── global-teardown.ts         # クリーンアップ処理
-│   ├── booking-systems.spec.ts    # 予約システムテスト（455行）
-│   ├── escrow-payment.spec.ts     # エスクロー決済テスト（350行）
 │   ├── utils/
 │   │   └── test-helpers.ts        # テストヘルパー関数
 │   ├── .auth/                     # 認証状態保存
 │   └── fixtures/                  # テストデータ
+├── helpers/
+│   └── test-data.ts               # 共通テストデータ・ヘルパー
 playwright.config.ts               # Playwright設定
 ```
 
@@ -65,19 +80,40 @@ npm run test:e2e:headless
 npm run test:e2e:report
 ```
 
+### 機能別テスト実行（推奨）
+```bash
+# 認証・権限管理テスト
+npm run test:auth
+
+# スタジオ機能テスト
+npm run test:studios
+
+# ダッシュボード機能テスト
+npm run test:dashboard
+
+# 即座撮影機能テスト
+npm run test:instant
+
+# 開発・デバッグ用テスト
+npm run test:dev
+
+# レガシー予約システムテスト
+npm run test:booking
+
+# エスクロー決済テスト
+npm run test:escrow
+```
+
 ### 個別テスト実行
 ```bash
-# 予約システムのみ
-npm run test:e2e:booking
-
-# エスクロー決済のみ
-npm run test:e2e:escrow
+# 特定のディレクトリ
+npx playwright test tests/e2e/studios/
 
 # 特定のテストファイル
-npx playwright test booking-systems.spec.ts
+npx playwright test tests/e2e/studios/studio-edit.spec.ts
 
 # 特定のテストケース
-npx playwright test -g "先着順予約"
+npx playwright test -g "スタジオ編集権限"
 ```
 
 ### デバッグモード
@@ -127,7 +163,27 @@ STRIPE_SECRET_KEY=your_test_stripe_key
 
 ## 📝 テストヘルパー関数
 
-### 主要ヘルパー関数（test-helpers.ts）
+### 共通テストデータ（tests/helpers/test-data.ts）
+```typescript
+// ユーザー情報
+TEST_USERS = {
+  photographer: { email: 'test@example.com', userType: 'photographer' },
+  organizer: { email: 'organizer@example.com', userType: 'organizer' },
+  admin: { email: 'admin@example.com', userType: 'admin' }
+}
+
+// スタジオ情報
+TEST_STUDIOS = {
+  existing: { id: 'afaa8889-8a04-489e-b10e-3951e460b353', name: 'BPM123' },
+  new: { name: 'テストスタジオ', description: '...' }
+}
+
+// 共通ヘルパー関数
+login(page, userType = 'photographer')  // 自動ログイン
+createTestStudio(page)                  // テストスタジオ作成
+```
+
+### 主要ヘルパー関数（tests/e2e/utils/test-helpers.ts）
 ```typescript
 // ページ読み込み・要素待機
 waitForPageLoad(page, timeout?)
@@ -157,7 +213,49 @@ testResponsiveLayout(page, breakpoints)
 
 ## 🧪 テストケース詳細
 
-### 予約システムテスト（booking-systems.spec.ts）
+### 新機能テスト（機能別）
+
+#### 認証・権限管理テスト（tests/e2e/auth/）
+```typescript
+// ログイン・ログアウト
+test('正常ログイン', async ({ page }) => {
+  // Email/Password認証フロー
+});
+
+// 権限チェック
+test('スタジオ編集権限テスト', async ({ page }) => {
+  // organizer/admin権限でのスタジオ編集
+});
+```
+
+#### スタジオ機能テスト（tests/e2e/studios/）
+```typescript
+// スタジオ作成
+test('新規スタジオ作成', async ({ page }) => {
+  // organizerによるスタジオ作成フロー
+});
+
+// スタジオ編集・権限
+test('スタジオ編集権限のテスト', async ({ page }) => {
+  // 作成者・organizer権限でのスタジオ編集
+});
+
+// 住所正規化テスト
+test('住所正規化の重複テスト', async ({ page }) => {
+  // normalized_address重複防止検証
+});
+```
+
+#### ダッシュボード機能テスト（tests/e2e/dashboard/）
+```typescript
+test('統計カード表示', async ({ page }) => {
+  // 3列レイアウト（grid-cols-3）検証
+});
+```
+
+### レガシーテスト（既存）
+
+#### 予約システムテスト（booking-systems.spec.ts）
 
 #### 先着順予約テスト
 ```typescript
@@ -302,5 +400,13 @@ npm run test:e2e:report
 
 ---
 
-**最終更新**: 2024年12月1日  
-**ドキュメント管理者**: 開発チーム 
+**最終更新**: 2024年12月18日  
+**ドキュメント管理者**: 開発チーム
+
+## 📋 変更履歴
+
+- **2024年12月18日**: E2Eテスト構造の機能別ディレクトリ化に対応
+  - 新しいディレクトリ構造（auth/, studios/, dashboard/, instant/, dev/）の説明追加
+  - 機能別テスト実行コマンドの追加
+  - 共通テストヘルパー（tests/helpers/test-data.ts）の説明追加
+- **2024年12月1日**: 初版作成 
