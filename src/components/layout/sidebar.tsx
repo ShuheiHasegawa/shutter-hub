@@ -24,6 +24,8 @@ import {
   Book,
   Users,
   Building,
+  Code,
+  Palette,
 } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
 import {
@@ -152,6 +154,22 @@ export function Sidebar({ className }: SidebarProps) {
       href: '/settings',
       icon: Settings,
     },
+    // 開発環境でのみ表示
+    ...(process.env.NODE_ENV === 'development'
+      ? [
+          {
+            title: 'Dev Tools',
+            icon: Code,
+            children: [
+              {
+                title: 'テーマカラーデモ',
+                href: '/dev/color-theme',
+                icon: Palette,
+              },
+            ],
+          },
+        ]
+      : []),
   ];
 
   const isActive = (href: string) => {
@@ -345,6 +363,22 @@ export function MobileSidebarTrigger() {
       href: '/settings',
       icon: Settings,
     },
+    // 開発環境でのみ表示
+    ...(process.env.NODE_ENV === 'development'
+      ? [
+          {
+            title: 'Dev Tools',
+            icon: Code,
+            children: [
+              {
+                title: 'テーマカラーデモ',
+                href: '/dev/color-theme',
+                icon: Palette,
+              },
+            ],
+          },
+        ]
+      : []),
   ];
 
   const isActive = (href: string) => {
