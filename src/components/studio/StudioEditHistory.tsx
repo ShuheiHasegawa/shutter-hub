@@ -47,6 +47,32 @@ export function StudioEditHistory({ studioId }: StudioEditHistoryProps) {
     return new Date(dateString).toLocaleString('ja-JP');
   };
 
+  const getFieldLabel = (field: string): string => {
+    const fieldLabels: Record<string, string> = {
+      name: 'スタジオ名',
+      description: '説明',
+      address: '住所',
+      prefecture: '都道府県',
+      access_info: 'アクセス情報',
+      hourly_rate_min: '最低料金',
+      hourly_rate_max: '最高料金',
+      max_capacity: '収容人数',
+      parking_available: '駐車場',
+      wifi_available: 'WiFi',
+      phone: '電話番号',
+      email: 'メールアドレス',
+      website_url: 'ウェブサイト',
+    };
+    return fieldLabels[field] || field;
+  };
+
+  const formatValue = (value: unknown): string => {
+    if (value === null || value === undefined) return '未設定';
+    if (typeof value === 'boolean') return value ? 'あり' : 'なし';
+    if (typeof value === 'number') return value.toLocaleString();
+    return String(value);
+  };
+
   const renderChanges = (entry: StudioEditHistoryType) => {
     const oldValues = entry.old_values || {};
     const newValues = entry.new_values || {};
@@ -57,12 +83,11 @@ export function StudioEditHistory({ studioId }: StudioEditHistoryProps) {
 
       return (
         <div key={field} className="text-sm">
-          <span className="font-medium">{field}:</span>{' '}
+          <span className="font-medium">{getFieldLabel(field)}:</span>{' '}
           <span className="text-red-600 line-through">
-            {String(oldValue || '未設定')}
+            {formatValue(oldValue)}
           </span>{' '}
-          →{' '}
-          <span className="text-green-600">{String(newValue || '未設定')}</span>
+          → <span className="text-green-600">{formatValue(newValue)}</span>
         </div>
       );
     });
@@ -129,13 +154,17 @@ export function StudioEditHistory({ studioId }: StudioEditHistoryProps) {
                   <div className="flex items-center gap-2">
                     <User className="w-4 h-4 text-theme-text-muted" />
                     <span className="font-medium">
-                      {(
-                        entry as StudioEditHistoryType & {
-                          editor?: { display_name?: string };
-                        }
-                      ).editor?.display_name || 'ユーザー'}
+                      スタジオ情報が更新されました
                     </span>
-                    <Badge variant="outline">編集</Badge>
+                    <Badge variant="outline">
+                      {entry.edit_type === 'create'
+                        ? '作成'
+                        : entry.edit_type === 'update'
+                          ? '更新'
+                          : entry.edit_type === 'delete'
+                            ? '削除'
+                            : '編集'}
+                    </Badge>
                   </div>
                   <div className="flex items-center gap-1 text-sm text-theme-text-muted">
                     <Clock className="w-4 h-4" />

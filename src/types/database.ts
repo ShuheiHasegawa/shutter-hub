@@ -431,10 +431,14 @@ export interface StudioEditHistory {
   id: string;
   studio_id: string;
   edited_by: string;
+  edit_type: 'create' | 'update' | 'delete' | 'restore';
   old_values?: Record<string, unknown>;
   new_values?: Record<string, unknown>;
   changed_fields?: string[];
   change_summary?: string;
+  edit_reason?: string;
+  ip_address?: string;
+  user_agent?: string;
   created_at: string;
 }
 
