@@ -3,9 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { PublicLayout } from '@/components/layout/public-layout';
 
-import { ThemeButton, ThemeButtonPreview } from '@/components/ui/theme-button';
-import { SurfaceDemo, ComparisonDemo } from '@/components/ui/surface-demo';
-import { ThemePreview } from '@/components/ui/theme-selector';
+import { ThemeButton } from '@/components/ui/theme-button';
 import {
   Card,
   CardContent,
@@ -45,39 +43,6 @@ export default function HomePage() {
                 <ThemeButton asChild size="lg" variant="secondary">
                   <Link href="/instant">{t('hero.requestInstant')}</Link>
                 </ThemeButton>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* テーマプレビューセクション */}
-        <section className="py-24 surface-accent border-t border-surface-primary/20">
-          <div className="container">
-            <div className="text-center space-y-4 mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold">
-                テーマカラーデモ
-              </h2>
-              <p className="text-xl opacity-80 max-w-2xl mx-auto">
-                右上のボタンでテーマを切り替えて、リアルタイムでカラーパレットの変化をご確認ください
-              </p>
-            </div>
-
-            <div className="max-w-4xl mx-auto space-y-12">
-              <ThemePreview />
-
-              {/* セマンティックサーフェースデモ */}
-              <div className="surface-neutral backdrop-blur-sm rounded-lg border border-surface-primary/20 p-6">
-                <SurfaceDemo />
-              </div>
-
-              {/* 比較デモ */}
-              <div className="surface-neutral backdrop-blur-sm rounded-lg border border-surface-primary/20 p-6">
-                <ComparisonDemo />
-              </div>
-
-              {/* テーマボタンプレビュー */}
-              <div className="surface-neutral backdrop-blur-sm rounded-lg border border-surface-primary/20">
-                <ThemeButtonPreview />
               </div>
             </div>
           </div>
