@@ -25,7 +25,7 @@ export function DashboardStatsCards({
   const getStatsForUserType = () => {
     const baseStats = [
       {
-        title: '総フォトセッション数',
+        title: '総撮影会数',
         value: stats.totalSessions.toString(),
         icon: Camera,
         color: 'text-blue-600',
@@ -107,7 +107,7 @@ export function DashboardStatsCards({
   const statsCards = getStatsForUserType();
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {statsCards.map((stat, index) => (
         <Card key={index} className="hover:shadow-md transition-shadow">
           <CardContent className="p-6">

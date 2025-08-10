@@ -129,7 +129,7 @@ export function RecentActivity({ activities, isLoading }: RecentActivityProps) {
             <Clock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <p className="text-gray-600">まだアクティビティがありません</p>
             <p className="text-sm text-gray-500 mt-2">
-              フォトセッションに参加したり、レビューを投稿すると、ここに表示されます。
+              撮影会に参加したり、レビューを投稿すると、ここに表示されます。
             </p>
           </div>
         </CardContent>

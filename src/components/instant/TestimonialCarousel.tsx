@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Star, ChevronLeft, ChevronRight, Quote } from 'lucide-react';
+import { Star, Quote } from 'lucide-react';
 
 export function TestimonialCarousel() {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -67,18 +66,6 @@ export function TestimonialCarousel() {
     return () => clearInterval(timer);
   }, [testimonials.length]);
 
-  const goToPrevious = () => {
-    setCurrentIndex(
-      currentIndex === 0 ? testimonials.length - 1 : currentIndex - 1
-    );
-  };
-
-  const goToNext = () => {
-    setCurrentIndex(
-      currentIndex === testimonials.length - 1 ? 0 : currentIndex + 1
-    );
-  };
-
   const goToSlide = (index: number) => {
     setCurrentIndex(index);
   };
@@ -86,8 +73,10 @@ export function TestimonialCarousel() {
   return (
     <div className="container mx-auto px-4">
       <div className="text-center mb-12">
-        <h2 className="text-3xl font-bold text-gray-900 mb-4">お客様の声</h2>
-        <p className="text-gray-600 max-w-2xl mx-auto">
+        <h2 className="text-3xl font-bold text-theme-text-primary mb-4">
+          お客様の声
+        </h2>
+        <p className="max-w-2xl mx-auto text-theme-text-secondary">
           実際にご利用いただいたお客様から、たくさんの嬉しいお声をいただいています。
         </p>
       </div>
@@ -101,21 +90,21 @@ export function TestimonialCarousel() {
           >
             {testimonials.map((testimonial, index) => (
               <div key={index} className="w-full flex-shrink-0">
-                <Card className="mx-2 bg-white shadow-lg">
+                <Card className="mx-2 surface-neutral-0 shadow-lg">
                   <CardContent className="p-8">
                     <div className="flex items-start gap-4">
                       <div className="flex-shrink-0">
-                        <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center text-2xl">
+                        <div className="w-16 h-16 surface-accent-0 rounded-full flex items-center justify-center text-2xl">
                           {testimonial.avatar}
                         </div>
                       </div>
 
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
-                          <h4 className="font-semibold text-lg">
+                          <h4 className="font-semibold text-lg text-theme-text-primary">
                             {testimonial.name}
                           </h4>
-                          <span className="text-sm text-gray-500">
+                          <span className="text-sm text-theme-text-muted">
                             • {testimonial.location}
                           </span>
                         </div>
@@ -129,14 +118,14 @@ export function TestimonialCarousel() {
                               />
                             ))}
                           </div>
-                          <span className="text-sm text-blue-600 font-medium">
+                          <span className="text-sm text-theme-accent font-medium">
                             {testimonial.type}
                           </span>
                         </div>
 
                         <div className="relative">
-                          <Quote className="absolute -top-2 -left-2 h-6 w-6 text-blue-200" />
-                          <p className="text-gray-700 leading-relaxed pl-4">
+                          <Quote className="absolute -top-2 -left-2 h-6 w-6 text-theme-accent/30" />
+                          <p className="text-theme-text-secondary leading-relaxed pl-4">
                             {testimonial.comment}
                           </p>
                         </div>
@@ -149,32 +138,15 @@ export function TestimonialCarousel() {
           </div>
         </div>
 
-        {/* ナビゲーションボタン */}
-        <Button
-          variant="outline"
-          size="sm"
-          className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-4 rounded-full w-10 h-10 p-0"
-          onClick={goToPrevious}
-        >
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
-
-        <Button
-          variant="outline"
-          size="sm"
-          className="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-4 rounded-full w-10 h-10 p-0"
-          onClick={goToNext}
-        >
-          <ChevronRight className="h-4 w-4" />
-        </Button>
-
         {/* インジケーター */}
         <div className="flex justify-center mt-6 gap-2">
           {testimonials.map((_, index) => (
             <button
               key={index}
               className={`w-3 h-3 rounded-full transition-colors ${
-                index === currentIndex ? 'bg-blue-600' : 'bg-gray-300'
+                index === currentIndex
+                  ? 'bg-theme-accent'
+                  : 'bg-theme-neutral/40'
               }`}
               onClick={() => goToSlide(index)}
             />
@@ -185,16 +157,20 @@ export function TestimonialCarousel() {
       {/* 統計情報 */}
       <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
         <div>
-          <div className="text-3xl font-bold text-blue-600 mb-2">4.9/5</div>
-          <div className="text-gray-600">平均評価</div>
+          <div className="text-3xl font-bold text-theme-accent mb-2">4.9/5</div>
+          <div className="text-theme-text-muted">平均評価</div>
         </div>
         <div>
-          <div className="text-3xl font-bold text-green-600 mb-2">1,200+</div>
-          <div className="text-gray-600">満足したお客様</div>
+          <div className="text-3xl font-bold text-theme-primary mb-2">
+            1,200+
+          </div>
+          <div className="text-theme-text-muted">満足したお客様</div>
         </div>
         <div>
-          <div className="text-3xl font-bold text-purple-600 mb-2">98%</div>
-          <div className="text-gray-600">リピート率</div>
+          <div className="text-3xl font-bold text-theme-secondary mb-2">
+            98%
+          </div>
+          <div className="text-theme-text-muted">リピート率</div>
         </div>
       </div>
     </div>
