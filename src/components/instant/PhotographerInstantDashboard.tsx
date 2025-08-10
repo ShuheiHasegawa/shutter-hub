@@ -571,7 +571,6 @@ export function PhotographerInstantDashboard({
                               >
                                 <Upload className="h-4 w-4 mr-2" />
                                 再配信（上書き）
-                                <ArrowRight className="h-4 w-4 ml-2" />
                               </Button>
                             </div>
                           </>
