@@ -414,6 +414,19 @@ export async function updateStudioAction(
       return { success: false, error: '認証が必要です' };
     }
 
+    // ユーザープロフィール確認
+    const { data: userProfile } = await supabase
+      .from('profiles')
+      .select('user_type')
+      .eq('id', user.id)
+      .single();
+
+    Logger.info('ユーザー認証情報:', {
+      userId: user.id,
+      userType: userProfile?.user_type,
+      isOrganizer: userProfile?.user_type === 'organizer',
+    });
+
     // 既存スタジオの確認
     Logger.info('スタジオ存在確認開始:', { studioId });
 
@@ -427,6 +440,12 @@ export async function updateStudioAction(
       studioId,
       found: !!existingStudio,
       error: fetchError || null,
+      studioCreatedBy: existingStudio?.created_by,
+      currentUserId: user.id,
+      canUpdate: existingStudio?.created_by === user.id,
+      userCanUpdate:
+        existingStudio?.created_by === user.id ||
+        userProfile?.user_type === 'organizer',
     });
 
     if (fetchError || !existingStudio) {
@@ -436,6 +455,23 @@ export async function updateStudioAction(
         hasExistingStudio: !!existingStudio,
       });
       return { success: false, error: 'スタジオが見つかりません' };
+    }
+
+    // 権限チェック
+    const canUpdate =
+      existingStudio.created_by === user.id ||
+      userProfile?.user_type === 'organizer';
+    if (!canUpdate) {
+      Logger.error('スタジオ更新権限なし:', {
+        studioId,
+        userId: user.id,
+        studioCreatedBy: existingStudio.created_by,
+        userType: userProfile?.user_type,
+      });
+      return {
+        success: false,
+        error: 'このスタジオを更新する権限がありません',
+      };
     }
 
     // 更新データの準備
@@ -449,9 +485,25 @@ export async function updateStudioAction(
       const prefecture = formData.prefecture || existingStudio.prefecture;
       const city = formData.city || existingStudio.city;
       const address = formData.address || existingStudio.address;
-      updateData.normalized_address = `${prefecture}${city}${address}`
-        .toLowerCase()
-        .trim();
+
+      // 重複除去: 住所が既に都道府県・市区町村を含んでいる場合を考慮
+      let normalizedAddress = '';
+      if (prefecture && !address.startsWith(prefecture)) {
+        normalizedAddress += prefecture;
+      }
+      if (city && !address.includes(city)) {
+        normalizedAddress += city;
+      }
+      normalizedAddress += address;
+
+      updateData.normalized_address = normalizedAddress.toLowerCase().trim();
+
+      Logger.info('正規化住所生成:', {
+        prefecture,
+        city,
+        address,
+        normalizedAddress: updateData.normalized_address,
+      });
     }
 
     if (formData.name || formData.address) {
