@@ -28,6 +28,7 @@ import {
   Palette,
   Bug,
   CreditCard,
+  Map,
 } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
 import {
@@ -192,6 +193,11 @@ export function Sidebar({ className }: SidebarProps) {
                 title: 'Sentry モニタリングテスト',
                 href: '/dev/sentry-monitoring-test',
                 icon: Bug,
+              },
+              {
+                title: '地図テスト',
+                href: '/dev/map-test',
+                icon: Map,
               },
             ],
           },
@@ -401,6 +407,11 @@ export function MobileSidebarTrigger() {
                 title: 'テーマカラーデモ',
                 href: '/dev/color-theme',
                 icon: Palette,
+              },
+              {
+                title: '地図テスト',
+                href: '/dev/map-test',
+                icon: Map,
               },
             ],
           },

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { StudiosList } from '@/components/studio/StudiosList';
@@ -29,6 +29,11 @@ export default function StudiosPage() {
     sort_order: DEFAULT_STUDIO_SEARCH.sort_order,
   });
   const [triggerSearch, setTriggerSearch] = useState(false);
+
+  // 初期表示時に自動で検索を実行
+  useEffect(() => {
+    setTriggerSearch(true);
+  }, []);
 
   const handleSearchChange = (
     field: keyof StudioSearchFilters,

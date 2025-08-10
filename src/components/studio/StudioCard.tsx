@@ -9,7 +9,6 @@ import {
   StarIcon,
   TruckIcon,
   WifiIcon,
-  BuildingOfficeIcon,
 } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import Image from 'next/image';
@@ -87,19 +86,21 @@ export function StudioCard({
       <CardHeader className="p-0">
         {/* メイン画像 */}
         <div className="aspect-video relative bg-theme-neutral/10 rounded-t-lg overflow-hidden">
-          {studio.featuredPhotos && studio.featuredPhotos.length > 0 ? (
-            <Image
-              src={studio.featuredPhotos[0].image_url}
-              alt={studio.featuredPhotos[0].alt_text || studio.name}
-              fill
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            />
-          ) : (
-            <div className="flex items-center justify-center h-full">
-              <BuildingOfficeIcon className="w-16 h-16 text-theme-text-muted" />
-            </div>
-          )}
+          <Image
+            src={
+              studio.featuredPhotos && studio.featuredPhotos.length > 0
+                ? studio.featuredPhotos[0].image_url
+                : '/images/no-image.png'
+            }
+            alt={
+              studio.featuredPhotos && studio.featuredPhotos.length > 0
+                ? studio.featuredPhotos[0].alt_text || studio.name
+                : 'No Image'
+            }
+            fill
+            className="object-cover object-center"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          />
 
           {/* バッジ */}
           <div className="absolute top-2 left-2 flex gap-2">
