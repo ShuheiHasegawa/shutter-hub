@@ -58,28 +58,47 @@ const formSchema = z.object({
     .optional(),
   phone: z
     .string()
-    .regex(VALIDATION.phone.pattern, '有効な電話番号を入力してください')
-    .optional(),
-  email: z.string().email('有効なメールアドレスを入力してください').optional(),
-  website_url: z.string().url('有効なURLを入力してください').optional(),
-  total_area: z
+    .optional()
+    .refine(
+      value => !value || VALIDATION.phone.pattern.test(value),
+      '有効な電話番号を入力してください'
+    ),
+  email: z
+    .string()
+    .optional()
+    .refine(
+      value => !value || z.string().email().safeParse(value).success,
+      '有効なメールアドレスを入力してください'
+    ),
+  website_url: z
+    .string()
+    .optional()
+    .refine(
+      value => !value || z.string().url().safeParse(value).success,
+      '有効なURLを入力してください'
+    ),
+  total_area: z.coerce
     .number()
     .positive('面積は正の数値で入力してください')
-    .optional(),
-  max_capacity: z
+    .optional()
+    .catch(undefined),
+  max_capacity: z.coerce
     .number()
     .positive('最大収容人数は正の数値で入力してください')
-    .optional(),
+    .optional()
+    .catch(undefined),
   parking_available: z.boolean(),
   wifi_available: z.boolean(),
-  hourly_rate_min: z
+  hourly_rate_min: z.coerce
     .number()
     .positive('最低料金は正の数値で入力してください')
-    .optional(),
-  hourly_rate_max: z
+    .optional()
+    .catch(undefined),
+  hourly_rate_max: z.coerce
     .number()
     .positive('最高料金は正の数値で入力してください')
-    .optional(),
+    .optional()
+    .catch(undefined),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -98,6 +117,7 @@ export function StudioCreateForm({
   const router = useRouter();
 
   const form = useForm<FormData>({
+    // @ts-expect-error - Zodのcoerceによる型不整合を許容
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
@@ -341,7 +361,7 @@ export function StudioCreateForm({
               <Input
                 id="total_area"
                 type="number"
-                {...form.register('total_area', { valueAsNumber: true })}
+                {...form.register('total_area')}
                 placeholder="50"
               />
               {form.formState.errors.total_area && (
@@ -356,7 +376,7 @@ export function StudioCreateForm({
               <Input
                 id="max_capacity"
                 type="number"
-                {...form.register('max_capacity', { valueAsNumber: true })}
+                {...form.register('max_capacity')}
                 placeholder="10"
               />
               {form.formState.errors.max_capacity && (
@@ -373,7 +393,7 @@ export function StudioCreateForm({
               <Input
                 id="hourly_rate_min"
                 type="number"
-                {...form.register('hourly_rate_min', { valueAsNumber: true })}
+                {...form.register('hourly_rate_min')}
                 placeholder="3000"
               />
               {form.formState.errors.hourly_rate_min && (
@@ -388,7 +408,7 @@ export function StudioCreateForm({
               <Input
                 id="hourly_rate_max"
                 type="number"
-                {...form.register('hourly_rate_max', { valueAsNumber: true })}
+                {...form.register('hourly_rate_max')}
                 placeholder="8000"
               />
               {form.formState.errors.hourly_rate_max && (
