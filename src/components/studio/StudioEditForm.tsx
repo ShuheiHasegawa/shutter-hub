@@ -98,8 +98,6 @@ const formSchema = z.object({
     .optional(),
   parking_available: z.boolean(),
   wifi_available: z.boolean(),
-  air_conditioning: z.boolean(),
-  natural_light: z.boolean(),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -129,8 +127,6 @@ export function StudioEditForm({
       max_capacity: studio.max_capacity || undefined,
       parking_available: studio.parking_available || false,
       wifi_available: studio.wifi_available || false,
-      air_conditioning: studio.air_conditioning || false,
-      natural_light: studio.natural_light || false,
     },
   });
 
@@ -495,38 +491,6 @@ export function StudioEditForm({
                           />
                         </FormControl>
                         <FormLabel>Wi-Fi完備</FormLabel>
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="air_conditioning"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                        <FormLabel>エアコン完備</FormLabel>
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="natural_light"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                        <FormLabel>自然光利用可能</FormLabel>
                       </FormItem>
                     )}
                   />
