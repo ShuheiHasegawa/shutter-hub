@@ -64,10 +64,25 @@ const formSchema = z.object({
     .optional(),
   phone: z
     .string()
-    .regex(/^[\d\-\(\)\+\s]*$/, '有効な電話番号を入力してください')
-    .optional(),
-  email: z.string().email('有効なメールアドレスを入力してください').optional(),
-  website_url: z.string().url('有効なURLを入力してください').optional(),
+    .optional()
+    .refine(
+      value => !value || /^[\d\-\(\)\+\s]*$/.test(value),
+      '有効な電話番号を入力してください'
+    ),
+  email: z
+    .string()
+    .optional()
+    .refine(
+      value => !value || z.string().email().safeParse(value).success,
+      '有効なメールアドレスを入力してください'
+    ),
+  website_url: z
+    .string()
+    .optional()
+    .refine(
+      value => !value || z.string().url().safeParse(value).success,
+      '有効なURLを入力してください'
+    ),
   hourly_rate_min: z
     .number()
     .min(0, '料金は0以上で入力してください')
