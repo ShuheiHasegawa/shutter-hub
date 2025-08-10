@@ -594,10 +594,10 @@ export async function updateStudioAction(
         .insert({
           studio_id: studioId,
           edited_by: user.id,
+          edit_type: 'update',
           old_values: existingStudio,
           new_values: studio,
           changed_fields: Object.keys(formData),
-          change_summary: `スタジオ情報を更新しました（${Object.keys(formData).join('、')}）`,
         });
 
       if (historyError) {
@@ -643,16 +643,7 @@ export async function getStudioEditHistoryAction(studioId: string): Promise<{
 
     const { data: history, error } = await supabase
       .from('studio_edit_history')
-      .select(
-        `
-        *,
-        editor:users!edited_by(
-          id,
-          display_name,
-          email
-        )
-      `
-      )
+      .select('*')
       .eq('studio_id', studioId)
       .order('created_at', { ascending: false })
       .limit(50);
