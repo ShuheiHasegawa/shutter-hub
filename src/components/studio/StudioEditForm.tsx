@@ -84,18 +84,37 @@ const formSchema = z.object({
       '有効なURLを入力してください'
     ),
   hourly_rate_min: z
-    .number()
-    .min(0, '料金は0以上で入力してください')
-    .optional(),
+    .string()
+    .optional()
+    .refine(
+      value => !value || (!isNaN(Number(value)) && Number(value) >= 0),
+      '料金は0以上の数値で入力してください'
+    )
+    .transform(value => (value ? Number(value) : undefined)),
   hourly_rate_max: z
-    .number()
-    .min(0, '料金は0以上で入力してください')
-    .optional(),
-  total_area: z.number().min(0, '面積は0以上で入力してください').optional(),
+    .string()
+    .optional()
+    .refine(
+      value => !value || (!isNaN(Number(value)) && Number(value) >= 0),
+      '料金は0以上の数値で入力してください'
+    )
+    .transform(value => (value ? Number(value) : undefined)),
+  total_area: z
+    .string()
+    .optional()
+    .refine(
+      value => !value || (!isNaN(Number(value)) && Number(value) >= 0),
+      '面積は0以上の数値で入力してください'
+    )
+    .transform(value => (value ? Number(value) : undefined)),
   max_capacity: z
-    .number()
-    .min(1, '最大収容人数は1以上で入力してください')
-    .optional(),
+    .string()
+    .optional()
+    .refine(
+      value => !value || (!isNaN(Number(value)) && Number(value) >= 1),
+      '収容人数は1人以上の数値で入力してください'
+    )
+    .transform(value => (value ? Number(value) : undefined)),
   parking_available: z.boolean(),
   wifi_available: z.boolean(),
 });

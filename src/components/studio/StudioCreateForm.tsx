@@ -24,6 +24,7 @@ import { useRouter } from 'next/navigation';
 import { Info } from 'lucide-react';
 import { PREFECTURES } from '@/constants/japan';
 import { VALIDATION } from '@/constants/common';
+import { MapPicker } from '@/components/ui/map-picker';
 
 const formSchema = z.object({
   name: z
@@ -99,9 +100,11 @@ const formSchema = z.object({
     .positive('最高料金は正の数値で入力してください')
     .optional()
     .catch(undefined),
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
 });
 
-type FormData = z.infer<typeof formSchema>;
+// type FormData = z.infer<typeof formSchema>;
 
 interface StudioCreateFormProps {
   onSuccess?: (studioId: string) => void;
@@ -116,8 +119,7 @@ export function StudioCreateForm({
   const { toast } = useToast();
   const router = useRouter();
 
-  const form = useForm<FormData>({
-    // @ts-expect-error - Zodのcoerceによる型不整合を許容
+  const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
@@ -131,10 +133,12 @@ export function StudioCreateForm({
       website_url: '',
       parking_available: false,
       wifi_available: false,
+      latitude: undefined,
+      longitude: undefined,
     },
   });
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async (data: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
     try {
       // 料金の整合性チェック
@@ -292,6 +296,23 @@ export function StudioCreateForm({
                 {form.formState.errors.access_info.message}
               </p>
             )}
+          </div>
+
+          {/* 地図選択 */}
+          <div>
+            <MapPicker
+              address={form.watch('address')}
+              prefecture={form.watch('prefecture')}
+              city={form.watch('city')}
+              onAddressChange={address => {
+                form.setValue('address', address, { shouldValidate: true });
+              }}
+              onCoordinatesChange={(lat, lng) => {
+                form.setValue('latitude', lat);
+                form.setValue('longitude', lng);
+              }}
+              height="300px"
+            />
           </div>
         </CardContent>
       </Card>

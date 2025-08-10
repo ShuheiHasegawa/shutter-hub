@@ -1824,4 +1824,138 @@ automated_checks:
 - **品質保証**: 動作確認済みの変更のみコミット
 - **チーム協業**: 一貫したコミット形式
 
+## 🖼️ **画像取り扱いルール**
+
+### **基本原則**
+
+- **必須フォールバック**: 画像がない場合は必ず`/images/no-image.png`を使用する
+- **統一された処理**: 全てのコンポーネントで一貫したno-image対応を実装する
+- **アクセシビリティ**: 適切なalt属性を設定する
+
+### **実装パターン**
+
+#### **✅ 推奨パターン**
+
+```tsx
+// メイン画像の場合
+<Image
+  src={imageUrl || '/images/no-image.png'}
+  alt={altText || 'No Image'}
+  fill
+  className="object-cover"
+/>
+
+// 配列データの場合
+<Image
+  src={photos.length > 0 ? photos[0].image_url : '/images/no-image.png'}
+  alt={photos.length > 0 ? (photos[0].alt_text || studio.name) : 'No Image'}
+  fill
+  className="object-cover"
+/>
+
+// ギャラリー表示で写真がない場合
+{photos.length > 0 ? (
+  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+    {photos.map(photo => (
+      <Image
+        key={photo.id}
+        src={photo.image_url || '/images/no-image.png'}
+        alt={photo.alt_text || 'No Image'}
+        fill
+        className="object-cover"
+      />
+    ))}
+  </div>
+) : (
+  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+    <Image
+      src="/images/no-image.png"
+      alt="No Image"
+      fill
+      className="object-cover"
+    />
+  </div>
+)}
+```
+
+#### **❌ 禁止パターン**
+
+```tsx
+// 画像なしの場合に何も表示しない
+{
+  imageUrl && <Image src={imageUrl} alt="..." />;
+}
+
+// 空白やテキストのみの表示
+{
+  imageUrl ? <Image src={imageUrl} /> : <div>画像なし</div>;
+}
+
+// 条件なしでのimage_url直接使用
+<Image src={studio.image_url} alt="..." />;
+```
+
+### **必須ファイル**
+
+- **ファイルパス**: `public/images/no-image.png`
+- **推奨サイズ**: 800x600px（4:3比率）
+- **フォーマット**: PNG（透明背景可能）
+- **デザイン**: シンプルでわかりやすいno-imageアイコン
+
+### **コンポーネント別実装ガイド**
+
+#### **スタジオカード**
+
+```tsx
+<Image
+  src={studio.main_image || '/images/no-image.png'}
+  alt={studio.name}
+  fill
+  className="object-cover"
+/>
+```
+
+#### **写真ギャラリー**
+
+```tsx
+{
+  photos.map(photo => (
+    <Image
+      key={photo.id}
+      src={photo.image_url || '/images/no-image.png'}
+      alt={photo.alt_text || 'Gallery Image'}
+      fill
+      className="object-cover"
+    />
+  ));
+}
+```
+
+#### **ユーザーアバター**
+
+```tsx
+<Image
+  src={user.avatar_url || '/images/no-image.png'}
+  alt={user.display_name || 'User Avatar'}
+  width={40}
+  height={40}
+  className="rounded-full object-cover"
+/>
+```
+
+### **実装時チェックリスト**
+
+- [ ] 画像URLが存在しない場合の処理を実装
+- [ ] `/images/no-image.png`のフォールバック設定
+- [ ] 適切なalt属性の設定
+- [ ] レスポンシブ対応の確認
+- [ ] 全ての画像表示箇所で統一的な処理
+
+### **このルールの効果**
+
+- **UI一貫性**: 画像なし状態でも美しい表示を維持
+- **エラー防止**: 画像URL未設定によるブレイクを防止
+- **ユーザビリティ**: 視覚的にわかりやすいno-image表示
+- **アクセシビリティ**: スクリーンリーダー対応
+
 ## エラーハンドリング
