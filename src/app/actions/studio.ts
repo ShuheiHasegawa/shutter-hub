@@ -415,13 +415,26 @@ export async function updateStudioAction(
     }
 
     // 既存スタジオの確認
+    Logger.info('スタジオ存在確認開始:', { studioId });
+
     const { data: existingStudio, error: fetchError } = await supabase
       .from('studios')
       .select('*')
       .eq('id', studioId)
       .single();
 
+    Logger.info('スタジオ存在確認結果:', {
+      studioId,
+      found: !!existingStudio,
+      error: fetchError || null,
+    });
+
     if (fetchError || !existingStudio) {
+      Logger.error('スタジオが見つからない:', {
+        studioId,
+        fetchError,
+        hasExistingStudio: !!existingStudio,
+      });
       return { success: false, error: 'スタジオが見つかりません' };
     }
 
@@ -451,21 +464,64 @@ export async function updateStudioAction(
         );
     }
 
+    // 更新前のログ
+    Logger.info('スタジオ更新開始:', {
+      studioId,
+      updateDataKeys: Object.keys(updateData),
+      updateData,
+    });
+
     // スタジオ更新
-    const { data: studio, error } = await supabase
+    const {
+      data: studios,
+      error,
+      count,
+    } = await supabase
       .from('studios')
       .update(updateData)
       .eq('id', studioId)
-      .select()
-      .single();
+      .select();
+
+    // 更新結果の検証
+    const studio = studios?.[0];
+    if (!studio && !error) {
+      Logger.error('スタジオ更新：対象レコードが見つからない', {
+        studioId,
+        updateData,
+        resultCount: studios?.length || 0,
+      });
+      return { success: false, error: 'スタジオが見つかりません' };
+    }
+
+    // 詳細ログ
+    Logger.info('スタジオ更新結果:', {
+      success: !error,
+      studioId,
+      rowCount: count,
+      hasData: !!studio,
+      error: error || null,
+    });
 
     if (error) {
-      Logger.error('スタジオ更新エラー:', error);
+      Logger.error('スタジオ更新エラー詳細:', {
+        error,
+        studioId,
+        updateData,
+        errorCode: error.code,
+        errorMessage: error.message,
+        errorDetails: error.details,
+      });
       return { success: false, error: 'スタジオの更新に失敗しました' };
     }
 
     // 履歴保存
     try {
+      Logger.info('履歴保存開始:', {
+        studioId,
+        editedBy: user.id,
+        changedFields: Object.keys(formData),
+      });
+
       const { error: historyError } = await supabase
         .from('studio_edit_history')
         .insert({
@@ -478,8 +534,16 @@ export async function updateStudioAction(
         });
 
       if (historyError) {
-        Logger.error('履歴保存エラー:', historyError);
+        Logger.error('履歴保存エラー詳細:', {
+          historyError,
+          studioId,
+          editedBy: user.id,
+          errorCode: historyError.code,
+          errorMessage: historyError.message,
+        });
         // 履歴保存失敗でも更新は成功として扱う
+      } else {
+        Logger.info('履歴保存成功:', { studioId });
       }
     } catch (historyErr) {
       Logger.error('履歴保存例外:', historyErr);
