@@ -457,20 +457,35 @@ export async function updateStudioAction(
       return { success: false, error: 'スタジオが見つかりません' };
     }
 
-    // 権限チェック
-    const canUpdate =
-      existingStudio.created_by === user.id ||
-      userProfile?.user_type === 'organizer';
+    // 権限チェック（複数の条件を考慮）
+    const isOwner = existingStudio.created_by === user.id;
+    const isOrganizer = userProfile?.user_type === 'organizer';
+    const isAdmin = userProfile?.user_type === 'admin'; // 将来の拡張
+    const canUpdate = isOwner || isOrganizer || isAdmin;
+
+    Logger.info('権限チェック詳細:', {
+      studioId,
+      userId: user.id,
+      studioCreatedBy: existingStudio.created_by,
+      userType: userProfile?.user_type,
+      isOwner,
+      isOrganizer,
+      isAdmin,
+      canUpdate,
+    });
+
     if (!canUpdate) {
-      Logger.error('スタジオ更新権限なし:', {
+      Logger.error('スタジオ更新権限不足:', {
         studioId,
         userId: user.id,
         studioCreatedBy: existingStudio.created_by,
         userType: userProfile?.user_type,
+        reason: 'ユーザーはスタジオ作成者でもorganizer/adminでもありません',
       });
       return {
         success: false,
-        error: 'このスタジオを更新する権限がありません',
+        error:
+          'このスタジオを更新する権限がありません。スタジオ作成者またはorganizer権限が必要です。',
       };
     }
 
