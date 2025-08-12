@@ -87,17 +87,7 @@ export function PhotoSessionCard({
     return (
       <Card
         className="overflow-hidden hover:shadow-xl hover:border-info/50 hover:scale-[1.02] transition-all duration-300 group cursor-pointer transform"
-        onClick={e => {
-          // Favicon.ico調査用：カードクリック時のログ
-          // eslint-disable-next-line no-console
-          console.log('🃏 カードクリック detected', {
-            sessionId: session.id,
-            target: e.target,
-            currentTarget: e.currentTarget.tagName,
-            timeStamp: e.timeStamp,
-          });
-          onViewDetails?.(session.id);
-        }}
+        onClick={() => onViewDetails?.(session.id)}
       >
         <CardContent className="p-0">
           {/* Desktop Layout */}
@@ -338,17 +328,7 @@ export function PhotoSessionCard({
     return (
       <Card
         className="w-full hover:shadow-lg hover:border-info/50 hover:scale-[1.02] transition-all duration-300 bg-white border border-gray-200 cursor-pointer transform"
-        onClick={e => {
-          // Favicon.ico調査用：モバイルカードクリック時のログ
-          // eslint-disable-next-line no-console
-          console.log('📱 モバイルカードクリック detected', {
-            sessionId: session.id,
-            target: e.target,
-            currentTarget: e.currentTarget.tagName,
-            timeStamp: e.timeStamp,
-          });
-          onViewDetails?.(session.id);
-        }}
+        onClick={() => onViewDetails?.(session.id)}
       >
         <div className="p-4">
           {/* ヘッダー */}
