@@ -371,3 +371,119 @@ export async function getPopularFavoritesAction(
     };
   }
 }
+
+// お気に入り状態の一括取得
+export async function getBulkFavoriteStatusAction(
+  items: Array<{ type: 'studio' | 'photo_session'; id: string }>
+) {
+  try {
+    const supabase = await createClient();
+
+    // 認証確認
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return {
+        success: false,
+        error: '認証が必要です',
+        isAuthenticated: false,
+        favoriteStates: {},
+      };
+    }
+
+    // 一括でお気に入り状態を取得
+    const favoriteStates: Record<
+      string,
+      { isFavorited: boolean; favoriteCount: number }
+    > = {};
+
+    // スタジオとフォトセッションを分けて処理
+    const studioIds = items
+      .filter(item => item.type === 'studio')
+      .map(item => item.id);
+    const photoSessionIds = items
+      .filter(item => item.type === 'photo_session')
+      .map(item => item.id);
+
+    // スタジオのお気に入り状態を一括取得
+    if (studioIds.length > 0) {
+      const { data: studioFavorites } = await supabase
+        .from('user_favorites')
+        .select('favorite_id')
+        .eq('user_id', user.id)
+        .eq('favorite_type', 'studio')
+        .in('favorite_id', studioIds);
+
+      const favoritedStudioIds = new Set(
+        studioFavorites?.map(f => f.favorite_id) || []
+      );
+
+      // スタジオの統計を一括取得
+      const { data: studioStats } = await supabase
+        .from('favorite_statistics')
+        .select('target_id, total_favorites')
+        .eq('target_type', 'studio')
+        .in('target_id', studioIds);
+
+      const studioStatMap = new Map(
+        studioStats?.map(s => [s.target_id, s.total_favorites]) || []
+      );
+
+      studioIds.forEach(id => {
+        favoriteStates[`studio_${id}`] = {
+          isFavorited: favoritedStudioIds.has(id),
+          favoriteCount: studioStatMap.get(id) || 0,
+        };
+      });
+    }
+
+    // 撮影会のお気に入り状態を一括取得
+    if (photoSessionIds.length > 0) {
+      const { data: photoSessionFavorites } = await supabase
+        .from('user_favorites')
+        .select('favorite_id')
+        .eq('user_id', user.id)
+        .eq('favorite_type', 'photo_session')
+        .in('favorite_id', photoSessionIds);
+
+      const favoritedPhotoSessionIds = new Set(
+        photoSessionFavorites?.map(f => f.favorite_id) || []
+      );
+
+      // 撮影会の統計を一括取得
+      const { data: photoSessionStats } = await supabase
+        .from('favorite_statistics')
+        .select('target_id, total_favorites')
+        .eq('target_type', 'photo_session')
+        .in('target_id', photoSessionIds);
+
+      const photoSessionStatMap = new Map(
+        photoSessionStats?.map(s => [s.target_id, s.total_favorites]) || []
+      );
+
+      photoSessionIds.forEach(id => {
+        favoriteStates[`photo_session_${id}`] = {
+          isFavorited: favoritedPhotoSessionIds.has(id),
+          favoriteCount: photoSessionStatMap.get(id) || 0,
+        };
+      });
+    }
+
+    return {
+      success: true,
+      isAuthenticated: true,
+      favoriteStates,
+    };
+  } catch (error) {
+    Logger.error('Unexpected error in getBulkFavoriteStatusAction:', error);
+    return {
+      success: false,
+      error: 'システムエラーが発生しました',
+      isAuthenticated: true,
+      favoriteStates: {},
+    };
+  }
+}

@@ -26,6 +26,12 @@ interface FavoriteHeartButtonProps {
     | 'bottom-left'
     | 'inline';
   onToggle?: (isFavorited: boolean, favoriteCount: number) => void;
+  // 一括データから初期状態を設定する場合
+  initialState?: {
+    isFavorited: boolean;
+    favoriteCount: number;
+    isAuthenticated: boolean;
+  };
 }
 
 export function FavoriteHeartButton({
@@ -38,6 +44,7 @@ export function FavoriteHeartButton({
   iconOnly = false,
   position = 'inline',
   onToggle,
+  initialState,
 }: FavoriteHeartButtonProps) {
   const [isFavorited, setIsFavorited] = useState(false);
   const [favoriteCount, setFavoriteCount] = useState(0);
@@ -67,28 +74,37 @@ export function FavoriteHeartButton({
     inline: '',
   };
 
-  // 初期状態を取得
+  // 初期状態を設定
   useEffect(() => {
-    async function fetchInitialState() {
-      try {
-        const result = await checkFavoriteStatusAction(
-          favoriteType,
-          favoriteId
-        );
-        if (result.success) {
-          setIsFavorited(result.isFavorited || false);
-          setFavoriteCount(result.favoriteCount || 0);
-          setIsAuthenticated(result.isAuthenticated || false);
+    if (initialState) {
+      // 一括データがある場合は即座に設定
+      setIsFavorited(initialState.isFavorited);
+      setFavoriteCount(initialState.favoriteCount);
+      setIsAuthenticated(initialState.isAuthenticated);
+      setIsInitialized(true);
+    } else {
+      // 一括データがない場合は個別に取得（フォールバック）
+      async function fetchInitialState() {
+        try {
+          const result = await checkFavoriteStatusAction(
+            favoriteType,
+            favoriteId
+          );
+          if (result.success) {
+            setIsFavorited(result.isFavorited || false);
+            setFavoriteCount(result.favoriteCount || 0);
+            setIsAuthenticated(result.isAuthenticated || false);
+          }
+        } catch (error) {
+          Logger.error('Failed to fetch favorite status:', error);
+        } finally {
+          setIsInitialized(true);
         }
-      } catch (error) {
-        Logger.error('Failed to fetch favorite status:', error);
-      } finally {
-        setIsInitialized(true);
       }
-    }
 
-    fetchInitialState();
-  }, [favoriteType, favoriteId]);
+      fetchInitialState();
+    }
+  }, [favoriteType, favoriteId, initialState]);
 
   // お気に入りのトグル処理
   const handleToggle = async (e: React.MouseEvent) => {
