@@ -113,17 +113,6 @@ export function FavoriteHeartButton({
     e.preventDefault();
     e.stopPropagation();
 
-    // Favicon.ico調査用デバッグログ
-    // eslint-disable-next-line no-console
-    console.log('🔍 ハートボタンクリック', {
-      favoriteType,
-      favoriteId,
-      currentTarget: e.currentTarget.tagName,
-      eventType: e.type,
-      isDefaultPrevented: e.defaultPrevented,
-      isPropagationStopped: e.isPropagationStopped(),
-    });
-
     if (!isAuthenticated) {
       toast.error('お気に入り機能を利用するにはログインが必要です');
       return;
@@ -148,14 +137,6 @@ export function FavoriteHeartButton({
 
         const result = await toggleFavoriteAction(favoriteType, favoriteId);
 
-        // Favicon.ico調査：Server Action完了後
-        // eslint-disable-next-line no-console
-        console.log('📡 Server Action完了後', {
-          success: result.success,
-          timestamp: Date.now(),
-          location: window.location.href,
-        });
-
         if (result.success && result.data) {
           // サーバーからの正確な結果で更新
           const serverFavorited = result.data.is_favorited;
@@ -163,13 +144,6 @@ export function FavoriteHeartButton({
 
           setIsFavorited(serverFavorited);
           setFavoriteCount(serverCount);
-
-          // Favicon.ico調査：Toast実行前
-          // eslint-disable-next-line no-console
-          console.log('🍞 Toast実行', {
-            message: result.data.message,
-            timestamp: Date.now(),
-          });
 
           toast.success(result.data.message);
 
