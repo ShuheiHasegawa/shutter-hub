@@ -6,6 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { getStudiosAction } from '@/app/actions/studio';
+import { getBulkFavoriteStatusAction } from '@/app/actions/favorites';
 import { StudioWithStats, StudioSearchFilters } from '@/types/database';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 
@@ -31,6 +32,9 @@ export function StudiosList({
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [favoriteStates, setFavoriteStates] = useState<
+    Record<string, { isFavorited: boolean; favoriteCount: number }>
+  >({});
 
   const fetchStudios = async (page: number = 1, append: boolean = false) => {
     try {
@@ -46,10 +50,31 @@ export function StudiosList({
       const result = await getStudiosAction(searchFilters);
 
       if (result.success && result.studios) {
+        const newStudios = result.studios;
+
         if (append) {
-          setStudios(prev => [...prev, ...result.studios!]);
+          setStudios(prev => [...prev, ...newStudios]);
         } else {
-          setStudios(result.studios);
+          setStudios(newStudios);
+        }
+
+        // お気に入り状態を一括取得
+        const favoriteItems = newStudios.map(studio => ({
+          type: 'studio' as const,
+          id: studio.id,
+        }));
+
+        const favoriteResult = await getBulkFavoriteStatusAction(favoriteItems);
+
+        if (favoriteResult.success) {
+          if (append) {
+            setFavoriteStates(prev => ({
+              ...prev,
+              ...favoriteResult.favoriteStates,
+            }));
+          } else {
+            setFavoriteStates(favoriteResult.favoriteStates);
+          }
         }
 
         const totalItems = result.totalCount || result.studios.length;
@@ -131,15 +156,19 @@ export function StudiosList({
     <div className="space-y-6">
       {/* スタジオ一覧 */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {studios.map(studio => (
-          <StudioCard
-            key={studio.id}
-            studio={studio}
-            onSelect={onStudioSelect}
-            isSelected={isSelected(studio.id)}
-            showSelection={showSelection}
-          />
-        ))}
+        {studios.map(studio => {
+          const favoriteState = favoriteStates[`studio_${studio.id}`];
+          return (
+            <StudioCard
+              key={studio.id}
+              studio={studio}
+              onSelect={onStudioSelect}
+              isSelected={isSelected(studio.id)}
+              showSelection={showSelection}
+              favoriteState={favoriteState}
+            />
+          );
+        })}
       </div>
 
       {/* もっと読み込む */}

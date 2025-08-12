@@ -21,6 +21,10 @@ interface StudioCardProps {
   onSelect?: (studio: StudioWithStats) => void;
   isSelected?: boolean;
   showSelection?: boolean;
+  favoriteState?: {
+    isFavorited: boolean;
+    favoriteCount: number;
+  };
 }
 
 export function StudioCard({
@@ -28,6 +32,7 @@ export function StudioCard({
   onSelect,
   isSelected = false,
   showSelection = false,
+  favoriteState,
 }: StudioCardProps) {
   const router = useRouter();
 
@@ -135,6 +140,15 @@ export function StudioCard({
               favoriteType="studio"
               favoriteId={studio.id}
               size="md"
+              initialState={
+                favoriteState
+                  ? {
+                      isFavorited: favoriteState.isFavorited,
+                      favoriteCount: favoriteState.favoriteCount,
+                      isAuthenticated: true,
+                    }
+                  : undefined
+              }
             />
           )}
         </div>
