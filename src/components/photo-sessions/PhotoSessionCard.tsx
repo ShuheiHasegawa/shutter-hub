@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { useTranslations, useLocale } from 'next-intl';
 import type { PhotoSessionWithOrganizer } from '@/types/database';
 import { FormattedPrice } from '@/components/ui/formatted-display';
+import { CardFavoriteButton } from '@/components/ui/favorite-heart-button';
 
 interface PhotoSessionCardProps {
   session: PhotoSessionWithOrganizer;
@@ -90,7 +91,12 @@ export function PhotoSessionCard({
               <div className="w-full h-full bg-gradient-to-br from-info/10 to-primary/10 dark:from-info/20 dark:to-primary/20 flex items-center justify-center">
                 <CalendarIcon className="h-16 w-16 text-info/60 opacity-60" />
               </div>
-              <div className="absolute top-4 right-4">
+              <div className="absolute top-4 right-4 flex gap-2">
+                <CardFavoriteButton
+                  favoriteType="photo_session"
+                  favoriteId={session.id}
+                  size="md"
+                />
                 <Badge
                   variant={
                     status === 'available'
@@ -181,7 +187,12 @@ export function PhotoSessionCard({
               <div className="w-full h-full bg-gradient-to-br from-info/10 to-primary/10 dark:from-info/20 dark:to-primary/20 flex items-center justify-center">
                 <CalendarIcon className="h-12 w-12 text-info/60 opacity-60" />
               </div>
-              <div className="absolute top-4 right-4">
+              <div className="absolute top-4 right-4 flex gap-2">
+                <CardFavoriteButton
+                  favoriteType="photo_session"
+                  favoriteId={session.id}
+                  size="sm"
+                />
                 <Badge
                   variant={
                     status === 'available'

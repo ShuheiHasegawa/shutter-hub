@@ -10,6 +10,8 @@ export type BookingType =
   | 'admin_lottery'
   | 'priority';
 
+export type FavoriteType = 'studio' | 'photo_session';
+
 export interface Profile {
   id: string;
   email: string;
@@ -522,6 +524,32 @@ export interface StudioDuplicateCheckResult {
 }
 
 // Supabase Database型定義
+// お気に入り関連型定義
+export interface UserFavorite {
+  id: string;
+  user_id: string;
+  favorite_type: FavoriteType;
+  favorite_id: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FavoriteStatistics {
+  id: string;
+  target_type: FavoriteType;
+  target_id: string;
+  total_favorites: number;
+  favorites_today: number;
+  favorites_this_week: number;
+  favorites_this_month: number;
+  last_updated: string;
+}
+
+export interface UserFavoriteWithDetails extends UserFavorite {
+  studios?: Studio;
+  photo_sessions?: PhotoSession;
+}
+
 export interface Database {
   public: {
     Tables: {
@@ -545,15 +573,40 @@ export interface Database {
         Insert: Omit<Booking, 'id' | 'created_at' | 'updated_at' | 'status'>;
         Update: Partial<Omit<Booking, 'id' | 'created_at' | 'updated_at'>>;
       };
+      user_favorites: {
+        Row: UserFavorite;
+        Insert: Omit<UserFavorite, 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Omit<UserFavorite, 'id' | 'created_at' | 'updated_at'>>;
+      };
+      favorite_statistics: {
+        Row: FavoriteStatistics;
+        Insert: Omit<FavoriteStatistics, 'id' | 'last_updated'>;
+        Update: Partial<Omit<FavoriteStatistics, 'id'>>;
+      };
     };
     Views: {
       [_ in never]: never;
     };
     Functions: {
+      toggle_favorite: {
+        Args: {
+          target_user_id: string;
+          target_type: FavoriteType;
+          target_id: string;
+        };
+        Returns: {
+          success: boolean;
+          action: 'added' | 'removed';
+          is_favorited: boolean;
+          message: string;
+          total_favorites: number;
+        };
+      };
       [_ in never]: never;
     };
     Enums: {
       user_type: UserType;
+      favorite_type: FavoriteType;
     };
     CompositeTypes: {
       [_ in never]: never;

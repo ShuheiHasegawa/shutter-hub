@@ -37,6 +37,7 @@
     "photobookView": "フォトブック表示",
     "photobookEdit": "フォトブック編集",
     "studios": "スタジオ",
+    "favorites": "お気に入り",
     "settings": "設定",
     "signin": "ログイン",
     "signup": "新規登録",
@@ -1405,5 +1406,70 @@
     "participantsInputPlaceholder": "例: 2",
     "durationInputPlaceholder": "例: 50",
     "breakInputPlaceholder": "例: 10"
+  },
+  "favorites": {
+    "pageTitle": "お気に入り | ShutterHub",
+    "pageDescription": "あなたのお気に入りのスタジオと撮影会を管理できます",
+    "title": "お気に入り",
+    "subtitle": "気に入ったスタジオや撮影会をまとめて管理",
+    "stats": {
+      "total": "合計",
+      "studios": "スタジオ",
+      "photoSessions": "撮影会"
+    },
+    "tabs": {
+      "all": "すべて",
+      "studios": "スタジオ",
+      "photoSessions": "撮影会"
+    },
+    "search": {
+      "placeholder": "お気に入りを検索...",
+      "noResults": "検索結果が見つかりません",
+      "noResultsDescription": "「{term}」に一致するお気に入りが見つかりませんでした",
+      "suggestions": {
+        "checkSpelling": "スペルや入力内容を確認してください",
+        "tryDifferentTerms": "別のキーワードで試してください",
+        "browseAll": "すべてのお気に入りを確認してみてください"
+      }
+    },
+    "sort": {
+      "placeholder": "並び替え",
+      "newest": "新しい順",
+      "oldest": "古い順",
+      "name": "名前順"
+    },
+    "empty": {
+      "all": "まだお気に入りがありません",
+      "studios": "お気に入りのスタジオがありません",
+      "photoSessions": "お気に入りの撮影会がありません",
+      "allTitle": "お気に入りを見つけましょう",
+      "allDescription": "気に入ったスタジオや撮影会にハートボタンを押して、ここでまとめて管理できます。",
+      "studiosTitle": "お気に入りのスタジオを見つけましょう",
+      "studiosDescription": "素敵なスタジオを見つけて、お気に入りに追加しましょう。",
+      "photoSessionsTitle": "お気に入りの撮影会を見つけましょう",
+      "photoSessionsDescription": "興味のある撮影会を見つけて、お気に入りに追加しましょう。",
+      "browseAll": "今すぐ探す",
+      "browseStudios": "スタジオを探す",
+      "browsePhotoSessions": "撮影会を探す"
+    },
+    "actions": {
+      "exploreStudios": "スタジオを探す",
+      "explorePhotoSessions": "撮影会を探す"
+    },
+    "howTo": {
+      "title": "お気に入り機能の使い方",
+      "step1": {
+        "title": "ハートボタンを押す",
+        "description": "スタジオや撮影会のカードの右上にあるハートボタンを押してお気に入りに追加"
+      },
+      "step2": {
+        "title": "お気に入りに追加",
+        "description": "お気に入りに追加されたアイテムは、このページで一覧表示されます"
+      },
+      "step3": {
+        "title": "簡単にアクセス",
+        "description": "お気に入り一覧から簡単に目的のスタジオや撮影会にアクセスできます"
+      }
+    }
   }
 }

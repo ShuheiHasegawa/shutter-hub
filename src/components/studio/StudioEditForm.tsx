@@ -83,38 +83,26 @@ const formSchema = z.object({
       value => !value || z.string().url().safeParse(value).success,
       '有効なURLを入力してください'
     ),
-  hourly_rate_min: z
-    .string()
+  hourly_rate_min: z.coerce
+    .number()
+    .positive('料金は正の数値で入力してください')
     .optional()
-    .refine(
-      value => !value || (!isNaN(Number(value)) && Number(value) >= 0),
-      '料金は0以上の数値で入力してください'
-    )
-    .transform(value => (value ? Number(value) : undefined)),
-  hourly_rate_max: z
-    .string()
+    .catch(undefined),
+  hourly_rate_max: z.coerce
+    .number()
+    .positive('料金は正の数値で入力してください')
     .optional()
-    .refine(
-      value => !value || (!isNaN(Number(value)) && Number(value) >= 0),
-      '料金は0以上の数値で入力してください'
-    )
-    .transform(value => (value ? Number(value) : undefined)),
-  total_area: z
-    .string()
+    .catch(undefined),
+  total_area: z.coerce
+    .number()
+    .positive('面積は正の数値で入力してください')
     .optional()
-    .refine(
-      value => !value || (!isNaN(Number(value)) && Number(value) >= 0),
-      '面積は0以上の数値で入力してください'
-    )
-    .transform(value => (value ? Number(value) : undefined)),
-  max_capacity: z
-    .string()
+    .catch(undefined),
+  max_capacity: z.coerce
+    .number()
+    .positive('定員は1人以上の数値で入力してください')
     .optional()
-    .refine(
-      value => !value || (!isNaN(Number(value)) && Number(value) >= 1),
-      '収容人数は1人以上の数値で入力してください'
-    )
-    .transform(value => (value ? Number(value) : undefined)),
+    .catch(undefined),
   parking_available: z.boolean(),
   wifi_available: z.boolean(),
 });
@@ -140,10 +128,10 @@ export function StudioEditForm({
       phone: studio.phone || '',
       email: studio.email || '',
       website_url: studio.website_url || '',
-      hourly_rate_min: studio.hourly_rate_min || undefined,
-      hourly_rate_max: studio.hourly_rate_max || undefined,
-      total_area: studio.total_area || undefined,
-      max_capacity: studio.max_capacity || undefined,
+      hourly_rate_min: studio.hourly_rate_min?.toString() || '',
+      hourly_rate_max: studio.hourly_rate_max?.toString() || '',
+      total_area: studio.total_area?.toString() || '',
+      max_capacity: studio.max_capacity?.toString() || '',
       parking_available: studio.parking_available || false,
       wifi_available: studio.wifi_available || false,
     },
@@ -375,18 +363,13 @@ export function StudioEditForm({
                       <FormLabel>最低料金（円/時）</FormLabel>
                       <FormControl>
                         <Input
-                          {...field}
                           type="number"
                           min="0"
-                          value={field.value || ''}
-                          onChange={e =>
-                            field.onChange(
-                              e.target.value
-                                ? Number(e.target.value)
-                                : undefined
-                            )
-                          }
                           placeholder="3000"
+                          value={String(field.value || '')}
+                          onChange={field.onChange}
+                          onBlur={field.onBlur}
+                          name={field.name}
                         />
                       </FormControl>
                       <FormMessage />
@@ -402,18 +385,13 @@ export function StudioEditForm({
                       <FormLabel>最高料金（円/時）</FormLabel>
                       <FormControl>
                         <Input
-                          {...field}
                           type="number"
                           min="0"
-                          value={field.value || ''}
-                          onChange={e =>
-                            field.onChange(
-                              e.target.value
-                                ? Number(e.target.value)
-                                : undefined
-                            )
-                          }
                           placeholder="8000"
+                          value={String(field.value || '')}
+                          onChange={field.onChange}
+                          onBlur={field.onBlur}
+                          name={field.name}
                         />
                       </FormControl>
                       <FormMessage />
@@ -431,18 +409,13 @@ export function StudioEditForm({
                       <FormLabel>総面積（㎡）</FormLabel>
                       <FormControl>
                         <Input
-                          {...field}
                           type="number"
                           min="0"
-                          value={field.value || ''}
-                          onChange={e =>
-                            field.onChange(
-                              e.target.value
-                                ? Number(e.target.value)
-                                : undefined
-                            )
-                          }
                           placeholder="50"
+                          value={String(field.value || '')}
+                          onChange={field.onChange}
+                          onBlur={field.onBlur}
+                          name={field.name}
                         />
                       </FormControl>
                       <FormMessage />
@@ -458,18 +431,13 @@ export function StudioEditForm({
                       <FormLabel>最大収容人数（人）</FormLabel>
                       <FormControl>
                         <Input
-                          {...field}
                           type="number"
                           min="1"
-                          value={field.value || ''}
-                          onChange={e =>
-                            field.onChange(
-                              e.target.value
-                                ? Number(e.target.value)
-                                : undefined
-                            )
-                          }
                           placeholder="20"
+                          value={String(field.value || '')}
+                          onChange={field.onChange}
+                          onBlur={field.onBlur}
+                          name={field.name}
                         />
                       </FormControl>
                       <FormMessage />
