@@ -431,6 +431,21 @@ export function PhotoSessionList({
     router.push('/photo-sessions/create');
   };
 
+  // お気に入り状態変更のコールバック
+  const handleFavoriteToggle = (
+    sessionId: string,
+    isFavorited: boolean,
+    favoriteCount: number
+  ) => {
+    setFavoriteStates(prev => ({
+      ...prev,
+      [`photo_session_${sessionId}`]: {
+        isFavorited,
+        favoriteCount,
+      },
+    }));
+  };
+
   // handleLoadMore関数は無限スクロールにより不要
 
   if (loading) {
@@ -656,6 +671,9 @@ export function PhotoSessionList({
                 showActions={true}
                 layoutMode="card"
                 favoriteState={favoriteState}
+                onFavoriteToggle={(isFavorited, favoriteCount) =>
+                  handleFavoriteToggle(session.id, isFavorited, favoriteCount)
+                }
               />
             );
           })}
