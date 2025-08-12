@@ -378,7 +378,12 @@ function FavoritesTabContent({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {items.map(item => {
-        if (item.favorite_type === 'studio' && item.studio) {
+        if (
+          item.favorite_type === 'studio' &&
+          item.studio &&
+          item.studio.id &&
+          item.studio.name
+        ) {
           return (
             <StudioCard
               key={`studio-${item.favorite_id}`}
@@ -388,7 +393,9 @@ function FavoritesTabContent({
           );
         } else if (
           item.favorite_type === 'photo_session' &&
-          item.photo_session
+          item.photo_session &&
+          item.photo_session.id &&
+          item.photo_session.start_time
         ) {
           return (
             <PhotoSessionCard
@@ -398,6 +405,15 @@ function FavoritesTabContent({
               layoutMode="card"
             />
           );
+        }
+        // 不正なデータの場合はログに記録
+        if (item.favorite_type === 'studio' && !item.studio?.id) {
+          Logger.error('Invalid studio data in favorites:', item);
+        } else if (
+          item.favorite_type === 'photo_session' &&
+          !item.photo_session?.id
+        ) {
+          Logger.error('Invalid photo_session data in favorites:', item);
         }
         return null;
       })}

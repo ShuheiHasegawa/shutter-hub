@@ -193,7 +193,7 @@ export async function getUserFavoritesAction(
         let details = null;
 
         if (favorite.favorite_type === 'studio') {
-          const { data: studioData } = await supabase
+          const { data: studioData, error: studioError } = await supabase
             .from('studios')
             .select(
               `
@@ -210,9 +210,12 @@ export async function getUserFavoritesAction(
             )
             .eq('id', favorite.favorite_id)
             .single();
+          if (studioError) {
+            Logger.error('Studio data fetch error:', studioError);
+          }
           details = studioData;
         } else if (favorite.favorite_type === 'photo_session') {
-          const { data: sessionData } = await supabase
+          const { data: sessionData, error: sessionError } = await supabase
             .from('photo_sessions')
             .select(
               `
@@ -234,14 +237,25 @@ export async function getUserFavoritesAction(
             )
             .eq('id', favorite.favorite_id)
             .single();
+          if (sessionError) {
+            Logger.error('Photo session data fetch error:', sessionError);
+          }
           details = sessionData;
         }
 
-        enrichedFavorites.push({
-          ...favorite,
-          [favorite.favorite_type === 'studio' ? 'studio' : 'photo_session']:
-            details,
-        });
+        // 詳細データが取得できた場合のみ追加
+        if (details) {
+          enrichedFavorites.push({
+            ...favorite,
+            [favorite.favorite_type === 'studio' ? 'studio' : 'photo_session']:
+              details,
+          });
+        } else {
+          Logger.error('No details found for favorite:', {
+            favoriteId: favorite.favorite_id,
+            favoriteType: favorite.favorite_type,
+          });
+        }
       }
     }
 

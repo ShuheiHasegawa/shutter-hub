@@ -198,7 +198,11 @@ export function StudioFavoritesContent() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredItems.map(item => {
-            if (!item.studio) return null;
+            // より厳密なnullチェック
+            if (!item.studio || !item.studio.id || !item.studio.name) {
+              Logger.error('Invalid studio data:', item);
+              return null;
+            }
             return (
               <StudioCard
                 key={`studio-${item.favorite_id}`}

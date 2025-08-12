@@ -208,7 +208,15 @@ export function PhotoSessionFavoritesContent() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredItems.map(item => {
-            if (!item.photo_session) return null;
+            // より厳密なnullチェック
+            if (
+              !item.photo_session ||
+              !item.photo_session.id ||
+              !item.photo_session.start_time
+            ) {
+              Logger.error('Invalid photo_session data:', item);
+              return null;
+            }
             return (
               <PhotoSessionCard
                 key={`session-${item.favorite_id}`}
