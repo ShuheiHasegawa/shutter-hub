@@ -9,6 +9,11 @@ export async function toggleFavoriteAction(
   favoriteType: 'studio' | 'photo_session',
   favoriteId: string
 ) {
+  // eslint-disable-next-line no-console
+  console.log('🎯 [Server] toggleFavoriteAction開始:', {
+    favoriteType,
+    favoriteId,
+  });
   try {
     const supabase = await createClient();
 
