@@ -113,6 +113,17 @@ export function FavoriteHeartButton({
     e.preventDefault();
     e.stopPropagation();
 
+    // Favicon.ico調査用デバッグログ
+    // eslint-disable-next-line no-console
+    console.log('🔍 ハートボタンクリック', {
+      favoriteType,
+      favoriteId,
+      currentTarget: e.currentTarget.tagName,
+      eventType: e.type,
+      isDefaultPrevented: e.defaultPrevented,
+      isPropagationStopped: e.isPropagationStopped(),
+    });
+
     if (!isAuthenticated) {
       toast.error('お気に入り機能を利用するにはログインが必要です');
       return;

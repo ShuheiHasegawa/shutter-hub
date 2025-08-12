@@ -98,22 +98,8 @@ export function PhotoSessionCard({
               <div className="w-full h-full bg-gradient-to-br from-info/10 to-primary/10 dark:from-info/20 dark:to-primary/20 flex items-center justify-center">
                 <CalendarIcon className="h-16 w-16 text-info/60 opacity-60" />
               </div>
-              <div className="absolute top-4 right-4 flex gap-2">
-                <CardFavoriteButton
-                  favoriteType="photo_session"
-                  favoriteId={session.id}
-                  size="md"
-                  initialState={
-                    favoriteState
-                      ? {
-                          isFavorited: favoriteState.isFavorited,
-                          favoriteCount: favoriteState.favoriteCount,
-                          isAuthenticated: true,
-                        }
-                      : undefined
-                  }
-                  onToggle={onFavoriteToggle}
-                />
+              {/* バッジ：左上に配置 */}
+              <div className="absolute top-4 left-4 flex gap-2">
                 <Badge
                   variant={
                     status === 'available'
@@ -130,6 +116,25 @@ export function PhotoSessionCard({
                       ? t('availability.full')
                       : t('availability.fewLeft')}
                 </Badge>
+              </div>
+
+              {/* お気に入りボタン：右上に配置 */}
+              <div className="absolute top-4 right-4">
+                <CardFavoriteButton
+                  favoriteType="photo_session"
+                  favoriteId={session.id}
+                  size="md"
+                  initialState={
+                    favoriteState
+                      ? {
+                          isFavorited: favoriteState.isFavorited,
+                          favoriteCount: favoriteState.favoriteCount,
+                          isAuthenticated: true,
+                        }
+                      : undefined
+                  }
+                  onToggle={onFavoriteToggle}
+                />
               </div>
             </div>
 
@@ -204,22 +209,8 @@ export function PhotoSessionCard({
               <div className="w-full h-full bg-gradient-to-br from-info/10 to-primary/10 dark:from-info/20 dark:to-primary/20 flex items-center justify-center">
                 <CalendarIcon className="h-12 w-12 text-info/60 opacity-60" />
               </div>
-              <div className="absolute top-4 right-4 flex gap-2">
-                <CardFavoriteButton
-                  favoriteType="photo_session"
-                  favoriteId={session.id}
-                  size="sm"
-                  initialState={
-                    favoriteState
-                      ? {
-                          isFavorited: favoriteState.isFavorited,
-                          favoriteCount: favoriteState.favoriteCount,
-                          isAuthenticated: true,
-                        }
-                      : undefined
-                  }
-                  onToggle={onFavoriteToggle}
-                />
+              {/* バッジ：左上に配置 */}
+              <div className="absolute top-4 left-4">
                 <Badge
                   variant={
                     status === 'available'
@@ -236,6 +227,25 @@ export function PhotoSessionCard({
                       ? t('availability.full')
                       : t('availability.fewLeft')}
                 </Badge>
+              </div>
+
+              {/* お気に入りボタン：右上に配置 */}
+              <div className="absolute top-4 right-4">
+                <CardFavoriteButton
+                  favoriteType="photo_session"
+                  favoriteId={session.id}
+                  size="sm"
+                  initialState={
+                    favoriteState
+                      ? {
+                          isFavorited: favoriteState.isFavorited,
+                          favoriteCount: favoriteState.favoriteCount,
+                          isAuthenticated: true,
+                        }
+                      : undefined
+                  }
+                  onToggle={onFavoriteToggle}
+                />
               </div>
             </div>
 
@@ -323,11 +333,50 @@ export function PhotoSessionCard({
         <div className="p-4">
           {/* ヘッダー */}
           <div className="flex justify-between items-start mb-3">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white line-clamp-2 flex-1 pr-2">
-              {session.title}
-            </h3>
-            <div className="flex gap-1 flex-shrink-0">{getStatusBadge()}</div>
+            {/* 左上：バッジ */}
+            <div className="flex gap-1 flex-shrink-0">
+              <Badge
+                variant={
+                  status === 'available'
+                    ? 'default'
+                    : status === 'full'
+                      ? 'destructive'
+                      : 'secondary'
+                }
+                className="font-semibold text-xs"
+              >
+                {status === 'available'
+                  ? t('availability.available')
+                  : status === 'full'
+                    ? t('availability.full')
+                    : t('availability.fewLeft')}
+              </Badge>
+            </div>
+
+            {/* 右上：お気に入りボタン */}
+            <div className="flex-shrink-0">
+              <CardFavoriteButton
+                favoriteType="photo_session"
+                favoriteId={session.id}
+                size="sm"
+                initialState={
+                  favoriteState
+                    ? {
+                        isFavorited: favoriteState.isFavorited,
+                        favoriteCount: favoriteState.favoriteCount,
+                        isAuthenticated: true,
+                      }
+                    : undefined
+                }
+                onToggle={onFavoriteToggle}
+              />
+            </div>
           </div>
+
+          {/* タイトル */}
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white line-clamp-2 mb-3">
+            {session.title}
+          </h3>
 
           {/* 主催者 */}
           <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
