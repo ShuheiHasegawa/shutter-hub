@@ -74,8 +74,10 @@ export function FavoriteHeartButton({
     inline: '',
   };
 
-  // 初期状態を設定
+  // 初期状態を設定（一度だけ実行）
   useEffect(() => {
+    if (isInitialized) return; // 既に初期化済みの場合はスキップ
+
     if (initialState) {
       // 一括データがある場合は即座に設定
       setIsFavorited(initialState.isFavorited);
@@ -104,7 +106,7 @@ export function FavoriteHeartButton({
 
       fetchInitialState();
     }
-  }, [favoriteType, favoriteId, initialState]);
+  }, [favoriteType, favoriteId, initialState, isInitialized]);
 
   // お気に入りのトグル処理
   const handleToggle = async (e: React.MouseEvent) => {
