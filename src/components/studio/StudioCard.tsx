@@ -14,6 +14,7 @@ import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { StudioWithStats } from '@/types/database';
+import { CardFavoriteButton } from '@/components/ui/favorite-heart-button';
 
 interface StudioCardProps {
   studio: StudioWithStats;
@@ -116,8 +117,8 @@ export function StudioCard({
             )}
           </div>
 
-          {/* 選択チェックボックス */}
-          {showSelection && (
+          {/* 選択チェックボックスまたはお気に入りボタン */}
+          {showSelection ? (
             <div className="absolute top-2 right-2">
               <div
                 className={`w-6 h-6 rounded border-2 flex items-center justify-center ${
@@ -129,6 +130,12 @@ export function StudioCard({
                 {isSelected && '✓'}
               </div>
             </div>
+          ) : (
+            <CardFavoriteButton
+              favoriteType="studio"
+              favoriteId={studio.id}
+              size="md"
+            />
           )}
         </div>
       </CardHeader>

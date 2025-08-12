@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { Home, Search, Calendar, MessageCircle, Hash } from 'lucide-react';
+import { Home, Search, Calendar, MessageCircle, Heart } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { Link } from '@/i18n/routing';
@@ -24,10 +24,10 @@ export function BottomNavigation() {
       key: 'search',
     },
     {
-      icon: Hash,
-      label: 'Timeline',
-      href: '/photo-sessions',
-      key: 'timeline',
+      icon: Heart,
+      label: t('favorites'),
+      href: '/favorites',
+      key: 'favorites',
     },
     {
       icon: MessageCircle,
