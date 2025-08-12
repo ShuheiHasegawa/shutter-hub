@@ -95,12 +95,24 @@ export function FavoriteHeartButton({
     e.preventDefault();
     e.stopPropagation();
 
+    Logger.info('🚀 ハートボタンクリック開始', {
+      favoriteType,
+      favoriteId,
+      isAuthenticated,
+      isFavorited,
+      favoriteCount,
+    });
+
     if (!isAuthenticated) {
+      Logger.error('❌ 未認証でハートボタンクリック');
       toast.error('お気に入り機能を利用するにはログインが必要です');
       return;
     }
 
-    if (isPending) return;
+    if (isPending) {
+      Logger.error('⏳ 処理中のためスキップ');
+      return;
+    }
 
     startTransition(async () => {
       try {
@@ -108,10 +120,22 @@ export function FavoriteHeartButton({
         const optimisticFavorited = !isFavorited;
         const optimisticCount = favoriteCount + (optimisticFavorited ? 1 : -1);
 
+        Logger.info('🔄 楽観的更新実行', {
+          optimisticFavorited,
+          optimisticCount,
+        });
+
         setIsFavorited(optimisticFavorited);
         setFavoriteCount(Math.max(0, optimisticCount));
 
+        Logger.info('📡 Server Action呼び出し開始', {
+          favoriteType,
+          favoriteId,
+        });
+
         const result = await toggleFavoriteAction(favoriteType, favoriteId);
+
+        Logger.info('📡 Server Action結果', result);
 
         if (result.success && result.data) {
           // サーバーからの正確な結果で更新
