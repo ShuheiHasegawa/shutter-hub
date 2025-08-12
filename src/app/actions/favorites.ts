@@ -357,7 +357,7 @@ export async function getPopularFavoritesAction(
           favoriteCount: stat.total_favorites,
         };
       })
-      .filter(item => item.id); // 詳細が見つからないものは除外
+      .filter(item => item && 'id' in item && item.id); // 詳細が見つからないものは除外
 
     return {
       success: true,
