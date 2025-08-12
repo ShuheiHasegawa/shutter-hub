@@ -19,6 +19,7 @@ import { PlusIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { PREFECTURES } from '@/constants/japan';
 import { STUDIO_SORT_OPTIONS, DEFAULT_STUDIO_SEARCH } from '@/constants/studio';
 import Link from 'next/link';
+import { FavoriteTestButton } from '@/components/debug/FavoriteTestButton';
 
 export default function StudiosPage() {
   const searchParams = useSearchParams();
@@ -72,12 +73,15 @@ export default function StudiosPage() {
               撮影に最適なスタジオを見つけましょう
             </p>
           </div>
-          <Link href="/studios/create">
-            <Button className="flex items-center gap-2">
-              <PlusIcon className="w-4 h-4" />
-              新しいスタジオを追加
-            </Button>
-          </Link>
+          <div className="flex gap-2">
+            <FavoriteTestButton />
+            <Link href="/studios/create">
+              <Button className="flex items-center gap-2">
+                <PlusIcon className="w-4 h-4" />
+                新しいスタジオを追加
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {/* 検索・フィルター */}
