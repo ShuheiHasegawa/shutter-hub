@@ -98,13 +98,13 @@ export function FavoritesContent() {
     if (searchTerm) {
       filtered = items.filter(item => {
         if (item.favorite_type === 'studio') {
-          const studio = item.studios;
+          const studio = item.studio;
           return (
             studio?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             studio?.address?.toLowerCase().includes(searchTerm.toLowerCase())
           );
         } else {
-          const session = item.photo_sessions;
+          const session = item.photo_session;
           return (
             session?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             session?.description
@@ -130,12 +130,12 @@ export function FavoritesContent() {
         case 'name':
           const nameA =
             a.favorite_type === 'studio'
-              ? a.studios?.name
-              : a.photo_sessions?.title;
+              ? a.studio?.name
+              : a.photo_session?.title;
           const nameB =
             b.favorite_type === 'studio'
-              ? b.studios?.name
-              : b.photo_sessions?.title;
+              ? b.studio?.name
+              : b.photo_session?.title;
           return (nameA || '').localeCompare(nameB || '');
         default:
           return 0;
@@ -378,22 +378,22 @@ function FavoritesTabContent({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {items.map(item => {
-        if (item.favorite_type === 'studio' && item.studios) {
+        if (item.favorite_type === 'studio' && item.studio) {
           return (
             <StudioCard
               key={`studio-${item.favorite_id}`}
-              studio={item.studios as StudioWithStats}
-              onSelect={() => router.push(`/studios/${item.studios!.id}`)}
+              studio={item.studio as StudioWithStats}
+              onSelect={() => router.push(`/studios/${item.studio!.id}`)}
             />
           );
         } else if (
           item.favorite_type === 'photo_session' &&
-          item.photo_sessions
+          item.photo_session
         ) {
           return (
             <PhotoSessionCard
               key={`session-${item.favorite_id}`}
-              session={item.photo_sessions as PhotoSessionWithOrganizer}
+              session={item.photo_session as PhotoSessionWithOrganizer}
               onViewDetails={id => router.push(`/photo-sessions/${id}`)}
               layoutMode="card"
             />
