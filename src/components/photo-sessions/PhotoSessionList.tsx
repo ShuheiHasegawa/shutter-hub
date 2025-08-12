@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { PhotoSessionCard } from './PhotoSessionCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { getBulkFavoriteStatusAction } from '@/app/actions/favorites';
 import {
   Select,
   SelectContent,
@@ -76,6 +77,9 @@ export function PhotoSessionList({
   >('start_time');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [favoriteStates, setFavoriteStates] = useState<
+    Record<string, { isFavorited: boolean; favoriteCount: number }>
+  >({});
 
   // 無限スクロール用のrefs
   const loadMoreTriggerRef = useRef<HTMLDivElement>(null);
@@ -248,6 +252,32 @@ export function PhotoSessionList({
             );
             return [...prev, ...uniqueNewSessions];
           });
+        }
+
+        // お気に入り状態を一括取得
+        if (newSessions.length > 0) {
+          const favoriteItems = newSessions.map(session => ({
+            type: 'photo_session' as const,
+            id: session.id,
+          }));
+
+          try {
+            const favoriteResult =
+              await getBulkFavoriteStatusAction(favoriteItems);
+
+            if (favoriteResult.success) {
+              if (reset) {
+                setFavoriteStates(favoriteResult.favoriteStates);
+              } else {
+                setFavoriteStates(prev => ({
+                  ...prev,
+                  ...favoriteResult.favoriteStates,
+                }));
+              }
+            }
+          } catch (error) {
+            logger.error('お気に入り状態取得エラー:', error);
+          }
         }
 
         // 次のページがあるかチェック
@@ -614,17 +644,21 @@ export function PhotoSessionList({
         </Card>
       ) : (
         <div className="space-y-3 md:space-y-4 pb-8">
-          {sessions.map(session => (
-            <PhotoSessionCard
-              key={session.id}
-              session={session}
-              onViewDetails={handleViewDetails}
-              onEdit={handleEdit}
-              isOwner={currentUser?.id === session.organizer_id}
-              showActions={true}
-              layoutMode="card"
-            />
-          ))}
+          {sessions.map(session => {
+            const favoriteState = favoriteStates[`photo_session_${session.id}`];
+            return (
+              <PhotoSessionCard
+                key={session.id}
+                session={session}
+                onViewDetails={handleViewDetails}
+                onEdit={handleEdit}
+                isOwner={currentUser?.id === session.organizer_id}
+                showActions={true}
+                layoutMode="card"
+                favoriteState={favoriteState}
+              />
+            );
+          })}
         </div>
       )}
 

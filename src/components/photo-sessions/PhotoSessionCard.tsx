@@ -25,6 +25,10 @@ interface PhotoSessionCardProps {
   showActions?: boolean;
   isOwner?: boolean;
   layoutMode?: 'vertical' | 'horizontal' | 'mobile' | 'card';
+  favoriteState?: {
+    isFavorited: boolean;
+    favoriteCount: number;
+  };
 }
 
 export function PhotoSessionCard({
@@ -34,6 +38,7 @@ export function PhotoSessionCard({
   showActions = true,
   isOwner = false,
   layoutMode = 'vertical',
+  favoriteState,
 }: PhotoSessionCardProps) {
   const t = useTranslations('photoSessions');
   const tBooking = useTranslations('booking');
@@ -96,6 +101,15 @@ export function PhotoSessionCard({
                   favoriteType="photo_session"
                   favoriteId={session.id}
                   size="md"
+                  initialState={
+                    favoriteState
+                      ? {
+                          isFavorited: favoriteState.isFavorited,
+                          favoriteCount: favoriteState.favoriteCount,
+                          isAuthenticated: true,
+                        }
+                      : undefined
+                  }
                 />
                 <Badge
                   variant={
@@ -192,6 +206,15 @@ export function PhotoSessionCard({
                   favoriteType="photo_session"
                   favoriteId={session.id}
                   size="sm"
+                  initialState={
+                    favoriteState
+                      ? {
+                          isFavorited: favoriteState.isFavorited,
+                          favoriteCount: favoriteState.favoriteCount,
+                          isAuthenticated: true,
+                        }
+                      : undefined
+                  }
                 />
                 <Badge
                   variant={
