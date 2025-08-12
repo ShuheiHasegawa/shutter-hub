@@ -22,19 +22,25 @@ import { EmptyFavorites } from './EmptyFavorites';
 import { getUserFavoritesAction } from '@/app/actions/favorites';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
-import { Studio, PhotoSession } from '@/types/database';
+import {
+  UserFavoriteWithDetails,
+  StudioWithStats,
+  PhotoSessionWithOrganizer,
+} from '@/types/database';
 import Logger from '@/lib/logger';
 
 export function FavoritesContent() {
   const t = useTranslations('favorites');
   const router = useRouter();
 
-  const [activeTab, setActiveTab] = useState<
-    'all' | 'studio' | 'photo_session'
-  >('all');
-  const [studioFavorites, setStudioFavorites] = useState<Studio[]>([]);
+  const [activeTab, setActiveTab] = useState<'studio' | 'photo_session'>(
+    'studio'
+  );
+  const [studioFavorites, setStudioFavorites] = useState<
+    UserFavoriteWithDetails[]
+  >([]);
   const [photoSessionFavorites, setPhotoSessionFavorites] = useState<
-    PhotoSession[]
+    UserFavoriteWithDetails[]
   >([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -60,17 +66,9 @@ export function FavoritesContent() {
         const favorites = result.favorites || [];
 
         if (type === 'studio') {
-          setStudioFavorites(favorites);
+          setStudioFavorites(favorites as UserFavoriteWithDetails[]);
         } else if (type === 'photo_session') {
-          setPhotoSessionFavorites(favorites);
-        } else {
-          // 全体の場合、タイプ別に分離
-          setStudioFavorites(
-            favorites.filter(f => f.favorite_type === 'studio')
-          );
-          setPhotoSessionFavorites(
-            favorites.filter(f => f.favorite_type === 'photo_session')
-          );
+          setPhotoSessionFavorites(favorites as UserFavoriteWithDetails[]);
         }
       } else {
         toast.error(result.error || 'お気に入り一覧の取得に失敗しました');
@@ -83,14 +81,14 @@ export function FavoritesContent() {
     }
   };
 
-  // 初期データ取得
+  // 初期データ取得（スタジオのみ）
   useEffect(() => {
-    fetchFavorites();
+    fetchFavorites('studio');
   }, []);
 
   // フィルタリング・ソート機能
   const filterAndSortItems = (
-    items: Studio[] | PhotoSession[],
+    items: UserFavoriteWithDetails[],
     searchTerm: string,
     sortBy: string
   ) => {
@@ -112,9 +110,7 @@ export function FavoritesContent() {
             session?.description
               ?.toLowerCase()
               .includes(searchTerm.toLowerCase()) ||
-            session?.location_name
-              ?.toLowerCase()
-              .includes(searchTerm.toLowerCase())
+            session?.location?.toLowerCase().includes(searchTerm.toLowerCase())
           );
         }
       });
@@ -151,7 +147,7 @@ export function FavoritesContent() {
 
   // タブ変更時の処理
   const handleTabChange = (value: string) => {
-    const newTab = value as 'all' | 'studio' | 'photo_session';
+    const newTab = value as 'studio' | 'photo_session';
     setActiveTab(newTab);
 
     // 必要に応じて個別にデータを再取得
@@ -194,13 +190,10 @@ export function FavoritesContent() {
   const totalFavorites = studioFavorites.length + photoSessionFavorites.length;
 
   // タブに表示する内容を取得
-  const getTabContent = (tab: 'all' | 'studio' | 'photo_session') => {
-    let items: Studio[] | PhotoSession[] = [];
+  const getTabContent = (tab: 'studio' | 'photo_session') => {
+    let items: UserFavoriteWithDetails[] = [];
 
     switch (tab) {
-      case 'all':
-        items = [...studioFavorites, ...photoSessionFavorites];
-        break;
       case 'studio':
         items = studioFavorites;
         break;
@@ -314,14 +307,7 @@ export function FavoritesContent() {
         onValueChange={handleTabChange}
         className="space-y-6"
       >
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="all" className="flex items-center gap-2">
-            <Heart className="h-4 w-4" />
-            {t('tabs.all')}
-            <Badge variant="secondary" className="ml-1">
-              {totalFavorites}
-            </Badge>
-          </TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="studio" className="flex items-center gap-2">
             <Building2 className="h-4 w-4" />
             {t('tabs.studios')}
@@ -340,15 +326,6 @@ export function FavoritesContent() {
             </Badge>
           </TabsTrigger>
         </TabsList>
-
-        <TabsContent value="all" className="space-y-6">
-          <FavoritesTabContent
-            items={getTabContent('all')}
-            type="all"
-            searchTerm={searchTerm}
-            emptyMessage={t('empty.all')}
-          />
-        </TabsContent>
 
         <TabsContent value="studio" className="space-y-6">
           <FavoritesTabContent
@@ -374,8 +351,8 @@ export function FavoritesContent() {
 
 // タブコンテンツコンポーネント
 interface FavoritesTabContentProps {
-  items: Studio[] | PhotoSession[];
-  type: 'all' | 'studio' | 'photo_session';
+  items: UserFavoriteWithDetails[];
+  type: 'studio' | 'photo_session';
   searchTerm: string;
   emptyMessage: string;
 }
@@ -401,24 +378,28 @@ function FavoritesTabContent({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {items.map(item => {
-        if (item.favorite_type === 'studio') {
+        if (item.favorite_type === 'studio' && item.studios) {
           return (
             <StudioCard
               key={`studio-${item.favorite_id}`}
-              studio={item.studios}
-              onSelect={() => router.push(`/studios/${item.studios.id}`)}
+              studio={item.studios as StudioWithStats}
+              onSelect={() => router.push(`/studios/${item.studios!.id}`)}
             />
           );
-        } else {
+        } else if (
+          item.favorite_type === 'photo_session' &&
+          item.photo_sessions
+        ) {
           return (
             <PhotoSessionCard
               key={`session-${item.favorite_id}`}
-              session={item.photo_sessions}
+              session={item.photo_sessions as PhotoSessionWithOrganizer}
               onViewDetails={id => router.push(`/photo-sessions/${id}`)}
               layoutMode="card"
             />
           );
         }
+        return null;
       })}
     </div>
   );
