@@ -9,23 +9,16 @@ export async function toggleFavoriteAction(
   favoriteType: 'studio' | 'photo_session',
   favoriteId: string
 ) {
-  Logger.info('🎯 toggleFavoriteAction開始', {
-    favoriteType,
-    favoriteId,
-  });
-
   try {
     const supabase = await createClient();
 
     // 認証確認
-    Logger.info('🔐 認証確認開始');
     const {
       data: { user },
       error: authError,
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      Logger.error('❌ 認証エラー', { authError, hasUser: !!user });
       return {
         success: false,
         error: '認証が必要です',
@@ -33,22 +26,12 @@ export async function toggleFavoriteAction(
       };
     }
 
-    Logger.info('✅ 認証成功', { userId: user.id });
-
     // PostgreSQL関数を使用してお気に入りをトグル
-    Logger.info('🗃️ toggle_favorite関数呼び出し開始', {
-      target_user_id: user.id,
-      target_type: favoriteType,
-      target_id: favoriteId,
-    });
-
     const { data, error } = await supabase.rpc('toggle_favorite', {
       target_user_id: user.id,
       target_type: favoriteType,
       target_id: favoriteId,
     });
-
-    Logger.info('🗃️ toggle_favorite関数結果', { data, error });
 
     if (error) {
       Logger.error('Toggle favorite error:', error);
