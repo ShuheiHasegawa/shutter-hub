@@ -129,11 +129,7 @@ export function FavoriteHeartButton({
         setIsFavorited(optimisticFavorited);
         setFavoriteCount(Math.max(0, optimisticCount));
 
-        // eslint-disable-next-line no-console
-        console.log('🚀 ToggleFavorite開始:', { favoriteType, favoriteId });
         const result = await toggleFavoriteAction(favoriteType, favoriteId);
-        // eslint-disable-next-line no-console
-        console.log('📡 ToggleFavorite結果:', result);
 
         if (result.success && result.data) {
           // サーバーからの正確な結果で更新
