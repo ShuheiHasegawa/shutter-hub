@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 interface EmptyFavoritesProps {
-  type: 'all' | 'studio' | 'photo_session';
+  type: 'studio' | 'photo_session';
   message: string;
   searchTerm?: string;
 }

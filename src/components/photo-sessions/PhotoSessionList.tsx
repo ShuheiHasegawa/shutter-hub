@@ -437,27 +437,13 @@ export function PhotoSessionList({
     isFavorited: boolean,
     favoriteCount: number
   ) => {
-    // eslint-disable-next-line no-console
-    console.log('📝 PhotoSessionList お気に入り状態更新', {
-      sessionId,
-      isFavorited,
-      favoriteCount,
-      key: `photo_session_${sessionId}`,
-    });
-
-    setFavoriteStates(prev => {
-      const newStates = {
-        ...prev,
-        [`photo_session_${sessionId}`]: {
-          isFavorited,
-          favoriteCount,
-        },
-      };
-
-      // eslint-disable-next-line no-console
-      console.log('📊 更新後のfavoriteStates', newStates);
-      return newStates;
-    });
+    setFavoriteStates(prev => ({
+      ...prev,
+      [`photo_session_${sessionId}`]: {
+        isFavorited,
+        favoriteCount,
+      },
+    }));
   };
 
   // handleLoadMore関数は無限スクロールにより不要
