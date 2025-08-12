@@ -29,6 +29,7 @@ import {
   Bug,
   CreditCard,
   Map,
+  Heart,
 } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
 import {
@@ -81,6 +82,11 @@ export function Sidebar({ className }: SidebarProps) {
       icon: Camera,
       children: [
         {
+          title: 'お気に入り撮影会',
+          href: '/photo-sessions/favorites',
+          icon: Heart,
+        },
+        {
           title: '撮影会一覧',
           href: '/photo-sessions',
           icon: List,
@@ -106,6 +112,11 @@ export function Sidebar({ className }: SidebarProps) {
       title: 'スタジオ',
       icon: Building,
       children: [
+        {
+          title: 'お気に入りスタジオ',
+          href: '/studios/favorites',
+          icon: Heart,
+        },
         {
           title: 'スタジオ一覧',
           href: '/studios',
