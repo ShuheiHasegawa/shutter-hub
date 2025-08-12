@@ -156,7 +156,7 @@ export async function getUserFavoritesAction(
 
     const offset = (page - 1) * limit;
 
-    // お気に入り一覧を取得（適切なJOINで詳細情報も含める）
+    // お気に入り一覧を取得（基本情報のみ）
     let query = supabase
       .from('user_favorites')
       .select(
@@ -164,27 +164,7 @@ export async function getUserFavoritesAction(
         id,
         favorite_type,
         favorite_id,
-        created_at,
-        studios:studios!user_favorites_favorite_id_fkey(
-          id,
-          name,
-          address,
-          prefecture,
-          city,
-          hourly_rate_min,
-          hourly_rate_max
-        ),
-        photo_sessions:photo_sessions!user_favorites_favorite_id_fkey(
-          id,
-          title,
-          description,
-          start_time,
-          end_time,
-          location_name,
-          price_per_person,
-          max_participants,
-          booking_type
-        )
+        created_at
       `
       )
       .eq('user_id', user.id)
@@ -206,9 +186,68 @@ export async function getUserFavoritesAction(
       };
     }
 
+    // 詳細情報を手動で取得
+    const enrichedFavorites = [];
+    if (data && data.length > 0) {
+      for (const favorite of data) {
+        let details = null;
+
+        if (favorite.favorite_type === 'studio') {
+          const { data: studioData } = await supabase
+            .from('studios')
+            .select(
+              `
+              id,
+              name,
+              address,
+              prefecture,
+              city,
+              hourly_rate_min,
+              hourly_rate_max,
+              image_url,
+              description
+            `
+            )
+            .eq('id', favorite.favorite_id)
+            .single();
+          details = studioData;
+        } else if (favorite.favorite_type === 'photo_session') {
+          const { data: sessionData } = await supabase
+            .from('photo_sessions')
+            .select(
+              `
+              id,
+              title,
+              description,
+              start_time,
+              end_time,
+              location,
+              price_per_person,
+              max_participants,
+              booking_type,
+              organizer:organizer_id(
+                id,
+                display_name,
+                avatar_url
+              )
+            `
+            )
+            .eq('id', favorite.favorite_id)
+            .single();
+          details = sessionData;
+        }
+
+        enrichedFavorites.push({
+          ...favorite,
+          [favorite.favorite_type === 'studio' ? 'studio' : 'photo_session']:
+            details,
+        });
+      }
+    }
+
     return {
       success: true,
-      favorites: data || [],
+      favorites: enrichedFavorites,
       totalCount: count || 0,
       currentPage: page,
       totalPages: Math.ceil((count || 0) / limit),

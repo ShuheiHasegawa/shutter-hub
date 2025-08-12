@@ -109,8 +109,8 @@ export function EmptyFavorites({
           </Button>
 
           {/* 追加のアクション */}
-          {type === 'all' && (
-            <div className="flex justify-center gap-4 pt-4">
+          <div className="flex justify-center gap-4 pt-4">
+            {type === 'studio' ? (
               <Button
                 variant="outline"
                 onClick={() => router.push('/studios')}
@@ -119,6 +119,7 @@ export function EmptyFavorites({
                 <Building2 className="h-4 w-4" />
                 {t('actions.exploreStudios')}
               </Button>
+            ) : (
               <Button
                 variant="outline"
                 onClick={() => router.push('/photo-sessions')}
@@ -127,8 +128,8 @@ export function EmptyFavorites({
                 <Camera className="h-4 w-4" />
                 {t('actions.explorePhotoSessions')}
               </Button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         {/* お気に入り機能の説明 */}

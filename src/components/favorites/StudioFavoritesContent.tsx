@@ -20,14 +20,16 @@ import { EmptyFavorites } from './EmptyFavorites';
 import { getUserFavoritesAction } from '@/app/actions/favorites';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
-import { Studio } from '@/types/database';
+import { UserFavoriteWithDetails, StudioWithStats } from '@/types/database';
 import Logger from '@/lib/logger';
 
 export function StudioFavoritesContent() {
   const t = useTranslations('favorites');
   const router = useRouter();
 
-  const [studioFavorites, setStudioFavorites] = useState<Studio[]>([]);
+  const [studioFavorites, setStudioFavorites] = useState<
+    UserFavoriteWithDetails[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'name'>('newest');
@@ -49,7 +51,7 @@ export function StudioFavoritesContent() {
       setIsAuthenticated(true);
 
       if (result.success) {
-        const favorites = result.favorites || [];
+        const favorites = (result.favorites || []) as UserFavoriteWithDetails[];
         setStudioFavorites(favorites);
       } else {
         toast.error(result.error || 'お気に入り一覧の取得に失敗しました');
@@ -69,7 +71,7 @@ export function StudioFavoritesContent() {
 
   // フィルタリング・ソート機能
   const filterAndSortItems = (
-    items: Studio[],
+    items: UserFavoriteWithDetails[],
     searchTerm: string,
     sortBy: string
   ) => {
@@ -78,7 +80,7 @@ export function StudioFavoritesContent() {
     // 検索フィルター
     if (searchTerm) {
       filtered = items.filter(item => {
-        const studio = item.studios;
+        const studio = item.studio;
         return (
           studio?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           studio?.address?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -98,8 +100,8 @@ export function StudioFavoritesContent() {
             new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
           );
         case 'name':
-          const nameA = a.studios?.name;
-          const nameB = b.studios?.name;
+          const nameA = a.studio?.name;
+          const nameB = b.studio?.name;
           return (nameA || '').localeCompare(nameB || '');
         default:
           return 0;
@@ -195,15 +197,18 @@ export function StudioFavoritesContent() {
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredItems.map(item => (
-            <StudioCard
-              key={`studio-${item.favorite_id}`}
-              studio={item.studios}
-              showSelection={false}
-              isSelected={false}
-              onSelect={() => router.push(`/studios/${item.studios.id}`)}
-            />
-          ))}
+          {filteredItems.map(item => {
+            if (!item.studio) return null;
+            return (
+              <StudioCard
+                key={`studio-${item.favorite_id}`}
+                studio={item.studio as StudioWithStats}
+                showSelection={false}
+                isSelected={false}
+                onSelect={() => router.push(`/studios/${item.studio!.id}`)}
+              />
+            );
+          })}
         </div>
       )}
     </div>

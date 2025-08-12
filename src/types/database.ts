@@ -546,8 +546,8 @@ export interface FavoriteStatistics {
 }
 
 export interface UserFavoriteWithDetails extends UserFavorite {
-  studios?: Studio;
-  photo_sessions?: PhotoSession;
+  studio?: Studio;
+  photo_session?: PhotoSession;
 }
 
 export interface Database {
@@ -588,20 +588,6 @@ export interface Database {
       [_ in never]: never;
     };
     Functions: {
-      toggle_favorite: {
-        Args: {
-          target_user_id: string;
-          target_type: FavoriteType;
-          target_id: string;
-        };
-        Returns: {
-          success: boolean;
-          action: 'added' | 'removed';
-          is_favorited: boolean;
-          message: string;
-          total_favorites: number;
-        };
-      };
       [_ in never]: never;
     };
     Enums: {

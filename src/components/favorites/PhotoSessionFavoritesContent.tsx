@@ -20,7 +20,10 @@ import { EmptyFavorites } from './EmptyFavorites';
 import { getUserFavoritesAction } from '@/app/actions/favorites';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
-import { PhotoSession } from '@/types/database';
+import {
+  UserFavoriteWithDetails,
+  PhotoSessionWithOrganizer,
+} from '@/types/database';
 import Logger from '@/lib/logger';
 
 export function PhotoSessionFavoritesContent() {
@@ -28,7 +31,7 @@ export function PhotoSessionFavoritesContent() {
   const router = useRouter();
 
   const [photoSessionFavorites, setPhotoSessionFavorites] = useState<
-    PhotoSession[]
+    UserFavoriteWithDetails[]
   >([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -51,7 +54,7 @@ export function PhotoSessionFavoritesContent() {
       setIsAuthenticated(true);
 
       if (result.success) {
-        const favorites = result.favorites || [];
+        const favorites = (result.favorites || []) as UserFavoriteWithDetails[];
         setPhotoSessionFavorites(favorites);
       } else {
         toast.error(result.error || 'お気に入り一覧の取得に失敗しました');
@@ -71,7 +74,7 @@ export function PhotoSessionFavoritesContent() {
 
   // フィルタリング・ソート機能
   const filterAndSortItems = (
-    items: PhotoSession[],
+    items: UserFavoriteWithDetails[],
     searchTerm: string,
     sortBy: string
   ) => {
@@ -80,15 +83,13 @@ export function PhotoSessionFavoritesContent() {
     // 検索フィルター
     if (searchTerm) {
       filtered = items.filter(item => {
-        const session = item.photo_sessions;
+        const session = item.photo_session;
         return (
           session?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           session?.description
             ?.toLowerCase()
             .includes(searchTerm.toLowerCase()) ||
-          session?.location_name
-            ?.toLowerCase()
-            .includes(searchTerm.toLowerCase())
+          session?.location?.toLowerCase().includes(searchTerm.toLowerCase())
         );
       });
     }
@@ -105,8 +106,8 @@ export function PhotoSessionFavoritesContent() {
             new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
           );
         case 'name':
-          const nameA = a.photo_sessions?.title;
-          const nameB = b.photo_sessions?.title;
+          const nameA = a.photo_session?.title;
+          const nameB = b.photo_session?.title;
           return (nameA || '').localeCompare(nameB || '');
         default:
           return 0;
@@ -206,14 +207,17 @@ export function PhotoSessionFavoritesContent() {
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredItems.map(item => (
-            <PhotoSessionCard
-              key={`session-${item.favorite_id}`}
-              session={item.photo_sessions}
-              onViewDetails={id => router.push(`/photo-sessions/${id}`)}
-              layoutMode="card"
-            />
-          ))}
+          {filteredItems.map(item => {
+            if (!item.photo_session) return null;
+            return (
+              <PhotoSessionCard
+                key={`session-${item.favorite_id}`}
+                session={item.photo_session as PhotoSessionWithOrganizer}
+                onViewDetails={id => router.push(`/photo-sessions/${id}`)}
+                layoutMode="card"
+              />
+            );
+          })}
         </div>
       )}
     </div>
