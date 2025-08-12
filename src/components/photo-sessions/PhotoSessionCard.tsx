@@ -29,6 +29,7 @@ interface PhotoSessionCardProps {
     isFavorited: boolean;
     favoriteCount: number;
   };
+  onFavoriteToggle?: (isFavorited: boolean, favoriteCount: number) => void;
 }
 
 export function PhotoSessionCard({
@@ -39,6 +40,7 @@ export function PhotoSessionCard({
   isOwner = false,
   layoutMode = 'vertical',
   favoriteState,
+  onFavoriteToggle,
 }: PhotoSessionCardProps) {
   const t = useTranslations('photoSessions');
   const tBooking = useTranslations('booking');
@@ -110,6 +112,7 @@ export function PhotoSessionCard({
                         }
                       : undefined
                   }
+                  onToggle={onFavoriteToggle}
                 />
                 <Badge
                   variant={
@@ -215,6 +218,7 @@ export function PhotoSessionCard({
                         }
                       : undefined
                   }
+                  onToggle={onFavoriteToggle}
                 />
                 <Badge
                   variant={

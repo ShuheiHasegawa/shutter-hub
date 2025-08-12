@@ -122,6 +122,10 @@ export function FavoriteHeartButton({
 
     startTransition(async () => {
       try {
+        // 現在の状態を保存（復元用）
+        const previousFavorited = isFavorited;
+        const previousCount = favoriteCount;
+
         // 楽観的更新
         const optimisticFavorited = !isFavorited;
         const optimisticCount = favoriteCount + (optimisticFavorited ? 1 : -1);
@@ -133,19 +137,22 @@ export function FavoriteHeartButton({
 
         if (result.success && result.data) {
           // サーバーからの正確な結果で更新
-          setIsFavorited(result.data.is_favorited);
-          setFavoriteCount(result.data.total_favorites);
+          const serverFavorited = result.data.is_favorited;
+          const serverCount = result.data.total_favorites;
+
+          setIsFavorited(serverFavorited);
+          setFavoriteCount(serverCount);
 
           toast.success(result.data.message);
 
           // コールバック実行
           if (onToggle) {
-            onToggle(result.data.is_favorited, result.data.total_favorites);
+            onToggle(serverFavorited, serverCount);
           }
         } else {
           // エラー時は元に戻す
-          setIsFavorited(!optimisticFavorited);
-          setFavoriteCount(favoriteCount);
+          setIsFavorited(previousFavorited);
+          setFavoriteCount(previousCount);
 
           if (!result.isAuthenticated) {
             setIsAuthenticated(false);

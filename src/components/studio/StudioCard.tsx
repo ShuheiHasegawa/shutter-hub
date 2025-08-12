@@ -25,6 +25,7 @@ interface StudioCardProps {
     isFavorited: boolean;
     favoriteCount: number;
   };
+  onFavoriteToggle?: (isFavorited: boolean, favoriteCount: number) => void;
 }
 
 export function StudioCard({
@@ -33,6 +34,7 @@ export function StudioCard({
   isSelected = false,
   showSelection = false,
   favoriteState,
+  onFavoriteToggle,
 }: StudioCardProps) {
   const router = useRouter();
 
@@ -149,6 +151,7 @@ export function StudioCard({
                     }
                   : undefined
               }
+              onToggle={onFavoriteToggle}
             />
           )}
         </div>

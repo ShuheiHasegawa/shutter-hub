@@ -152,6 +152,21 @@ export function StudiosList({
     );
   }
 
+  // お気に入り状態変更のコールバック
+  const handleFavoriteToggle = (
+    studioId: string,
+    isFavorited: boolean,
+    favoriteCount: number
+  ) => {
+    setFavoriteStates(prev => ({
+      ...prev,
+      [`studio_${studioId}`]: {
+        isFavorited,
+        favoriteCount,
+      },
+    }));
+  };
+
   return (
     <div className="space-y-6">
       {/* スタジオ一覧 */}
@@ -166,6 +181,9 @@ export function StudiosList({
               isSelected={isSelected(studio.id)}
               showSelection={showSelection}
               favoriteState={favoriteState}
+              onFavoriteToggle={(isFavorited, favoriteCount) =>
+                handleFavoriteToggle(studio.id, isFavorited, favoriteCount)
+              }
             />
           );
         })}
