@@ -204,7 +204,6 @@ export async function getUserFavoritesAction(
               city,
               hourly_rate_min,
               hourly_rate_max,
-              image_url,
               description
             `
             )
