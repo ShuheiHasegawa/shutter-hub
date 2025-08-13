@@ -376,7 +376,7 @@ function FavoritesTabContent({
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="space-y-3 md:space-y-4 pb-8">
       {items.map(item => {
         if (
           item.favorite_type === 'studio' &&

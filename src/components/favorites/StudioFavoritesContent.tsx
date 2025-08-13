@@ -196,7 +196,7 @@ export function StudioFavoritesContent() {
           searchTerm={searchTerm}
         />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="space-y-3 md:space-y-4 pb-8">
           {filteredItems.map(item => {
             // より厳密なnullチェック
             if (!item.studio || !item.studio.id || !item.studio.name) {
