@@ -82,7 +82,7 @@ export function Sidebar({ className }: SidebarProps) {
       icon: Camera,
       children: [
         {
-          title: 'お気に入り撮影会',
+          title: 'お気に入り',
           href: '/photo-sessions/favorites',
           icon: Heart,
         },
@@ -113,7 +113,7 @@ export function Sidebar({ className }: SidebarProps) {
       icon: Building,
       children: [
         {
-          title: 'お気に入りスタジオ',
+          title: 'お気に入り',
           href: '/studios/favorites',
           icon: Heart,
         },

@@ -103,10 +103,10 @@ export function RecentActivity({ activities, isLoading }: RecentActivityProps) {
                 key={i}
                 className="flex items-center space-x-4 animate-pulse"
               >
-                <div className="w-8 h-8 bg-gray-200 rounded-full" />
+                <div className="w-8 h-8 bg-card-muted-foreground rounded-full" />
                 <div className="flex-1 space-y-2">
-                  <div className="h-4 bg-gray-200 rounded w-3/4" />
-                  <div className="h-3 bg-gray-200 rounded w-1/2" />
+                  <div className="h-4 bg-card-muted-foreground rounded w-3/4" />
+                  <div className="h-3 bg-card-muted-foreground rounded w-1/2" />
                 </div>
               </div>
             ))}
@@ -126,9 +126,11 @@ export function RecentActivity({ activities, isLoading }: RecentActivityProps) {
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
-            <Clock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600">まだアクティビティがありません</p>
-            <p className="text-sm text-gray-500 mt-2">
+            <Clock className="h-12 w-12 text-card-muted-foreground mx-auto mb-4" />
+            <p className="text-card-muted-foreground">
+              まだアクティビティがありません
+            </p>
+            <p className="text-sm text-card-muted-foreground mt-2">
               撮影会に参加したり、レビューを投稿すると、ここに表示されます。
             </p>
           </div>
@@ -155,26 +157,26 @@ export function RecentActivity({ activities, isLoading }: RecentActivityProps) {
           {activities.map(activity => {
             const link = getActivityLink(activity);
             const ActivityContent = (
-              <div className="flex items-start space-x-4 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+              <div className="flex items-start space-x-4 p-3 rounded-lg hover:bg-theme-primary/10 transition-colors">
                 <div className="flex-shrink-0 mt-1">
                   {getActivityIcon(activity.type)}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-gray-900 truncate">
+                    <p className="text-sm font-medium text-card-foreground truncate">
                       {activity.title}
                     </p>
                     <div className="flex items-center space-x-2">
                       {getStatusBadge(activity.status)}
                       {link && (
-                        <ExternalLink className="h-3 w-3 text-gray-400" />
+                        <ExternalLink className="h-3 w-3 text-card-muted-foreground" />
                       )}
                     </div>
                   </div>
-                  <p className="text-sm text-gray-600 mt-1">
+                  <p className="text-sm text-card-muted-foreground mt-1">
                     {activity.description}
                   </p>
-                  <p className="text-xs text-gray-500 mt-2">
+                  <p className="text-xs text-card-muted-foreground mt-2">
                     {formatActivityTime(activity.timestamp)}
                   </p>
                 </div>

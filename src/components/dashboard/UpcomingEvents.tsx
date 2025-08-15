@@ -26,11 +26,11 @@ export function UpcomingEvents({ events, isLoading }: UpcomingEventsProps) {
   const getEventIcon = (type: string) => {
     switch (type) {
       case 'photo_session':
-        return <Camera className="h-4 w-4 text-blue-600" />;
+        return <Camera className="h-4 w-4 text-theme-primary" />;
       case 'instant_request':
-        return <Zap className="h-4 w-4 text-orange-600" />;
+        return <Zap className="h-4 w-4 text-theme-primary" />;
       default:
-        return <Calendar className="h-4 w-4 text-gray-600" />;
+        return <Calendar className="h-4 w-4 text-theme-primary" />;
     }
   };
 
@@ -128,9 +128,9 @@ export function UpcomingEvents({ events, isLoading }: UpcomingEventsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
-            <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600">今後の予定はありません</p>
-            <p className="text-sm text-gray-500 mt-2">
+            <Calendar className="h-12 w-12 text-card-foreground mx-auto mb-4" />
+            <p className="text-card-foreground">今後の予定はありません</p>
+            <p className="text-sm text-card-foreground mt-2">
               新しい撮影会を予約してみましょう。
             </p>
             <Button className="mt-4" asChild>
@@ -166,7 +166,7 @@ export function UpcomingEvents({ events, isLoading }: UpcomingEventsProps) {
                     ? 'border-red-200 bg-red-50'
                     : urgency === 'soon'
                       ? 'border-orange-200 bg-orange-50'
-                      : 'border-gray-200 hover:bg-gray-50'
+                      : 'border-gray-200 hover:border-theme-primary'
                 }`}
               >
                 <div className="flex items-start justify-between">
@@ -176,14 +176,18 @@ export function UpcomingEvents({ events, isLoading }: UpcomingEventsProps) {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-2">
-                        <h4 className="text-sm font-semibold text-gray-900 truncate">
-                          {event.title}
-                        </h4>
-                        {getStatusBadge(event.status)}
+                        <div className="flex-1 mr-2">
+                          <h4 className="text-sm font-semibold text-card-foreground truncate">
+                            {event.title}
+                          </h4>
+                        </div>
+                        <div className="flex justify-end">
+                          {getStatusBadge(event.status)}
+                        </div>
                       </div>
 
                       <div className="space-y-1">
-                        <div className="flex items-center text-sm text-gray-600">
+                        <div className="flex items-center text-sm text-card-foreground">
                           <Clock className="h-3 w-3 mr-1" />
                           <span
                             className={
@@ -199,21 +203,21 @@ export function UpcomingEvents({ events, isLoading }: UpcomingEventsProps) {
                         </div>
 
                         {event.location && (
-                          <div className="flex items-center text-sm text-gray-600">
+                          <div className="flex items-center text-sm text-card-foreground">
                             <MapPin className="h-3 w-3 mr-1" />
                             <span className="truncate">{event.location}</span>
                           </div>
                         )}
 
                         {event.organizerName && (
-                          <div className="flex items-center text-sm text-gray-600">
+                          <div className="flex items-center text-sm text-card-foreground">
                             <Users className="h-3 w-3 mr-1" />
                             <span>主催: {event.organizerName}</span>
                           </div>
                         )}
 
                         {event.participantsCount !== undefined && (
-                          <div className="flex items-center text-sm text-gray-600">
+                          <div className="flex items-center text-sm text-card-foreground">
                             <Users className="h-3 w-3 mr-1" />
                             <span>参加者: {event.participantsCount}名</span>
                           </div>
