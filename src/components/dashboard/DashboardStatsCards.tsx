@@ -113,13 +113,13 @@ export function DashboardStatsCards({
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">
+                <p className="text-sm font-medium text-card-foreground">
                   {stat.title}
                 </p>
                 <div className="flex items-baseline space-x-1">
                   <p className="text-2xl font-bold">{stat.value}</p>
                   {'unit' in stat && stat.unit && (
-                    <span className="text-sm text-muted-foreground">
+                    <span className="text-sm text-card-foreground">
                       {stat.unit}
                     </span>
                   )}

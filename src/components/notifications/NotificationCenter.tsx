@@ -28,6 +28,7 @@ import {
   CreditCard,
   User,
   Loader2,
+  RefreshCcw,
 } from 'lucide-react';
 import { useNotifications } from '@/hooks/useNotifications';
 import type { NotificationType, Notification } from '@/types/notification';
@@ -68,7 +69,7 @@ export function NotificationCenter({
     switch (type) {
       // 即座撮影関連
       case 'instant_photo_new_request':
-        return <Camera className="h-4 w-4 text-blue-600" />;
+        return <Camera className="h-4 w-4 text-theme-primary" />;
       case 'instant_photo_match_found':
         return <CheckCircle className="h-4 w-4 text-green-600" />;
       case 'instant_photo_payment_received':
@@ -76,19 +77,19 @@ export function NotificationCenter({
       case 'instant_photo_booking_completed':
         return <CheckCircle className="h-4 w-4 text-purple-600" />;
       case 'instant_photo_booking_started':
-        return <Clock className="h-4 w-4 text-blue-600" />;
+        return <Clock className="h-4 w-4 text-theme-primary" />;
       case 'instant_photo_photos_delivered':
         return <Camera className="h-4 w-4 text-green-600" />;
 
       // 撮影会関連
       case 'photo_session_booking_confirmed':
-        return <Calendar className="h-4 w-4 text-green-600" />;
+        return <Calendar className="h-4 w-4 text-theme-primary" />;
       case 'photo_session_booking_cancelled':
         return <Calendar className="h-4 w-4 text-red-600" />;
       case 'photo_session_reminder':
         return <Clock className="h-4 w-4 text-yellow-600" />;
       case 'photo_session_slot_available':
-        return <Calendar className="h-4 w-4 text-blue-600" />;
+        return <Calendar className="h-4 w-4 text-theme-primary" />;
       case 'photo_session_review_request':
         return <Star className="h-4 w-4 text-yellow-600" />;
       case 'photo_session_document_signed':
@@ -98,25 +99,25 @@ export function NotificationCenter({
 
       // ソーシャル関連
       case 'follow_new_follower':
-        return <Users className="h-4 w-4 text-blue-600" />;
+        return <Users className="h-4 w-4 text-theme-primary" />;
       case 'follow_request_received':
-        return <User className="h-4 w-4 text-blue-600" />;
+        return <User className="h-4 w-4 text-theme-primary" />;
       case 'follow_request_accepted':
         return <CheckCircle className="h-4 w-4 text-green-600" />;
       case 'follow_mutual_follow':
         return <Users className="h-4 w-4 text-green-600" />;
       case 'message_new_message':
-        return <MessageSquare className="h-4 w-4 text-blue-600" />;
+        return <MessageSquare className="h-4 w-4 text-theme-primary" />;
       case 'message_group_invite':
-        return <Users className="h-4 w-4 text-blue-600" />;
+        return <Users className="h-4 w-4 text-theme-primary" />;
       case 'message_group_message':
-        return <MessageSquare className="h-4 w-4 text-blue-600" />;
+        return <MessageSquare className="h-4 w-4 text-theme-primary" />;
 
       // レビュー関連
       case 'review_received':
         return <Star className="h-4 w-4 text-yellow-600" />;
       case 'review_reminder':
-        return <Star className="h-4 w-4 text-gray-600" />;
+        return <Star className="h-4 w-4 text-card-foreground" />;
 
       // 決済関連
       case 'payment_success':
@@ -132,16 +133,16 @@ export function NotificationCenter({
       case 'admin_content_flagged':
         return <AlertTriangle className="h-4 w-4 text-red-600" />;
       case 'system_maintenance':
-        return <Settings className="h-4 w-4 text-gray-600" />;
+        return <Settings className="h-4 w-4 text-card-foreground" />;
       case 'system_update':
-        return <Settings className="h-4 w-4 text-blue-600" />;
+        return <Settings className="h-4 w-4 text-theme-primary" />;
       case 'system_security_alert':
         return <AlertTriangle className="h-4 w-4 text-red-600" />;
       case 'general_announcement':
-        return <Bell className="h-4 w-4 text-blue-600" />;
+        return <Bell className="h-4 w-4 text-theme-primary" />;
 
       default:
-        return <Bell className="h-4 w-4 text-gray-600" />;
+        return <Bell className="h-4 w-4 text-card-foreground" />;
     }
   };
 
@@ -153,11 +154,11 @@ export function NotificationCenter({
       case 'high':
         return 'bg-orange-100 border-orange-200 text-orange-800';
       case 'normal':
-        return 'bg-blue-100 border-blue-200 text-blue-800';
+        return 'bg-theme-primary/10 border-theme-primary/20 text-theme-primary';
       case 'low':
-        return 'bg-gray-100 border-gray-200 text-gray-800';
+        return 'bg-theme-primary/10 border-theme-primary/20 text-theme-primary';
       default:
-        return 'bg-gray-100 border-gray-200 text-gray-800';
+        return 'bg-theme-primary/10 border-theme-primary/20 text-theme-primary';
     }
   };
 
@@ -273,7 +274,7 @@ export function NotificationCenter({
                   {loading ? (
                     <Loader2 className="h-3 w-3 animate-spin" />
                   ) : (
-                    '更新'
+                    <RefreshCcw className="h-3 w-3" />
                   )}
                 </Button>
               </div>
@@ -282,7 +283,7 @@ export function NotificationCenter({
 
           <CardContent className="p-0">
             {notifications.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-8 text-card-foreground">
                 <Bell className="h-8 w-8 mx-auto mb-2 opacity-50" />
                 <p className="text-sm">
                   {loading ? '読み込み中...' : '通知はありません'}
@@ -294,7 +295,7 @@ export function NotificationCenter({
                     onClick={() =>
                       createTestNotification && createTestNotification()
                     }
-                    className="mt-2 text-xs text-blue-600"
+                    className="mt-2 text-xs text-theme-primary"
                   >
                     テスト通知を作成
                   </Button>
@@ -306,8 +307,8 @@ export function NotificationCenter({
                   {notifications.map((notification, index) => (
                     <div key={notification.id}>
                       <div
-                        className={`p-3 hover:bg-gray-50 cursor-pointer transition-colors ${
-                          !notification.read ? 'bg-blue-50' : ''
+                        className={`p-3 hover:bg-theme-primary/10 cursor-pointer transition-colors ${
+                          !notification.read ? 'bg-theme-primary/10' : ''
                         }`}
                         onClick={() => handleNotificationClick(notification)}
                       >
@@ -321,8 +322,8 @@ export function NotificationCenter({
                               <h4
                                 className={`text-sm font-medium leading-tight ${
                                   !notification.read
-                                    ? 'text-gray-900'
-                                    : 'text-gray-700'
+                                    ? 'text-card-foreground'
+                                    : 'text-card-muted-foreground'
                                 }`}
                               >
                                 {notification.title}
@@ -339,22 +340,22 @@ export function NotificationCenter({
                                 </Badge>
 
                                 {!notification.read && (
-                                  <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                                  <div className="w-2 h-2 bg-theme-primary rounded-full"></div>
                                 )}
                               </div>
                             </div>
 
-                            <p className="text-xs text-gray-600 mt-1 leading-relaxed">
+                            <p className="text-xs text-card-foreground mt-1 leading-relaxed">
                               {notification.message}
                             </p>
 
                             <div className="flex items-center justify-between mt-2">
-                              <span className="text-xs text-gray-500">
+                              <span className="text-xs text-card-foreground">
                                 {formatRelativeTime(notification.created_at)}
                               </span>
 
                               {notification.action_label && (
-                                <span className="text-xs text-blue-600 font-medium">
+                                <span className="text-xs text-card-foreground font-medium">
                                   {notification.action_label}
                                 </span>
                               )}
