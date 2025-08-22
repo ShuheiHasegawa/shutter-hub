@@ -1,120 +1,85 @@
 /**
- * 拡張可能なカラーシステム
- * 複数テーマ・ダークモード・自動文字色調整に対応
+ * ShutterHub 統合カラーシステム
+ * シンプルで明示的な命名規則による統合設計
  */
 
-// カラーパレットの型定義
+import { Logger } from '@/lib/logger';
+
+// ブランド色定義（テーマ不変）
+export const brandColors = {
+  primary: '#6F5091', // ShutterHubメインブランド
+  secondary: '#101820', // セカンダリブランド
+  success: '#4ECDC4', // 成功・完了・利用可能
+  warning: '#FFE66D', // 警告・注意・評価
+  error: '#FF6B6B', // エラー・削除・満席
+  info: '#4D96FF', // 情報・リンク・詳細
+} as const;
+
+// カラーパレットの型定義（シンプル化）
 export interface ColorPalette {
   name: string;
   colors: {
-    primary: string;
-    secondary: string;
-    accent: string;
-    neutral: string;
-  };
-  // 明度順に分類された色（明るい順）
-  lightColors: string[];
-  darkColors: string[];
-  // テキストカラー（オプション）
-  textColors?: {
-    primary?: string; // メインテキスト
-    secondary?: string; // セカンダリテキスト
-    muted?: string; // 控えめなテキスト
+    primary: string; // メインカラー
+    accent: string; // アクセントカラー
+    neutral: string; // ニュートラルカラー
   };
 }
 
-// 明度を計算してforeground色を決定するユーティリティ
+// 利用可能なテーマパレット（既存の組み合わせを使用）
+export const colorPalettes: ColorPalette[] = [
+  {
+    name: 'default',
+    colors: {
+      primary: '#0F172A', // Shadcn/ui primary
+      accent: '#F1F5F9', // Shadcn/ui accent
+      neutral: '#64748B', // Shadcn/ui muted-foreground
+    },
+  },
+  {
+    name: 'Pink',
+    colors: {
+      primary: '#D583A2', // ピンク
+      accent: '#624B61', // ダークピンク
+      neutral: '#EAD5E7', // ライトピンク
+    },
+  },
+  {
+    name: 'Purple',
+    colors: {
+      primary: '#BFAADA', // パープル
+      accent: '#201F28', // ダークパープル
+      neutral: '#C4C1F1', // ライトパープル
+    },
+  },
+  {
+    name: 'Blue',
+    colors: {
+      primary: '#1F2C5D', // ダークブルー
+      accent: '#C2CCDF', // ライトブルー
+      neutral: '#829FB6', // ミディアムブルー
+    },
+  },
+  {
+    name: 'BluePink',
+    colors: {
+      primary: '#002159', // ダークネイビー
+      accent: '#FFB8CD', // ライトピンク
+      neutral: '#526076', // グレーブルー
+    },
+  },
+];
+
+// 明度を計算してコントラスト色を決定（改善版）
 export function getContrastColor(hexColor: string): string {
-  // HEXカラーをRGBに変換
   const rgb = hexToRgb(hexColor);
   if (!rgb) return '#FFFFFF';
 
   // 相対輝度を計算 (WCAG標準)
   const luminance = calculateLuminance(rgb);
 
-  // 明度50%を境界として白/黒を決定
-  return luminance > 0.5 ? '#000000' : '#FFFFFF';
-}
-
-/**
- * セマンティックサーフェースペアを生成
- * 各カラーに対して最適なテキストカラーを自動設定
- */
-function generateSurfacePairs(
-  root: HTMLElement,
-  lightColors: string[],
-  darkColors: string[],
-  isDark: boolean
-): void {
-  // プライマリサーフェース (テーマの主要色)
-  const primaryColor = isDark ? lightColors[0] : darkColors[0];
-  const primaryText = getContrastColor(primaryColor);
-  root.style.setProperty('--surface-primary', hexToHsl(primaryColor));
-  root.style.setProperty('--surface-primary-text', hexToHsl(primaryText));
-
-  // プライマリレベル0 (明るめ)
-  const primary0Color = lightColors[0];
-  const primary0Text = getContrastColor(primary0Color);
-  root.style.setProperty('--surface-primary-0', hexToHsl(primary0Color));
-  root.style.setProperty('--surface-primary-0-text', hexToHsl(primary0Text));
-
-  // プライマリレベル1 (暗め)
-  const primary1Color = darkColors[0];
-  const primary1Text = getContrastColor(primary1Color);
-  root.style.setProperty('--surface-primary-1', hexToHsl(primary1Color));
-  root.style.setProperty('--surface-primary-1-text', hexToHsl(primary1Text));
-
-  // アクセントサーフェース (強調用色)
-  const accentColor = isDark
-    ? lightColors[1] || lightColors[0]
-    : darkColors[1] || darkColors[0];
-  const accentText = getContrastColor(accentColor);
-  root.style.setProperty('--surface-accent', hexToHsl(accentColor));
-  root.style.setProperty('--surface-accent-text', hexToHsl(accentText));
-
-  // アクセントレベル0 (明るめ)
-  const accent0Color = lightColors[1] || lightColors[0];
-  const accent0Text = getContrastColor(accent0Color);
-  root.style.setProperty('--surface-accent-0', hexToHsl(accent0Color));
-  root.style.setProperty('--surface-accent-0-text', hexToHsl(accent0Text));
-
-  // アクセントレベル1 (暗め)
-  const accent1Color = darkColors[1] || darkColors[0];
-  const accent1Text = getContrastColor(accent1Color);
-  root.style.setProperty('--surface-accent-1', hexToHsl(accent1Color));
-  root.style.setProperty('--surface-accent-1-text', hexToHsl(accent1Text));
-
-  // ニュートラルサーフェース（中間トーン・控えめ）
-  const neutralColor = isDark
-    ? darkColors[0]
-    : lightColors[1] || lightColors[0];
-  const neutralText = getContrastColor(neutralColor);
-  root.style.setProperty('--surface-neutral', hexToHsl(neutralColor));
-  root.style.setProperty('--surface-neutral-text', hexToHsl(neutralText));
-
-  // ニュートラルレベル0 (明るめ)
-  const neutral0Color = lightColors[1] || lightColors[0];
-  const neutral0Text = getContrastColor(neutral0Color);
-  root.style.setProperty('--surface-neutral-0', hexToHsl(neutral0Color));
-  root.style.setProperty('--surface-neutral-0-text', hexToHsl(neutral0Text));
-
-  // ニュートラルレベル1 (暗め)
-  const neutral1Color = darkColors[1] || darkColors[0];
-  const neutral1Text = getContrastColor(neutral1Color);
-  root.style.setProperty('--surface-neutral-1', hexToHsl(neutral1Color));
-  root.style.setProperty('--surface-neutral-1-text', hexToHsl(neutral1Text));
-}
-
-// HEXをRGBに変換
-function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  return result
-    ? {
-        r: parseInt(result[1], 16),
-        g: parseInt(result[2], 16),
-        b: parseInt(result[3], 16),
-      }
-    : null;
+  // より厳格なコントラスト基準（WCAG AA準拠）
+  // 明度30%を境界として白/黒を決定（より確実な視認性）
+  return luminance > 0.3 ? '#000000' : '#FFFFFF';
 }
 
 // 相対輝度を計算
@@ -139,6 +104,18 @@ function calculateLuminance({
     bsRGB <= 0.03928 ? bsRGB / 12.92 : Math.pow((bsRGB + 0.055) / 1.055, 2.4);
 
   return 0.2126 * rLinear + 0.7152 * gLinear + 0.0722 * bLinear;
+}
+
+// HEXをRGBに変換
+function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result
+    ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16),
+      }
+    : null;
 }
 
 // HEXをHSLに変換（CSS変数用）
@@ -179,8 +156,135 @@ export function hexToHsl(hex: string): string {
   return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
 }
 
+// シンプルなテーマ適用関数
+export function applyTheme(paletteName: string, isDark = false): void {
+  const palette = colorPalettes.find(p => p.name === paletteName);
+  if (!palette) return;
+
+  const root = document.documentElement;
+
+  // テーマの中で最も暗い色を背景色として使用
+  const colors = [
+    palette.colors.primary,
+    palette.colors.accent,
+    palette.colors.neutral,
+  ];
+  const darkestColor = colors.reduce((darkest, current) => {
+    const darkestLuminance = calculateLuminance(
+      hexToRgb(darkest) || { r: 0, g: 0, b: 0 }
+    );
+    const currentLuminance = calculateLuminance(
+      hexToRgb(current) || { r: 0, g: 0, b: 0 }
+    );
+    return currentLuminance < darkestLuminance ? current : darkest;
+  });
+
+  const lightestColor = colors.reduce((lightest, current) => {
+    const lightestLuminance = calculateLuminance(
+      hexToRgb(lightest) || { r: 255, g: 255, b: 255 }
+    );
+    const currentLuminance = calculateLuminance(
+      hexToRgb(current) || { r: 0, g: 0, b: 0 }
+    );
+    return currentLuminance > lightestLuminance ? current : lightest;
+  });
+
+  // Shadcn/ui の --background を上書きしてテーマ背景色を適用
+  if (isDark) {
+    // ダークモード: 最も暗い色を背景に
+    root.style.setProperty(
+      '--background',
+      hexToHsl(adjustBrightness(darkestColor, -20))
+    );
+    root.style.setProperty(
+      '--foreground',
+      hexToHsl(getContrastColor(adjustBrightness(darkestColor, -20)))
+    );
+  } else {
+    // ライトモード: 最も明るい色を背景に
+    root.style.setProperty(
+      '--background',
+      hexToHsl(adjustBrightness(lightestColor, 20))
+    );
+    root.style.setProperty(
+      '--foreground',
+      hexToHsl(getContrastColor(adjustBrightness(lightestColor, 20)))
+    );
+  }
+
+  // サーフェース色を設定（シンプル化）
+  Logger.info(`🎨 Applying ${paletteName} theme:`, {
+    primary: palette.colors.primary,
+    accent: palette.colors.accent,
+    neutral: palette.colors.neutral,
+    isDark,
+  });
+
+  root.style.setProperty('--surface-primary', hexToHsl(palette.colors.primary));
+  root.style.setProperty(
+    '--surface-primary-text',
+    hexToHsl(getContrastColor(palette.colors.primary))
+  );
+
+  root.style.setProperty('--surface-accent', hexToHsl(palette.colors.accent));
+  root.style.setProperty(
+    '--surface-accent-text',
+    hexToHsl(getContrastColor(palette.colors.accent))
+  );
+
+  root.style.setProperty('--surface-neutral', hexToHsl(palette.colors.neutral));
+  root.style.setProperty(
+    '--surface-neutral-text',
+    hexToHsl(getContrastColor(palette.colors.neutral))
+  );
+
+  Logger.info('✅ Surface colors applied:', {
+    'surface-accent': hexToHsl(palette.colors.accent),
+    'surface-accent-text': hexToHsl(getContrastColor(palette.colors.accent)),
+  });
+
+  // ブランド色は固定（変更しない）
+  root.style.setProperty('--brand-primary', hexToHsl(brandColors.primary));
+  root.style.setProperty('--brand-secondary', hexToHsl(brandColors.secondary));
+  root.style.setProperty('--brand-success', hexToHsl(brandColors.success));
+  root.style.setProperty('--brand-warning', hexToHsl(brandColors.warning));
+  root.style.setProperty('--brand-error', hexToHsl(brandColors.error));
+  root.style.setProperty('--brand-info', hexToHsl(brandColors.info));
+
+  // ダークモード対応（サーフェース色の調整）
+  if (isDark) {
+    // ダークモード時の色調整（より慎重に）
+    const primaryDark = adjustBrightness(palette.colors.primary, -10);
+    const accentDark = adjustBrightness(palette.colors.accent, -10);
+    const neutralDark = adjustBrightness(palette.colors.neutral, -15);
+
+    root.style.setProperty('--surface-primary', hexToHsl(primaryDark));
+    root.style.setProperty(
+      '--surface-primary-text',
+      hexToHsl(getContrastColor(primaryDark))
+    );
+
+    root.style.setProperty('--surface-accent', hexToHsl(accentDark));
+    root.style.setProperty(
+      '--surface-accent-text',
+      hexToHsl(getContrastColor(accentDark))
+    );
+
+    root.style.setProperty('--surface-neutral', hexToHsl(neutralDark));
+    root.style.setProperty(
+      '--surface-neutral-text',
+      hexToHsl(getContrastColor(neutralDark))
+    );
+
+    Logger.info('🌙 Dark mode colors applied:', {
+      'surface-accent': hexToHsl(accentDark),
+      'surface-accent-text': hexToHsl(getContrastColor(accentDark)),
+    });
+  }
+}
+
 // 色を明るく/暗くする
-export function adjustBrightness(hex: string, percent: number): string {
+function adjustBrightness(hex: string, percent: number): string {
   const rgb = hexToRgb(hex);
   if (!rgb) return hex;
 
@@ -196,234 +300,4 @@ export function adjustBrightness(hex: string, percent: number): string {
   };
 
   return `#${newRgb.r.toString(16).padStart(2, '0')}${newRgb.g.toString(16).padStart(2, '0')}${newRgb.b.toString(16).padStart(2, '0')}`;
-}
-
-// デフォルトテキストカラーを生成
-export function getDefaultTextColors(isDark: boolean) {
-  if (isDark) {
-    return {
-      primary: '#FFFFFF', // 白 - メインテキスト
-      secondary: '#E5E7EB', // ライトグレー - セカンダリテキスト
-      muted: '#9CA3AF', // グレー - 控えめなテキスト
-    };
-  } else {
-    return {
-      primary: '#111827', // ダークグレー（完全な黒ではない） - メインテキスト
-      secondary: '#374151', // ミディアムグレー - セカンダリテキスト
-      muted: '#6B7280', // グレー - 控えめなテキスト
-    };
-  }
-}
-
-// 事前定義されたカラーパレット（明度分析済み）
-export const colorPalettes: ColorPalette[] = [
-  {
-    name: 'default',
-    colors: {
-      primary: '#0F172A', // Shadcn/ui primary (ライト): 222.2 47.4% 11.2%
-      secondary: '#F1F5F9', // Shadcn/ui secondary (ライト): 210 40% 96.1%
-      accent: '#F1F5F9', // Shadcn/ui accent (ライト): 210 40% 96.1%
-      neutral: '#64748B', // Shadcn/ui muted-foreground: 215.4 16.3% 46.9%
-    },
-    lightColors: ['#F1F5F9', '#64748B', '#0F172A'], // 明るい順: secondary, neutral, primary
-    darkColors: ['#0F172A', '#1E293B'], // 暗い順: primary, 追加ダーク色
-  },
-  {
-    name: 'Pink',
-    colors: {
-      primary: '#D583A2',
-      secondary: '#ECE7ED',
-      accent: '#624B61',
-      neutral: '#EAD5E7',
-    },
-    lightColors: ['#EAD5E7', '#ECE7ED', '#D583A2'], // 明るい順
-    darkColors: ['#D583A2', '#624B61'], // 暗い順
-  },
-  {
-    name: 'Purple',
-    colors: {
-      primary: '#BFAADA',
-      secondary: '#D3CFF1',
-      accent: '#201F28',
-      neutral: '#C4C1F1',
-    },
-    lightColors: ['#D3CFF1', '#C4C1F1', '#BFAADA'], // 明るい順
-    darkColors: ['#BFAADA', '#201F28'], // 暗い順
-  },
-  {
-    name: 'Blue',
-    colors: {
-      primary: '#1F2C5D',
-      secondary: '#3A539F',
-      accent: '#C2CCDF',
-      neutral: '#829FB6',
-    },
-    lightColors: ['#C2CCDF', '#829FB6', '#3A539F'], // 明るい順
-    darkColors: ['#3A539F', '#1F2C5D'], // 暗い順
-  },
-  {
-    name: 'BluePink',
-    colors: {
-      primary: '#002159',
-      secondary: '#F16F8B',
-      accent: '#FFB8CD',
-      neutral: '#526076',
-    },
-    lightColors: ['#FFB8CD', '#F16F8B', '#526076'], // 明るい順
-    darkColors: ['#526076', '#002159'], // 暗い順
-  },
-];
-
-// テーマ切り替え用のCSS変数生成
-export function generateThemeCSS(
-  palette: ColorPalette,
-  isDark = false
-): string {
-  const { colors } = palette;
-
-  const variables: Record<string, string> = {};
-
-  // 基本カラー
-  variables['--theme-primary'] = hexToHsl(colors.primary);
-  variables['--theme-primary-foreground'] = hexToHsl(
-    getContrastColor(colors.primary)
-  );
-  variables['--theme-secondary'] = hexToHsl(colors.secondary);
-  variables['--theme-secondary-foreground'] = hexToHsl(
-    getContrastColor(colors.secondary)
-  );
-  variables['--theme-accent'] = hexToHsl(colors.accent);
-  variables['--theme-accent-foreground'] = hexToHsl(
-    getContrastColor(colors.accent)
-  );
-  variables['--theme-neutral'] = hexToHsl(colors.neutral);
-  variables['--theme-neutral-foreground'] = hexToHsl(
-    getContrastColor(colors.neutral)
-  );
-
-  // ダークモード対応（明度調整）
-  if (isDark) {
-    variables['--theme-primary'] = hexToHsl(
-      adjustBrightness(colors.primary, -20)
-    );
-    variables['--theme-secondary'] = hexToHsl(
-      adjustBrightness(colors.secondary, -30)
-    );
-    variables['--theme-accent'] = hexToHsl(
-      adjustBrightness(colors.accent, -15)
-    );
-    variables['--theme-neutral'] = hexToHsl(
-      adjustBrightness(colors.neutral, -40)
-    );
-  }
-
-  // CSS文字列として返す
-  const cssVars = Object.entries(variables)
-    .map(([key, value]) => `${key}: ${value};`)
-    .join('\n    ');
-
-  return `:root {\n    ${cssVars}\n  }`;
-}
-
-// ブラウザでテーマを適用（新しいライト/ダークモード対応）
-export function applyTheme(paletteName: string, isDark = false): void {
-  const palette = colorPalettes.find(p => p.name === paletteName);
-  if (!palette) return;
-
-  const { lightColors, darkColors, textColors } = palette;
-  const root = document.documentElement;
-
-  // テキストカラーを決定（カスタム > デフォルト）
-  const defaultTextColors = getDefaultTextColors(isDark);
-  const finalTextColors = {
-    primary: textColors?.primary || defaultTextColors.primary,
-    secondary: textColors?.secondary || defaultTextColors.secondary,
-    muted: textColors?.muted || defaultTextColors.muted,
-  };
-
-  // テキストカラーを設定
-  root.style.setProperty(
-    '--theme-text-primary',
-    hexToHsl(finalTextColors.primary)
-  );
-  root.style.setProperty(
-    '--theme-text-secondary',
-    hexToHsl(finalTextColors.secondary)
-  );
-  root.style.setProperty('--theme-text-muted', hexToHsl(finalTextColors.muted));
-
-  // セマンティックサーフェースペアを生成
-  generateSurfacePairs(root, lightColors, darkColors, isDark);
-
-  if (isDark) {
-    // ダークモード: 最も暗い色を背景、明るい色をアクセントに
-    const [darkBg, darkSecondary] = darkColors;
-    const [lightAccent, lightSecondary, lightNeutral] = lightColors;
-
-    // darkColorsの最後の要素（最も暗い色）を背景に使用
-    const darkestColor = darkColors[darkColors.length - 1] || darkBg;
-    root.style.setProperty('--theme-background', hexToHsl(darkestColor));
-    root.style.setProperty(
-      '--theme-background-foreground',
-      hexToHsl(getContrastColor(darkestColor))
-    );
-
-    root.style.setProperty('--theme-primary', hexToHsl(lightAccent));
-    root.style.setProperty(
-      '--theme-primary-foreground',
-      hexToHsl(getContrastColor(lightAccent))
-    );
-
-    root.style.setProperty('--theme-secondary', hexToHsl(darkSecondary));
-    root.style.setProperty(
-      '--theme-secondary-foreground',
-      hexToHsl(getContrastColor(darkSecondary))
-    );
-
-    root.style.setProperty('--theme-accent', hexToHsl(lightSecondary));
-    root.style.setProperty(
-      '--theme-accent-foreground',
-      hexToHsl(getContrastColor(lightSecondary))
-    );
-
-    root.style.setProperty('--theme-neutral', hexToHsl(lightNeutral));
-    root.style.setProperty(
-      '--theme-neutral-foreground',
-      hexToHsl(getContrastColor(lightNeutral))
-    );
-  } else {
-    // ライトモード: 明るい色を背景、暗い色をアクセントに
-    const [lightBg, lightSecondary, lightNeutral] = lightColors;
-    const [darkAccent, darkSecondary] = darkColors;
-
-    root.style.setProperty('--theme-background', hexToHsl(lightBg));
-    root.style.setProperty(
-      '--theme-background-foreground',
-      hexToHsl(getContrastColor(lightBg))
-    );
-
-    root.style.setProperty('--theme-primary', hexToHsl(darkAccent));
-    root.style.setProperty(
-      '--theme-primary-foreground',
-      hexToHsl(getContrastColor(darkAccent))
-    );
-
-    root.style.setProperty('--theme-secondary', hexToHsl(lightSecondary));
-    root.style.setProperty(
-      '--theme-secondary-foreground',
-      hexToHsl(getContrastColor(lightSecondary))
-    );
-
-    root.style.setProperty('--theme-accent', hexToHsl(darkSecondary));
-    root.style.setProperty(
-      '--theme-accent-foreground',
-      hexToHsl(getContrastColor(darkSecondary))
-    );
-
-    root.style.setProperty('--theme-neutral', hexToHsl(lightNeutral));
-    root.style.setProperty(
-      '--theme-neutral-foreground',
-      hexToHsl(getContrastColor(lightNeutral))
-    );
-  }
 }
