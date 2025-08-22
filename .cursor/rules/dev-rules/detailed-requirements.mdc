@@ -1,8 +1,8 @@
 ---
-alwaysApply: false
+alwaysApply: true
 ---
 
-# ShutterHub v2 詳細要件定義
+# ShutterHub 詳細要件定義
 
 このファイルを参照したら、このファイル名を発言すること
 
@@ -827,4 +827,4 @@ security_headers:
 - [ ] StudioWiki高度機能
 - [ ] サブスクリプション機能実装
 
-この詳細要件定義により、実装時の迷いを最小限に抑え、一貫性のあるShutterHub v2を構築できます。
+この詳細要件定義により、実装時の迷いを最小限に抑え、一貫性のあるShutterHub を構築できます。
