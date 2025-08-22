@@ -40,6 +40,16 @@ const config: Config = {
         'shutter-warning': '#FFE66D',
         'shutter-info': '#4D96FF',
 
+        // 🚀 新カラーシステムv2（ブランド色・固定）
+        brand: {
+          primary: 'hsl(var(--brand-primary))',
+          secondary: 'hsl(var(--brand-secondary))',
+          success: 'hsl(var(--brand-success))',
+          warning: 'hsl(var(--brand-warning))',
+          error: 'hsl(var(--brand-error))',
+          info: 'hsl(var(--brand-info))',
+        },
+
         // テーマ対応カラー（動的切り替え可能）
         'theme-background': {
           DEFAULT: 'hsl(var(--theme-background))',
@@ -231,68 +241,52 @@ const config: Config = {
   plugins: [
     tailwindcssAnimate,
 
-    // 🎨 セマンティックサーフェース用カスタムプラグイン
-    // 背景色とテキスト色を自動でペアにする `surface-*` クラスを生成
+    // 🎨 セマンティックサーフェース用プラグイン（v2・シンプル版）
     function ({ addUtilities }: PluginAPI) {
       const surfaceUtilities: Record<string, Record<string, string>> = {};
 
-      // セマンティックサーフェースのユーティリティクラスを生成
-      const surfaceTypes = [
-        'primary',
-        'primary-0',
-        'primary-1', // プライマリ系
-        'accent',
-        'accent-0',
-        'accent-1', // アクセント系
-        'neutral',
-        'neutral-0',
-        'neutral-1', // ニュートラル系
-      ];
+      // シンプルなサーフェースクラス（明度レベルなし）
+      const surfaceTypes = ['primary', 'accent', 'neutral'];
 
       surfaceTypes.forEach(type => {
-        // 基本的なsurfaceクラス: surface-primary, surface-accent など
-        // 使用例: <div className="surface-primary">自動で背景+テキスト色</div>
+        // surface-primary, surface-accent, surface-neutral
         surfaceUtilities[`.surface-${type}`] = {
           'background-color': `hsl(var(--surface-${type}))`,
           color: `hsl(var(--surface-${type}-text))`,
+          transition: 'background-color 0.2s ease, color 0.2s ease',
         };
+
+        // ホバー効果（明度を調整して視認性を確保）
+        // surfaceUtilities[`.surface-${type}:hover`] = {
+        //   'background-color': `hsl(var(--surface-${type}) / 0.8)`,
+        //   filter: 'brightness(1.1)',
+        // };
       });
 
       addUtilities(surfaceUtilities);
     },
-    // 🎯 インタラクティブサーフェース用プラグイン
-    // hover:surface-*, focus:surface-* クラスを生成
-    function ({ addUtilities }: PluginAPI) {
-      const hoverSurfaceUtilities: Record<string, Record<string, string>> = {};
 
-      const surfaceTypes = [
+    // 🎨 ブランド色用プラグイン（v2）
+    function ({ addUtilities }: PluginAPI) {
+      const brandUtilities: Record<string, Record<string, string>> = {};
+
+      const brandTypes = [
         'primary',
-        'primary-0',
-        'primary-1',
-        'accent',
-        'accent-0',
-        'accent-1',
-        'neutral',
-        'neutral-0',
-        'neutral-1',
+        'secondary',
+        'success',
+        'warning',
+        'error',
+        'info',
       ];
 
-      surfaceTypes.forEach(type => {
-        // hover:surface-* クラス
-        // 使用例: <button className="surface-primary hover:surface-accent">
-        hoverSurfaceUtilities[`.hover\\:surface-${type}:hover`] = {
-          'background-color': `hsl(var(--surface-${type}) / 0.9)`,
-        };
-
-        // focus:surface-* クラス
-        // 使用例: <button className="surface-primary focus:surface-accent">
-        hoverSurfaceUtilities[`.focus\\:surface-${type}:focus`] = {
-          outline: `2px solid hsl(var(--surface-${type}) / 0.5)`,
-          'outline-offset': '2px',
+      brandTypes.forEach(type => {
+        // brand-primary, brand-success など
+        brandUtilities[`.brand-${type}`] = {
+          color: `hsl(var(--brand-${type}))`,
         };
       });
 
-      addUtilities(hoverSurfaceUtilities);
+      addUtilities(brandUtilities);
     },
   ],
 };

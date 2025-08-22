@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 新カラーシステムv2のインポート */
+@import '../styles/color-system-v2.css';
+
 /* Leaflet Map Styles */
 @import 'leaflet/dist/leaflet.css';
 
