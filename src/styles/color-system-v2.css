@@ -1,0 +1,33 @@
+/**
+ * ShutterHub v2 統合カラーシステム CSS変数
+ * シンプルで明示的な命名規則
+ */
+
+/* CSS変数定義（@layerを使用せずに直接定義） */
+:root {
+  /* ブランド色（固定・テーマ不変） */
+  --brand-primary: 255 35% 40%; /* #6F5091 - ShutterHubメイン */
+  --brand-secondary: 210 29% 11%; /* #101820 - セカンダリ */
+  --brand-success: 174 71% 56%; /* #4ECDC4 - 成功・完了 */
+  --brand-warning: 52 100% 70%; /* #FFE66D - 警告・注意 */
+  --brand-error: 0 79% 70%; /* #FF6B6B - エラー・削除 */
+  --brand-info: 217 91% 60%; /* #4D96FF - 情報・リンク */
+
+  /* サーフェース色（テーマ対応・シンプル） */
+  --surface-primary: 222.2 47.4% 11.2%; /* デフォルトプライマリ */
+  --surface-primary-text: 210 40% 98%; /* プライマリ用テキスト */
+  --surface-accent: 231 48% 48%; /* デフォルトアクセント */
+  --surface-accent-text: 210 40% 98%; /* アクセント用テキスト */
+  --surface-neutral: 215.4 16.3% 46.9%; /* デフォルトニュートラル */
+  --surface-neutral-text: 210 40% 98%; /* ニュートラル用テキスト */
+}
+
+.dark {
+  /* ダークモード時のサーフェース色 */
+  --surface-primary: 222.2 47.4% 20%; /* ダークモード用プライマリ */
+  --surface-primary-text: 210 40% 98%; /* プライマリ用テキスト */
+  --surface-accent: 231 48% 35%; /* ダークモード用アクセント */
+  --surface-accent-text: 210 40% 98%; /* アクセント用テキスト */
+  --surface-neutral: 215.4 16.3% 25%; /* ダークモード用ニュートラル */
+  --surface-neutral-text: 210 40% 98%; /* ニュートラル用テキスト */
+}

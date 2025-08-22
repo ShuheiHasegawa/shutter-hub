@@ -1,6 +1,17 @@
 /**
- * 統合カラーシステム用テーマフック
- * シンプルで明示的な命名規則対応
+ * テーマ切り替え用フック（旧版）
+ * カラーパレットとダークモードの管理
+ *
+ * ⚠️ 非推奨: このファイルは参考用です
+ * 新規実装では useTheme.ts（v2統合版）を使用してください
+ */
+
+// この内容は src/hooks/useTheme.ts の旧版です
+// 統合システム移行により、参考用として保存されています
+
+/**
+ * テーマ切り替え用フック
+ * カラーパレットとダークモードの管理
  */
 
 import { useState, useEffect } from 'react';
@@ -39,6 +50,33 @@ export function useTheme() {
         const isDarkMode = currentTheme === 'dark';
         setSettings(prev => ({ ...prev, isDark: isDarkMode }));
       }
+
+      // システムのダークモード設定を反映
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      const handleChange = (e: MediaQueryListEvent) => {
+        if (!saved) {
+          // 設定がない場合のみシステム設定を反映
+          const newIsDark = e.matches;
+          setSettings(prev => ({ ...prev, isDark: newIsDark }));
+          setTheme(newIsDark ? 'dark' : 'light');
+        }
+      };
+
+      mediaQuery.addEventListener('change', handleChange);
+      return () => mediaQuery.removeEventListener('change', handleChange);
+    }
+  }, [theme, setTheme]);
+
+  // next-themesの変更を監視してsettingsを同期
+  useEffect(() => {
+    if (theme) {
+      const isDarkMode = theme === 'dark';
+      setSettings(prev => {
+        if (prev.isDark !== isDarkMode) {
+          return { ...prev, isDark: isDarkMode };
+        }
+        return prev;
+      });
     }
   }, [theme]);
 
@@ -62,6 +100,12 @@ export function useTheme() {
     setTheme(newIsDark ? 'dark' : 'light');
   };
 
+  // ダークモード設定
+  const setDarkMode = (isDark: boolean) => {
+    setSettings(prev => ({ ...prev, isDark }));
+    setTheme(isDark ? 'dark' : 'light');
+  };
+
   // 利用可能なパレット一覧を取得
   const availablePalettes = colorPalettes;
 
@@ -73,8 +117,8 @@ export function useTheme() {
     settings,
     setPalette,
     toggleDarkMode,
+    setDarkMode,
     availablePalettes,
     currentPalette,
-    isDark: settings.isDark,
   };
 }
