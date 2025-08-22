@@ -40,8 +40,8 @@ export function PublicHeader() {
         <div className="container mx-auto px-4">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center gap-2">
-              <Camera className="h-8 w-8 text-shutter-primary" />
-              <span className="text-xl font-bold text-foreground">
+              <Camera className="h-8 w-8 brand-primary" />
+              <span className="text-xl font-bold brand-primary">
                 ShutterHub
               </span>
             </div>
@@ -66,10 +66,8 @@ export function PublicHeader() {
             href="/"
             className="flex items-center gap-2 hover:opacity-80 transition-opacity"
           >
-            <Camera className="h-8 w-8 text-shutter-primary" />
-            <span className="text-xl font-bold text-foreground">
-              ShutterHub
-            </span>
+            <Camera className="h-8 w-8 brand-primary" />
+            <span className="text-xl font-bold brand-primary">ShutterHub</span>
           </Link>
 
           {/* Navigation */}
@@ -120,7 +118,7 @@ export function PublicHeader() {
                       />
                       <div
                         className="w-3 h-3 rounded-full border"
-                        style={{ backgroundColor: palette.colors.secondary }}
+                        style={{ backgroundColor: palette.colors.neutral }}
                       />
                       <div
                         className="w-3 h-3 rounded-full border"
