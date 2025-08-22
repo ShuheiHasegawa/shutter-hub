@@ -179,9 +179,9 @@ export const ResponsiveSlotBooking = memo(function ResponsiveSlotBooking({
 
         return (
           <AlertDialog open={isOpen} onOpenChange={onClose}>
-            <AlertDialogContent className="max-w-2xl max-h-[85vh] overflow-hidden dark:bg-gray-900 dark:border-gray-700">
+            <AlertDialogContent className="max-w-2xl max-h-[85vh] overflow-hidden surface-neutral-0">
               {/* ステップインジケーター */}
-              <div className="flex items-center justify-center space-x-8 py-4 border-b dark:border-gray-700">
+              <div className="flex items-center justify-center space-x-8 py-4 border-b border-border">
                 {Object.entries(stepLabels).map(([step, label], index) => {
                   const isActive = currentStep === step;
                   const isCompleted =
@@ -193,10 +193,10 @@ export const ResponsiveSlotBooking = memo(function ResponsiveSlotBooking({
                       <div
                         className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors ${
                           isCompleted
-                            ? 'bg-green-500 text-white dark:bg-green-600'
+                            ? 'surface-accent'
                             : isActive
-                              ? 'bg-blue-500 text-white dark:bg-blue-600'
-                              : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
+                              ? 'surface-primary'
+                              : 'surface-neutral-1'
                         }`}
                       >
                         {isCompleted ? (
@@ -208,10 +208,10 @@ export const ResponsiveSlotBooking = memo(function ResponsiveSlotBooking({
                       <span
                         className={`text-sm font-medium ${
                           isActive
-                            ? 'text-blue-600 dark:text-blue-400'
+                            ? 'text-theme-text-primary'
                             : isCompleted
-                              ? 'text-green-600 dark:text-green-400'
-                              : 'text-gray-500 dark:text-gray-400'
+                              ? 'text-theme-text-primary'
+                              : 'text-theme-text-muted'
                         }`}
                       >
                         {label}
@@ -223,13 +223,13 @@ export const ResponsiveSlotBooking = memo(function ResponsiveSlotBooking({
 
               <div className="overflow-y-auto flex-1">
                 <AlertDialogHeader className="pb-4">
-                  <AlertDialogTitle className="dark:text-white">
+                  <AlertDialogTitle className="text-theme-text-primary">
                     {currentStep === 'select' &&
                       (hasSlots ? '時間枠を選択' : '予約確認')}
                     {currentStep === 'confirm' && '予約内容の確認'}
                     {currentStep === 'complete' && '予約完了'}
                   </AlertDialogTitle>
-                  <AlertDialogDescription className="dark:text-gray-300">
+                  <AlertDialogDescription className="text-theme-text-secondary">
                     {currentStep === 'select' &&
                       (hasSlots
                         ? 'ご希望の時間枠を選択してください'
@@ -264,28 +264,28 @@ export const ResponsiveSlotBooking = memo(function ResponsiveSlotBooking({
                   {/* ステップ2: 予約確認 */}
                   {currentStep === 'confirm' && (
                     <div className="space-y-4">
-                      <Card className="dark:bg-gray-800 dark:border-gray-700">
+                      <Card className="surface-neutral-1">
                         <CardHeader className="pb-3">
-                          <CardTitle className="text-lg dark:text-white">
+                          <CardTitle className="text-lg text-theme-text-primary">
                             予約内容
                           </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-3">
                           <div>
-                            <div className="font-medium text-gray-900 dark:text-white">
+                            <div className="font-medium text-theme-text-primary">
                               撮影会
                             </div>
-                            <div className="text-gray-600 dark:text-gray-300">
+                            <div className="text-theme-text-secondary">
                               {session.title}
                             </div>
                           </div>
 
                           {selectedSlot && (
                             <div>
-                              <div className="font-medium text-gray-900 dark:text-white">
+                              <div className="font-medium text-theme-text-primary">
                                 選択した時間枠
                               </div>
-                              <div className="text-gray-600 dark:text-gray-300">
+                              <div className="text-theme-text-secondary">
                                 枠 {selectedSlot.slot_number}:{' '}
                                 {formatTimeLocalized(
                                   new Date(selectedSlot.start_time),
@@ -301,10 +301,10 @@ export const ResponsiveSlotBooking = memo(function ResponsiveSlotBooking({
                           )}
 
                           <div>
-                            <div className="font-medium text-gray-900 dark:text-white">
+                            <div className="font-medium text-theme-text-primary">
                               料金
                             </div>
-                            <div className="text-gray-600 dark:text-gray-300">
+                            <div className="text-theme-text-secondary">
                               {(selectedSlot?.price_per_person ||
                                 session.price_per_person) === 0
                                 ? '無料'
@@ -314,7 +314,7 @@ export const ResponsiveSlotBooking = memo(function ResponsiveSlotBooking({
                         </CardContent>
                       </Card>
 
-                      <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
+                      <div className="text-xs text-theme-text-muted space-y-1">
                         <div>
                           • 予約のキャンセルは撮影会開始の24時間前まで可能です
                         </div>
@@ -329,14 +329,14 @@ export const ResponsiveSlotBooking = memo(function ResponsiveSlotBooking({
                   {/* ステップ3: 完了 */}
                   {currentStep === 'complete' && (
                     <div className="text-center space-y-4">
-                      <div className="w-16 h-16 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center mx-auto">
-                        <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
+                      <div className="w-16 h-16 surface-accent rounded-full flex items-center justify-center mx-auto">
+                        <CheckCircle className="h-8 w-8" />
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                        <h3 className="text-lg font-semibold text-theme-text-primary">
                           予約が完了しました！
                         </h3>
-                        <p className="text-gray-600 dark:text-gray-300 mt-2">
+                        <p className="text-theme-text-secondary mt-2">
                           撮影会の詳細はメッセージ機能でご確認いただけます
                         </p>
                       </div>
@@ -345,18 +345,22 @@ export const ResponsiveSlotBooking = memo(function ResponsiveSlotBooking({
                 </div>
               </div>
 
-              <AlertDialogFooter className="border-t dark:border-gray-700 pt-4">
+              <AlertDialogFooter className="border-t border-border pt-4">
                 {currentStep === 'select' && (
-                  <>
-                    <AlertDialogCancel className="dark:text-gray-300 dark:border-gray-600">
-                      キャンセル
-                    </AlertDialogCancel>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Button
+                      variant="outline"
+                      onClick={onClose}
+                      className="border-border text-theme-text-secondary"
+                    >
+                      戻る
+                    </Button>
                     <Button
                       onClick={() =>
                         hasSlots ? transitionToStep('confirm') : handleBooking()
                       }
                       disabled={hasSlots && !selectedSlotId}
-                      className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700"
+                      className="surface-primary"
                     >
                       {hasSlots ? (
                         <>
@@ -367,15 +371,15 @@ export const ResponsiveSlotBooking = memo(function ResponsiveSlotBooking({
                         '予約する'
                       )}
                     </Button>
-                  </>
+                  </div>
                 )}
 
                 {currentStep === 'confirm' && (
-                  <>
+                  <div className="grid grid-cols-2 gap-3">
                     <Button
                       variant="outline"
                       onClick={() => transitionToStep('select')}
-                      className="dark:border-gray-600 dark:text-gray-300"
+                      className="border-border text-theme-text-secondary"
                     >
                       <ArrowLeft className="h-4 w-4 mr-2" />
                       戻る
@@ -383,7 +387,7 @@ export const ResponsiveSlotBooking = memo(function ResponsiveSlotBooking({
                     <Button
                       onClick={handleBooking}
                       disabled={isBooking}
-                      className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700"
+                      className="surface-primary"
                     >
                       {isBooking ? (
                         <>
@@ -394,13 +398,13 @@ export const ResponsiveSlotBooking = memo(function ResponsiveSlotBooking({
                         '予約を確定する'
                       )}
                     </Button>
-                  </>
+                  </div>
                 )}
 
                 {currentStep === 'complete' && (
                   <Button
                     onClick={handleComplete}
-                    className="w-full bg-green-600 hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-700"
+                    className="w-full surface-accent"
                   >
                     完了
                   </Button>
@@ -495,32 +499,32 @@ export const ResponsiveSlotBooking = memo(function ResponsiveSlotBooking({
             }
           }}
         >
-          <AlertDialogContent className="max-w-sm dark:bg-gray-900 dark:border-gray-700">
+          <AlertDialogContent className="max-w-sm surface-neutral-0">
             <AlertDialogHeader>
-              <AlertDialogTitle className="dark:text-white">
+              <AlertDialogTitle className="text-theme-text-primary">
                 予約確認
               </AlertDialogTitle>
-              <AlertDialogDescription className="dark:text-gray-300">
+              <AlertDialogDescription className="text-theme-text-secondary">
                 内容をご確認の上、予約を確定してください
               </AlertDialogDescription>
             </AlertDialogHeader>
 
             <div className="space-y-3">
               <div>
-                <div className="font-medium text-gray-900 dark:text-white">
+                <div className="font-medium text-theme-text-primary">
                   撮影会
                 </div>
-                <div className="text-sm text-gray-600 dark:text-gray-300">
+                <div className="text-sm text-theme-text-secondary">
                   {session.title}
                 </div>
               </div>
 
               {selectedSlot && (
                 <div>
-                  <div className="font-medium text-gray-900 dark:text-white">
+                  <div className="font-medium text-theme-text-primary">
                     選択した時間枠
                   </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-300">
+                  <div className="text-sm text-theme-text-secondary">
                     枠 {selectedSlot.slot_number}:{' '}
                     {formatTimeLocalized(
                       new Date(selectedSlot.start_time),
@@ -533,10 +537,8 @@ export const ResponsiveSlotBooking = memo(function ResponsiveSlotBooking({
               )}
 
               <div>
-                <div className="font-medium text-gray-900 dark:text-white">
-                  料金
-                </div>
-                <div className="text-sm text-gray-600 dark:text-gray-300">
+                <div className="font-medium text-theme-text-primary">料金</div>
+                <div className="text-sm text-theme-text-secondary">
                   {(selectedSlot?.price_per_person ||
                     session.price_per_person) === 0
                     ? '無料'
@@ -551,14 +553,14 @@ export const ResponsiveSlotBooking = memo(function ResponsiveSlotBooking({
                   transitionToStep('select');
                   setSelectedSlotId(null);
                 }}
-                className="dark:text-gray-300 dark:border-gray-600"
+                className="text-theme-text-secondary border-border"
               >
                 戻る
               </AlertDialogCancel>
               <AlertDialogAction
                 onClick={handleBooking}
                 disabled={isBooking}
-                className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700"
+                className="surface-primary"
               >
                 {isBooking ? (
                   <>
@@ -575,21 +577,21 @@ export const ResponsiveSlotBooking = memo(function ResponsiveSlotBooking({
 
         {/* 完了ダイアログ（モバイル用） */}
         <AlertDialog open={currentStep === 'complete'} onOpenChange={() => {}}>
-          <AlertDialogContent className="max-w-sm dark:bg-gray-900 dark:border-gray-700">
+          <AlertDialogContent className="max-w-sm surface-neutral-0">
             <AlertDialogHeader>
-              <AlertDialogTitle className="dark:text-white">
+              <AlertDialogTitle className="text-theme-text-primary">
                 予約完了
               </AlertDialogTitle>
-              <AlertDialogDescription className="dark:text-gray-300">
+              <AlertDialogDescription className="text-theme-text-secondary">
                 予約が正常に完了しました
               </AlertDialogDescription>
             </AlertDialogHeader>
 
             <div className="text-center py-4">
-              <div className="w-12 h-12 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
+              <div className="w-12 h-12 surface-accent rounded-full flex items-center justify-center mx-auto mb-3">
+                <CheckCircle className="h-6 w-6" />
               </div>
-              <p className="text-sm text-gray-600 dark:text-gray-300">
+              <p className="text-sm text-theme-text-secondary">
                 撮影会の詳細はメッセージ機能でご確認いただけます
               </p>
             </div>
@@ -597,7 +599,7 @@ export const ResponsiveSlotBooking = memo(function ResponsiveSlotBooking({
             <AlertDialogFooter>
               <Button
                 onClick={handleComplete}
-                className="w-full bg-green-600 hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-700"
+                className="w-full surface-accent"
               >
                 完了
               </Button>
@@ -655,14 +657,14 @@ const SlotCard = memo(
         'p-4 border-2 rounded-lg cursor-pointer transition-all duration-200';
 
       if (isSlotFull) {
-        return `${baseClasses} bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:border-gray-600`;
+        return `${baseClasses} surface-neutral-1 opacity-50 cursor-not-allowed`;
       }
 
       if (isSelected) {
-        return `${baseClasses} bg-blue-50 border-blue-500 text-blue-900 dark:bg-blue-900/20 dark:border-blue-400 dark:text-blue-100`;
+        return `${baseClasses} surface-primary border-theme-primary`;
       }
 
-      return `${baseClasses} bg-white border-gray-200 hover:border-blue-300 hover:bg-blue-50/50 dark:bg-gray-800 dark:border-gray-600 dark:hover:border-blue-400 dark:hover:bg-blue-900/10`;
+      return `${baseClasses} surface-neutral-0 border-border hover:surface-primary-0 hover:border-theme-primary/50`;
     }, [isSlotFull, isSelected]);
 
     const badgeVariant = useMemo(() => {
@@ -680,9 +682,7 @@ const SlotCard = memo(
     return (
       <div className={cardClassName} onClick={handleClick}>
         <div className="flex items-center justify-between mb-3">
-          <h4 className="font-semibold text-lg dark:text-white">
-            枠 {index + 1}
-          </h4>
+          <h4 className="font-semibold text-lg">枠 {index + 1}</h4>
           <Badge variant={badgeVariant} className="text-sm">
             {badgeText}
           </Badge>
@@ -690,32 +690,32 @@ const SlotCard = memo(
 
         <div className="grid grid-cols-3 gap-4 text-sm">
           <div className="text-center">
-            <div className="flex items-center justify-center gap-1 text-gray-600 dark:text-gray-400 mb-1">
+            <div className="flex items-center justify-center gap-1 text-theme-text-muted mb-1">
               <Clock className="h-4 w-4" />
               <span>時間</span>
             </div>
-            <div className="font-medium dark:text-white">
+            <div className="font-medium">
               {formatTimeLocalized(slotStartTime, 'ja')} -{' '}
               {formatTimeLocalized(slotEndTime, 'ja')}
             </div>
           </div>
 
           <div className="text-center">
-            <div className="flex items-center justify-center gap-1 text-gray-600 dark:text-gray-400 mb-1">
+            <div className="flex items-center justify-center gap-1 text-theme-text-muted mb-1">
               <UsersIcon className="h-4 w-4" />
               <span>参加者</span>
             </div>
-            <div className="font-medium dark:text-white">
+            <div className="font-medium">
               {slot.current_participants}/{slot.max_participants}人
             </div>
           </div>
 
           <div className="text-center">
-            <div className="flex items-center justify-center gap-1 text-gray-600 dark:text-gray-400 mb-1">
+            <div className="flex items-center justify-center gap-1 text-theme-text-muted mb-1">
               <CircleDollarSignIcon className="h-4 w-4" />
               <span>料金</span>
             </div>
-            <div className="font-medium dark:text-white">
+            <div className="font-medium">
               {slot.price_per_person === 0
                 ? '無料'
                 : `¥${slot.price_per_person.toLocaleString()}`}
@@ -748,22 +748,16 @@ function SessionInfoDisplay({
 
   return (
     <div className="space-y-4">
-      <Card className="dark:bg-gray-800 dark:border-gray-700">
+      <Card className="surface-neutral-1">
         <CardContent className="pt-6 space-y-3">
           <div>
-            <div className="font-medium text-gray-900 dark:text-white">
-              撮影会
-            </div>
-            <div className="text-gray-600 dark:text-gray-300">
-              {session.title}
-            </div>
+            <div className="font-medium text-theme-text-primary">撮影会</div>
+            <div className="text-theme-text-secondary">{session.title}</div>
           </div>
 
           <div>
-            <div className="font-medium text-gray-900 dark:text-white">
-              日時
-            </div>
-            <div className="text-gray-600 dark:text-gray-300">
+            <div className="font-medium text-theme-text-primary">日時</div>
+            <div className="text-theme-text-secondary">
               {formatDateLocalized(startDate, 'ja', 'long')}
               <br />
               {formatTimeLocalized(startDate, 'ja')} -{' '}
@@ -772,10 +766,8 @@ function SessionInfoDisplay({
           </div>
 
           <div>
-            <div className="font-medium text-gray-900 dark:text-white">
-              場所
-            </div>
-            <div className="text-gray-600 dark:text-gray-300">
+            <div className="font-medium text-theme-text-primary">場所</div>
+            <div className="text-theme-text-secondary">
               {session.location}
               {session.address && (
                 <>
@@ -787,10 +779,8 @@ function SessionInfoDisplay({
           </div>
 
           <div>
-            <div className="font-medium text-gray-900 dark:text-white">
-              料金
-            </div>
-            <div className="text-gray-600 dark:text-gray-300">
+            <div className="font-medium text-theme-text-primary">料金</div>
+            <div className="text-theme-text-secondary">
               {session.price_per_person === 0
                 ? '無料'
                 : `¥${session.price_per_person.toLocaleString()}`}
@@ -799,7 +789,7 @@ function SessionInfoDisplay({
         </CardContent>
       </Card>
 
-      <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
+      <div className="text-xs text-theme-text-muted space-y-1">
         <div>• 予約のキャンセルは撮影会開始の24時間前まで可能です</div>
         <div>• 遅刻される場合は主催者にご連絡ください</div>
         <div>• 体調不良の場合は無理をせず参加をお控えください</div>
