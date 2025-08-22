@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { PublicLayout } from '@/components/layout/public-layout';
 
-import { ThemeButton } from '@/components/ui/theme-button';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -18,7 +18,7 @@ export default function HomePage() {
   const t = useTranslations('home');
 
   return (
-    <div className="min-h-screen surface-neutral-0">
+    <div className="min-h-screen bg-background">
       <PublicLayout>
         {/* ヒーローセクション */}
         <section className="relative surface-primary">
@@ -27,7 +27,7 @@ export default function HomePage() {
               <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
                 {t('hero.title')}
                 <br />
-                <span className="text-surface-accent">
+                <span className="brand-primary">
                   {t('hero.titleHighlight')}
                 </span>
               </h1>
@@ -37,12 +37,12 @@ export default function HomePage() {
                 {t('hero.subtitleSecond')}
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <ThemeButton asChild size="lg" variant="secondary">
+                <Button asChild size="lg" variant="accent">
                   <Link href="/photo-sessions">{t('hero.findSessions')}</Link>
-                </ThemeButton>
-                <ThemeButton asChild size="lg" variant="secondary">
+                </Button>
+                <Button asChild size="lg" variant="primary">
                   <Link href="/instant">{t('hero.requestInstant')}</Link>
-                </ThemeButton>
+                </Button>
               </div>
             </div>
           </div>
@@ -61,10 +61,10 @@ export default function HomePage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              <Card className="text-center surface-primary-0 border border-theme-primary-2 backdrop-blur-sm hover:border-theme-primary-3 hover:surface-primary transition-colors">
+              <Card className="text-center surface-neutral">
                 <CardHeader>
-                  <div className="mx-auto w-12 h-12 bg-theme-primary-2 rounded-lg flex items-center justify-center mb-4">
-                    <Calendar className="h-6 w-6 text-theme-primary" />
+                  <div className="mx-auto w-12 h-12 surface-primary rounded-lg flex items-center justify-center mb-4">
+                    <Calendar className="h-6 w-6" />
                   </div>
                   <CardTitle>{t('features.booking.title')}</CardTitle>
                   <CardDescription className="opacity-80">
@@ -80,10 +80,10 @@ export default function HomePage() {
                 </CardContent>
               </Card>
 
-              <Card className="text-center surface-accent-0 border border-theme-accent-2 backdrop-blur-sm hover:border-theme-accent-3 transition-colors">
+              <Card className="text-center surface-accent">
                 <CardHeader>
-                  <div className="mx-auto w-12 h-12 bg-theme-accent-2 rounded-lg flex items-center justify-center mb-4">
-                    <Zap className="h-6 w-6 text-theme-accent" />
+                  <div className="mx-auto w-12 h-12 surface-neutral rounded-lg flex items-center justify-center mb-4">
+                    <Zap className="h-6 w-6" />
                   </div>
                   <CardTitle>{t('features.instant.title')}</CardTitle>
                   <CardDescription className="opacity-80">
@@ -99,10 +99,10 @@ export default function HomePage() {
                 </CardContent>
               </Card>
 
-              <Card className="text-center surface-neutral border border-theme-neutral-3 backdrop-blur-sm hover:border-theme-neutral-4 transition-colors">
+              <Card className="text-center surface-neutral">
                 <CardHeader>
-                  <div className="mx-auto w-12 h-12 bg-theme-neutral-2 rounded-lg flex items-center justify-center mb-4">
-                    <MapPin className="h-6 w-6 text-theme-neutral" />
+                  <div className="mx-auto w-12 h-12 surface-accent rounded-lg flex items-center justify-center mb-4">
+                    <MapPin className="h-6 w-6" />
                   </div>
                   <CardTitle>{t('features.wiki.title')}</CardTitle>
                   <CardDescription className="opacity-80">
@@ -118,10 +118,10 @@ export default function HomePage() {
                 </CardContent>
               </Card>
 
-              <Card className="text-center surface-primary-0 border border-theme-primary-2 backdrop-blur-sm hover:border-theme-primary-3 transition-colors">
+              <Card className="text-center surface-primary">
                 <CardHeader>
-                  <div className="mx-auto w-12 h-12 bg-theme-primary-2 rounded-lg flex items-center justify-center mb-4">
-                    <Users className="h-6 w-6 text-theme-primary" />
+                  <div className="mx-auto w-12 h-12 surface-neutral rounded-lg flex items-center justify-center mb-4">
+                    <Users className="h-6 w-6" />
                   </div>
                   <CardTitle>{t('features.platform.title')}</CardTitle>
                   <CardDescription className="opacity-80">
@@ -137,10 +137,10 @@ export default function HomePage() {
                 </CardContent>
               </Card>
 
-              <Card className="text-center surface-accent-0 border border-theme-accent-2 backdrop-blur-sm hover:border-theme-accent-3 transition-colors">
+              <Card className="text-center surface-accent">
                 <CardHeader>
-                  <div className="mx-auto w-12 h-12 bg-theme-accent-2 rounded-lg flex items-center justify-center mb-4">
-                    <Star className="h-6 w-6 text-theme-accent" />
+                  <div className="mx-auto w-12 h-12 surface-primary rounded-lg flex items-center justify-center mb-4">
+                    <Star className="h-6 w-6" />
                   </div>
                   <CardTitle>{t('features.review.title')}</CardTitle>
                   <CardDescription className="opacity-80">
@@ -156,10 +156,10 @@ export default function HomePage() {
                 </CardContent>
               </Card>
 
-              <Card className="text-center surface-neutral border border-theme-neutral-3 backdrop-blur-sm hover:border-theme-neutral-4 transition-colors">
+              <Card className="text-center surface-neutral">
                 <CardHeader>
-                  <div className="mx-auto w-12 h-12 bg-theme-neutral-2 rounded-lg flex items-center justify-center mb-4">
-                    <Camera className="h-6 w-6 text-theme-neutral" />
+                  <div className="mx-auto w-12 h-12 surface-accent rounded-lg flex items-center justify-center mb-4">
+                    <Camera className="h-6 w-6" />
                   </div>
                   <CardTitle>{t('features.professional.title')}</CardTitle>
                   <CardDescription className="opacity-80">
@@ -187,12 +187,12 @@ export default function HomePage() {
               </h2>
               <p className="text-xl opacity-90">{t('cta.subtitle')}</p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <ThemeButton asChild size="lg" variant="primary">
+                <Button asChild size="lg" variant="primary">
                   <Link href="/auth/signup">{t('cta.getStarted')}</Link>
-                </ThemeButton>
-                <ThemeButton asChild size="lg" variant="secondary">
+                </Button>
+                <Button asChild size="lg" variant="neutral">
                   <Link href="/about">{t('cta.learnMore')}</Link>
-                </ThemeButton>
+                </Button>
               </div>
             </div>
           </div>
