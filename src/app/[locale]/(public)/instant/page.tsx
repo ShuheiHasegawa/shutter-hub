@@ -5,7 +5,7 @@ import { LoadingCard } from '@/components/ui/loading-card';
 
 export default function InstantPhotoPage() {
   return (
-    <PublicLayout showFooter={false}>
+    <PublicLayout>
       <Suspense fallback={<LoadingCard />}>
         <InstantPhotoLanding />
       </Suspense>
