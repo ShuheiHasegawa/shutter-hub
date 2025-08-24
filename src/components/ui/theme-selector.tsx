@@ -58,7 +58,7 @@ export function ThemeSelector() {
                 />
                 <div
                   className="w-3 h-3 rounded-full border"
-                  style={{ backgroundColor: palette.colors.secondary }}
+                  style={{ backgroundColor: palette.colors.neutral }}
                 />
                 <div
                   className="w-3 h-3 rounded-full border"

@@ -295,6 +295,7 @@
   },
   "photoSessions": {
     "title": "Photo Sessions",
+    "calendar": "Photo Sessions Calendar",
     "createSession": "Create Photo Session",
     "editSession": "Edit Photo Session",
     "viewDetails": "View Details",
@@ -303,7 +304,15 @@
       "upcoming": "Upcoming",
       "ongoing": "Ongoing",
       "ended": "Ended",
-      "unpublished": "Unpublished"
+      "unpublished": "Unpublished",
+      "firstCome": "First Come",
+      "lottery": "Lottery",
+      "management": "Management",
+      "priority": "Priority",
+      "waitlist": "Waitlist",
+      "full": "Full",
+      "cancelled": "Cancelled",
+      "unknown": "Unknown"
     },
     "availability": {
       "available": "Available",
