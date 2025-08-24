@@ -21,7 +21,7 @@ export default function HomePage() {
     <div className="min-h-screen bg-background">
       <PublicLayout>
         {/* ヒーローセクション */}
-        <section className="relative surface-primary">
+        <section className="relative surface-neutral">
           <div className="container py-24 md:py-32">
             <div className="max-w-3xl mx-auto text-center space-y-8">
               <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
@@ -61,9 +61,9 @@ export default function HomePage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              <Card className="text-center surface-neutral">
+              <Card className="text-center surface-accent">
                 <CardHeader>
-                  <div className="mx-auto w-12 h-12 surface-primary rounded-lg flex items-center justify-center mb-4">
+                  <div className="mx-auto w-12 h-12 surface-neutral rounded-lg flex items-center justify-center mb-4">
                     <Calendar className="h-6 w-6" />
                   </div>
                   <CardTitle>{t('features.booking.title')}</CardTitle>
@@ -99,9 +99,9 @@ export default function HomePage() {
                 </CardContent>
               </Card>
 
-              <Card className="text-center surface-neutral">
+              <Card className="text-center surface-accent">
                 <CardHeader>
-                  <div className="mx-auto w-12 h-12 surface-accent rounded-lg flex items-center justify-center mb-4">
+                  <div className="mx-auto w-12 h-12 surface-neutral rounded-lg flex items-center justify-center mb-4">
                     <MapPin className="h-6 w-6" />
                   </div>
                   <CardTitle>{t('features.wiki.title')}</CardTitle>
@@ -118,7 +118,7 @@ export default function HomePage() {
                 </CardContent>
               </Card>
 
-              <Card className="text-center surface-primary">
+              <Card className="text-center surface-accent">
                 <CardHeader>
                   <div className="mx-auto w-12 h-12 surface-neutral rounded-lg flex items-center justify-center mb-4">
                     <Users className="h-6 w-6" />
@@ -139,7 +139,7 @@ export default function HomePage() {
 
               <Card className="text-center surface-accent">
                 <CardHeader>
-                  <div className="mx-auto w-12 h-12 surface-primary rounded-lg flex items-center justify-center mb-4">
+                  <div className="mx-auto w-12 h-12 surface-neutral rounded-lg flex items-center justify-center mb-4">
                     <Star className="h-6 w-6" />
                   </div>
                   <CardTitle>{t('features.review.title')}</CardTitle>
@@ -156,9 +156,9 @@ export default function HomePage() {
                 </CardContent>
               </Card>
 
-              <Card className="text-center surface-neutral">
+              <Card className="text-center surface-accent">
                 <CardHeader>
-                  <div className="mx-auto w-12 h-12 surface-accent rounded-lg flex items-center justify-center mb-4">
+                  <div className="mx-auto w-12 h-12 surface-neutral rounded-lg flex items-center justify-center mb-4">
                     <Camera className="h-6 w-6" />
                   </div>
                   <CardTitle>{t('features.professional.title')}</CardTitle>
