@@ -1,6 +1,7 @@
 import { Camera } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
+import { NavLink } from '@/components/ui/nav-link';
 
 export function Footer() {
   const t = useTranslations('footer');
@@ -21,38 +22,26 @@ export function Footer() {
           {/* サービス */}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold">{t('services.title')}</h3>
-            <ul className="space-y-2 text-sm">
+            <ul className="text-sm">
               <li>
-                <Link
-                  href="/photo-sessions"
-                  className="text-muted-foreground hover:text-foreground"
-                >
+                <NavLink href="/photo-sessions" variant="sideline">
                   {t('services.findSessions')}
-                </Link>
+                </NavLink>
               </li>
               <li>
-                <Link
-                  href="/photo-sessions/create"
-                  className="text-muted-foreground hover:text-foreground"
-                >
+                <NavLink href="/photo-sessions/create" variant="sideline">
                   {t('services.createSession')}
-                </Link>
+                </NavLink>
               </li>
               <li>
-                <Link
-                  href="/instant"
-                  className="text-muted-foreground hover:text-foreground"
-                >
+                <NavLink href="/instant" variant="sideline">
                   {t('services.instantRequest')}
-                </Link>
+                </NavLink>
               </li>
               <li>
-                <Link
-                  href="/studios"
-                  className="text-muted-foreground hover:text-foreground"
-                >
+                <NavLink href="/studios" variant="sideline">
                   {t('services.studioWiki')}
-                </Link>
+                </NavLink>
               </li>
             </ul>
           </div>
@@ -60,30 +49,21 @@ export function Footer() {
           {/* サポート */}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold">{t('support.title')}</h3>
-            <ul className="space-y-2 text-sm">
+            <ul className="text-sm">
               <li>
-                <Link
-                  href="/help"
-                  className="text-muted-foreground hover:text-foreground"
-                >
+                <NavLink href="/help" variant="sideline">
                   {t('support.helpCenter')}
-                </Link>
+                </NavLink>
               </li>
               <li>
-                <Link
-                  href="/contact"
-                  className="text-muted-foreground hover:text-foreground"
-                >
+                <NavLink href="/contact" variant="sideline">
                   {t('support.contact')}
-                </Link>
+                </NavLink>
               </li>
               <li>
-                <Link
-                  href="/faq"
-                  className="text-muted-foreground hover:text-foreground"
-                >
+                <NavLink href="/faq" variant="sideline">
                   {t('support.faq')}
-                </Link>
+                </NavLink>
               </li>
             </ul>
           </div>
@@ -91,30 +71,21 @@ export function Footer() {
           {/* 法的情報 */}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold">{t('legal.title')}</h3>
-            <ul className="space-y-2 text-sm">
+            <ul className="text-sm">
               <li>
-                <Link
-                  href="/terms"
-                  className="text-muted-foreground hover:text-foreground"
-                >
+                <NavLink href="/terms" variant="sideline">
                   {t('legal.terms')}
-                </Link>
+                </NavLink>
               </li>
               <li>
-                <Link
-                  href="/privacy"
-                  className="text-muted-foreground hover:text-foreground"
-                >
+                <NavLink href="/privacy" variant="sideline">
                   {t('legal.privacy')}
-                </Link>
+                </NavLink>
               </li>
               <li>
-                <Link
-                  href="/cookies"
-                  className="text-muted-foreground hover:text-foreground"
-                >
+                <NavLink href="/cookies" variant="sideline">
                   {t('legal.cookies')}
-                </Link>
+                </NavLink>
               </li>
             </ul>
           </div>
