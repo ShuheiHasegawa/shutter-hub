@@ -292,6 +292,7 @@
   },
   "photoSessions": {
     "title": "撮影会",
+    "calendar": "撮影会カレンダー",
     "createSession": "撮影会を作成",
     "editSession": "撮影会を編集",
     "viewDetails": "詳細を見る",
@@ -300,7 +301,15 @@
       "upcoming": "予定",
       "ongoing": "開催中",
       "ended": "終了",
-      "unpublished": "非公開"
+      "unpublished": "非公開",
+      "firstCome": "先着順",
+      "lottery": "抽選",
+      "management": "管理抽選",
+      "priority": "優先予約",
+      "waitlist": "キャンセル待ち",
+      "full": "満席",
+      "cancelled": "キャンセル",
+      "unknown": "不明"
     },
     "availability": {
       "available": "空きあり",

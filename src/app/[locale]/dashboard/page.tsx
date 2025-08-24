@@ -14,6 +14,7 @@ import { ModelInvitationNotifications } from '@/components/profile/organizer/Mod
 import { DashboardStatsCards } from '@/components/dashboard/DashboardStatsCards';
 import { RecentActivity as RecentActivityComponent } from '@/components/dashboard/RecentActivity';
 import { UpcomingEvents } from '@/components/dashboard/UpcomingEvents';
+import { PhotoSessionCalendar } from '@/components/dashboard/PhotoSessionCalendar';
 import {
   getDashboardStats,
   getRecentActivity,
@@ -22,6 +23,10 @@ import {
   RecentActivity as RecentActivityType,
   UpcomingEvent,
 } from '@/app/actions/dashboard-stats';
+import {
+  getPhotoSessionsForCalendar,
+  type PhotoSessionCalendarData,
+} from '@/app/actions/photo-sessions-calendar';
 import { CheckCircle, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
@@ -53,6 +58,9 @@ export default function DashboardPage() {
     []
   );
   const [upcomingEvents, setUpcomingEvents] = useState<UpcomingEvent[]>([]);
+  const [calendarSessions, setCalendarSessions] = useState<
+    PhotoSessionCalendarData[]
+  >([]);
   const [dashboardLoading, setDashboardLoading] = useState(true);
 
   const loadProfile = useCallback(async () => {
@@ -83,11 +91,13 @@ export default function DashboardPage() {
 
     setDashboardLoading(true);
     try {
-      const [statsResult, activityResult, eventsResult] = await Promise.all([
-        getDashboardStats(user.id, profile.user_type),
-        getRecentActivity(user.id, profile.user_type),
-        getUpcomingEvents(user.id, profile.user_type),
-      ]);
+      const [statsResult, activityResult, eventsResult, calendarResult] =
+        await Promise.all([
+          getDashboardStats(user.id, profile.user_type),
+          getRecentActivity(user.id, profile.user_type),
+          getUpcomingEvents(user.id, profile.user_type),
+          getPhotoSessionsForCalendar(user.id, profile.user_type),
+        ]);
 
       if (statsResult.success && statsResult.data) {
         setDashboardStats(statsResult.data);
@@ -97,6 +107,9 @@ export default function DashboardPage() {
       }
       if (eventsResult.success) {
         setUpcomingEvents(eventsResult.data || []);
+      }
+      if (calendarResult.success) {
+        setCalendarSessions(calendarResult.data || []);
       }
     } catch (error) {
       logger.error('ダッシュボードデータ取得エラー:', error);
@@ -201,6 +214,9 @@ export default function DashboardPage() {
             userType={profile.user_type}
           />
         )}
+
+        {/* カレンダー */}
+        <PhotoSessionCalendar sessions={calendarSessions} />
 
         {/* 2カラムレイアウト */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
