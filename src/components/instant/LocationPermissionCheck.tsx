@@ -33,7 +33,7 @@ export function LocationPermissionCheck({
               手動で場所を入力してください。
             </AlertDescription>
           </Alert>
-          <Button onClick={onSkip} className="w-full mt-4">
+          <Button onClick={onSkip} className="w-full mt-4" variant="neutral">
             手動で場所を入力
           </Button>
         </CardContent>
@@ -128,11 +128,15 @@ export function LocationPermissionCheck({
           </div>
         ) : (
           <div className="space-y-3">
-            <Button onClick={onRequestLocation} className="w-full">
+            <Button
+              onClick={onRequestLocation}
+              className="w-full"
+              variant="neutral"
+            >
               <MapPin className="h-4 w-4 mr-2" />
               位置情報を許可
             </Button>
-            <Button onClick={onSkip} variant="outline" className="w-full">
+            <Button onClick={onSkip} variant="neutral" className="w-full">
               手動で場所を入力
             </Button>
           </div>

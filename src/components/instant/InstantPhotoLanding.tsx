@@ -56,8 +56,8 @@ export function InstantPhotoLanding() {
   return (
     <div className="bg-gradient-to-b from-surface-primary-0 via-background to-surface-accent-0 dark:from-surface-primary-1 dark:via-surface-neutral dark:to-surface-accent-1">
       {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-surface-primary/10 to-surface-accent/10" />
+      <section className="relative overflow-hidden surface-neutral">
+        <div className="absolute inset-0" />
 
         <div className="relative container mx-auto px-4 py-16 lg:py-24">
           <div className="text-center max-w-4xl mx-auto">
@@ -71,13 +71,13 @@ export function InstantPhotoLanding() {
               </Badge>
             </div>
 
-            <h1 className="text-4xl lg:text-6xl font-bold text-foreground mb-6">
+            <h1 className="text-4xl lg:text-6xl font-bold mb-6">
               今いる場所で
               <br />
-              <span className="text-shutter-info">即座に撮影</span>
+              <span>即座に撮影</span>
             </h1>
 
-            <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+            <p className="text-xl mb-8 max-w-2xl mx-auto">
               旅行先や外出先で、プロのカメラマンに撮影を依頼。
               <br />
               たった数分で素敵な思い出を残しませんか？
@@ -193,7 +193,7 @@ export function InstantPhotoLanding() {
                           </Button>
                           <Button
                             onClick={handleSkipLocation}
-                            variant="outline"
+                            variant="neutral"
                             className="w-full"
                           >
                             手動で場所を入力
@@ -266,7 +266,7 @@ export function InstantPhotoLanding() {
       </section>
 
       {/* Testimonials */}
-      <section className="py-16 bg-gradient-to-r from-surface-primary-0 to-surface-accent-0 dark:from-surface-primary-1 dark:to-surface-accent-1">
+      <section className="py-16 bg-surface-neutral">
         <TestimonialCarousel />
       </section>
 
@@ -313,7 +313,7 @@ export function InstantPhotoLanding() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-gradient-to-r from-surface-primary-0 to-surface-accent-0 dark:from-surface-primary-1 dark:to-surface-accent-1">
+      <section className="py-16 bg-surface-neutral">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-4">
             今すぐ撮影を依頼してみませんか？
