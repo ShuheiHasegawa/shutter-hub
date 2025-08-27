@@ -23,13 +23,13 @@ test.describe('強化版エスクロー決済システム包括テスト', () =>
   test.beforeEach(async ({ browser }) => {
     // テスト用識別子生成
     testBookingId = `e2e-booking-${Date.now()}`;
-    
+
     // クライアント用ページ（ゲスト）
     clientPage = await browser.newPage();
-    
+
     // カメラマン用ページ（認証済み）
     photographerPage = await browser.newPage();
-    
+
     // 管理者用ページ（認証済み）
     adminPage = await browser.newPage();
 
@@ -78,10 +78,12 @@ test.describe('強化版エスクロー決済システム包括テスト', () =>
 
       // 位置情報許可（実際のボタンテキストに修正）
       await clientPage.click('button:has-text("位置情報を許可")');
-      
+
       // フォーム表示まで待機
-      await clientPage.waitForSelector('button:has-text("ポートレート")', { timeout: 10000 });
-      
+      await clientPage.waitForSelector('button:has-text("ポートレート")', {
+        timeout: 10000,
+      });
+
       // リクエストフォーム入力（実際のUIに合わせて修正）
       await clientPage.click('button:has-text("ポートレート")'); // 撮影タイプ選択
       await clientPage.click('button:has-text("通常")'); // 緊急度選択
@@ -95,9 +97,11 @@ test.describe('強化版エスクロー決済システム包括テスト', () =>
 
       // リクエスト送信
       await clientPage.click('button:has-text("カメラマンを探す")');
-      
+
       // マッチング待機
-      await expect(clientPage.locator(':has-text("カメラマンを探しています")')).toBeVisible();
+      await expect(
+        clientPage.locator(':has-text("カメラマンを探しています")')
+      ).toBeVisible();
 
       // === Phase 2: カメラマンマッチング ===
       await photographerPage.goto('/dashboard/photographer');
@@ -121,7 +125,9 @@ test.describe('強化版エスクロー決済システム包括テスト', () =>
       await photographerPage.click('button:has-text("リクエストを受ける")');
 
       // === Phase 3: エスクロー決済処理（実Stripe API） ===
-      await clientPage.waitForSelector(':has-text("カメラマンが見つかりました")');
+      await clientPage.waitForSelector(
+        ':has-text("カメラマンが見つかりました")'
+      );
       await clientPage.click('button:has-text("決済手続きへ")');
       await waitForPageLoad(clientPage);
 
@@ -141,9 +147,10 @@ test.describe('強化版エスクロー決済システム包括テスト', () =>
       ).toBeVisible({ timeout: 15000 });
 
       // PaymentIntentID取得（後のクリーンアップ用）
-      testPaymentIntentId = await clientPage
-        .locator('[data-testid="payment-intent-id"]')
-        .textContent() || '';
+      testPaymentIntentId =
+        (await clientPage
+          .locator('[data-testid="payment-intent-id"]')
+          .textContent()) || '';
       console.log(`💳 PaymentIntent作成: ${testPaymentIntentId}`);
 
       // エスクロー状態確認
@@ -160,7 +167,7 @@ test.describe('強化版エスクロー決済システム包括テスト', () =>
         photographerPage.waitForEvent('filechooser'),
         photographerPage.click('[data-testid="upload-photos"]'),
       ]);
-      
+
       // テスト用画像ファイル作成・アップロード
       await fileChooser.setFiles([
         'tests/e2e/fixtures/test-photo-1.jpg',
@@ -188,7 +195,7 @@ test.describe('強化版エスクロー決済システム包括テスト', () =>
       await expect(
         clientPage.locator('[data-testid="delivered-photos"]')
       ).toBeVisible();
-      
+
       // 写真ダウンロードテスト
       const [download] = await Promise.all([
         clientPage.waitForEvent('download'),
@@ -205,7 +212,7 @@ test.describe('強化版エスクロー決済システム包括テスト', () =>
 
       // 受取確認実行
       await clientPage.click('button:has-text("受取を確認")');
-      
+
       // 確認完了
       await expect(
         clientPage.locator(':has-text("受取を確認しました")')
@@ -219,7 +226,8 @@ test.describe('強化版エスクロー決済システム包括テスト', () =>
       // === Phase 6: 実Stripe PaymentIntent最終確認 ===
       console.log('🔍 Stripe PaymentIntent最終状態確認');
       if (testPaymentIntentId) {
-        const paymentIntent = await stripe.paymentIntents.retrieve(testPaymentIntentId);
+        const paymentIntent =
+          await stripe.paymentIntents.retrieve(testPaymentIntentId);
         expect(paymentIntent.status).toBe('succeeded');
         expect(paymentIntent.amount).toBe(9500); // ¥9,500
         expect(paymentIntent.currency).toBe('jpy');
@@ -237,7 +245,7 @@ test.describe('強化版エスクロー決済システム包括テスト', () =>
       // === 事前準備: エスクロー状態のブッキング作成 ===
       await clientPage.goto('/instant');
       await waitForPageLoad(clientPage);
-      
+
       // 簡素化リクエスト作成
       await clientPage.selectOption('[data-testid="request-type"]', 'portrait');
       await clientPage.click('[data-testid="urgency-normal"]');
@@ -251,9 +259,11 @@ test.describe('強化版エスクロー決済システム包括テスト', () =>
       await photographerPage.fill('[data-testid="photographer-price"]', '5500');
       await photographerPage.click('button:has-text("リクエストを受ける")');
 
-      await clientPage.waitForSelector(':has-text("カメラマンが見つかりました")');
+      await clientPage.waitForSelector(
+        ':has-text("カメラマンが見つかりました")'
+      );
       await clientPage.click('button:has-text("決済手続きへ")');
-      
+
       // 決済実行
       await clientPage.fill('[data-testid="card-number"]', '4242424242424242');
       await clientPage.fill('[data-testid="card-expiry"]', '12/28');
@@ -274,11 +284,11 @@ test.describe('強化版エスクロー決済システム包括テスト', () =>
 
       // === 時間操作シミュレーション ===
       console.log('⏰ 時間シミュレーション開始');
-      
+
       // データベース時間操作（72時間後をシミュレート）
       await adminPage.goto('/admin/system');
       await waitForPageLoad(adminPage);
-      
+
       // システム時間操作機能（開発専用）
       await adminPage.fill('[data-testid="time-offset"]', '72'); // 72時間後
       await adminPage.selectOption('[data-testid="time-unit"]', 'hours');
@@ -286,7 +296,7 @@ test.describe('強化版エスクロー決済システム包括テスト', () =>
 
       // 自動確定処理実行
       await adminPage.click('[data-testid="trigger-auto-confirmation"]');
-      
+
       // 処理完了確認
       await expect(
         adminPage.locator(':has-text("自動確定処理が完了しました")')
@@ -300,7 +310,7 @@ test.describe('強化版エスクロー決済システム包括テスト', () =>
       await expect(
         clientPage.locator('[data-testid="auto-confirmation-notice"]')
       ).toContainText('72時間経過により自動で受取確認');
-      
+
       await expect(
         clientPage.locator('[data-testid="escrow-status"]')
       ).toContainText('完了（自動確定）');
@@ -329,7 +339,7 @@ test.describe('強化版エスクロー決済システム包括テスト', () =>
       await waitForPageLoad(clientPage);
 
       await clientPage.click('button:has-text("問題を報告")');
-      
+
       // 争議理由選択
       await clientPage.selectOption(
         '[data-testid="dispute-reason"]',
@@ -339,7 +349,7 @@ test.describe('強化版エスクロー決済システム包括テスト', () =>
         '[data-testid="dispute-description"]',
         '写真の品質が期待していたレベルに達していません。'
       );
-      
+
       // 証拠アップロード
       await clientPage.setInputFiles(
         '[data-testid="evidence-upload"]',
@@ -390,12 +400,12 @@ test.describe('強化版エスクロー決済システム包括テスト', () =>
         const charges = await stripe.charges.list({
           payment_intent: testPaymentIntentId,
         });
-        
+
         if (charges.data.length > 0) {
           const refunds = await stripe.refunds.list({
             charge: charges.data[0].id,
           });
-          
+
           expect(refunds.data.length).toBeGreaterThan(0);
           expect(refunds.data[0].amount).toBe(2000); // ¥2,000返金確認
           console.log(`💰 Stripe返金確認: ¥${refunds.data[0].amount}`);
@@ -418,21 +428,26 @@ test.describe('強化版エスクロー決済システム包括テスト', () =>
 
       const concurrentUsers = 3; // 制限内での同時実行
       const pages = await Promise.all(
-        Array(concurrentUsers).fill(null).map(() => browser.newPage())
+        Array(concurrentUsers)
+          .fill(null)
+          .map(() => browser.newPage())
       );
 
       const paymentPromises = pages.map(async (page, index) => {
         const bookingId = `concurrent-${Date.now()}-${index}`;
-        
+
         try {
           // 即座撮影リクエスト〜決済フロー
           await page.goto('/instant');
           await page.selectOption('[data-testid="request-type"]', 'portrait');
-          await page.fill('[data-testid="budget"]', String(3000 + index * 1000));
+          await page.fill(
+            '[data-testid="budget"]',
+            String(3000 + index * 1000)
+          );
           await page.click('button:has-text("カメラマンを探す")');
 
           // [カメラマンマッチング省略 - モック応答使用]
-          
+
           // 決済実行（実Stripe API）
           await page.goto('/instant/payment/' + bookingId);
           await page.fill('[data-testid="card-number"]', '4242424242424242');
@@ -447,7 +462,11 @@ test.describe('強化版エスクロー決済システム包括テスト', () =>
           return { success: true, index, bookingId };
         } catch (error) {
           console.error(`決済${index}失敗:`, error);
-          return { success: false, index, error: error.message };
+          return {
+            success: false,
+            index,
+            error: error instanceof Error ? error.message : String(error),
+          };
         }
       });
 
@@ -458,7 +477,9 @@ test.describe('強化版エスクロー決済システム包括テスト', () =>
       ).length;
 
       // 最低60%以上の成功率を期待（API制限・ネットワーク考慮）
-      expect(successCount).toBeGreaterThanOrEqual(Math.ceil(concurrentUsers * 0.6));
+      expect(successCount).toBeGreaterThanOrEqual(
+        Math.ceil(concurrentUsers * 0.6)
+      );
       console.log(`✅ 同時決済成功率: ${successCount}/${concurrentUsers}`);
 
       // ページクリーンアップ
