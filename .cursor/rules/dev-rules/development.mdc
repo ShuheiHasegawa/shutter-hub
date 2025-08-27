@@ -522,25 +522,9 @@ management_process:
 
 ### 機能実装完了時の自動処理
 
-機能実装が完了した際は、以下の手順を**自動的に実行**してください：
+機能実装が完了した際は、**Cursorカスタムコマンド `/commit` を使用**してください。
 
-1. **ビルドチェック**: `npm run build` でエラーがないことを確認
-2. **【必須】TODO更新**: `.cursor/rules/dev-rules/todo.mdc` を必ず更新
-   - 完了した機能を [ ] → [x] に変更
-   - 実装時間・技術成果を詳細に記録
-   - Phase完了状況を正確に反映
-   - 次期タスクの優先度を調整
-   - **禁止**: プログラムコード・技術詳細の記載（専門ファイルへ）
-3. **マイグレーション統合**: 新しいマイグレーションがある場合、`src/lib/database/migrations/002_complete_schema.sql` を最新状態に更新
-4. **【必須】コミット**: 適切なコミットメッセージで変更をコミット
-   ```bash
-   git add .
-   git commit -m "feat: [実装内容の日本語要約]"
-   ```
-5. **【必須】プッシュ**: `git push origin main` でリモートに反映
-   ```bash
-   git push origin main
-   ```
+**重要**: コミット関連の詳細手順は `.cursor/commands/commit.md` に移動されました。チャットで `/commit` と入力すると包括的なコミット&プッシュ手順が実行できます。
 
 ### **🔍 調査段階のコミット不要ルール**
 
@@ -638,25 +622,9 @@ investigation_indicators:
 
 ### コミット・プッシュ自動化ルール
 
-機能実装とTODO更新が完了したら、**必ず以下のコマンドを実行**してください：
+機能実装とTODO更新が完了したら、**Cursorカスタムコマンド `/commit` を使用**してください。
 
-```bash
-# 1. 全ての変更をステージング
-git add .
-
-# 2. 日本語でのコミット（必須）
-git commit -m "feat: [実装した機能の日本語要約]"
-
-# 3. リモートリポジトリにプッシュ（必須）
-git push origin main
-```
-
-#### コミット・プッシュのタイミング
-
-- **機能実装完了時**: 必ずコミット・プッシュ
-- **TODO更新完了時**: 同時にコミット・プッシュ
-- **バグ修正完了時**: 必ずコミット・プッシュ
-- **型エラー修正完了時**: 必ずコミット・プッシュ
+詳細な手順とチェックリストは `.cursor/commands/commit.md` に統合されました。
 
 ### 📅 **日付・タイムスタンプ管理ルール（重要）**
 
@@ -781,7 +749,7 @@ development_server_management:
 
   before_commit: 1. "【必須】全ての開発サーバープロセスを停止"
     2. "ポート使用状況の確認"
-    3. "プロセス停止後にコミット・プッシュ実行"
+    3. "プロセス停止後に `/commit` コマンド実行"
 ```
 
 #### **プロセス管理コマンド**
@@ -818,9 +786,7 @@ pre_commit_checklist:
     - [ ] "実装時間・技術成果が記録されているか"
 
   commit_process:
-    - [ ] "適切なコミットメッセージが準備されているか"
-    - [ ] "git add . でステージングされているか"
-    - [ ] "git push準備が完了しているか"
+    - [ ] "準備が整ったら `/commit` コマンドを実行"
 ```
 
 #### **自動化スクリプト提案**
@@ -832,7 +798,7 @@ package.jsonに以下のスクリプトを追加することを推奨：
   "scripts": {
     "dev:stop": "lsof -ti:8888 | xargs kill -9 || true",
     "dev:clean": "npm run dev:stop && npm run dev",
-    "commit:safe": "npm run dev:stop && npm run build && git add . && echo 'Ready for commit - please run: git commit -m \"your message\"'"
+    "commit:safe": "npm run dev:stop && npm run build && echo 'Ready for commit - please run /commit command in Cursor'"
   }
 }
 ```
@@ -1708,121 +1674,11 @@ MCP連携チェックリスト:
 - **安全性**: 手動ミスの完全排除
 - **一貫性**: 開発・本番環境の完全一致
 
-## 📝 **コミットメッセージ・ルール強化**
+## 📝 **コミットメッセージ・ルール**
 
-### **基本原則**
+**重要**: コミットメッセージルールの詳細は `.cursor/commands/commit.md` に移動されました。
 
-- **日本語必須**: すべてのコミットメッセージは日本語で記述する
-- **適切な分割**: 論理的な単位でコミットを分割する
-- **動作確認必須**: コミット前に機能が正常動作することを確認する
-
-### **コミットメッセージ形式**
-
-```yaml
-format:
-  structure: "[type]: [変更内容の要約]
-
-[詳細説明]
-- [変更点1]
-- [変更点2]
-- [変更点3]"
-
-types:
-  feat: "新機能追加"
-  fix: "バグ修正"
-  refactor: "リファクタリング"
-  style: "スタイル・UI調整"
-  docs: "ドキュメント更新"
-  test: "テスト追加・修正"
-  chore: "その他の変更"
-  perf: "パフォーマンス改善"
-```
-
-### **コミット分割基準**
-
-```yaml
-separate_commits_for:
-  - '機能追加とバグ修正'
-  - 'フロントエンドとバックエンド'
-  - 'データベーススキーマと型定義'
-  - 'ルール追加と実装変更'
-  - '設定ファイルとソースコード'
-
-single_commit_for:
-  - '同一機能の関連ファイル群'
-  - '型定義とその使用箇所'
-  - 'ドキュメントとその関連実装'
-```
-
-### **コミット前必須チェック**
-
-```yaml
-pre_commit_checklist:
-  functionality:
-    - [ ] "修正した機能が正常に動作するか？"
-    - [ ] "エラーメッセージが表示されないか？"
-    - [ ] "ページが正常に表示されるか？"
-
-  code_quality:
-    - [ ] "ESLintエラーがないか？"
-    - [ ] "TypeScriptエラーがないか？"
-    - [ ] "ビルドが成功するか？"
-
-  documentation:
-    - [ ] "TODOリストが更新されているか？"
-    - [ ] "変更内容が適切に記録されているか？"
-```
-
-### **良いコミットメッセージ例**
-
-```bash
-# ✅ 良い例
-git commit -m "fix: スタジオ作成ページのSelect.Item空文字列エラー修正
-
-Select.Itemのvalue=\"\"をvalue=\"all\"に変更
-- studios/page.tsxの都道府県フィルター修正
-- studio.tsのフィルター処理でall値対応
-- 一時的な定数フォールバック追加"
-
-git commit -m "feat: MCP連携強制チェックルール追加
-
-development.mdcに新ルールセクション追加
-- DB操作時のMCP連携必須化
-- 手動マイグレーション禁止
-- エラー時対応手順明文化"
-```
-
-### **悪いコミットメッセージ例**
-
-```bash
-# ❌ 悪い例
-git commit -m "fix"
-git commit -m "update files"
-git commit -m "WIP"
-git commit -m "Fixed various bugs and added features"
-```
-
-### **自動化対応**
-
-```yaml
-automated_checks:
-  pre_commit_hooks:
-    - 'ESLint自動修正'
-    - 'Prettier自動フォーマット'
-    - 'TypeScript型チェック'
-
-  commit_message_validation:
-    - '日本語メッセージ必須'
-    - '最小文字数制限（10文字以上）'
-    - 'typeプレフィックス必須'
-```
-
-### **このルールの効果**
-
-- **明確な変更履歴**: 後から変更内容を追跡しやすい
-- **効率的なレビュー**: 論理的に分割されたコミット
-- **品質保証**: 動作確認済みの変更のみコミット
-- **チーム協業**: 一貫したコミット形式
+Cursorカスタムコマンド `/commit` を使用することで、適切なフォーマットとチェックリストに従ったコミット&プッシュが実行できます。
 
 ## 🖼️ **画像取り扱いルール**
 
