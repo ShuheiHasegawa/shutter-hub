@@ -16,7 +16,6 @@ export type PhotoSessionCalendarData = {
     | 'waitlist';
   current_participants: number;
   max_participants: number;
-  is_cancelled: boolean;
   is_full: boolean;
 };
 
@@ -58,7 +57,6 @@ export async function getPhotoSessionsForCalendar(
         booking_type,
         current_participants,
         max_participants,
-        is_cancelled,
         organizer_id
       `
       )
