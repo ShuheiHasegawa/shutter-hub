@@ -31,7 +31,6 @@ type PhotoSessionData = {
     | 'waitlist';
   current_participants: number;
   max_participants: number;
-  is_cancelled: boolean;
   is_full: boolean;
 };
 
@@ -43,7 +42,6 @@ type PhotoSessionCalendarProps = {
  * 撮影会の予約状況に応じて色を決定する
  */
 const getSessionStatusColor = (session: PhotoSessionData): string => {
-  if (session.is_cancelled) return '#6B7280'; // gray - キャンセル
   if (session.is_full) return '#EF4444'; // red - 満席
 
   switch (session.booking_type) {
@@ -69,7 +67,6 @@ const getSessionStatusLabel = (
   session: PhotoSessionData,
   t: (key: string) => string
 ): string => {
-  if (session.is_cancelled) return t('cancelled');
   if (session.is_full) return t('full');
 
   switch (session.booking_type) {

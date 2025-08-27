@@ -27,6 +27,7 @@ import {
   getPhotoSessionsForCalendar,
   type PhotoSessionCalendarData,
 } from '@/app/actions/photo-sessions-calendar';
+import { adaptUpcomingEventsToCalendarData } from '@/lib/utils/calendar-data-adapter';
 import { CheckCircle, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
@@ -108,8 +109,15 @@ export default function DashboardPage() {
       if (eventsResult.success) {
         setUpcomingEvents(eventsResult.data || []);
       }
-      if (calendarResult.success) {
-        setCalendarSessions(calendarResult.data || []);
+      // カレンダーデータを設定（既存の予定データを活用）
+      if (calendarResult.success && calendarResult.data) {
+        setCalendarSessions(calendarResult.data);
+      } else if (eventsResult.success) {
+        // カレンダーAPIが失敗した場合は、既存の予定データを変換して使用
+        const adaptedCalendarData = adaptUpcomingEventsToCalendarData(
+          eventsResult.data || []
+        );
+        setCalendarSessions(adaptedCalendarData);
       }
     } catch (error) {
       logger.error('ダッシュボードデータ取得エラー:', error);
