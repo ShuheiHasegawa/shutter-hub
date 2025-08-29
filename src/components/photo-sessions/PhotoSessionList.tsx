@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 import {
   PlusIcon,
   SearchIcon,
@@ -565,9 +566,9 @@ export function PhotoSessionList({
   }
 
   return (
-    <div className="space-y-6">
+    <div>
       {/* ヘッダーコントロール */}
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center py-2">
         {/* 左側: フィルタートグルアイコン */}
         <Button
           variant="ghost"
@@ -654,6 +655,7 @@ export function PhotoSessionList({
           <CardHeader>
             <CardTitle className="text-lg">{t('list.searchFilter')}</CardTitle>
           </CardHeader>
+          <Separator className="my-2" />
           <CardContent>
             <div className="space-y-4">
               {/* 検索入力フィールド */}
@@ -764,7 +766,7 @@ export function PhotoSessionList({
       )}
 
       {/* 無限スクロール用のトリガー要素 */}
-      <div className="flex justify-center py-8">
+      <div className="flex justify-center pb-8">
         {loadingMore && (
           <div className="flex items-center text-muted-foreground">
             <Loader2 className="mr-2 h-4 w-4 animate-spin-slow" />

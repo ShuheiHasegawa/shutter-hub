@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { logger } from '@/lib/utils/logger';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ActionBar, ActionBarButton } from '@/components/ui/action-bar';
@@ -454,23 +453,6 @@ export function SlotBookingFlow({
   if (currentStep === 'confirm') {
     return (
       <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-        {/* 上部戻るボタン */}
-        <div className="flex items-center">
-          <Button
-            onClick={() =>
-              navigateToStep(
-                'select',
-                allowMultiple ? selectedSlotIds : selectedSlotId
-              )
-            }
-            variant="ghost"
-            className="gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            戻る
-          </Button>
-        </div>
-
         {/* ステップインジケーター */}
         <StepIndicator />
 
@@ -727,9 +709,6 @@ export function SlotBookingFlow({
                 <h3 className="text-lg font-semibold text-theme-text-primary">
                   予約が完了しました！
                 </h3>
-                <p className="text-theme-text-secondary mt-2">
-                  撮影会の詳細はメッセージ機能でご確認いただけます
-                </p>
               </div>
               <ActionBar
                 actions={getActionBarButtons()}

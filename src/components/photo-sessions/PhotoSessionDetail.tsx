@@ -39,6 +39,7 @@ import {
 import { usePhotoSessionBooking } from '@/hooks/usePhotoSessionBooking';
 
 import { SlotBookingFlow } from './SlotBookingFlow';
+import { BackButton } from '../ui/back-button';
 
 interface PhotoSessionDetailProps {
   session: PhotoSessionWithOrganizer;
@@ -150,13 +151,25 @@ export function PhotoSessionDetail({
 
   const getStatusBadge = () => {
     if (isPast) {
-      return <Badge variant="secondary">終了</Badge>;
+      return (
+        <Badge variant="destructive" className="text-sm px-3 py-1">
+          終了
+        </Badge>
+      );
     }
     if (isOngoing) {
-      return <Badge variant="default">開催中</Badge>;
+      return (
+        <Badge variant="outline" className="text-sm px-3 py-1">
+          開催中
+        </Badge>
+      );
     }
     if (isUpcoming) {
-      return <Badge variant="outline">予定</Badge>;
+      return (
+        <Badge variant="outline" className="text-sm px-3 py-1">
+          予定
+        </Badge>
+      );
     }
     return null;
   };
@@ -321,14 +334,17 @@ export function PhotoSessionDetail({
         <Card>
           <CardHeader>
             <div className="flex justify-between items-start">
-              <CardTitle className="text-2xl">{session.title}</CardTitle>
+              <div className="flex items-center gap-2">
+                <BackButton href="/photo-sessions" />
+                <CardTitle className="text-2xl">{session.title}</CardTitle>
+              </div>
               <div className="flex items-center gap-2">
                 {/* Googleカレンダー追加ボタン */}
                 <Button
-                  variant="outline"
+                  variant="accent"
                   size="sm"
                   onClick={handleAddToGoogleCalendar}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 mr-2"
                 >
                   <CalendarPlus className="h-4 w-4" />
                   <span className="hidden sm:inline">カレンダーに追加</span>
@@ -449,7 +465,10 @@ export function PhotoSessionDetail({
         <Card>
           <CardHeader>
             <div className="flex justify-between items-start">
-              <CardTitle className="text-2xl">{session.title}</CardTitle>
+              <div className="flex items-center gap-2">
+                <BackButton href="/photo-sessions" />
+                <CardTitle className="text-2xl">{session.title}</CardTitle>
+              </div>
               <div className="flex items-center gap-2">
                 {/* Googleカレンダー追加ボタン */}
                 <Button
