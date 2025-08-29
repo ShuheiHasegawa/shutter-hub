@@ -514,7 +514,8 @@ export async function createGroupConversation(
   name: string,
   description?: string,
   memberIds: string[] = [],
-  imageUrl?: string
+  imageUrl?: string,
+  photoSessionId?: string
 ): Promise<MessageActionResult> {
   try {
     const supabase = await createClient();
@@ -559,6 +560,19 @@ export async function createGroupConversation(
 
     if (!conversationId) {
       return { success: false, message: 'グループIDの取得に失敗しました' };
+    }
+
+    // 撮影会IDが指定されている場合は設定
+    if (photoSessionId) {
+      const { error: updateError } = await supabase
+        .from('conversations')
+        .update({ photo_session_id: photoSessionId })
+        .eq('id', conversationId);
+
+      if (updateError) {
+        logger.error('Photo session ID update error:', updateError);
+        // エラーが発生してもグループ作成は成功とする
+      }
     }
 
     // システムメッセージを送信

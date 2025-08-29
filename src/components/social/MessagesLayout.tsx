@@ -62,18 +62,6 @@ export function MessagesLayout({ initialConversationId }: MessagesLayoutProps) {
     setLoading(true);
     try {
       const result = await getConversations();
-      // logger.info('loadConversations - Raw result:', result);
-
-      // 各会話の参加者情報をデバッグ
-      // result.forEach((conv, index) => {
-      //   logger.info(`Conversation ${index}:`, {
-      //     id: conv.id,
-      //     is_group: conv.is_group,
-      //     participant1: conv.participant1,
-      //     participant2: conv.participant2,
-      //     members: conv.members,
-      //   });
-      // });
 
       setConversations(result);
       setFilteredConversations(result);
@@ -101,20 +89,8 @@ export function MessagesLayout({ initialConversationId }: MessagesLayoutProps) {
   // 他のユーザーを取得（グループ会話対応）
   const getOtherUser = useCallback(
     (conversation: ConversationWithUsers) => {
-      // デバッグ情報を追加
-      // logger.info('🔍 getOtherUser - conversation:', conversation);
-      // logger.info('🔍 getOtherUser - user?.id:', user?.id);
-      // logger.info('🔍 getOtherUser - members:', conversation.members);
-      // logger.info('🔍 getOtherUser - is_group:', conversation.is_group);
-      // logger.info('🔍 getOtherUser - group_name:', conversation.group_name);
-
       // グループ会話の場合は常にグループ名を表示
       if (conversation.is_group) {
-        // logger.info(
-        //   '🔍 グループ会話なのでグループ名を返します:',
-        //   conversation.group_name
-        // );
-
         // グループ会話では常にグループ名を表示（個人名は表示しない）
         return {
           id: 'group',
@@ -140,7 +116,6 @@ export function MessagesLayout({ initialConversationId }: MessagesLayoutProps) {
         otherUser = conversation.participant1;
       }
 
-      // logger.info('getOtherUser - direct conversation other user:', otherUser);
       return otherUser;
     },
     [user?.id]

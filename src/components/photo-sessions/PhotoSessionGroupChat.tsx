@@ -169,7 +169,9 @@ export function PhotoSessionGroupChat({
       const result = await createGroupConversation(
         groupName,
         groupDescription,
-        memberIds
+        memberIds,
+        undefined, // imageUrl
+        sessionId // photoSessionId
       );
 
       if (result.success && result.data) {

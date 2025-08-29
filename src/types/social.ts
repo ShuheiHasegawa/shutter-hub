@@ -209,6 +209,7 @@ export interface Conversation {
   group_description?: string;
   group_image_url?: string;
   created_by?: string;
+  photo_session_id?: string; // 撮影会との関連付け
   last_message_id?: string;
   last_message_at: string;
   created_at: string;
