@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { logger } from '@/lib/utils/logger';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -59,6 +59,7 @@ interface FollowStats {
 export default function UserProfilePage() {
   const params = useParams();
   const { user } = useAuth();
+  const router = useRouter();
   const locale = useLocale();
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [followStats, setFollowStats] = useState<FollowStats | null>(null);
@@ -272,7 +273,11 @@ export default function UserProfilePage() {
         {/* ヘッダー */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <BackButton href="/" variant="outline" ariaLabel="ホームに戻る" />
+            <BackButton
+              onClick={() => router.back()}
+              variant="outline"
+              ariaLabel="前のページに戻る"
+            />
             <div>
               <h1 className="text-3xl font-bold">
                 {profile.display_name || 'ユーザー'}

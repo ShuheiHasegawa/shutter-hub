@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import {
-  ArrowLeftIcon,
   BarChart3Icon,
   TrendingUpIcon,
   UsersIcon,
@@ -16,9 +15,9 @@ import {
   StarIcon,
   MapPinIcon,
 } from 'lucide-react';
-import Link from 'next/link';
 import { getPhotoSessionParticipants } from '@/app/actions/photo-session-participants';
 import { formatDateLocalized, formatTimeLocalized } from '@/lib/utils/date';
+import { BackButton } from '@/components/ui/back-button';
 
 interface AnalyticsPageProps {
   params: Promise<{ locale: string; id: string }>;
@@ -133,13 +132,8 @@ export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
     <DashboardLayout>
       <div>
         {/* ヘッダー */}
-        <div className="flex items-center gap-4 mb-6">
-          <Link href={`/photo-sessions/${id}`}>
-            <Button variant="outline" size="sm">
-              <ArrowLeftIcon className="h-4 w-4 mr-2" />
-              撮影会に戻る
-            </Button>
-          </Link>
+        <div className="flex items-center gap-4 py-4">
+          <BackButton href={`/photo-sessions/${id}`} variant="outline" />
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-2">
               <BarChart3Icon className="h-6 w-6" />
@@ -227,7 +221,7 @@ export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
                 <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 bg-green-600 rounded-full"></div>
-                    <span className="font-medium">確定</span>
+                    <span className="font-medium text-green-600">確定</span>
                   </div>
                   <div className="text-right">
                     <div className="font-bold text-green-600">
@@ -247,7 +241,7 @@ export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
                 <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 bg-yellow-600 rounded-full"></div>
-                    <span className="font-medium">保留</span>
+                    <span className="font-medium text-yellow-600">保留</span>
                   </div>
                   <div className="text-right">
                     <div className="font-bold text-yellow-600">
@@ -267,7 +261,7 @@ export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
                 <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 bg-gray-600 rounded-full"></div>
-                    <span className="font-medium">待機中</span>
+                    <span className="font-medium text-gray-600">待機中</span>
                   </div>
                   <div className="text-right">
                     <div className="font-bold text-gray-600">
@@ -287,7 +281,7 @@ export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
                 <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 bg-red-600 rounded-full"></div>
-                    <span className="font-medium">キャンセル</span>
+                    <span className="font-medium text-red-600">キャンセル</span>
                   </div>
                   <div className="text-right">
                     <div className="font-bold text-red-600">

@@ -8,7 +8,8 @@ import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 
 interface BackButtonProps {
-  href: ComponentProps<typeof Link>['href'];
+  href?: ComponentProps<typeof Link>['href'];
+  onClick?: () => void;
   variant?:
     | 'default'
     | 'ghost'
@@ -23,6 +24,7 @@ interface BackButtonProps {
 
 export function BackButton({
   href,
+  onClick,
   variant = 'ghost',
   size = 'default',
   className,
@@ -34,25 +36,50 @@ export function BackButton({
   const defaultAriaLabel = t('back');
   const finalAriaLabel = ariaLabel || defaultAriaLabel;
 
-  return (
-    <Button
-      variant={variant}
-      size={size}
-      className={cn('gap-2', className)}
-      asChild
-      aria-label={finalAriaLabel}
-    >
-      <Link href={href}>
+  // onClickが指定された場合は通常のButtonとして動作
+  if (onClick) {
+    return (
+      <Button
+        variant={variant}
+        size={size}
+        className={cn('gap-2', className)}
+        onClick={onClick}
+        aria-label={finalAriaLabel}
+      >
         <ArrowLeft className="h-4 w-4" />
         <span className="sr-only">{finalAriaLabel}</span>
-      </Link>
-    </Button>
+      </Button>
+    );
+  }
+
+  // hrefが指定された場合はLinkとして動作
+  if (href) {
+    return (
+      <Button
+        variant={variant}
+        size={size}
+        className={cn('gap-2', className)}
+        asChild
+        aria-label={finalAriaLabel}
+      >
+        <Link href={href}>
+          <ArrowLeft className="h-4 w-4" />
+          <span className="sr-only">{finalAriaLabel}</span>
+        </Link>
+      </Button>
+    );
+  }
+
+  // hrefもonClickも指定されていない場合はエラー
+  throw new Error(
+    'BackButton: href または onClick のいずれかを指定してください'
   );
 }
 
 // アイコンのみのバージョン（よりコンパクト）
 export function BackButtonIcon({
   href,
+  onClick,
   variant = 'ghost',
   className,
   ariaLabel,
@@ -62,18 +89,42 @@ export function BackButtonIcon({
   const defaultAriaLabel = t('back');
   const finalAriaLabel = ariaLabel || defaultAriaLabel;
 
-  return (
-    <Button
-      variant={variant}
-      size="icon"
-      className={cn(className)}
-      asChild
-      aria-label={finalAriaLabel}
-    >
-      <Link href={href}>
+  // onClickが指定された場合は通常のButtonとして動作
+  if (onClick) {
+    return (
+      <Button
+        variant={variant}
+        size="icon"
+        className={cn(className)}
+        onClick={onClick}
+        aria-label={finalAriaLabel}
+      >
         <ArrowLeft className="h-4 w-4" />
         <span className="sr-only">{finalAriaLabel}</span>
-      </Link>
-    </Button>
+      </Button>
+    );
+  }
+
+  // hrefが指定された場合はLinkとして動作
+  if (href) {
+    return (
+      <Button
+        variant={variant}
+        size="icon"
+        className={cn(className)}
+        asChild
+        aria-label={finalAriaLabel}
+      >
+        <Link href={href}>
+          <ArrowLeft className="h-4 w-4" />
+          <span className="sr-only">{finalAriaLabel}</span>
+        </Link>
+      </Button>
+    );
+  }
+
+  // hrefもonClickも指定されていない場合はエラー
+  throw new Error(
+    'BackButtonIcon: href または onClick のいずれかを指定してください'
   );
 }

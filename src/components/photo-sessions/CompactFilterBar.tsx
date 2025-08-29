@@ -477,18 +477,19 @@ export function CompactFilterBar({
                       空きがある撮影会のみ表示
                     </Label>
                   </div>
-
-                  {/* 検索実行ボタン */}
-                  {onSearch && (
+                </div>
+                {/* 検索実行ボタン */}
+                {onSearch && (
+                  <div className="mt-4 flex justify-center">
                     <Button
                       onClick={onSearch}
                       disabled={isSearchLoading}
-                      className="ml-4"
+                      className="w-full sm:w-auto"
                       size="sm"
                     >
                       {isSearchLoading ? (
                         <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          <div className="animate-spin-slow rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                           検索中...
                         </>
                       ) : (
@@ -498,8 +499,8 @@ export function CompactFilterBar({
                         </>
                       )}
                     </Button>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
