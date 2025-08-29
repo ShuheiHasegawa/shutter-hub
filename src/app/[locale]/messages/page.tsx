@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import { ConversationList } from '@/components/social/ConversationList';
+import { MessagesLayout } from '@/components/social/MessagesLayout';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -15,11 +15,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default function MessagesPage() {
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        <div className="h-[calc(100vh-16rem)] border rounded-lg bg-card">
-          <ConversationList />
-        </div>
-      </div>
+      <MessagesLayout />
     </DashboardLayout>
   );
 }
