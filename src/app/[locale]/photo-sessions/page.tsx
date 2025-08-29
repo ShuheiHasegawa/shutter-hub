@@ -98,7 +98,7 @@ export default function PhotoSessionsPage() {
       <DashboardLayout>
         <div className="space-y-6">
           <div className="flex justify-center items-center h-32">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+            <div className="animate-spin-slow rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
             <span className="ml-3 text-sm text-muted-foreground">
               {t('list.loading')}
             </span>
@@ -193,7 +193,7 @@ export default function PhotoSessionsPage() {
             <Suspense
               fallback={
                 <div className="flex justify-center items-center h-32">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                  <div className="animate-spin-slow rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
                   <span className="ml-3 text-sm text-muted-foreground">
                     {t('list.loading')}
                   </span>

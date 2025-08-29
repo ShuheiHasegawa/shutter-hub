@@ -5,23 +5,21 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Camera, Moon, Sun, Palette, User, LogOut } from 'lucide-react';
+import { Camera, User, LogOut } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useTheme } from '@/hooks/useTheme';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Link } from '@/i18n/routing';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { NavLink } from '@/components/ui/nav-link';
+import { ThemePaletteSelector } from '@/components/ui/theme-palette-selector';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 export function PublicHeader() {
-  const { settings, setPalette, toggleDarkMode, availablePalettes } =
-    useTheme();
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const { logout } = useAuth();
@@ -99,58 +97,10 @@ export function PublicHeader() {
           {/* Actions */}
           <div className="flex items-center gap-2">
             {/* カラーパレット選択 */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-9 w-9">
-                  <Palette className="h-4 w-4" />
-                  <span className="sr-only">テーマ選択</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuLabel>カラーテーマ</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                {availablePalettes.map(palette => (
-                  <DropdownMenuItem
-                    key={palette.name}
-                    onClick={() => setPalette(palette.name)}
-                    className="flex items-center gap-3"
-                  >
-                    <div className="flex gap-1">
-                      <div
-                        className="w-3 h-3 rounded-full border"
-                        style={{ backgroundColor: palette.colors.primary }}
-                      />
-                      <div
-                        className="w-3 h-3 rounded-full border"
-                        style={{ backgroundColor: palette.colors.neutral }}
-                      />
-                      <div
-                        className="w-3 h-3 rounded-full border"
-                        style={{ backgroundColor: palette.colors.accent }}
-                      />
-                    </div>
-                    <span className="text-sm">{palette.name}</span>
-                    {settings.palette === palette.name && (
-                      <span className="ml-auto text-xs text-muted-foreground">
-                        ●
-                      </span>
-                    )}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <ThemePaletteSelector />
 
             {/* ダークモード切り替え */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleDarkMode}
-              className="h-9 w-9"
-            >
-              <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-              <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-              <span className="sr-only">ダークモード切り替え</span>
-            </Button>
+            <ThemeToggle />
 
             {/* User Authentication */}
             {user ? (

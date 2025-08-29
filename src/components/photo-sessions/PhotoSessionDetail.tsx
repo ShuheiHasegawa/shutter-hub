@@ -82,6 +82,7 @@ export function PhotoSessionDetail({
   );
   const [isParticipant, setIsParticipant] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isLoadingData, setIsLoadingData] = useState(false);
 
   // 予約状態を管理するhook
   const { canBook: canBookFromHook, isLoading: bookingLoading } =
@@ -104,10 +105,24 @@ export function PhotoSessionDetail({
   // 参加者データを取得
   useEffect(() => {
     const loadParticipantsData = async () => {
+      // 既に実行中の場合は重複実行を防ぐ
+      if (isLoadingData) {
+        logger.debug('[PhotoSessionDetail] 既に実行中 - 重複実行をスキップ');
+        return;
+      }
+
+      logger.debug('[PhotoSessionDetail] loadParticipantsData開始', {
+        sessionId: session.id,
+        userId: user?.id,
+      });
+
       if (!user) {
+        logger.debug('[PhotoSessionDetail] ユーザー未ログイン - 処理スキップ');
         setLoading(false);
         return;
       }
+
+      setIsLoadingData(true);
 
       try {
         const [participantsData, userParticipation] = await Promise.all([
@@ -115,17 +130,23 @@ export function PhotoSessionDetail({
           checkUserParticipation(session.id, user.id),
         ]);
 
+        logger.debug('[PhotoSessionDetail] データ取得完了', {
+          participantsCount: participantsData.length,
+          isParticipant: userParticipation,
+        });
+
         setParticipants(participantsData);
         setIsParticipant(userParticipation);
       } catch (error) {
-        logger.error('Error loading participants data:', error);
+        logger.error('[PhotoSessionDetail] 参加者データ読み込みエラー:', error);
       } finally {
         setLoading(false);
+        setIsLoadingData(false);
       }
     };
 
     loadParticipantsData();
-  }, [session.id, user]);
+  }, [session.id, user?.id]);
 
   const getStatusBadge = () => {
     if (isPast) {

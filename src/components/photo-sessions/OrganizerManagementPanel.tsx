@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { logger } from '@/lib/utils/logger';
 import {
   SettingsIcon,
   UsersIcon,
@@ -27,6 +28,21 @@ export function OrganizerManagementPanel({
 }: OrganizerManagementPanelProps) {
   const router = useRouter();
   const hasSlots = slots && slots.length > 0;
+
+  // 撮影会の日時状態を判定
+  const endDate = new Date(session.end_time);
+  const now = new Date();
+  const isPast = endDate <= now;
+
+  // デバッグ用ログ（本番環境では削除予定）
+  logger.debug('[OrganizerManagementPanel] 日時判定', {
+    sessionTitle: session.title,
+    endTime: session.end_time,
+    endDate: endDate.toISOString(),
+    now: now.toISOString(),
+    isPast,
+    timeDifference: endDate.getTime() - now.getTime(),
+  });
 
   // 予約方式の日本語化
   const getBookingTypeLabel = (bookingType: string) => {
@@ -130,9 +146,15 @@ export function OrganizerManagementPanel({
               variant="outline"
               className="h-auto p-4 flex-col gap-2"
               onClick={() => router.push(`/photo-sessions/${session.id}/edit`)}
+              disabled={isPast}
+              title={
+                isPast ? '終了済みの撮影会は編集できません' : '撮影会を編集'
+              }
             >
               <EditIcon className="h-5 w-5" />
-              <span className="text-sm">撮影会を編集</span>
+              <span className="text-sm">
+                {isPast ? '編集不可（終了済み）' : '撮影会を編集'}
+              </span>
             </Button>
 
             <Button
