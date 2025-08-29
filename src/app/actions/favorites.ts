@@ -429,6 +429,11 @@ export async function getBulkFavoriteStatusAction(
   items: Array<{ type: 'studio' | 'photo_session'; id: string }>
 ) {
   try {
+    // Server Action呼び出し開始ログ
+    Logger.debug('[getBulkFavoriteStatusAction] 開始', {
+      itemsLength: items.length,
+    });
+
     const supabase = await createClient();
 
     // 認証確認
@@ -438,6 +443,7 @@ export async function getBulkFavoriteStatusAction(
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
+      Logger.error('[getBulkFavoriteStatusAction] 認証エラー', { authError });
       return {
         success: false,
         error: '認証が必要です',
@@ -445,6 +451,8 @@ export async function getBulkFavoriteStatusAction(
         favoriteStates: {},
       };
     }
+
+    Logger.debug('[getBulkFavoriteStatusAction] 認証成功', { userId: user.id });
 
     // 一括でお気に入り状態を取得
     const favoriteStates: Record<
@@ -524,13 +532,17 @@ export async function getBulkFavoriteStatusAction(
       });
     }
 
+    Logger.debug('[getBulkFavoriteStatusAction] 成功', {
+      stateCount: Object.keys(favoriteStates).length,
+    });
+
     return {
       success: true,
       isAuthenticated: true,
       favoriteStates,
     };
   } catch (error) {
-    Logger.error('Unexpected error in getBulkFavoriteStatusAction:', error);
+    Logger.error('[getBulkFavoriteStatusAction] 予期しないエラー:', error);
     return {
       success: false,
       error: 'システムエラーが発生しました',

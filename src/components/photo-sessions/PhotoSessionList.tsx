@@ -104,6 +104,10 @@ export function PhotoSessionList({
       }
 
       try {
+        logger.debug('[PhotoSessionList] loadSessions開始', {
+          reset,
+          currentPage: reset ? 0 : page,
+        });
         const supabase = createClient();
         const currentPage = reset ? 0 : page;
 
@@ -114,6 +118,9 @@ export function PhotoSessionList({
 
         if (reset) {
           setCurrentUser(authUser);
+          logger.debug('[PhotoSessionList] ユーザー情報設定完了', {
+            userId: authUser?.id,
+          });
         }
 
         let query = supabase.from('photo_sessions').select(`
@@ -235,11 +242,16 @@ export function PhotoSessionList({
         const { data, error } = await query;
 
         if (error) {
-          logger.error('撮影会一覧取得エラー:', error);
+          logger.error('[PhotoSessionList] 撮影会一覧取得エラー:', error);
           return;
         }
 
         const newSessions = data || [];
+        logger.debug('[PhotoSessionList] データ取得完了', {
+          取得件数: newSessions.length,
+          ページ: currentPage,
+          リセット: reset,
+        });
 
         if (reset) {
           setSessions(newSessions);
@@ -262,10 +274,22 @@ export function PhotoSessionList({
           }));
 
           try {
-            const favoriteResult =
-              await getBulkFavoriteStatusAction(favoriteItems);
+            const favoriteResult = await getBulkFavoriteStatusAction(
+              favoriteItems
+            ).catch(error => {
+              logger.error(
+                '[PhotoSessionList] getBulkFavoriteStatusAction Server Action Error:',
+                error
+              );
+              return {
+                success: false,
+                error: 'Server Action呼び出しエラー',
+                favoriteStates: {},
+              };
+            });
 
-            if (favoriteResult.success) {
+            // favoriteResultがundefinedでないことを確認
+            if (favoriteResult && favoriteResult.success) {
               if (reset) {
                 setFavoriteStates(favoriteResult.favoriteStates);
               } else {
@@ -274,15 +298,27 @@ export function PhotoSessionList({
                   ...favoriteResult.favoriteStates,
                 }));
               }
+            } else {
+              logger.warn(
+                '[PhotoSessionList] お気に入り状態取得失敗 - レスポンスが無効:',
+                favoriteResult
+              );
             }
           } catch (error) {
-            logger.error('お気に入り状態取得エラー:', error);
+            logger.error('[PhotoSessionList] お気に入り状態取得エラー:', error);
           }
         }
 
         // 次のページがあるかチェック
         const hasMoreData = newSessions.length === ITEMS_PER_PAGE;
         setHasMore(hasMoreData);
+
+        logger.debug('[PhotoSessionList] hasMore更新', {
+          newSessionsLength: newSessions.length,
+          ITEMS_PER_PAGE,
+          hasMoreData,
+          nextPage: reset ? 1 : page + 1,
+        });
 
         if (!reset) {
           setPage(prev => prev + 1);
@@ -330,6 +366,7 @@ export function PhotoSessionList({
   // 初回ロード（依存関係を最小限に）
   useEffect(() => {
     if (prevFiltersRef.current === '') {
+      logger.info('[PhotoSessionList] 初回ロード開始');
       loadSessions(true);
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -345,8 +382,19 @@ export function PhotoSessionList({
   useEffect(() => {
     const trigger = loadMoreTriggerRef.current;
 
+    logger.debug('[PhotoSessionList] IntersectionObserver setup', {
+      trigger: !!trigger,
+      hasMore,
+      sessionsLength: sessions.length,
+      loadingMore,
+    });
+
     // hasMoreがfalseの場合は監視を停止
     if (!trigger || !hasMore) {
+      logger.debug('[PhotoSessionList] IntersectionObserver監視停止', {
+        trigger: !!trigger,
+        hasMore,
+      });
       if (observerRef.current) {
         observerRef.current.disconnect();
         observerRef.current = null;
@@ -364,6 +412,15 @@ export function PhotoSessionList({
       entries => {
         const [entry] = entries;
 
+        logger.debug('[PhotoSessionList] IntersectionObserver発火', {
+          isIntersecting: entry.isIntersecting,
+          hasMore,
+          loadingMore,
+          isLoadingRefCurrent: isLoadingRef.current,
+          sessionsLength: sessions.length,
+          intersectionRatio: entry.intersectionRatio,
+        });
+
         // 要素が画面に入り、まだデータがあり、ローディング中でない場合
         if (
           entry.isIntersecting &&
@@ -372,10 +429,22 @@ export function PhotoSessionList({
           !isLoadingRef.current &&
           sessions.length > 0 // 初回ロード完了後のみ
         ) {
+          logger.info(
+            '[PhotoSessionList] 無限スクロール条件満たした - 追加ロード開始'
+          );
           // 少し遅延を入れて連続呼び出しを防ぐ
           setTimeout(() => {
             if (hasMore && !isLoadingRef.current && !loadingMore) {
+              logger.debug(
+                '[PhotoSessionList] 遅延後の条件チェック通過 - loadSessions実行'
+              );
               loadSessions(false); // 追加ロード
+            } else {
+              logger.debug('[PhotoSessionList] 遅延後の条件チェック失敗', {
+                hasMore,
+                isLoadingRefCurrent: isLoadingRef.current,
+                loadingMore,
+              });
             }
           }, 200); // 遅延を少し長くして安全性を向上
         }
@@ -389,6 +458,7 @@ export function PhotoSessionList({
 
     // 監視開始
     observerRef.current.observe(trigger);
+    logger.debug('[PhotoSessionList] IntersectionObserver監視開始');
 
     // クリーンアップ
     return () => {
@@ -455,27 +525,33 @@ export function PhotoSessionList({
           <h2 className="text-2xl font-bold">{title}</h2>
         </div>
         <div className="space-y-4">
-          {[...Array(6)].map((_, i) => (
-            <Card key={i} className="animate-pulse">
+          {[...Array(3)].map((_, i) => (
+            <Card key={i} className="animate-pulse opacity-60">
               <div className="flex p-6">
-                <div className="w-48 h-32 bg-gray-200 rounded-lg mr-6"></div>
+                <div className="w-48 h-32 bg-gray-200 dark:bg-gray-700 rounded-lg mr-6"></div>
                 <div className="flex-1 space-y-3">
-                  <div className="h-6 bg-gray-200 rounded w-3/4"></div>
-                  <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                  <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+                  <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
                   <div className="flex gap-4">
-                    <div className="h-4 bg-gray-200 rounded w-24"></div>
-                    <div className="h-4 bg-gray-200 rounded w-20"></div>
-                    <div className="h-4 bg-gray-200 rounded w-16"></div>
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24"></div>
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-20"></div>
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
                   </div>
                 </div>
                 <div className="w-32 space-y-2">
-                  <div className="h-8 bg-gray-200 rounded"></div>
-                  <div className="h-8 bg-gray-200 rounded"></div>
+                  <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                  <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded"></div>
                 </div>
               </div>
             </Card>
           ))}
+          <div className="flex justify-center items-center py-8">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+            <span className="ml-3 text-sm text-muted-foreground">
+              読み込み中...
+            </span>
+          </div>
         </div>
       </div>
     );
@@ -556,7 +632,7 @@ export function PhotoSessionList({
           </div>
 
           {/* 撮影会作成ボタン */}
-          <Button asChild size="sm">
+          <Button asChild size="sm" variant="accent">
             <Link href="/photo-sessions/create">
               <Plus className="h-4 w-4 mr-2" />
               撮影会を作成
@@ -695,7 +771,11 @@ export function PhotoSessionList({
         )}
         {/* hasMoreがtrueの場合のみトリガー要素を表示 */}
         {hasMore && !loadingMore && sessions.length > 0 && (
-          <div ref={loadMoreTriggerRef} className="flex justify-center">
+          <div
+            ref={loadMoreTriggerRef}
+            className="flex justify-center min-h-[20px] w-full"
+            style={{ minHeight: '20px' }}
+          >
             <p className="text-muted-foreground text-center text-sm">
               スクロールして続きを読み込む
             </p>

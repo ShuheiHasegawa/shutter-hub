@@ -7,13 +7,22 @@ import { cn } from '@/lib/utils';
 export interface ActionBarButton {
   id: string;
   label: string;
-  variant?:
-    | 'default'
+  variant?: // 🎨 統合バリアント（テーマ対応・推奨）
+  | 'default'
+    | 'primary'
+    | 'accent'
+    | 'neutral'
+    // 🔧 Shadcn/ui標準バリアント（既存システム維持）
     | 'destructive'
     | 'outline'
     | 'secondary'
     | 'ghost'
-    | 'link';
+    | 'link'
+    // 🎨 ブランド色バリアント（固定色・機能別）
+    | 'brand-success'
+    | 'brand-warning'
+    | 'brand-error'
+    | 'brand-info';
   size?: 'default' | 'sm' | 'lg' | 'icon';
   onClick: () => void;
   disabled?: boolean;
@@ -35,6 +44,16 @@ interface ActionBarProps {
  *
  * main要素内の下部に固定表示されるアクションボタンバー
  * サイドバーを避けて表示される
+ * Button.tsx の統合カラーシステムに対応（テーマ切り替え可能）
+ *
+ * @example
+ * // 統合カラーシステム使用例
+ * const actions = [
+ *   { id: 'save', label: '保存', variant: 'primary', onClick: handleSave },
+ *   { id: 'cancel', label: 'キャンセル', variant: 'neutral', onClick: handleCancel },
+ *   { id: 'delete', label: '削除', variant: 'destructive', onClick: handleDelete },
+ *   { id: 'success', label: '完了', variant: 'brand-success', onClick: handleComplete },
+ * ];
  */
 export function ActionBar({
   actions,
@@ -44,10 +63,9 @@ export function ActionBar({
   background = 'blur',
 }: ActionBarProps) {
   const backgroundClasses = {
-    default:
-      'bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-gray-200 dark:border-gray-700',
-    blur: 'bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-gray-200 dark:border-gray-700',
-    solid: 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700',
+    default: 'surface-neutral/95 backdrop-blur-sm border-theme-neutral/20',
+    blur: 'surface-neutral/90 backdrop-blur-md border-theme-neutral/20',
+    solid: 'surface-neutral border-theme-neutral/20',
   };
 
   return (
@@ -81,8 +99,7 @@ export function ActionBar({
                 onClick={action.onClick}
                 disabled={action.disabled || action.loading}
                 className={cn(
-                  'h-12 text-base font-medium w-full',
-                  'text-foreground', // 確実に読みやすい文字色
+                  'h-12 text-base font-medium w-full transition-colors',
                   action.className
                 )}
               >
