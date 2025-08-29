@@ -76,27 +76,10 @@ export function ChatWindow({
       ? conversation.participant2
       : conversation.participant1;
 
-  // グループ名から撮影会IDを抽出する関数
-  const getPhotoSessionId = (groupName?: string): string | null => {
-    if (!groupName) return null;
-
-    // パターン: "sessionId - 撮影会チャット" から sessionId を抽出
-    const match = groupName.match(/^(.+?)\s*-\s*撮影会チャット$/);
-    if (match) {
-      const sessionId = match[1].trim();
-      // UUIDの形式かチェック（簡易的）
-      if (sessionId.length > 10 && sessionId.includes('-')) {
-        return sessionId;
-      }
-    }
-    return null;
-  };
-
-  // 撮影会ページに遷移する関数
-  const handleGoToPhotoSession = (groupName?: string) => {
-    const sessionId = getPhotoSessionId(groupName);
-    if (sessionId) {
-      router.push(`/photo-sessions/${sessionId}`);
+  // 撮影会ページに遷移する関数（最適化済み）
+  const handleGoToPhotoSession = () => {
+    if (conversation.photo_session_id) {
+      router.push(`/photo-sessions/${conversation.photo_session_id}`);
     }
   };
 
@@ -346,12 +329,8 @@ export function ChatWindow({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  {getPhotoSessionId(conversation.group_name) && (
-                    <DropdownMenuItem
-                      onClick={() =>
-                        handleGoToPhotoSession(conversation.group_name)
-                      }
-                    >
+                  {conversation.photo_session_id && (
+                    <DropdownMenuItem onClick={handleGoToPhotoSession}>
                       {t('goToPhotoSession')}
                     </DropdownMenuItem>
                   )}
