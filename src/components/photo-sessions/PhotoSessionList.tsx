@@ -526,7 +526,14 @@ export function PhotoSessionList({
         </div>
         <div className="space-y-4">
           {[...Array(3)].map((_, i) => (
-            <Card key={i} className="animate-pulse opacity-60">
+            <Card
+              key={i}
+              className="animate-pulse-gentle"
+              style={{
+                animationDelay: `${i * 0.2}s`,
+                animationDuration: `${2.5 + i * 0.1}s`,
+              }}
+            >
               <div className="flex p-6">
                 <div className="w-48 h-32 bg-gray-200 dark:bg-gray-700 rounded-lg mr-6"></div>
                 <div className="flex-1 space-y-3">
@@ -547,7 +554,7 @@ export function PhotoSessionList({
             </Card>
           ))}
           <div className="flex justify-center items-center py-8">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+            <div className="animate-spin-slow rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
             <span className="ml-3 text-sm text-muted-foreground">
               読み込み中...
             </span>
@@ -687,7 +694,7 @@ export function PhotoSessionList({
                 >
                   {loading ? (
                     <>
-                      <Loader2 className="animate-spin h-4 w-4 mr-2" />
+                      <Loader2 className="animate-spin-slow h-4 w-4 mr-2" />
                       検索中...
                     </>
                   ) : (
@@ -760,7 +767,7 @@ export function PhotoSessionList({
       <div className="flex justify-center py-8">
         {loadingMore && (
           <div className="flex items-center text-muted-foreground">
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <Loader2 className="mr-2 h-4 w-4 animate-spin-slow" />
             さらに読み込み中...
           </div>
         )}

@@ -24,61 +24,87 @@ export default function EditPhotoSessionPage() {
   );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isLoadingSession, setIsLoadingSession] = useState(false);
   const t = useTranslations('photoSessions.form');
   const tCommon = useTranslations('common');
-  const supabase = createClient();
-
-  const loadSession = async () => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('photo_sessions')
-        .select(
-          `
-          *,
-          organizer:profiles!organizer_id(*)
-        `
-        )
-        .eq('id', sessionId)
-        .single();
-
-      if (error) {
-        logger.error('Error loading session:', error);
-        setError('撮影会の読み込みに失敗しました');
-        return;
-      }
-
-      if (!data) {
-        setError('撮影会が見つかりません');
-        return;
-      }
-
-      // Check if user is the organizer
-      if (data.organizer_id !== user?.id) {
-        setError('この撮影会を編集する権限がありません');
-        return;
-      }
-
-      setSession(data as PhotoSessionWithOrganizer);
-    } catch (error) {
-      logger.error('Error loading session:', error);
-      setError('撮影会の読み込み中にエラーが発生しました');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
     if (!authLoading && !user) {
       router.push('/ja/auth/signin');
+      return;
     }
   }, [user, authLoading, router]);
 
   useEffect(() => {
-    if (user && sessionId) {
-      loadSession();
-    }
-  }, [user, sessionId, loadSession]);
+    const loadSessionData = async () => {
+      // 既に実行中の場合は重複実行を防ぐ
+      if (isLoadingSession || !user || !sessionId) {
+        return;
+      }
+
+      logger.debug('[EditPhotoSessionPage] loadSession開始', {
+        sessionId,
+        userId: user?.id,
+      });
+
+      try {
+        setLoading(true);
+        setIsLoadingSession(true);
+        const supabase = createClient();
+        const { data, error } = await supabase
+          .from('photo_sessions')
+          .select(
+            `
+            *,
+            organizer:profiles!organizer_id(*)
+          `
+          )
+          .eq('id', sessionId)
+          .single();
+
+        logger.debug('[EditPhotoSessionPage] Supabaseクエリ完了', {
+          hasData: !!data,
+          hasError: !!error,
+        });
+
+        if (error) {
+          logger.error(
+            '[EditPhotoSessionPage] セッション読み込みエラー:',
+            error
+          );
+          setError('撮影会の読み込みに失敗しました');
+          return;
+        }
+
+        if (!data) {
+          logger.warn('[EditPhotoSessionPage] セッションデータなし');
+          setError('撮影会が見つかりません');
+          return;
+        }
+
+        // Check if user is the organizer
+        if (data.organizer_id !== user?.id) {
+          logger.warn('[EditPhotoSessionPage] 権限なし', {
+            dataOrganizerId: data.organizer_id,
+            userId: user?.id,
+          });
+          setError('この撮影会を編集する権限がありません');
+          return;
+        }
+
+        logger.debug('[EditPhotoSessionPage] セッション設定完了');
+        setSession(data as PhotoSessionWithOrganizer);
+        setError(null);
+      } catch (error) {
+        logger.error('[EditPhotoSessionPage] 予期しないエラー:', error);
+        setError('撮影会の読み込み中にエラーが発生しました');
+      } finally {
+        setLoading(false);
+        setIsLoadingSession(false);
+      }
+    };
+
+    loadSessionData();
+  }, [user?.id, sessionId, authLoading]);
 
   if (authLoading || loading) {
     return (

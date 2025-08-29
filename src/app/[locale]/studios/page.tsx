@@ -19,7 +19,6 @@ import { PlusIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { PREFECTURES } from '@/constants/japan';
 import { STUDIO_SORT_OPTIONS, DEFAULT_STUDIO_SEARCH } from '@/constants/studio';
 import Link from 'next/link';
-import { FavoriteTestButton } from '@/components/debug/FavoriteTestButton';
 
 export default function StudiosPage() {
   const searchParams = useSearchParams();
@@ -74,9 +73,8 @@ export default function StudiosPage() {
             </p>
           </div>
           <div className="flex gap-2">
-            <FavoriteTestButton />
             <Link href="/studios/create">
-              <Button className="flex items-center gap-2">
+              <Button className="flex items-center gap-2" variant="accent">
                 <PlusIcon className="w-4 h-4" />
                 新しいスタジオを追加
               </Button>
@@ -167,7 +165,11 @@ export default function StudiosPage() {
 
               {/* 検索・リセットボタン */}
               <div className="flex items-end space-x-2">
-                <Button onClick={handleSearch} className="flex-1">
+                <Button
+                  onClick={handleSearch}
+                  className="flex-1"
+                  variant="accent"
+                >
                   <MagnifyingGlassIcon className="w-4 h-4 mr-2" />
                   検索
                 </Button>

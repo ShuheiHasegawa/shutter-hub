@@ -34,6 +34,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Link } from '@/i18n/routing';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
+import { ThemePaletteSelector } from '@/components/ui/theme-palette-selector';
 
 // ページタイトルのマッピング（DashboardTopbarから移行）
 const getPageTitle = (pathname: string): string => {
@@ -157,6 +158,7 @@ export function AppHeader({
         <div className="flex items-center space-x-2">
           {user && <NotificationCenter />}
           <LanguageToggle />
+          <ThemePaletteSelector />
           <ThemeToggle />
 
           {user && (
@@ -295,6 +297,7 @@ export function AppHeader({
                 </Button>
               </Link>
             )}
+            <ThemePaletteSelector />
             <LanguageToggle />
             <ThemeToggle />
 
