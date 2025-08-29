@@ -25,12 +25,30 @@ lsof -ti:8888 | xargs kill -9
 
 ### **Step 3: 調査コードのクリーンアップ**
 以下の調査・デバッグ目的のコードを削除してください：
-- [ ] console.log("調査用ログ")
-- [ ] console.error("デバッグ詳細", error)
+- [ ] console.log("調査用ログ") ※直接的なconsole出力のみ
+- [ ] console.error("デバッグ詳細", error) ※直接的なconsole出力のみ  
 - [ ] alert("テスト確認")
-- [ ] JSON.stringify(error, null, 2)（詳細エラー出力）
 - [ ] 一時的なデータ構造変更
 - [ ] テスト用の条件分岐
+
+**保持すべきコード（削除不要）：**
+- ✅ logger.info(), logger.error(), logger.debug() ※環境変数で制御可能
+- ✅ 本番でも必要なエラーログ
+- ✅ 運用監視に必要なログ出力
+- ✅ パフォーマンス監視のログ
+- ✅ セキュリティ監査のログ
+
+**Logger使用ガイドライン：**
+```typescript
+// ✅ 適切なlogger使用（保持推奨）
+logger.info('User login successful', { userId: user.id });
+logger.error('Database connection failed', error);
+logger.debug('Processing payment', { amount, currency });
+
+// ❌ 削除すべき直接console使用
+console.log('デバッグ用の一時的なログ');
+console.error('調査中のエラー詳細:', JSON.stringify(error, null, 2));
+```
 
 ### **Step 4: 【必須】TODO更新**
 `.cursor/rules/dev-rules/todo.mdc` を必ず更新：
@@ -152,10 +170,11 @@ git commit -m "Fixed various bugs and added features"
 ## 🚨 **調査段階のコード（コミット不要）**
 
 ### **調査完了後の必須作業**
-1. **調査用コード削除**
-   - 調査用console.logの完全削除
+1. **一時的な調査コード削除**
+   - 直接的なconsole.log/console.errorの削除
    - テスト用alertの削除
-   - 詳細エラー出力の削除
+   - 一時的な詳細エラー出力の削除
+   - **logger.xxx()は保持** ※環境変数制御のため削除不要
 
 2. **クリーンな実装復元**
    - 本来のシンプルな実装に復元
@@ -163,7 +182,8 @@ git commit -m "Fixed various bugs and added features"
    - 一括処理の復活
 
 3. **クリーンアップ後コミット**
-   - 調査コードなしの状態で記録
+   - 一時的な調査コードなしの状態で記録
+   - 適切なlogger使用は維持
    - "fix: [問題の修正内容]"でコミット
 
 ## 📅 **日付・タイムスタンプ管理**

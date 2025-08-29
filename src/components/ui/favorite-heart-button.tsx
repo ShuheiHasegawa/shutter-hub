@@ -92,13 +92,31 @@ export function FavoriteHeartButton({
             favoriteType,
             favoriteId
           );
-          if (result.success) {
+
+          // resultがundefinedでないことを確認
+          if (result && result.success) {
             setIsFavorited(result.isFavorited || false);
             setFavoriteCount(result.favoriteCount || 0);
             setIsAuthenticated(result.isAuthenticated || false);
+          } else {
+            Logger.error(
+              '[FavoriteHeartButton] お気に入り状態取得失敗 - レスポンスが無効:',
+              result
+            );
+            // デフォルト値を設定
+            setIsFavorited(false);
+            setFavoriteCount(0);
+            setIsAuthenticated(false);
           }
         } catch (error) {
-          Logger.error('Failed to fetch favorite status:', error);
+          Logger.error(
+            '[FavoriteHeartButton] お気に入り状態取得エラー:',
+            error
+          );
+          // エラー時もデフォルト値を設定
+          setIsFavorited(false);
+          setFavoriteCount(0);
+          setIsAuthenticated(false);
         } finally {
           setIsInitialized(true);
         }
@@ -135,9 +153,20 @@ export function FavoriteHeartButton({
         setIsFavorited(optimisticFavorited);
         setFavoriteCount(Math.max(0, optimisticCount));
 
-        const result = await toggleFavoriteAction(favoriteType, favoriteId);
+        // Server Action呼び出しにエラーハンドリング強化
+        const result = await toggleFavoriteAction(
+          favoriteType,
+          favoriteId
+        ).catch(error => {
+          Logger.error('[FavoriteHeartButton] Server Action Error:', error);
+          return {
+            success: false,
+            error: 'Server Action呼び出しエラー',
+            isAuthenticated: true,
+          };
+        });
 
-        if (result.success && result.data) {
+        if (result.success && 'data' in result && result.data) {
           // サーバーからの正確な結果で更新
           const serverFavorited = result.data.is_favorited;
           const serverCount = result.data.total_favorites;

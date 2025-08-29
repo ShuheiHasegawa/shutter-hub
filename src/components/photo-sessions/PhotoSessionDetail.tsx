@@ -221,11 +221,10 @@ export function PhotoSessionDetail({
         {
           id: 'cannot-book',
           label: '予約不可',
-          variant: 'secondary',
+          variant: 'outline',
           onClick: () => {}, // 何もしない
           disabled: true,
           icon: <Calendar className="h-4 w-4" />,
-          className: 'bg-gray-400 text-gray-600 cursor-not-allowed',
         },
       ];
     }
@@ -235,13 +234,12 @@ export function PhotoSessionDetail({
         {
           id: 'select-slot',
           label: bookingLoading ? '確認中...' : '時間枠を選択',
-          variant: 'default',
+          variant: 'accent',
           onClick: () => {
             router.push(`?step=select`, { scroll: false });
           },
           disabled: bookingLoading,
           icon: <Calendar className="h-4 w-4" />,
-          className: 'bg-blue-600 hover:bg-blue-700',
         },
       ];
     } else {
@@ -253,13 +251,12 @@ export function PhotoSessionDetail({
             : isFull
               ? 'キャンセル待ち'
               : '予約する',
-          variant: 'default',
+          variant: isFull ? 'accent' : 'primary',
           onClick: () => {
             router.push(`?step=select`, { scroll: false });
           },
           disabled: bookingLoading,
           icon: <CreditCard className="h-4 w-4" />,
-          className: 'bg-blue-600 hover:bg-blue-700',
         },
       ];
     }

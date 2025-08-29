@@ -104,9 +104,23 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
               offset: resetList ? 0 : state.notifications.length,
             };
 
-        const result = await getUserNotifications(user.id, currentFilters);
+        const result = await getUserNotifications(
+          user.id,
+          currentFilters
+        ).catch(error => {
+          logger.error(
+            '[useNotifications] getUserNotifications Server Action Error:',
+            error
+          );
+          return { success: false, error: 'Server Action呼び出しエラー' };
+        });
 
-        if (result.success && result.data?.notifications) {
+        if (
+          result &&
+          result.success &&
+          'data' in result &&
+          result.data?.notifications
+        ) {
           setState(prev => ({
             ...prev,
             notifications: resetList
@@ -118,7 +132,10 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
         } else {
           setState(prev => ({
             ...prev,
-            error: result.success ? '通知の取得に失敗しました' : result.error,
+            error:
+              result && 'error' in result
+                ? result.error
+                : '通知の取得に失敗しました',
             loading: false,
           }));
         }
@@ -139,8 +156,16 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
     if (!user?.id) return;
 
     try {
-      const result = await getNotificationStats(user.id);
-      if (result.success && result.data) {
+      const result = await getNotificationStats(user.id).catch(error => {
+        logger.error(
+          '[useNotifications] getNotificationStats Server Action Error:',
+          error
+        );
+        return { success: false, error: 'Server Action呼び出しエラー' };
+      });
+
+      // resultがundefinedでないことを確認
+      if (result && result.success && 'data' in result && result.data) {
         // Server ActionからのレスポンスをNotificationStats形式に変換
         const stats: NotificationStats = {
           total_count: result.data.totalCount,
@@ -149,9 +174,15 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
           categories: result.data.categories,
         };
         setState(prev => ({ ...prev, stats }));
+        logger.debug('[useNotifications] 通知統計取得成功:', stats);
+      } else {
+        logger.warn(
+          '[useNotifications] 通知統計取得失敗 - レスポンスが無効:',
+          result
+        );
       }
     } catch (error) {
-      logger.error('通知統計取得エラー:', error);
+      logger.error('[useNotifications] 通知統計取得エラー:', error);
     }
   }, [user?.id]);
 
@@ -161,8 +192,18 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
       if (!user?.id) return;
 
       try {
-        const result = await markNotificationAsRead(notificationId, user.id);
-        if (result.success) {
+        const result = await markNotificationAsRead(
+          notificationId,
+          user.id
+        ).catch(error => {
+          logger.error(
+            '[useNotifications] markNotificationAsRead Server Action Error:',
+            error
+          );
+          return { success: false, error: 'Server Action呼び出しエラー' };
+        });
+
+        if (result && result.success) {
           setState(prev => ({
             ...prev,
             notifications: prev.notifications.map(n =>
@@ -186,8 +227,15 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
     if (!user?.id) return;
 
     try {
-      const result = await markAllNotificationsAsRead(user.id);
-      if (result.success) {
+      const result = await markAllNotificationsAsRead(user.id).catch(error => {
+        logger.error(
+          '[useNotifications] markAllNotificationsAsRead Server Action Error:',
+          error
+        );
+        return { success: false, error: 'Server Action呼び出しエラー' };
+      });
+
+      if (result && result.success) {
         setState(prev => ({
           ...prev,
           notifications: prev.notifications.map(n => ({
@@ -209,8 +257,15 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
     if (!user?.id) return;
 
     try {
-      const result = await clearAllNotifications(user.id);
-      if (result.success) {
+      const result = await clearAllNotifications(user.id).catch(error => {
+        logger.error(
+          '[useNotifications] clearAllNotifications Server Action Error:',
+          error
+        );
+        return { success: false, error: 'Server Action呼び出しエラー' };
+      });
+
+      if (result && result.success) {
         setState(prev => ({
           ...prev,
           notifications: [],
@@ -248,8 +303,15 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
     if (!user?.id) return;
 
     try {
-      const result = await createTestNotifications(user.id);
-      if (result.success && result.data) {
+      const result = await createTestNotifications(user.id).catch(error => {
+        logger.error(
+          '[useNotifications] createTestNotifications Server Action Error:',
+          error
+        );
+        return { success: false, error: 'Server Action呼び出しエラー' };
+      });
+
+      if (result && result.success && 'data' in result && result.data) {
         logger.info('テスト通知作成完了', {
           createdCount: result.data.notifications?.length || 0,
         });
