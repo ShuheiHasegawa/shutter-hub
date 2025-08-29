@@ -245,8 +245,14 @@ export async function getConversations(
       .select(
         `
         *,
-        participant1:participant1_id(id, display_name, avatar_url, user_type),
-        participant2:participant2_id(id, display_name, avatar_url, user_type)
+        participant1:participant1_id(id, display_name, username, avatar_url, user_type),
+        participant2:participant2_id(id, display_name, username, avatar_url, user_type),
+        members:conversation_members!inner(
+          user:user_id(id, display_name, username, avatar_url, user_type),
+          role,
+          joined_at,
+          is_active
+        )
       `
       )
       .in('id', allConversationIds)
@@ -352,9 +358,9 @@ export async function getConversationMessages(
       .select(
         `
         *,
-        sender:sender_id(id, display_name, avatar_url, user_type),
+        sender:sender_id(id, display_name, username, avatar_url, user_type),
         reply_to:reply_to_id(id, content, sender_id, created_at, 
-          sender:sender_id(id, display_name, avatar_url))
+          sender:sender_id(id, display_name, username, avatar_url))
       `
       )
       .eq('conversation_id', conversationId)
@@ -574,7 +580,7 @@ export async function createGroupConversation(
         *,
         members:conversation_members!conversation_id(
           *,
-          user:user_id(id, display_name, avatar_url, user_type)
+          user:user_id(id, display_name, username, avatar_url, user_type)
         )
       `
       )

@@ -18,8 +18,6 @@ import {
   Paperclip,
   MoreVertical,
   ArrowLeft,
-  Phone,
-  Video,
   Check,
   CheckCheck,
   X,
@@ -42,6 +40,7 @@ import { ja, enUS } from 'date-fns/locale';
 import { useLocale } from 'next-intl';
 import { toast } from 'sonner';
 import { formatFileSize, isImageFile } from '@/lib/storage/message-files';
+import { useRouter } from 'next/navigation';
 
 interface ChatWindowProps {
   conversation: ConversationWithUsers;
@@ -60,6 +59,7 @@ export function ChatWindow({
 }: ChatWindowProps) {
   const t = useTranslations('social.messaging');
   const locale = useLocale();
+  const router = useRouter();
   const [messages, setMessages] = useState<MessageWithUser[]>([]);
   const [messageText, setMessageText] = useState('');
   const [loading, setLoading] = useState(true);
@@ -75,6 +75,30 @@ export function ChatWindow({
     : conversation.participant1_id === currentUserId
       ? conversation.participant2
       : conversation.participant1;
+
+  // グループ名から撮影会IDを抽出する関数
+  const getPhotoSessionId = (groupName?: string): string | null => {
+    if (!groupName) return null;
+
+    // パターン: "sessionId - 撮影会チャット" から sessionId を抽出
+    const match = groupName.match(/^(.+?)\s*-\s*撮影会チャット$/);
+    if (match) {
+      const sessionId = match[1].trim();
+      // UUIDの形式かチェック（簡易的）
+      if (sessionId.length > 10 && sessionId.includes('-')) {
+        return sessionId;
+      }
+    }
+    return null;
+  };
+
+  // 撮影会ページに遷移する関数
+  const handleGoToPhotoSession = (groupName?: string) => {
+    const sessionId = getPhotoSessionId(groupName);
+    if (sessionId) {
+      router.push(`/photo-sessions/${sessionId}`);
+    }
+  };
 
   // メッセージ一覧を取得
   const loadMessages = async () => {
@@ -270,10 +294,15 @@ export function ChatWindow({
   };
 
   return (
-    <div className={cn('flex flex-col h-full bg-background', className)}>
+    <div
+      className={cn(
+        'flex flex-col h-full max-h-full bg-background overflow-hidden',
+        className
+      )}
+    >
       {/* ヘッダー */}
       {showHeader && (
-        <div className="flex items-center gap-3 p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="flex items-center gap-3 p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex-shrink-0">
           {onBack && (
             <Button variant="ghost" size="sm" onClick={onBack}>
               <ArrowLeft className="h-4 w-4" />
@@ -308,34 +337,33 @@ export function ChatWindow({
 
           {/* アクションボタン */}
           <div className="flex items-center gap-1">
-            <Button variant="ghost" size="sm" disabled>
-              <Phone className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="sm" disabled>
-              <Video className="h-4 w-4" />
-            </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm">
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem disabled>{t('viewProfile')}</DropdownMenuItem>
-                <DropdownMenuItem disabled>
-                  {t('clearHistory')}
-                </DropdownMenuItem>
-                <DropdownMenuItem disabled className="text-destructive">
-                  {t('blockUser')}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {/* グループチャットの場合のみメニューを表示 */}
+            {conversation.is_group && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm">
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {getPhotoSessionId(conversation.group_name) && (
+                    <DropdownMenuItem
+                      onClick={() =>
+                        handleGoToPhotoSession(conversation.group_name)
+                      }
+                    >
+                      {t('goToPhotoSession')}
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
         </div>
       )}
 
       {/* メッセージエリア */}
-      <ScrollArea ref={scrollAreaRef} className="flex-1 p-4">
+      <ScrollArea ref={scrollAreaRef} className="flex-1 min-h-0 p-4">
         {loading ? (
           <div className="flex items-center justify-center h-32">
             <div className="text-muted-foreground">{t('loadingMessages')}</div>
@@ -417,7 +445,7 @@ export function ChatWindow({
                                 <img
                                   src={message.file_url}
                                   alt={message.file_name || 'Image'}
-                                  className="max-w-xs max-h-64 rounded-lg cursor-pointer"
+                                  className="max-w-[280px] sm:max-w-[320px] max-h-[200px] sm:max-h-[240px] w-auto h-auto object-cover rounded-lg cursor-pointer block"
                                   onClick={() =>
                                     window.open(message.file_url, '_blank')
                                   }
@@ -493,7 +521,7 @@ export function ChatWindow({
       </ScrollArea>
 
       {/* メッセージ入力エリア */}
-      <div className="p-4 border-t bg-background">
+      <div className="p-4 border-t bg-background flex-shrink-0">
         {/* ファイルプレビュー */}
         {selectedFile && (
           <div className="mb-3 p-3 bg-muted rounded-lg">

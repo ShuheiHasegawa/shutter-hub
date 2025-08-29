@@ -355,20 +355,15 @@ const Photobook: React.FC<PhotobookProps> = ({
   return (
     <div
       ref={containerRef}
-      className={cn(
-        'w-full h-screen relative overflow-hidden bg-gray-100',
-        className
-      )}
+      className={cn('w-full h-screen relative overflow-hidden', className)}
     >
       {/* タイトル */}
       <div className="absolute top-5 left-0 right-0 z-10 text-center p-2.5">
-        <h1 className="text-4xl font-light m-0 text-gray-800 font-serif lg:text-2xl md:text-xl">
+        <h1 className="text-4xl font-light m-0 font-serif lg:text-2xl md:text-xl">
           {photobook.title}
         </h1>
         {photobook.description && (
-          <p className="mt-1 text-base text-gray-600 lg:text-sm">
-            {photobook.description}
-          </p>
+          <p className="mt-1 text-base lg:text-sm">{photobook.description}</p>
         )}
       </div>
 
@@ -383,7 +378,7 @@ const Photobook: React.FC<PhotobookProps> = ({
           />
           <Book className="w-4 h-4" />
         </div>
-        <span className="text-xs text-gray-800 whitespace-nowrap ml-2 hidden sm:inline">
+        <span className="text-xs whitespace-nowrap ml-2 hidden sm:inline">
           {displayMode === 'spread' ? t('spreadView') : t('pageView')}
         </span>
       </div>
@@ -424,7 +419,7 @@ const Photobook: React.FC<PhotobookProps> = ({
       </div>
 
       {/* ページカウンター */}
-      <div className="absolute bottom-5 right-5 z-10 bg-white/80 px-3 py-1.5 rounded-2xl text-sm text-gray-800 shadow-md">
+      <div className="absolute bottom-5 right-5 z-10 bg-white/80 px-3 py-1.5 rounded-2xl text-sm shadow-md">
         {currentPosition} / {totalItems}
       </div>
 

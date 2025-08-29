@@ -27,7 +27,7 @@ export default function PhotobookViewPage({ params }: PhotobookViewPageProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       <Photobook
         photobook={samplePhotobook}
         isEditable={false}
