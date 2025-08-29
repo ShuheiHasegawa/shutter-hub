@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { ActionBar, ActionBarButton } from '@/components/ui/action-bar';
 import {
   ArrowLeft,
   ArrowRight,
@@ -13,6 +14,7 @@ import {
   Clock,
   Users as UsersIcon,
   CircleDollarSign as CircleDollarSignIcon,
+  Loader2,
 } from 'lucide-react';
 import { PhotoSessionSlot } from '@/types/photo-session';
 import { PhotoSessionWithOrganizer } from '@/types/database';
@@ -106,7 +108,7 @@ export function SlotBookingFlow({
   }, [selectedSlotIds, navigateToStep]);
 
   // 予約処理
-  const handleBooking = async () => {
+  const handleBooking = useCallback(async () => {
     setIsBooking(true);
     try {
       if (hasSlots) {
@@ -189,13 +191,21 @@ export function SlotBookingFlow({
     } finally {
       setIsBooking(false);
     }
-  };
+  }, [
+    hasSlots,
+    allowMultiple,
+    selectedSlotIds,
+    selectedSlotId,
+    session.id,
+    userId,
+    navigateToStep,
+  ]);
 
   // 完了時の処理
-  const handleComplete = () => {
+  const handleComplete = useCallback(() => {
     // ページをリロードして最新の状態を反映
     window.location.href = window.location.pathname;
-  };
+  }, []);
 
   // 選択されたスロットの取得
   const selectedSlot = useMemo(
@@ -211,6 +221,108 @@ export function SlotBookingFlow({
         .filter(Boolean) as PhotoSessionSlot[],
     [selectedSlotIds, slots]
   );
+
+  // ActionBarボタンの取得
+  const getActionBarButtons = useCallback((): ActionBarButton[] => {
+    switch (currentStep) {
+      case 'select':
+        return [
+          {
+            id: 'back',
+            label: '戻る',
+            variant: 'outline',
+            onClick: () => router.push(`/ja/photo-sessions/${session.id}`),
+            icon: <ArrowLeft className="h-4 w-4" />,
+          },
+          ...(!hasSlots
+            ? [
+                {
+                  id: 'next',
+                  label: '次へ',
+                  variant: 'primary' as const,
+                  onClick: () => navigateToStep('confirm'),
+                  icon: <ArrowRight className="h-4 w-4" />,
+                },
+              ]
+            : []),
+          ...(hasSlots && !allowMultiple
+            ? [
+                {
+                  id: 'next-slot',
+                  label: '次へ',
+                  variant: 'primary' as const,
+                  onClick: () => navigateToStep('confirm', selectedSlotId),
+                  disabled: !selectedSlotId,
+                  icon: <ArrowRight className="h-4 w-4" />,
+                },
+              ]
+            : []),
+          ...(allowMultiple
+            ? [
+                {
+                  id: 'next-multiple',
+                  label: `次へ（${selectedSlotIds.length}件）`,
+                  variant: 'primary' as const,
+                  onClick: handleMultipleSlotConfirm,
+                  disabled: selectedSlotIds.length === 0,
+                  icon: <ArrowRight className="h-4 w-4" />,
+                },
+              ]
+            : []),
+        ];
+
+      case 'confirm':
+        return [
+          {
+            id: 'back',
+            label: '戻る',
+            variant: 'outline',
+            onClick: () =>
+              navigateToStep(
+                'select',
+                allowMultiple ? selectedSlotIds : selectedSlotId
+              ),
+            icon: <ArrowLeft className="h-4 w-4" />,
+          },
+          {
+            id: 'confirm',
+            label: isBooking ? '予約中...' : '予約を確定する',
+            variant: 'primary',
+            onClick: handleBooking,
+            disabled: isBooking,
+            icon: isBooking ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : undefined,
+          },
+        ];
+
+      case 'complete':
+        return [
+          {
+            id: 'complete',
+            label: '完了',
+            variant: 'accent',
+            onClick: handleComplete,
+          },
+        ];
+
+      default:
+        return [];
+    }
+  }, [
+    currentStep,
+    hasSlots,
+    allowMultiple,
+    selectedSlotId,
+    selectedSlotIds,
+    isBooking,
+    router,
+    session.id,
+    navigateToStep,
+    handleMultipleSlotConfirm,
+    handleBooking,
+    handleComplete,
+  ]);
 
   // ステップインジケーター
   const StepIndicator = () => (
@@ -326,53 +438,12 @@ export function SlotBookingFlow({
               <SessionInfoDisplay session={session} />
             )}
 
-            {/* 下部2列ボタン */}
-            <div className="mt-6 grid grid-cols-2 gap-3">
-              <Button
-                onClick={() => router.push(`/ja/photo-sessions/${session.id}`)}
-                variant="outline"
-                className="border-border text-theme-text-secondary"
-                size="lg"
-              >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                戻る
-              </Button>
-
-              {!hasSlots && (
-                <Button
-                  onClick={() => navigateToStep('confirm')}
-                  className="surface-primary"
-                  size="lg"
-                >
-                  次へ
-                  <ArrowRight className="h-4 w-4 ml-2" />
-                </Button>
-              )}
-
-              {hasSlots && !allowMultiple && (
-                <Button
-                  onClick={() => navigateToStep('confirm', selectedSlotId)}
-                  disabled={!selectedSlotId}
-                  className="surface-primary"
-                  size="lg"
-                >
-                  次へ
-                  <ArrowRight className="h-4 w-4 ml-2" />
-                </Button>
-              )}
-
-              {allowMultiple && (
-                <Button
-                  onClick={handleMultipleSlotConfirm}
-                  disabled={selectedSlotIds.length === 0}
-                  className="surface-primary"
-                  size="lg"
-                >
-                  次へ（{selectedSlotIds.length}件）
-                  <ArrowRight className="h-4 w-4 ml-2" />
-                </Button>
-              )}
-            </div>
+            {/* ActionBar統一ボタン */}
+            <ActionBar
+              actions={getActionBarButtons()}
+              maxColumns={2}
+              background="blur"
+            />
           </CardContent>
         </Card>
       </div>
@@ -628,38 +699,12 @@ export function SlotBookingFlow({
               </CardContent>
             </Card>
 
-            {/* 下部2列ボタン */}
-            <div className="mt-6 grid grid-cols-2 gap-3">
-              <Button
-                onClick={() =>
-                  navigateToStep(
-                    'select',
-                    allowMultiple ? selectedSlotIds : selectedSlotId
-                  )
-                }
-                variant="outline"
-                className="border-border text-theme-text-secondary"
-                size="lg"
-              >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                戻る
-              </Button>
-              <Button
-                onClick={handleBooking}
-                disabled={isBooking}
-                className="surface-primary"
-                size="lg"
-              >
-                {isBooking ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                    予約中...
-                  </>
-                ) : (
-                  '予約を確定する'
-                )}
-              </Button>
-            </div>
+            {/* ActionBar統一ボタン */}
+            <ActionBar
+              actions={getActionBarButtons()}
+              maxColumns={2}
+              background="blur"
+            />
           </CardContent>
         </Card>
       </div>
@@ -686,12 +731,11 @@ export function SlotBookingFlow({
                   撮影会の詳細はメッセージ機能でご確認いただけます
                 </p>
               </div>
-              <Button
-                onClick={handleComplete}
-                className="w-full surface-accent"
-              >
-                完了
-              </Button>
+              <ActionBar
+                actions={getActionBarButtons()}
+                maxColumns={1}
+                background="blur"
+              />
             </div>
           </CardContent>
         </Card>
