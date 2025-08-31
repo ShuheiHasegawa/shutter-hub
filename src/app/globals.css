@@ -269,3 +269,33 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* 🎯 用途別ボタンサーフェースクラス - 操作の重要度で使い分け */
+@layer utilities {
+  /* 最重要操作（主要アクション）- ページ内1つまで推奨 */
+  .surface-cta {
+    background-color: hsl(var(--surface-cta));
+    color: hsl(var(--surface-cta-text));
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease;
+  }
+
+  /* 重要操作（サブアクション）- ページ内2-3つまで推奨 */
+  .surface-action {
+    background-color: hsl(var(--surface-action));
+    color: hsl(var(--surface-action-text));
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease;
+  }
+
+  /* 通常操作（移動・戻る）- 制限なし */
+  .surface-navigation {
+    background-color: hsl(var(--surface-navigation));
+    color: hsl(var(--surface-navigation-text));
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease;
+  }
+}

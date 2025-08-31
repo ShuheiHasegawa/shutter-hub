@@ -317,7 +317,7 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
     {
       id: 'cancel',
       label: 'キャンセル',
-      variant: 'outline',
+      variant: 'navigation',
       onClick: handleCancel,
       icon: <X className="h-4 w-4" />,
       className:
@@ -326,7 +326,7 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
     {
       id: 'save',
       label: 'プロフィールを更新',
-      variant: 'default',
+      variant: 'cta',
       onClick: handleSaveClick,
       loading: isLoading,
       icon: <Save className="h-4 w-4" />,
@@ -421,7 +421,7 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
                 </div>
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="navigation"
                   onClick={() => setShowUsernameDialog(true)}
                   className="shrink-0"
                 >
@@ -619,7 +619,7 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
             <div className="pt-6">
               <ActionSheet
                 trigger={
-                  <Button className="w-full" size="lg">
+                  <Button className="w-full" size="lg" variant="cta">
                     変更を保存する
                   </Button>
                 }

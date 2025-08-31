@@ -22,6 +22,18 @@ export interface ColorPalette {
     primary: string; // メインカラー
     accent: string; // アクセントカラー
     neutral: string; // ニュートラルカラー
+    cta: {
+      light: string;
+      dark: string;
+    };
+    action: {
+      light: string;
+      dark: string;
+    };
+    navigation: {
+      light: string;
+      dark: string;
+    };
   };
 }
 
@@ -33,6 +45,23 @@ export const colorPalettes: ColorPalette[] = [
       primary: '#0F172A', // Shadcn/ui primary
       accent: '#F1F5F9', // Shadcn/ui accent
       neutral: '#64748B', // Shadcn/ui muted-foreground
+      // 🎯 用途別ボタン設計（操作の重要度で使い分け）
+      cta: {
+        // 最重要操作（主要アクション）
+        light: '#0F172A',
+        // dark: '#4D96FF',
+        dark: '#dfa01e',
+      },
+      action: {
+        // 重要操作（サブアクション）
+        light: '#F1F5F9', // accent -> action (重要操作)
+        dark: '#F1F5F9',
+      },
+      navigation: {
+        // 通常操作（移動・戻る）
+        light: '#64748B', // neutral -> navigation (通常操作)
+        dark: '#64748B',
+      },
     },
   },
   {
@@ -41,6 +70,18 @@ export const colorPalettes: ColorPalette[] = [
       primary: '#D583A2', // ピンク
       accent: '#624B61', // ダークピンク
       neutral: '#EAD5E7', // ライトピンク
+      cta: {
+        light: '#D583A2',
+        dark: '#D583A2',
+      },
+      action: {
+        light: '#624B61',
+        dark: '#624B61',
+      },
+      navigation: {
+        light: '#EAD5E7',
+        dark: '#EAD5E7',
+      },
     },
   },
   {
@@ -49,6 +90,18 @@ export const colorPalettes: ColorPalette[] = [
       primary: '#BFAADA', // パープル
       accent: '#201F28', // ダークパープル
       neutral: '#C4C1F1', // ライトパープル
+      cta: {
+        light: '#BFAADA',
+        dark: '#BFAADA',
+      },
+      action: {
+        light: '#201F28',
+        dark: '#201F28',
+      },
+      navigation: {
+        light: '#C4C1F1',
+        dark: '#C4C1F1',
+      },
     },
   },
   {
@@ -57,6 +110,18 @@ export const colorPalettes: ColorPalette[] = [
       primary: '#1F2C5D', // ダークブルー
       accent: '#C2CCDF', // ライトブルー
       neutral: '#829FB6', // ミディアムブルー
+      cta: {
+        light: '#1F2C5D',
+        dark: '#1F2C5D',
+      },
+      action: {
+        light: '#C2CCDF',
+        dark: '#C2CCDF',
+      },
+      navigation: {
+        light: '#829FB6',
+        dark: '#829FB6',
+      },
     },
   },
   {
@@ -65,6 +130,18 @@ export const colorPalettes: ColorPalette[] = [
       primary: '#002159', // ダークネイビー
       accent: '#FFB8CD', // ライトピンク
       neutral: '#526076', // グレーブルー
+      cta: {
+        light: '#002159',
+        dark: '#002159',
+      },
+      action: {
+        light: '#FFB8CD',
+        dark: '#FFB8CD',
+      },
+      navigation: {
+        light: '#526076',
+        dark: '#526076',
+      },
     },
   },
 ];
@@ -212,11 +289,33 @@ export function applyTheme(paletteName: string, isDark = false): void {
     );
   }
 
+  // 🎯 用途別ボタン色を取得（ライト/ダークモード対応）
+  const ctaColor = palette.colors.cta
+    ? isDark
+      ? palette.colors.cta.dark
+      : palette.colors.cta.light
+    : palette.colors.primary; // フォールバック
+
+  const actionColor = palette.colors.action
+    ? isDark
+      ? palette.colors.action.dark
+      : palette.colors.action.light
+    : palette.colors.accent; // フォールバック
+
+  const navigationColor = palette.colors.navigation
+    ? isDark
+      ? palette.colors.navigation.dark
+      : palette.colors.navigation.light
+    : palette.colors.neutral; // フォールバック
+
   // サーフェース色を設定（シンプル化）
   Logger.info(`🎨 Applying ${paletteName} theme:`, {
     primary: palette.colors.primary,
     accent: palette.colors.accent,
     neutral: palette.colors.neutral,
+    cta: ctaColor,
+    action: actionColor,
+    navigation: navigationColor,
     isDark,
   });
 
@@ -238,9 +337,34 @@ export function applyTheme(paletteName: string, isDark = false): void {
     hexToHsl(getContrastColor(palette.colors.neutral))
   );
 
+  // 🎯 用途別ボタン色を設定
+  root.style.setProperty('--surface-cta', hexToHsl(ctaColor));
+  root.style.setProperty(
+    '--surface-cta-text',
+    hexToHsl(getContrastColor(ctaColor))
+  );
+
+  root.style.setProperty('--surface-action', hexToHsl(actionColor));
+  root.style.setProperty(
+    '--surface-action-text',
+    hexToHsl(getContrastColor(actionColor))
+  );
+
+  root.style.setProperty('--surface-navigation', hexToHsl(navigationColor));
+  root.style.setProperty(
+    '--surface-navigation-text',
+    hexToHsl(getContrastColor(navigationColor))
+  );
+
   Logger.info('✅ Surface colors applied:', {
     'surface-accent': hexToHsl(palette.colors.accent),
     'surface-accent-text': hexToHsl(getContrastColor(palette.colors.accent)),
+    'surface-cta': hexToHsl(ctaColor),
+    'surface-cta-text': hexToHsl(getContrastColor(ctaColor)),
+    'surface-action': hexToHsl(actionColor),
+    'surface-action-text': hexToHsl(getContrastColor(actionColor)),
+    'surface-navigation': hexToHsl(navigationColor),
+    'surface-navigation-text': hexToHsl(getContrastColor(navigationColor)),
   });
 
   // ブランド色は固定（変更しない）
@@ -276,9 +400,34 @@ export function applyTheme(paletteName: string, isDark = false): void {
       hexToHsl(getContrastColor(neutralDark))
     );
 
+    // 🎯 ダークモード時の用途別ボタン色を再設定（上書き）
+    root.style.setProperty('--surface-cta', hexToHsl(ctaColor));
+    root.style.setProperty(
+      '--surface-cta-text',
+      hexToHsl(getContrastColor(ctaColor))
+    );
+
+    root.style.setProperty('--surface-action', hexToHsl(actionColor));
+    root.style.setProperty(
+      '--surface-action-text',
+      hexToHsl(getContrastColor(actionColor))
+    );
+
+    root.style.setProperty('--surface-navigation', hexToHsl(navigationColor));
+    root.style.setProperty(
+      '--surface-navigation-text',
+      hexToHsl(getContrastColor(navigationColor))
+    );
+
     Logger.info('🌙 Dark mode colors applied:', {
       'surface-accent': hexToHsl(accentDark),
       'surface-accent-text': hexToHsl(getContrastColor(accentDark)),
+      'surface-cta': hexToHsl(ctaColor),
+      'surface-cta-text': hexToHsl(getContrastColor(ctaColor)),
+      'surface-action': hexToHsl(actionColor),
+      'surface-action-text': hexToHsl(getContrastColor(actionColor)),
+      'surface-navigation': hexToHsl(navigationColor),
+      'surface-navigation-text': hexToHsl(getContrastColor(navigationColor)),
     });
   }
 }

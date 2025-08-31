@@ -133,7 +133,7 @@ export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
       <div>
         {/* ヘッダー */}
         <div className="flex items-center gap-4 py-4">
-          <BackButton href={`/photo-sessions/${id}`} variant="outline" />
+          <BackButton href="/photo-sessions" variant="outline" />
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-2">
               <BarChart3Icon className="h-6 w-6" />

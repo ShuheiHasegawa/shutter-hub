@@ -213,7 +213,7 @@ export default function ProfilePage() {
 
           {/* メインコンテンツ */}
           <div className="lg:col-span-2">
-            <Tabs defaultValue="reviews" className="space-y-6">
+            <Tabs defaultValue="reviews" className="">
               <TabsList
                 className={`grid w-full ${
                   profile?.user_type === 'photographer'

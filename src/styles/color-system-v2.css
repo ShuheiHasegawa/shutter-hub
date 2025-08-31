@@ -20,6 +20,14 @@
   --surface-accent-text: 210 40% 98%; /* アクセント用テキスト */
   --surface-neutral: 215.4 16.3% 46.9%; /* デフォルトニュートラル */
   --surface-neutral-text: 210 40% 98%; /* ニュートラル用テキスト */
+
+  /* 🎯 用途別ボタン色（ライトモード）- 操作の重要度で使い分け */
+  --surface-cta: 255 35% 40%; /* #6F5091 - 最重要操作（主要アクション）*/
+  --surface-cta-text: 0 0% 100%; /* CTA用白テキスト */
+  --surface-action: 210 40% 96%; /* #F1F5F9 - 重要操作（サブアクション）*/
+  --surface-action-text: 0 0% 0%; /* Action用黒テキスト */
+  --surface-navigation: 215 16% 47%; /* #64748B - 通常操作（移動・戻る）*/
+  --surface-navigation-text: 0 0% 100%; /* Navigation用白テキスト */
 }
 
 .dark {
@@ -30,4 +38,12 @@
   --surface-accent-text: 210 40% 98%; /* アクセント用テキスト */
   --surface-neutral: 215.4 16.3% 25%; /* ダークモード用ニュートラル */
   --surface-neutral-text: 210 40% 98%; /* ニュートラル用テキスト */
+
+  /* 🎯 用途別ボタン色（ダークモード）- 操作の重要度で使い分け */
+  --surface-cta: 255 35% 60%; /* #8B6BB1 - 最重要操作（主要アクション）*/
+  --surface-cta-text: 0 0% 0%; /* CTA用黒テキスト（ダーク時） */
+  --surface-action: 210 40% 96%; /* #F1F5F9 - 重要操作（サブアクション）*/
+  --surface-action-text: 0 0% 0%; /* Action用黒テキスト（ダーク時） */
+  --surface-navigation: 215 16% 47%; /* #64748B - 通常操作（移動・戻る）*/
+  --surface-navigation-text: 0 0% 100%; /* Navigation用白テキスト（ダーク時） */
 }

@@ -125,6 +125,14 @@ const config: Config = {
           'neutral-0-text': 'hsl(var(--surface-neutral-0-text))',
           'neutral-1': 'hsl(var(--surface-neutral-1))', // 暗めバリエーション
           'neutral-1-text': 'hsl(var(--surface-neutral-1-text))',
+
+          // 🎯 意図ベースサーフェース
+          cta: 'hsl(var(--surface-cta))',
+          'cta-text': 'hsl(var(--surface-cta-text))',
+          action: 'hsl(var(--surface-action))',
+          'action-text': 'hsl(var(--surface-action-text))',
+          navigation: 'hsl(var(--surface-navigation))',
+          'navigation-text': 'hsl(var(--surface-navigation-text))',
         },
 
         // Shadcn/ui カラー
@@ -246,22 +254,30 @@ const config: Config = {
       const surfaceUtilities: Record<string, Record<string, string>> = {};
 
       // シンプルなサーフェースクラス（明度レベルなし）
-      const surfaceTypes = ['primary', 'accent', 'neutral'];
+      const surfaceTypes = [
+        'primary',
+        'accent',
+        'neutral',
+        'cta',
+        'action',
+        'navigation',
+      ];
 
       surfaceTypes.forEach(type => {
-        // surface-primary, surface-accent, surface-neutral
+        // surface-primary, surface-accent, surface-neutral, surface-cta
         surfaceUtilities[`.surface-${type}`] = {
           'background-color': `hsl(var(--surface-${type}))`,
           color: `hsl(var(--surface-${type}-text))`,
           transition: 'background-color 0.2s ease, color 0.2s ease',
         };
-
-        // ホバー効果（明度を調整して視認性を確保）
-        // surfaceUtilities[`.surface-${type}:hover`] = {
-        //   'background-color': `hsl(var(--surface-${type}) / 0.8)`,
-        //   filter: 'brightness(1.1)',
-        // };
       });
+
+      // 🔧 明示的にsurface-ctaクラスを追加（デバッグ用）
+      surfaceUtilities['.surface-cta'] = {
+        'background-color': 'hsl(var(--surface-cta))',
+        color: 'hsl(var(--surface-cta-text))',
+        transition: 'background-color 0.2s ease, color 0.2s ease',
+      };
 
       addUtilities(surfaceUtilities);
     },
