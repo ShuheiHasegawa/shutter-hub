@@ -4,9 +4,10 @@ import { Suspense, useState, useEffect } from 'react';
 import { PhotoSessionList } from '@/components/photo-sessions/PhotoSessionList';
 import { PhotoSessionsSidebar } from '@/components/layout/PhotoSessionsSidebar';
 import { CompactFilterBar } from '@/components/photo-sessions/CompactFilterBar';
-import { DashboardLayout } from '@/components/layout/dashboard-layout';
+import { AuthenticatedLayout } from '@/components/layout/dashboard-layout';
+import { PageTitleHeader } from '@/components/ui/page-title-header';
 import { Button } from '@/components/ui/button';
-import { SidebarClose } from 'lucide-react';
+import { CameraIcon, SidebarClose } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { BookingType } from '@/types/database';
 
@@ -95,7 +96,7 @@ export default function PhotoSessionsPage() {
   // マウント前はサーバーサイド対応のため最小限のレンダリング
   if (!isMounted) {
     return (
-      <DashboardLayout>
+      <AuthenticatedLayout>
         <div className="space-y-6">
           <div className="flex justify-center items-center h-32">
             <div className="animate-spin-slow rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
@@ -104,13 +105,18 @@ export default function PhotoSessionsPage() {
             </span>
           </div>
         </div>
-      </DashboardLayout>
+      </AuthenticatedLayout>
     );
   }
 
   return (
-    <DashboardLayout>
+    <AuthenticatedLayout>
       <div>
+        <PageTitleHeader
+          title="撮影会一覧"
+          icon={<CameraIcon className="h-6 w-6" />}
+        />
+
         {/* スマホ・タブレット用コンパクトフィルター（XL画面未満のみ） */}
         <div className="xl:hidden">
           <CompactFilterBar
@@ -210,6 +216,6 @@ export default function PhotoSessionsPage() {
           </main>
         </div>
       </div>
-    </DashboardLayout>
+    </AuthenticatedLayout>
   );
 }

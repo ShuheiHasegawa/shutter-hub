@@ -36,7 +36,7 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
     <div className="flex h-screen bg-background">
       <Sidebar />
       <div className="w-full">
-        <AppHeader variant="authenticated" showPageTitle={true} />
+        <AppHeader variant="authenticated" />
         <main className="flex-1 overflow-y-auto p-2 pb-16 md:pb-6">
           {children}
         </main>
@@ -45,6 +45,3 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
     </div>
   );
 }
-
-// 後方互換性のためのエイリアス
-export const DashboardLayout = AuthenticatedLayout;

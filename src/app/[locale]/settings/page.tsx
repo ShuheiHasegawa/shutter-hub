@@ -5,7 +5,7 @@ import { logger } from '@/lib/utils/logger';
 import { getProfile } from '@/lib/auth/profile';
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { DashboardLayout } from '@/components/layout/dashboard-layout';
+import { AuthenticatedLayout } from '@/components/layout/dashboard-layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -205,12 +205,12 @@ export default function SettingsPage() {
 
   if (!user || !profile) {
     return (
-      <DashboardLayout>
+      <AuthenticatedLayout>
         <Alert variant="destructive">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>データの読み込みに失敗しました</AlertDescription>
         </Alert>
-      </DashboardLayout>
+      </AuthenticatedLayout>
     );
   }
 
@@ -228,7 +228,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <DashboardLayout>
+    <AuthenticatedLayout>
       <div className="space-y-6">
         {/* ヘッダー */}
         <div className="flex items-center justify-between">
@@ -709,6 +709,6 @@ export default function SettingsPage() {
           <Button onClick={handleSave}>設定を保存</Button>
         </div>
       </div>
-    </DashboardLayout>
+    </AuthenticatedLayout>
   );
 }

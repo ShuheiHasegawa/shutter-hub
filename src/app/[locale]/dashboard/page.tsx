@@ -5,7 +5,7 @@ import { logger } from '@/lib/utils/logger';
 import { getProfile } from '@/lib/auth/profile';
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
-import { DashboardLayout } from '@/components/layout/dashboard-layout';
+import { AuthenticatedLayout } from '@/components/layout/dashboard-layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -29,6 +29,7 @@ import {
 } from '@/app/actions/photo-sessions-calendar';
 import { adaptUpcomingEventsToCalendarData } from '@/lib/utils/calendar-data-adapter';
 import { CheckCircle, X } from 'lucide-react';
+import { PageTitleHeader } from '@/components/ui/page-title-header';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 
@@ -192,7 +193,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <DashboardLayout>
+    <AuthenticatedLayout>
       <div className="space-y-6">
         {/* 成功メッセージアラート */}
         {successMessage && (
@@ -211,6 +212,11 @@ export default function DashboardPage() {
             </AlertDescription>
           </Alert>
         )}
+
+        <PageTitleHeader
+          title="ダッシュボード"
+          description="あなたの統計情報を表示しています"
+        />
 
         {/* モデル向け招待通知 */}
         {profile.user_type === 'model' && <ModelInvitationNotifications />}
@@ -296,6 +302,6 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </AuthenticatedLayout>
   );
 }

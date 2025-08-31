@@ -1,7 +1,7 @@
 'use client';
 
 import { PhotoSessionList } from '@/components/photo-sessions/PhotoSessionList';
-import { DashboardLayout } from '@/components/layout/dashboard-layout';
+import { AuthenticatedLayout } from '@/components/layout/dashboard-layout';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
@@ -32,10 +32,10 @@ export default function MySessionsPage() {
   }
 
   return (
-    <DashboardLayout>
+    <AuthenticatedLayout>
       <div className="space-y-6">
         <PhotoSessionList organizerId={user.id} />
       </div>
-    </DashboardLayout>
+    </AuthenticatedLayout>
   );
 }

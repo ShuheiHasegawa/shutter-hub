@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { DashboardLayout } from '@/components/layout/dashboard-layout';
+import { AuthenticatedLayout } from '@/components/layout/dashboard-layout';
 import { CreatePostForm } from '@/components/social/CreatePostForm';
 import { PostCard } from '@/components/social/PostCard';
 
@@ -183,18 +183,18 @@ export default function TimelinePage() {
 
   if (!user) {
     return (
-      <DashboardLayout>
+      <AuthenticatedLayout>
         <div className="text-center py-12">
           <p className="text-muted-foreground">
             タイムラインを見るにはログインが必要です
           </p>
         </div>
-      </DashboardLayout>
+      </AuthenticatedLayout>
     );
   }
 
   return (
-    <DashboardLayout>
+    <AuthenticatedLayout>
       <div className="space-y-6">
         {/* デスクトップ用投稿作成ボタン */}
         <div className="hidden md:flex items-center justify-end">
@@ -638,6 +638,6 @@ export default function TimelinePage() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </AuthenticatedLayout>
   );
 }

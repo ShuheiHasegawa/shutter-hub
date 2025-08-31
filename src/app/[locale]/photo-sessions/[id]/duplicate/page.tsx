@@ -5,7 +5,7 @@ import { logger } from '@/lib/utils/logger';
 import { useAuth } from '@/hooks/useAuth';
 import { useParams, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { DashboardLayout } from '@/components/layout/dashboard-layout';
+import { AuthenticatedLayout } from '@/components/layout/dashboard-layout';
 import { PhotoSessionForm } from '@/components/photo-sessions/PhotoSessionForm';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -92,28 +92,28 @@ export default function DuplicatePhotoSessionPage() {
 
   if (error) {
     return (
-      <DashboardLayout>
+      <AuthenticatedLayout>
         <Alert variant="destructive">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>{error}</AlertDescription>
         </Alert>
-      </DashboardLayout>
+      </AuthenticatedLayout>
     );
   }
 
   if (!originalSession) {
     return (
-      <DashboardLayout>
+      <AuthenticatedLayout>
         <Alert>
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>撮影会が見つかりません</AlertDescription>
         </Alert>
-      </DashboardLayout>
+      </AuthenticatedLayout>
     );
   }
 
   return (
-    <DashboardLayout>
+    <AuthenticatedLayout>
       <div className="space-y-6">
         <Card>
           <CardHeader>
@@ -139,6 +139,6 @@ export default function DuplicatePhotoSessionPage() {
           </CardContent>
         </Card>
       </div>
-    </DashboardLayout>
+    </AuthenticatedLayout>
   );
 }

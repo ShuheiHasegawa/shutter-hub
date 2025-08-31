@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { MessagesLayout } from '@/components/social/MessagesLayout';
-import { DashboardLayout } from '@/components/layout/dashboard-layout';
+import { AuthenticatedLayout } from '@/components/layout/dashboard-layout';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('social.messaging');
@@ -14,8 +14,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default function MessagesPage() {
   return (
-    <DashboardLayout>
+    <AuthenticatedLayout>
       <MessagesLayout />
-    </DashboardLayout>
+    </AuthenticatedLayout>
   );
 }

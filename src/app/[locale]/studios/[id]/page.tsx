@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, notFound } from 'next/navigation';
-import { DashboardLayout } from '@/components/layout/dashboard-layout';
+import { AuthenticatedLayout } from '@/components/layout/dashboard-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -127,7 +127,7 @@ export default function StudioDetailPage() {
 
   if (loading) {
     return (
-      <DashboardLayout>
+      <AuthenticatedLayout>
         <div className="container mx-auto px-4 py-6 max-w-6xl">
           <Skeleton className="h-8 w-64 mb-6" />
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -139,7 +139,7 @@ export default function StudioDetailPage() {
             </div>
           </div>
         </div>
-      </DashboardLayout>
+      </AuthenticatedLayout>
     );
   }
 
@@ -149,18 +149,18 @@ export default function StudioDetailPage() {
     }
 
     return (
-      <DashboardLayout>
+      <AuthenticatedLayout>
         <div className="container mx-auto px-4 py-6">
           <Alert>
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         </div>
-      </DashboardLayout>
+      </AuthenticatedLayout>
     );
   }
 
   return (
-    <DashboardLayout>
+    <AuthenticatedLayout>
       <div className="container mx-auto px-4 py-6 max-w-6xl">
         {/* ヘッダー */}
         <div className="mb-6">
@@ -507,6 +507,6 @@ export default function StudioDetailPage() {
           </TabsContent>
         </Tabs>
       </div>
-    </DashboardLayout>
+    </AuthenticatedLayout>
   );
 }

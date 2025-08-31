@@ -451,7 +451,7 @@ CREATE INDEX idx_xp_transactions_action_type ON xp_transactions(action_type);
 ```typescript
 // /gamification ページ
 const GamificationPage = () => (
-  <DashboardLayout>
+  <AuthenticatedLayout>
     <div className="space-y-6">
       <GamificationHeader />
       
@@ -489,7 +489,7 @@ const GamificationPage = () => (
         </TabsContent>
       </Tabs>
     </div>
-  </DashboardLayout>
+  </AuthenticatedLayout>
 );
 ```
 

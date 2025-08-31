@@ -2,7 +2,7 @@
 
 import { useProfile } from '@/hooks/useProfile';
 import { OrganizerModelManagement } from '@/components/profile/organizer/OrganizerModelManagement';
-import { DashboardLayout } from '@/components/layout/dashboard-layout';
+import { AuthenticatedLayout } from '@/components/layout/dashboard-layout';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Shield } from 'lucide-react';
@@ -16,21 +16,21 @@ export default function ModelsPage() {
   // プロフィール読み込み中
   if (profileLoading) {
     return (
-      <DashboardLayout>
+      <AuthenticatedLayout>
         <div className="container mx-auto px-4 py-8">
           <div className="space-y-6">
             <Skeleton className="h-8 w-48" />
             <Skeleton className="h-96 w-full" />
           </div>
         </div>
-      </DashboardLayout>
+      </AuthenticatedLayout>
     );
   }
 
   // 運営権限なし
   if (!isOrganizer) {
     return (
-      <DashboardLayout>
+      <AuthenticatedLayout>
         <div className="container mx-auto px-4 py-8">
           <Alert>
             <Shield className="h-4 w-4" />
@@ -39,12 +39,12 @@ export default function ModelsPage() {
             </AlertDescription>
           </Alert>
         </div>
-      </DashboardLayout>
+      </AuthenticatedLayout>
     );
   }
 
   return (
-    <DashboardLayout>
+    <AuthenticatedLayout>
       <div className="container mx-auto px-4 py-8">
         <div className="space-y-6">
           <div>
@@ -63,6 +63,6 @@ export default function ModelsPage() {
           />
         </div>
       </div>
-    </DashboardLayout>
+    </AuthenticatedLayout>
   );
 }
