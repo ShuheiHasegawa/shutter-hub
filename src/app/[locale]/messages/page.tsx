@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { MessagesLayout } from '@/components/social/MessagesLayout';
-import { AuthenticatedLayout } from '@/components/layout/dashboard-layout';
+import { AuthenticatedLayout } from '@/components/layout/authenticated-layout';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('social.messaging');

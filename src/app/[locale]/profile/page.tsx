@@ -5,7 +5,7 @@ import { logger } from '@/lib/utils/logger';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { AuthenticatedLayout } from '@/components/layout/dashboard-layout';
+import { AuthenticatedLayout } from '@/components/layout/authenticated-layout';
 import { UserProfileCard } from '@/components/profile/UserProfileCard';
 // import { UserRatingStats } from '@/components/profile/UserRatingStats';
 import { UserReviewList } from '@/components/profile/UserReviewList';
@@ -128,7 +128,7 @@ export default function ProfilePage() {
     };
 
     loadProfileData();
-  }, [user]);
+  }, [user, loading, router]);
 
   if (loading) {
     return (

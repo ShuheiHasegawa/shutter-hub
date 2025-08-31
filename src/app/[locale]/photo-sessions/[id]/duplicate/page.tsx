@@ -5,7 +5,7 @@ import { logger } from '@/lib/utils/logger';
 import { useAuth } from '@/hooks/useAuth';
 import { useParams, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { AuthenticatedLayout } from '@/components/layout/dashboard-layout';
+import { AuthenticatedLayout } from '@/components/layout/authenticated-layout';
 import { PhotoSessionForm } from '@/components/photo-sessions/PhotoSessionForm';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';

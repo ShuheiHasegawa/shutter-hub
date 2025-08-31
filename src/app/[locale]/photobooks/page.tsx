@@ -13,7 +13,7 @@ import {
   Trash2,
   MoreVertical,
 } from 'lucide-react';
-import { AuthenticatedLayout } from '@/components/layout/dashboard-layout';
+import { AuthenticatedLayout } from '@/components/layout/authenticated-layout';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -21,6 +21,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { PageTitleHeader } from '@/components/ui/page-title-header';
+import { BookIcon } from 'lucide-react';
 
 export default function PhotobooksPage() {
   // サンプルフォトブックを配列として扱う（本棚表示のため）
@@ -28,7 +30,11 @@ export default function PhotobooksPage() {
 
   return (
     <AuthenticatedLayout>
-      <div className="space-y-6">
+      <div>
+        <PageTitleHeader
+          title="フォトブック"
+          icon={<BookIcon className="h-6 w-6" />}
+        />
         {/* フォトブックについてのカード */}
         <div className="brounded-lg p-4 border">
           <h3 className="text-lg font-semibold mb-2">フォトブックについて</h3>

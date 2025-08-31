@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -32,9 +32,9 @@ import PhotoSessionSlotForm from '@/components/photo-sessions/PhotoSessionSlotFo
 import { ModelSelectionForm } from '@/components/photo-sessions/ModelSelectionForm';
 import { Label } from '@/components/ui/label';
 import { FormattedDateTime } from '@/components/ui/formatted-display';
+import { PageTitleHeader } from '@/components/ui/page-title-header';
 // PriceInput は不要（スロットで料金設定するため）
-import { Check } from 'lucide-react';
-
+import { Check, CameraIcon } from 'lucide-react';
 interface PhotoSessionFormProps {
   initialData?: PhotoSessionWithOrganizer;
   isEditing?: boolean;
@@ -374,409 +374,415 @@ export function PhotoSessionForm({
   };
 
   return (
-    <Card className="w-full max-w-4xl mx-auto">
-      <CardHeader>
-        <CardTitle className="text-center">
-          {isDuplicating
+    <>
+      <PageTitleHeader
+        title={
+          isDuplicating
             ? t('form.duplicateTitle')
             : isEditing
               ? t('form.editTitle')
-              : t('form.createTitle')}
-        </CardTitle>
-        <p className="text-center text-muted-foreground">
-          {isDuplicating
-            ? t('form.duplicateDescription')
-            : isEditing
-              ? t('form.editDescription')
-              : t('form.createDescription')}
-        </p>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* 画像アップロード */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">イメージ画像</h3>
-            <ImageUpload
-              photoSessionId={initialData?.id || 'temp'}
-              initialImages={formData.image_urls}
-              onImagesChange={handleImageUrlsChange}
-              maxImages={5}
-              disabled={isLoading}
-            />
-          </div>
-
-          {/* 基本情報 */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">{t('form.basicInfo')}</h3>
-
-            <div>
-              <label htmlFor="title" className="block text-sm font-medium mb-2">
-                {t('form.titleLabel')} {t('form.required')}
-              </label>
-              <Input
-                id="title"
-                name="title"
-                value={formData.title}
-                onChange={handleInputChange}
-                placeholder={t('form.titlePlaceholder')}
-                required
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="description"
-                className="block text-sm font-medium mb-2"
-              >
-                {t('form.descriptionLabel')}
-              </label>
-              <Textarea
-                id="description"
-                name="description"
-                value={formData.description}
-                onChange={handleInputChange}
-                placeholder={t('form.descriptionPlaceholder')}
-                rows={4}
-              />
-            </div>
-          </div>
-
-          {/* 場所情報 */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">{t('form.locationInfo')}</h3>
-
-            <div>
-              <label
-                htmlFor="location"
-                className="block text-sm font-medium mb-2"
-              >
-                {t('form.locationLabel')} {t('form.required')}
-              </label>
-              <Input
-                id="location"
-                name="location"
-                value={formData.location}
-                onChange={handleInputChange}
-                placeholder={t('form.locationPlaceholder')}
-                required
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="address"
-                className="block text-sm font-medium mb-2"
-              >
-                {t('form.addressLabel')}
-              </label>
-              <Input
-                id="address"
-                name="address"
-                value={formData.address}
-                onChange={handleInputChange}
-                placeholder={t('form.addressPlaceholder')}
-              />
-            </div>
-          </div>
-
-          {/* 日時情報 */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">{t('form.dateTimeInfo')}</h3>
-
-            {hasSlots ? (
-              // 撮影枠がある場合は自動計算された日時を表示
-              <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                <div className="flex items-start space-x-2">
-                  <div className="text-blue-600 dark:text-blue-400 mt-0.5">
-                    <Check className="h-5 w-5 text-success" />
-                  </div>
-                  <div className="text-sm text-blue-700 dark:text-blue-300">
-                    <p className="font-medium mb-2">
-                      撮影枠から自動計算されます
-                    </p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-xs font-medium mb-1">開始日時</p>
-                        <p className="text-sm font-mono bg-blue-100 dark:bg-blue-800 px-2 py-1 rounded">
-                          {formData.start_time ? (
-                            <FormattedDateTime
-                              value={formData.start_time}
-                              format="datetime-long"
-                            />
-                          ) : (
-                            '撮影枠を設定してください'
-                          )}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-xs font-medium mb-1">終了日時</p>
-                        <p className="text-sm font-mono bg-blue-100 dark:bg-blue-800 px-2 py-1 rounded">
-                          {formData.end_time ? (
-                            <FormattedDateTime
-                              value={formData.end_time}
-                              format="datetime-long"
-                            />
-                          ) : (
-                            '撮影枠を設定してください'
-                          )}
-                        </p>
-                      </div>
-                    </div>
-                    <p className="text-xs mt-2 opacity-75">
-                      開始日時は最初の撮影枠の開始時刻、終了日時は最後の撮影枠の終了時刻が自動設定されます
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              // 撮影枠がない場合は手動入力
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label
-                    htmlFor="start_time"
-                    className="block text-sm font-medium mb-2"
-                  >
-                    {t('form.startTimeLabel')} {t('form.required')}
-                  </label>
-                  <Input
-                    id="start_time"
-                    name="start_time"
-                    type="datetime-local"
-                    value={formData.start_time}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="end_time"
-                    className="block text-sm font-medium mb-2"
-                  >
-                    {t('form.endTimeLabel')} {t('form.required')}
-                  </label>
-                  <Input
-                    id="end_time"
-                    name="end_time"
-                    type="datetime-local"
-                    value={formData.end_time}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* 参加者・料金情報は撮影枠で設定するため削除 */}
-
-          {/* 運営アカウントのみ：モデル選択セクション */}
-          {isOrganizer && (
+              : t('form.createTitle')
+        }
+        icon={<CameraIcon className="h-6 w-6" />}
+      />
+      <Card className="w-full max-w-4xl mx-auto">
+        <CardContent className="mt-4">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* 画像アップロード */}
             <div className="space-y-4">
-              <h3 className="text-lg font-medium">出演モデル設定</h3>
-              <p className="text-sm text-muted-foreground">
-                各モデルを検索して追加し、個別に料金を設定してください（最大
-                {MAX_MODELS}人）
-              </p>
-
-              <ModelSelectionForm
-                selectedModels={selectedModels}
-                onModelsChange={setSelectedModels}
-                maxModels={MAX_MODELS}
+              <h3 className="text-lg font-medium">イメージ画像</h3>
+              <ImageUpload
+                photoSessionId={initialData?.id || 'temp'}
+                initialImages={formData.image_urls}
+                onImagesChange={handleImageUrlsChange}
+                maxImages={5}
                 disabled={isLoading}
               />
             </div>
-          )}
 
-          {/* 予約方式選択 */}
-          <BookingTypeSelector
-            value={formData.booking_type}
-            onChange={handleBookingTypeChange}
-            disabled={isLoading}
-          />
+            {/* 基本情報 */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">{t('form.basicInfo')}</h3>
 
-          {/* 予約設定 */}
-          <BookingSettingsForm
-            bookingType={formData.booking_type}
-            settings={bookingSettings}
-            onChange={setBookingSettings}
-            disabled={isLoading}
-          />
-
-          {/* 複数予約許可設定 */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">
-              {t('form.multipleBookingSettings')}
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              {t('form.multipleBookingDescription')}
-            </p>
-
-            <div className="flex items-center justify-between rounded-lg border p-4">
-              <div className="space-y-0.5">
-                <label className="text-base font-medium">
-                  {t('form.allowMultipleBookings')}
+              <div>
+                <label
+                  htmlFor="title"
+                  className="block text-sm font-medium mb-2"
+                >
+                  {t('form.titleLabel')} {t('form.required')}
                 </label>
-                <p className="text-sm text-muted-foreground">
-                  {t('form.allowMultipleBookingsDescription')}
-                </p>
-                <div className="text-xs text-muted-foreground mt-2 space-y-1">
-                  <div>• {t('form.multipleBookingDisabled')}</div>
-                  <div>• {t('form.multipleBookingEnabled')}</div>
-                </div>
-              </div>
-              <Switch
-                checked={formData.allow_multiple_bookings}
-                onCheckedChange={checked =>
-                  handleSwitchChange('allow_multiple_bookings', checked)
-                }
-                disabled={isLoading}
-              />
-            </div>
-
-            {formData.allow_multiple_bookings && (
-              <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                <div className="flex items-start space-x-2">
-                  <div className="text-blue-600 dark:text-blue-400 mt-0.5">
-                    💡
-                  </div>
-                  <div className="text-sm text-blue-700 dark:text-blue-300">
-                    <p className="font-medium mb-1">
-                      {t('form.multipleBookingEnabledTitle')}
-                    </p>
-                    <ul className="space-y-1 text-xs">
-                      <li>• {t('form.multipleBookingFeature1')}</li>
-                      <li>• {t('form.multipleBookingFeature2')}</li>
-                      <li>• {t('form.multipleBookingFeature3')}</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* 撮影枠設定 */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">撮影枠設定</h3>
-            <p className="text-sm text-muted-foreground">
-              時間枠を細分化して、枠ごとに料金・衣装・参加者数を設定できます
-            </p>
-
-            <PhotoSessionSlotForm
-              photoSessionId={initialData?.id || 'temp'}
-              onSlotsChange={setPhotoSessionSlots}
-              baseDate={
-                formData.start_time
-                  ? formData.start_time.split('T')[0]
-                  : new Date().toISOString().split('T')[0]
-              }
-              allowMultipleBookings={formData.allow_multiple_bookings}
-            />
-          </div>
-
-          {/* 複数枠割引設定 - 複数予約が許可されている場合のみ表示 */}
-          {formData.allow_multiple_bookings && (
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium">複数枠割引設定</h3>
-              <p className="text-sm text-muted-foreground">
-                複数の撮影枠を予約した場合に適用される割引を設定できます
-              </p>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <Label htmlFor="multi_slot_discount_threshold">
-                    適用条件（枠数）
-                  </Label>
-                  <Input
-                    id="multi_slot_discount_threshold"
-                    type="number"
-                    min="2"
-                    max="10"
-                    placeholder="例: 2"
-                    className="mt-1"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    この枠数以上で割引適用
-                  </p>
-                </div>
-
-                <div>
-                  <Label htmlFor="multi_slot_discount_type">割引タイプ</Label>
-                  <select
-                    id="multi_slot_discount_type"
-                    className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                  >
-                    <option value="none">割引なし</option>
-                    <option value="percentage">パーセンテージ割引</option>
-                    <option value="fixed_amount">固定金額割引</option>
-                  </select>
-                </div>
-
-                <div>
-                  <Label htmlFor="multi_slot_discount_value">割引値</Label>
-                  <Input
-                    id="multi_slot_discount_value"
-                    type="number"
-                    min="0"
-                    placeholder="例: 10 または 1000"
-                    className="mt-1"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    %または円で入力
-                  </p>
-                </div>
+                <Input
+                  id="title"
+                  name="title"
+                  value={formData.title}
+                  onChange={handleInputChange}
+                  placeholder={t('form.titlePlaceholder')}
+                  required
+                />
               </div>
 
               <div>
-                <Label htmlFor="multi_slot_discount_description">
-                  割引説明
-                </Label>
+                <label
+                  htmlFor="description"
+                  className="block text-sm font-medium mb-2"
+                >
+                  {t('form.descriptionLabel')}
+                </label>
                 <Textarea
-                  id="multi_slot_discount_description"
-                  placeholder="例: 2枠以上のご予約で10%割引！"
-                  rows={2}
-                  className="mt-1"
+                  id="description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  placeholder={t('form.descriptionPlaceholder')}
+                  rows={4}
                 />
               </div>
             </div>
-          )}
 
-          {/* 公開設定 */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">{t('form.publishSettings')}</h3>
+            {/* 場所情報 */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">{t('form.locationInfo')}</h3>
 
-            <div className="flex items-center justify-between rounded-lg border p-4">
-              <div className="space-y-0.5">
-                <label className="text-base font-medium">
-                  {t('form.publishLabel')}
+              <div>
+                <label
+                  htmlFor="location"
+                  className="block text-sm font-medium mb-2"
+                >
+                  {t('form.locationLabel')} {t('form.required')}
                 </label>
-                <p className="text-sm text-muted-foreground">
-                  {t('form.publishDescription')}
-                </p>
+                <Input
+                  id="location"
+                  name="location"
+                  value={formData.location}
+                  onChange={handleInputChange}
+                  placeholder={t('form.locationPlaceholder')}
+                  required
+                />
               </div>
-              <Switch
-                checked={formData.is_published}
-                onCheckedChange={checked =>
-                  handleSwitchChange('is_published', checked)
+
+              <div>
+                <label
+                  htmlFor="address"
+                  className="block text-sm font-medium mb-2"
+                >
+                  {t('form.addressLabel')}
+                </label>
+                <Input
+                  id="address"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleInputChange}
+                  placeholder={t('form.addressPlaceholder')}
+                />
+              </div>
+            </div>
+
+            {/* 日時情報 */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">{t('form.dateTimeInfo')}</h3>
+
+              {hasSlots ? (
+                // 撮影枠がある場合は自動計算された日時を表示
+                <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <div className="flex items-start space-x-2">
+                    <div className="text-blue-600 dark:text-blue-400 mt-0.5">
+                      <Check className="h-5 w-5 text-success" />
+                    </div>
+                    <div className="text-sm text-blue-700 dark:text-blue-300">
+                      <p className="font-medium mb-2">
+                        撮影枠から自動計算されます
+                      </p>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-xs font-medium mb-1">開始日時</p>
+                          <p className="text-sm font-mono bg-blue-100 dark:bg-blue-800 px-2 py-1 rounded">
+                            {formData.start_time ? (
+                              <FormattedDateTime
+                                value={formData.start_time}
+                                format="datetime-long"
+                              />
+                            ) : (
+                              '撮影枠を設定してください'
+                            )}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium mb-1">終了日時</p>
+                          <p className="text-sm font-mono bg-blue-100 dark:bg-blue-800 px-2 py-1 rounded">
+                            {formData.end_time ? (
+                              <FormattedDateTime
+                                value={formData.end_time}
+                                format="datetime-long"
+                              />
+                            ) : (
+                              '撮影枠を設定してください'
+                            )}
+                          </p>
+                        </div>
+                      </div>
+                      <p className="text-xs mt-2 opacity-75">
+                        開始日時は最初の撮影枠の開始時刻、終了日時は最後の撮影枠の終了時刻が自動設定されます
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                // 撮影枠がない場合は手動入力
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label
+                      htmlFor="start_time"
+                      className="block text-sm font-medium mb-2"
+                    >
+                      {t('form.startTimeLabel')} {t('form.required')}
+                    </label>
+                    <Input
+                      id="start_time"
+                      name="start_time"
+                      type="datetime-local"
+                      value={formData.start_time}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="end_time"
+                      className="block text-sm font-medium mb-2"
+                    >
+                      {t('form.endTimeLabel')} {t('form.required')}
+                    </label>
+                    <Input
+                      id="end_time"
+                      name="end_time"
+                      type="datetime-local"
+                      value={formData.end_time}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* 参加者・料金情報は撮影枠で設定するため削除 */}
+
+            {/* 運営アカウントのみ：モデル選択セクション */}
+            {isOrganizer && (
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium">出演モデル設定</h3>
+                <p className="text-sm text-muted-foreground">
+                  各モデルを検索して追加し、個別に料金を設定してください（最大
+                  {MAX_MODELS}人）
+                </p>
+
+                <ModelSelectionForm
+                  selectedModels={selectedModels}
+                  onModelsChange={setSelectedModels}
+                  maxModels={MAX_MODELS}
+                  disabled={isLoading}
+                />
+              </div>
+            )}
+
+            {/* 予約方式選択 */}
+            <BookingTypeSelector
+              value={formData.booking_type}
+              onChange={handleBookingTypeChange}
+              disabled={isLoading}
+            />
+
+            {/* 予約設定 */}
+            <BookingSettingsForm
+              bookingType={formData.booking_type}
+              settings={bookingSettings}
+              onChange={setBookingSettings}
+              disabled={isLoading}
+            />
+
+            {/* 複数予約許可設定 */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">
+                {t('form.multipleBookingSettings')}
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                {t('form.multipleBookingDescription')}
+              </p>
+
+              <div className="flex items-center justify-between rounded-lg border p-4">
+                <div className="space-y-0.5">
+                  <label className="text-base font-medium">
+                    {t('form.allowMultipleBookings')}
+                  </label>
+                  <p className="text-sm text-muted-foreground">
+                    {t('form.allowMultipleBookingsDescription')}
+                  </p>
+                  <div className="text-xs text-muted-foreground mt-2 space-y-1">
+                    <div>• {t('form.multipleBookingDisabled')}</div>
+                    <div>• {t('form.multipleBookingEnabled')}</div>
+                  </div>
+                </div>
+                <Switch
+                  checked={formData.allow_multiple_bookings}
+                  onCheckedChange={checked =>
+                    handleSwitchChange('allow_multiple_bookings', checked)
+                  }
+                  disabled={isLoading}
+                />
+              </div>
+
+              {formData.allow_multiple_bookings && (
+                <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <div className="flex items-start space-x-2">
+                    <div className="text-blue-600 dark:text-blue-400 mt-0.5">
+                      💡
+                    </div>
+                    <div className="text-sm text-blue-700 dark:text-blue-300">
+                      <p className="font-medium mb-1">
+                        {t('form.multipleBookingEnabledTitle')}
+                      </p>
+                      <ul className="space-y-1 text-xs">
+                        <li>• {t('form.multipleBookingFeature1')}</li>
+                        <li>• {t('form.multipleBookingFeature2')}</li>
+                        <li>• {t('form.multipleBookingFeature3')}</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* 撮影枠設定 */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">撮影枠設定</h3>
+              <p className="text-sm text-muted-foreground">
+                時間枠を細分化して、枠ごとに料金・衣装・参加者数を設定できます
+              </p>
+
+              <PhotoSessionSlotForm
+                photoSessionId={initialData?.id || 'temp'}
+                onSlotsChange={setPhotoSessionSlots}
+                baseDate={
+                  formData.start_time
+                    ? formData.start_time.split('T')[0]
+                    : new Date().toISOString().split('T')[0]
                 }
+                allowMultipleBookings={formData.allow_multiple_bookings}
               />
             </div>
-          </div>
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                {isEditing ? t('form.updating') : t('form.creating')}
-              </>
-            ) : isEditing ? (
-              t('form.updateButton')
-            ) : (
-              t('form.createButton')
+            {/* 複数枠割引設定 - 複数予約が許可されている場合のみ表示 */}
+            {formData.allow_multiple_bookings && (
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium">複数枠割引設定</h3>
+                <p className="text-sm text-muted-foreground">
+                  複数の撮影枠を予約した場合に適用される割引を設定できます
+                </p>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="multi_slot_discount_threshold">
+                      適用条件（枠数）
+                    </Label>
+                    <Input
+                      id="multi_slot_discount_threshold"
+                      type="number"
+                      min="2"
+                      max="10"
+                      placeholder="例: 2"
+                      className="mt-1"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      この枠数以上で割引適用
+                    </p>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="multi_slot_discount_type">割引タイプ</Label>
+                    <select
+                      id="multi_slot_discount_type"
+                      className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                    >
+                      <option value="none">割引なし</option>
+                      <option value="percentage">パーセンテージ割引</option>
+                      <option value="fixed_amount">固定金額割引</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="multi_slot_discount_value">割引値</Label>
+                    <Input
+                      id="multi_slot_discount_value"
+                      type="number"
+                      min="0"
+                      placeholder="例: 10 または 1000"
+                      className="mt-1"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      %または円で入力
+                    </p>
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="multi_slot_discount_description">
+                    割引説明
+                  </Label>
+                  <Textarea
+                    id="multi_slot_discount_description"
+                    placeholder="例: 2枠以上のご予約で10%割引！"
+                    rows={2}
+                    className="mt-1"
+                  />
+                </div>
+              </div>
             )}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+
+            {/* 公開設定 */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">
+                {t('form.publishSettings')}
+              </h3>
+
+              <div className="flex items-center justify-between rounded-lg border p-4">
+                <div className="space-y-0.5">
+                  <label className="text-base font-medium">
+                    {t('form.publishLabel')}
+                  </label>
+                  <p className="text-sm text-muted-foreground">
+                    {t('form.publishDescription')}
+                  </p>
+                </div>
+                <Switch
+                  checked={formData.is_published}
+                  onCheckedChange={checked =>
+                    handleSwitchChange('is_published', checked)
+                  }
+                />
+              </div>
+            </div>
+
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={isLoading}
+              variant="cta"
+            >
+              {isLoading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                  {isEditing ? t('form.updating') : t('form.creating')}
+                </>
+              ) : isEditing ? (
+                t('form.updateButton')
+              ) : (
+                t('form.createButton')
+              )}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </>
   );
 }

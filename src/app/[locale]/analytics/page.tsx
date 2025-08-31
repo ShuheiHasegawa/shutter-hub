@@ -5,7 +5,7 @@ import { logger } from '@/lib/utils/logger';
 import { getProfile } from '@/lib/auth/profile';
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { AuthenticatedLayout } from '@/components/layout/dashboard-layout';
+import { AuthenticatedLayout } from '@/components/layout/authenticated-layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { PageTitleHeader } from '@/components/ui/page-title-header';
 
 interface Profile {
   id: string;
@@ -749,18 +750,13 @@ export default function AnalyticsPage() {
 
   return (
     <AuthenticatedLayout>
-      <div className="space-y-6">
+      <PageTitleHeader
+        title="統計・分析"
+        icon={<BarChart3 className="h-6 w-6" />}
+      />
+      <div className="space-y-4">
         {/* ヘッダー */}
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold flex items-center gap-2">
-              <BarChart3 className="h-8 w-8" />
-              統計・分析
-            </h1>
-            <p className="text-muted-foreground mt-1">
-              {getUserTypeLabel(profile.user_type)}向けの詳細統計
-            </p>
-          </div>
           <Badge variant="secondary" className="text-sm">
             {getUserTypeLabel(profile.user_type)}
           </Badge>

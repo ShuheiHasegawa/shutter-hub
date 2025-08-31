@@ -86,11 +86,11 @@ export function PublicHeader() {
               即座撮影
             </NavLink>
             <NavLink
-              href="/photo-sessions"
+              href="/dashboard"
               className="text-sm font-medium transition-colors"
               variant="sideline"
             >
-              撮影会を探す
+              ダッシュボード
             </NavLink>
           </nav>
 

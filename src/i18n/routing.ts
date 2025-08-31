@@ -24,6 +24,10 @@ export const routing = defineRouting({
       ja: '/bookings',
       en: '/bookings',
     },
+    '/dashboard': {
+      ja: '/dashboard',
+      en: '/dashboard',
+    },
     '/instant': {
       ja: '/instant',
       en: '/instant',

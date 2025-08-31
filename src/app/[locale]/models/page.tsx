@@ -2,7 +2,7 @@
 
 import { useProfile } from '@/hooks/useProfile';
 import { OrganizerModelManagement } from '@/components/profile/organizer/OrganizerModelManagement';
-import { AuthenticatedLayout } from '@/components/layout/dashboard-layout';
+import { AuthenticatedLayout } from '@/components/layout/authenticated-layout';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Shield } from 'lucide-react';

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { AuthenticatedLayout } from '@/components/layout/dashboard-layout';
+import { AuthenticatedLayout } from '@/components/layout/authenticated-layout';
 import { CreatePostForm } from '@/components/social/CreatePostForm';
 import { PostCard } from '@/components/social/PostCard';
 
@@ -46,6 +46,8 @@ import {
 } from '@/app/actions/posts';
 import { TimelinePost, TrendingTopic, PostSearchFilters } from '@/types/social';
 import { toast } from 'sonner';
+import { PageTitleHeader } from '@/components/ui/page-title-header';
+import { UsersIcon } from 'lucide-react';
 
 export default function TimelinePage() {
   const { user } = useAuth();
@@ -195,12 +197,16 @@ export default function TimelinePage() {
 
   return (
     <AuthenticatedLayout>
-      <div className="space-y-6">
+      <div>
+        <PageTitleHeader
+          title="タイムライン"
+          icon={<UsersIcon className="h-6 w-6" />}
+        />
         {/* デスクトップ用投稿作成ボタン */}
         <div className="hidden md:flex items-center justify-end">
           <Dialog open={isCreatePostOpen} onOpenChange={setIsCreatePostOpen}>
             <DialogTrigger asChild>
-              <Button>
+              <Button variant="cta">
                 <Plus className="h-4 w-4 mr-2" />
                 投稿作成
               </Button>

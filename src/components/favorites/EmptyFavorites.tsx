@@ -103,6 +103,7 @@ export function EmptyFavorites({
             onClick={() => router.push(typeInfo.actionPath)}
             size="lg"
             className="bg-theme-primary text-theme-primary-foreground hover:bg-theme-primary/90"
+            variant="navigation"
           >
             <Plus className="h-5 w-5 mr-2" />
             {typeInfo.actionText}
@@ -112,18 +113,18 @@ export function EmptyFavorites({
           <div className="flex justify-center gap-4 pt-4">
             {type === 'studio' ? (
               <Button
-                variant="outline"
                 onClick={() => router.push('/studios')}
                 className="flex items-center gap-2"
+                variant="navigation"
               >
                 <Building2 className="h-4 w-4" />
                 {t('actions.exploreStudios')}
               </Button>
             ) : (
               <Button
-                variant="outline"
                 onClick={() => router.push('/photo-sessions')}
                 className="flex items-center gap-2"
+                variant="navigation"
               >
                 <Camera className="h-4 w-4" />
                 {t('actions.explorePhotoSessions')}

@@ -1,5 +1,5 @@
 import { PhotoSessionForm } from '@/components/photo-sessions/PhotoSessionForm';
-import { AuthenticatedLayout } from '@/components/layout/dashboard-layout';
+import { AuthenticatedLayout } from '@/components/layout/authenticated-layout';
 
 export default function CreatePhotoSessionPage() {
   return (

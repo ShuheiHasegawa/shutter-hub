@@ -1,12 +1,13 @@
 'use client';
 
-import { AuthenticatedLayout } from '@/components/layout/dashboard-layout';
+import { AuthenticatedLayout } from '@/components/layout/authenticated-layout';
 import { StudioCreateForm } from '@/components/studio/StudioCreateForm';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { PageTitleHeader } from '@/components/ui/page-title-header';
 import { useRouter } from 'next/navigation';
 import { ErrorBoundary } from 'react-error-boundary';
+import { BuildingIcon } from 'lucide-react';
 
 export default function CreateStudioPage() {
   const router = useRouter();
@@ -21,13 +22,12 @@ export default function CreateStudioPage() {
 
   return (
     <AuthenticatedLayout>
-      <div className="container mx-auto max-w-4xl">
+      <div>
         {/* ヘッダー */}
         <PageTitleHeader
-          title="新しいスタジオを追加"
-          description="スタジオの詳細情報を入力してください"
+          title="スタジオ作成"
+          icon={<BuildingIcon className="h-6 w-6" />}
           backButton={{ href: '/studios', variant: 'ghost' }}
-          className="mb-6"
         />
 
         {/* フォーム */}

@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { PhotoSessionDetail } from '@/components/photo-sessions/PhotoSessionDetail';
 import { LoadingCard } from '@/components/ui/loading-card';
-import { AuthenticatedLayout } from '@/components/layout/dashboard-layout';
+import { AuthenticatedLayout } from '@/components/layout/authenticated-layout';
 
 export default async function PhotoSessionPage({
   params,
