@@ -133,7 +133,7 @@ export function UpcomingEvents({ events, isLoading }: UpcomingEventsProps) {
             <p className="text-sm text-card-foreground mt-2">
               新しい撮影会を予約してみましょう。
             </p>
-            <Button className="mt-4" asChild>
+            <Button className="mt-4" value="navigation" asChild>
               <Link href="/ja/photo-sessions">撮影会を探す</Link>
             </Button>
           </div>
@@ -146,7 +146,7 @@ export function UpcomingEvents({ events, isLoading }: UpcomingEventsProps) {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-lg font-semibold">今後の予定</CardTitle>
-        <Button variant="ghost" size="sm" asChild>
+        <Button variant="ghost" size="sm" value="navigation" asChild>
           <Link href="/ja/bookings">
             すべて見る
             <ArrowRight className="h-4 w-4 ml-1" />

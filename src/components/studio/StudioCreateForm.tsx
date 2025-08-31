@@ -494,11 +494,11 @@ export function StudioCreateForm({
       {/* アクションボタン */}
       <div className="flex gap-4 justify-end">
         {onCancel && (
-          <Button type="button" variant="outline" onClick={onCancel}>
+          <Button type="button" variant="navigation" onClick={onCancel}>
             キャンセル
           </Button>
         )}
-        <Button type="submit" disabled={isSubmitting}>
+        <Button type="submit" disabled={isSubmitting} variant="cta">
           {isSubmitting ? '作成中...' : 'スタジオを作成'}
         </Button>
       </div>

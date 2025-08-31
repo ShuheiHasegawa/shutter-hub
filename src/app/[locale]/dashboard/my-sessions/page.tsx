@@ -1,10 +1,12 @@
 'use client';
 
 import { PhotoSessionList } from '@/components/photo-sessions/PhotoSessionList';
-import { AuthenticatedLayout } from '@/components/layout/dashboard-layout';
+import { AuthenticatedLayout } from '@/components/layout/authenticated-layout';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { PageTitleHeader } from '@/components/ui/page-title-header';
+import { CameraIcon } from 'lucide-react';
 
 export default function MySessionsPage() {
   const { user, loading } = useAuth();
@@ -34,6 +36,10 @@ export default function MySessionsPage() {
   return (
     <AuthenticatedLayout>
       <div className="space-y-6">
+        <PageTitleHeader
+          title="撮影会管理"
+          icon={<CameraIcon className="h-6 w-6" />}
+        />
         <PhotoSessionList organizerId={user.id} />
       </div>
     </AuthenticatedLayout>

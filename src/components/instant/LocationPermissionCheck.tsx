@@ -131,7 +131,7 @@ export function LocationPermissionCheck({
             <Button
               onClick={onRequestLocation}
               className="w-full"
-              variant="neutral"
+              variant="cta"
             >
               <MapPin className="h-4 w-4 mr-2" />
               位置情報を許可

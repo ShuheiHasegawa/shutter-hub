@@ -4,7 +4,7 @@ import { Suspense, useState, useEffect } from 'react';
 import { PhotoSessionList } from '@/components/photo-sessions/PhotoSessionList';
 import { PhotoSessionsSidebar } from '@/components/layout/PhotoSessionsSidebar';
 import { CompactFilterBar } from '@/components/photo-sessions/CompactFilterBar';
-import { AuthenticatedLayout } from '@/components/layout/dashboard-layout';
+import { AuthenticatedLayout } from '@/components/layout/authenticated-layout';
 import { PageTitleHeader } from '@/components/ui/page-title-header';
 import { Button } from '@/components/ui/button';
 import { CameraIcon, SidebarClose } from 'lucide-react';

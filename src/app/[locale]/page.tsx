@@ -187,7 +187,7 @@ export default function HomePage() {
               </h2>
               <p className="text-xl opacity-90">{t('cta.subtitle')}</p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button asChild size="lg" variant="primary">
+                <Button asChild size="lg" variant="cta">
                   <Link href="/auth/signup">{t('cta.getStarted')}</Link>
                 </Button>
                 <Button asChild size="lg" variant="neutral">

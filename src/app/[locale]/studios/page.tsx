@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { DashboardLayout } from '@/components/layout/dashboard-layout';
+import { AuthenticatedLayout } from '@/components/layout/authenticated-layout';
 import { StudiosList } from '@/components/studio/StudiosList';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,6 +19,8 @@ import { PlusIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { PREFECTURES } from '@/constants/japan';
 import { STUDIO_SORT_OPTIONS, DEFAULT_STUDIO_SEARCH } from '@/constants/studio';
 import Link from 'next/link';
+import { PageTitleHeader } from '@/components/ui/page-title-header';
+import { BuildingIcon } from 'lucide-react';
 
 export default function StudiosPage() {
   const searchParams = useSearchParams();
@@ -62,26 +64,20 @@ export default function StudiosPage() {
   };
 
   return (
-    <DashboardLayout>
-      <div className="container mx-auto px-4 py-6 space-y-6">
-        {/* ヘッダー */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h1 className="text-3xl font-bold">スタジオ一覧</h1>
-            <p className="text-theme-text-secondary mt-1">
-              撮影に最適なスタジオを見つけましょう
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Link href="/studios/create">
-              <Button className="flex items-center gap-2" variant="accent">
-                <PlusIcon className="w-4 h-4" />
-                新しいスタジオを追加
-              </Button>
-            </Link>
-          </div>
-        </div>
-
+    <AuthenticatedLayout>
+      <PageTitleHeader
+        title="スタジオ一覧"
+        icon={<BuildingIcon className="h-6 w-6" />}
+        actions={
+          <Link href="/studios/create">
+            <Button className="flex items-center gap-2" variant="cta">
+              <PlusIcon className="w-4 h-4" />
+              新しいスタジオを追加
+            </Button>
+          </Link>
+        }
+      />
+      <div className="container mx-auto px-4 space-y-6">
         {/* 検索・フィルター */}
         <Card>
           <CardHeader>
@@ -188,6 +184,6 @@ export default function StudiosPage() {
         {/* スタジオ一覧 */}
         <StudiosList filters={filters} triggerSearch={triggerSearch} />
       </div>
-    </DashboardLayout>
+    </AuthenticatedLayout>
   );
 }

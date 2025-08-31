@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
   CalendarIcon,
-  RefreshCwIcon,
   UsersIcon,
   TrendingUpIcon,
   ClockIcon,
@@ -291,20 +290,6 @@ export function BookingsList() {
 
   return (
     <div className="space-y-6">
-      {/* ヘッダーと更新ボタン */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{t('title')}</h1>
-        <Button
-          onClick={loadData}
-          variant="outline"
-          size="sm"
-          disabled={loading}
-        >
-          <RefreshCwIcon className="h-4 w-4 mr-2" />
-          {t('refresh')}
-        </Button>
-      </div>
-
       {/* 統計カード */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <Card>

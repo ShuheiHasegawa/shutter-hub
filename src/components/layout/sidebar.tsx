@@ -30,6 +30,7 @@ import {
   CreditCard,
   Map,
   Heart,
+  Zap,
 } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
 import {
@@ -78,6 +79,11 @@ export function Sidebar({ className }: SidebarProps) {
       icon: Home,
     },
     {
+      title: t('instant'),
+      href: '/instant',
+      icon: Zap,
+    },
+    {
       title: t('photoSessions'),
       icon: Camera,
       children: [
@@ -97,7 +103,7 @@ export function Sidebar({ className }: SidebarProps) {
           icon: Plus,
         },
         {
-          title: '自分の撮影会',
+          title: '撮影会管理',
           href: '/dashboard/my-sessions',
           icon: Camera,
         },
@@ -343,6 +349,11 @@ export function MobileSidebarTrigger() {
       icon: Home,
     },
     {
+      title: t('instant'),
+      href: '/instant',
+      icon: Zap,
+    },
+    {
       title: t('photoSessions'),
       icon: Camera,
       children: [
@@ -357,7 +368,7 @@ export function MobileSidebarTrigger() {
           icon: Plus,
         },
         {
-          title: '自分の撮影会',
+          title: '撮影会管理',
           href: '/dashboard/my-sessions',
           icon: Camera,
         },
