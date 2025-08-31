@@ -1,14 +1,14 @@
 'use client';
 
 import { StudioFavoritesContent } from '@/components/favorites/StudioFavoritesContent';
-import { DashboardLayout } from '@/components/layout/dashboard-layout';
+import { AuthenticatedLayout } from '@/components/layout/dashboard-layout';
 import { useTranslations } from 'next-intl';
 
 export default function StudioFavoritesPage() {
   const _t = useTranslations('favorites');
 
   return (
-    <DashboardLayout>
+    <AuthenticatedLayout>
       <div className="max-w-6xl mx-auto">
         {/* ページヘッダー */}
         <div className="bg-theme-background border-b border-theme-neutral/20 px-6 py-8 mb-8">
@@ -35,6 +35,6 @@ export default function StudioFavoritesPage() {
 
         <StudioFavoritesContent />
       </div>
-    </DashboardLayout>
+    </AuthenticatedLayout>
   );
 }

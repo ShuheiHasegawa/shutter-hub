@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { logger } from '@/lib/utils/logger';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-import { DashboardLayout } from '@/components/layout/dashboard-layout';
+import { AuthenticatedLayout } from '@/components/layout/dashboard-layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -241,20 +241,20 @@ export default function UserProfilePage() {
 
   if (isLoading) {
     return (
-      <DashboardLayout>
+      <AuthenticatedLayout>
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
             <p className="text-muted-foreground">プロフィールを読み込み中...</p>
           </div>
         </div>
-      </DashboardLayout>
+      </AuthenticatedLayout>
     );
   }
 
   if (!profile) {
     return (
-      <DashboardLayout>
+      <AuthenticatedLayout>
         <div className="text-center py-12">
           <UserX className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
           <h1 className="text-2xl font-bold mb-2">ユーザーが見つかりません</h1>
@@ -263,12 +263,12 @@ export default function UserProfilePage() {
           </p>
           <BackButton href="/" variant="outline" ariaLabel="ホームに戻る" />
         </div>
-      </DashboardLayout>
+      </AuthenticatedLayout>
     );
   }
 
   return (
-    <DashboardLayout>
+    <AuthenticatedLayout>
       <div className="space-y-6">
         {/* ヘッダー */}
         <div className="flex items-center justify-between">
@@ -542,6 +542,6 @@ export default function UserProfilePage() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </AuthenticatedLayout>
   );
 }

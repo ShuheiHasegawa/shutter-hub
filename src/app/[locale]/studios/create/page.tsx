@@ -1,11 +1,10 @@
 'use client';
 
-import { DashboardLayout } from '@/components/layout/dashboard-layout';
+import { AuthenticatedLayout } from '@/components/layout/dashboard-layout';
 import { StudioCreateForm } from '@/components/studio/StudioCreateForm';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
+import { PageTitleHeader } from '@/components/ui/page-title-header';
 import { useRouter } from 'next/navigation';
 import { ErrorBoundary } from 'react-error-boundary';
 
@@ -21,17 +20,15 @@ export default function CreateStudioPage() {
   };
 
   return (
-    <DashboardLayout>
+    <AuthenticatedLayout>
       <div className="container mx-auto max-w-4xl">
         {/* ヘッダー */}
-        <div className="mb-6">
-          <Link href="/studios">
-            <Button variant="ghost" className="mb-4">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              スタジオ一覧に戻る
-            </Button>
-          </Link>
-        </div>
+        <PageTitleHeader
+          title="新しいスタジオを追加"
+          description="スタジオの詳細情報を入力してください"
+          backButton={{ href: '/studios', variant: 'ghost' }}
+          className="mb-6"
+        />
 
         {/* フォーム */}
         <Card>
@@ -65,6 +62,6 @@ export default function CreateStudioPage() {
           </CardContent>
         </Card>
       </div>
-    </DashboardLayout>
+    </AuthenticatedLayout>
   );
 }

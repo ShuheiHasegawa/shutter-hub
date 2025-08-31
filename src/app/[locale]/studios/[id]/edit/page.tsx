@@ -2,12 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { DashboardLayout } from '@/components/layout/dashboard-layout';
-import { Button } from '@/components/ui/button';
+import { AuthenticatedLayout } from '@/components/layout/dashboard-layout';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
+import { PageTitleHeader } from '@/components/ui/page-title-header';
 import { getStudioDetailAction } from '@/app/actions/studio';
 import { StudioEditForm } from '@/components/studio/StudioEditForm';
 import { StudioWithStats } from '@/types/database';
@@ -56,7 +54,7 @@ export default function StudioEditPage() {
 
   if (loading) {
     return (
-      <DashboardLayout>
+      <AuthenticatedLayout>
         <div className="container mx-auto px-4 py-6 max-w-4xl">
           <Skeleton className="h-8 w-64 mb-6" />
           <div className="space-y-6">
@@ -65,13 +63,13 @@ export default function StudioEditPage() {
             <Skeleton className="h-40 w-full" />
           </div>
         </div>
-      </DashboardLayout>
+      </AuthenticatedLayout>
     );
   }
 
   if (error || !studio) {
     return (
-      <DashboardLayout>
+      <AuthenticatedLayout>
         <div className="container mx-auto px-4 py-6 max-w-4xl">
           <Alert>
             <AlertDescription>
@@ -79,27 +77,20 @@ export default function StudioEditPage() {
             </AlertDescription>
           </Alert>
         </div>
-      </DashboardLayout>
+      </AuthenticatedLayout>
     );
   }
 
   return (
-    <DashboardLayout>
+    <AuthenticatedLayout>
       <div className="container mx-auto px-4 py-6 max-w-4xl">
         {/* ヘッダー */}
-        <div className="mb-6">
-          <Link href={`/studios/${studioId}`}>
-            <Button variant="ghost" className="mb-4">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              スタジオ詳細に戻る
-            </Button>
-          </Link>
-
-          <h1 className="text-3xl font-bold">スタジオ編集</h1>
-          <p className="text-theme-text-secondary mt-2">
-            {studio.name}の情報を編集します
-          </p>
-        </div>
+        <PageTitleHeader
+          title="スタジオ編集"
+          description={`${studio.name}の情報を編集します`}
+          backButton={{ href: `/studios/${studioId}`, variant: 'ghost' }}
+          className="mb-6"
+        />
 
         {/* 編集フォーム */}
         <StudioEditForm
@@ -108,6 +99,6 @@ export default function StudioEditPage() {
           onCancel={handleCancel}
         />
       </div>
-    </DashboardLayout>
+    </AuthenticatedLayout>
   );
 }

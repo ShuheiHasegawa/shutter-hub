@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { logger } from '@/lib/utils/logger';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-import { DashboardLayout } from '@/components/layout/dashboard-layout';
+import { AuthenticatedLayout } from '@/components/layout/dashboard-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -129,16 +129,16 @@ export default function UserSearchPage() {
 
   if (!user) {
     return (
-      <DashboardLayout>
+      <AuthenticatedLayout>
         <div className="text-center">
           <p>ログインが必要です</p>
         </div>
-      </DashboardLayout>
+      </AuthenticatedLayout>
     );
   }
 
   return (
-    <DashboardLayout>
+    <AuthenticatedLayout>
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold">ユーザー検索</h1>
@@ -224,7 +224,7 @@ export default function UserSearchPage() {
           </Card>
         </div>
       </div>
-    </DashboardLayout>
+    </AuthenticatedLayout>
   );
 }
 

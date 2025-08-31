@@ -4,12 +4,12 @@ import { useAuth } from '@/hooks/useAuth';
 import { logger } from '@/lib/utils/logger';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { DashboardLayout } from '@/components/layout/dashboard-layout';
+import { AuthenticatedLayout } from '@/components/layout/dashboard-layout';
 import { ProfileEditForm } from '@/components/profile/ProfileEditForm';
 import { getProfile } from '@/lib/auth/profile';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { BackButton } from '@/components/ui/back-button';
+import { PageTitleHeader } from '@/components/ui/page-title-header';
 import { AlertCircle } from 'lucide-react';
 
 interface Profile {
@@ -78,23 +78,19 @@ export default function EditProfilePage() {
 
   if (authLoading || profileLoading) {
     return (
-      <DashboardLayout>
+      <AuthenticatedLayout>
         <div className="space-y-6">
-          <div className="flex items-center gap-4">
-            <BackButton href="/profile" variant="ghost" size="sm" />
-            <div>
-              <Skeleton className="h-8 w-48 mb-2" />
-              <Skeleton className="h-4 w-64" />
-            </div>
-          </div>
-
+          <PageTitleHeader
+            title="プロフィール編集"
+            description="読み込み中..."
+            backButton={{ href: '/profile', variant: 'ghost', size: 'sm' }}
+          />
           <Card>
-            <CardContent className="p-6">
+            <CardContent>
               <div className="space-y-6">
                 <div className="flex justify-center">
                   <Skeleton className="h-24 w-24 rounded-full" />
                 </div>
-
                 <div className="space-y-4">
                   <div>
                     <Skeleton className="h-4 w-24 mb-2" />
@@ -113,7 +109,7 @@ export default function EditProfilePage() {
             </CardContent>
           </Card>
         </div>
-      </DashboardLayout>
+      </AuthenticatedLayout>
     );
   }
 
@@ -123,15 +119,13 @@ export default function EditProfilePage() {
 
   if (error) {
     return (
-      <DashboardLayout>
+      <AuthenticatedLayout>
         <div className="space-y-6">
-          <div className="flex items-center gap-4">
-            <BackButton href="/profile" variant="ghost" size="sm" />
-            <div>
-              <h1 className="text-2xl font-bold">プロフィール編集</h1>
-              <p className="text-muted-foreground">エラーが発生しました</p>
-            </div>
-          </div>
+          <PageTitleHeader
+            title="プロフィール編集"
+            description="エラーが発生しました"
+            backButton={{ href: '/profile', variant: 'ghost', size: 'sm' }}
+          />
 
           <Card>
             <CardContent className="p-6">
@@ -142,23 +136,19 @@ export default function EditProfilePage() {
             </CardContent>
           </Card>
         </div>
-      </DashboardLayout>
+      </AuthenticatedLayout>
     );
   }
 
   if (!profile) {
     return (
-      <DashboardLayout>
+      <AuthenticatedLayout>
         <div className="space-y-6">
-          <div className="flex items-center gap-4">
-            <BackButton href="/profile" variant="ghost" size="sm" />
-            <div>
-              <h1 className="text-2xl font-bold">プロフィール編集</h1>
-              <p className="text-muted-foreground">
-                プロフィールが見つかりません
-              </p>
-            </div>
-          </div>
+          <PageTitleHeader
+            title="プロフィール編集"
+            description="プロフィールが見つかりません"
+            backButton={{ href: '/profile', variant: 'ghost', size: 'sm' }}
+          />
 
           <Card>
             <CardContent className="p-6">
@@ -169,28 +159,24 @@ export default function EditProfilePage() {
             </CardContent>
           </Card>
         </div>
-      </DashboardLayout>
+      </AuthenticatedLayout>
     );
   }
 
   return (
-    <DashboardLayout>
+    <AuthenticatedLayout>
       <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <BackButton href="/profile" variant="ghost" size="sm" />
-          <div>
-            <h1 className="text-2xl font-bold">プロフィール編集</h1>
-            <p className="text-muted-foreground">
-              あなたのプロフィール情報を編集してください
-            </p>
-          </div>
-        </div>
+        <PageTitleHeader
+          title="プロフィール編集"
+          description="あなたのプロフィール情報を編集してください"
+          backButton={{ href: '/profile', variant: 'ghost', size: 'sm' }}
+        />
 
         {/* プロフィール編集セクション */}
         <div className="max-w-4xl">
           <ProfileEditForm profile={profile} />
         </div>
       </div>
-    </DashboardLayout>
+    </AuthenticatedLayout>
   );
 }

@@ -5,7 +5,7 @@ import { logger } from '@/lib/utils/logger';
 import { useAuth } from '@/hooks/useAuth';
 import { useParams, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { DashboardLayout } from '@/components/layout/dashboard-layout';
+import { AuthenticatedLayout } from '@/components/layout/dashboard-layout';
 import { PhotoSessionForm } from '@/components/photo-sessions/PhotoSessionForm';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
@@ -123,19 +123,19 @@ export default function EditPhotoSessionPage() {
 
   if (error || !session) {
     return (
-      <DashboardLayout>
+      <AuthenticatedLayout>
         <Alert variant="destructive">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
             {error || '撮影会が見つかりません'}
           </AlertDescription>
         </Alert>
-      </DashboardLayout>
+      </AuthenticatedLayout>
     );
   }
 
   return (
-    <DashboardLayout>
+    <AuthenticatedLayout>
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
           <Button
@@ -165,6 +165,6 @@ export default function EditPhotoSessionPage() {
           onSuccess={() => router.push(`/ja/photo-sessions/${sessionId}`)}
         />
       </div>
-    </DashboardLayout>
+    </AuthenticatedLayout>
   );
 }

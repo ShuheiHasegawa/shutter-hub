@@ -5,7 +5,7 @@ import { logger } from '@/lib/utils/logger';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { DashboardLayout } from '@/components/layout/dashboard-layout';
+import { AuthenticatedLayout } from '@/components/layout/dashboard-layout';
 import { UserProfileCard } from '@/components/profile/UserProfileCard';
 // import { UserRatingStats } from '@/components/profile/UserRatingStats';
 import { UserReviewList } from '@/components/profile/UserReviewList';
@@ -146,7 +146,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <DashboardLayout>
+    <AuthenticatedLayout>
       <div className="space-y-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* プロフィール情報 */}
@@ -258,6 +258,6 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </AuthenticatedLayout>
   );
 }

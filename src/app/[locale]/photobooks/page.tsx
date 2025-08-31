@@ -13,7 +13,7 @@ import {
   Trash2,
   MoreVertical,
 } from 'lucide-react';
-import { DashboardLayout } from '@/components/layout/dashboard-layout';
+import { AuthenticatedLayout } from '@/components/layout/dashboard-layout';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -27,7 +27,7 @@ export default function PhotobooksPage() {
   const samplePhotobooks = [samplePhotobook];
 
   return (
-    <DashboardLayout>
+    <AuthenticatedLayout>
       <div className="space-y-6">
         {/* フォトブックについてのカード */}
         <div className="brounded-lg p-4 border">
@@ -184,6 +184,6 @@ export default function PhotobooksPage() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </AuthenticatedLayout>
   );
 }

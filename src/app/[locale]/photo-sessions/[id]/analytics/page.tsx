@@ -1,6 +1,6 @@
 import { notFound, redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { DashboardLayout } from '@/components/layout/dashboard-layout';
+import { AuthenticatedLayout } from '@/components/layout/dashboard-layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { getPhotoSessionParticipants } from '@/app/actions/photo-session-participants';
 import { formatDateLocalized, formatTimeLocalized } from '@/lib/utils/date';
-import { BackButton } from '@/components/ui/back-button';
+import { PageTitleHeader } from '@/components/ui/page-title-header';
 
 interface AnalyticsPageProps {
   params: Promise<{ locale: string; id: string }>;
@@ -129,19 +129,21 @@ export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
   const isPast = endDate <= now;
 
   return (
-    <DashboardLayout>
+    <AuthenticatedLayout>
       <div>
         {/* ヘッダー */}
-        <div className="flex items-center gap-4 py-4">
-          <BackButton href="/photo-sessions" variant="outline" />
-          <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <BarChart3Icon className="h-6 w-6" />
-              分析・統計
-            </h1>
-            <p className="text-muted-foreground">{session.title}</p>
-          </div>
-        </div>
+        <PageTitleHeader
+          title="分析・統計"
+          description={session.title}
+          icon={<BarChart3Icon className="h-6 w-6" />}
+          backButton={{ href: '/photo-sessions', variant: 'outline' }}
+          actions={
+            <Button variant="action">
+              <BarChart3Icon className="h-4 w-4 mr-2" />
+              詳細レポートをダウンロード
+            </Button>
+          }
+        />
 
         {/* 概要統計 */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -457,6 +459,6 @@ export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
           </CardContent>
         </Card>
       </div>
-    </DashboardLayout>
+    </AuthenticatedLayout>
   );
 }
