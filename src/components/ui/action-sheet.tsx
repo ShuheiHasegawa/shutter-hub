@@ -16,11 +16,17 @@ export interface ActionButton {
   label: string;
   variant?:
     | 'default'
+    | 'primary'
+    | 'accent'
+    | 'neutral'
     | 'destructive'
     | 'outline'
     | 'secondary'
     | 'ghost'
-    | 'link';
+    | 'link'
+    | 'cta'
+    | 'action'
+    | 'navigation';
   size?: 'default' | 'sm' | 'lg' | 'icon';
   onClick: () => void;
   disabled?: boolean;

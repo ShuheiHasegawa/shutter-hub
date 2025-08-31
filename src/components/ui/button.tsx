@@ -1,3 +1,33 @@
+/**
+ * 📚 Button Component - 用途別バリアント使用ガイド
+ *
+ * 🎯 用途別バリアント（操作の重要度で使い分け）:
+ *
+ * ✅ CTA（最重要操作）- ページ内1つまで推奨
+ *   <Button variant="cta">撮影会を作成</Button>
+ *   <Button variant="cta">今すぐ予約</Button>
+ *
+ * ✅ Action（重要操作）- ページ内2-3つまで推奨
+ *   <Button variant="action">次へ</Button>
+ *   <Button variant="action">送信</Button>
+ *   <Button variant="action">検索</Button>
+ *
+ * ✅ Navigation（通常操作）- 制限なし
+ *   <Button variant="navigation">戻る</Button>
+ *   <Button variant="navigation">キャンセル</Button>
+ *   <Button variant="navigation">編集</Button>
+ *
+ * 🎨 テーマ対応バリアント:
+ *   <Button variant="primary">プライマリ</Button>
+ *   <Button variant="accent">アクセント</Button>
+ *   <Button variant="neutral">ニュートラル</Button>
+ *
+ * 🔧 Shadcn/ui標準バリアント:
+ *   <Button variant="destructive">削除</Button>
+ *   <Button variant="outline">アウトライン</Button>
+ *   <Button variant="secondary">セカンダリ</Button>
+ */
+
 import * as React from 'react';
 import { Slot } from '@radix-ui/react-slot';
 import { cva, type VariantProps } from 'class-variance-authority';
@@ -14,6 +44,11 @@ const buttonVariants = cva(
         primary: 'surface-primary hover:brightness-110 hover:scale-[1.02]',
         accent: 'surface-accent hover:brightness-110 hover:scale-[1.02]',
         neutral: 'surface-neutral hover:brightness-110 hover:scale-[1.02]',
+
+        // 🎯 用途別バリアント（操作の重要度で使い分け）
+        cta: 'surface-cta hover:brightness-110 hover:scale-[1.02] font-semibold shadow-lg', // 最重要操作（ページ内1つまで）- 主要アクション
+        action: 'surface-action hover:brightness-110 hover:scale-[1.02]', // 重要操作（2-3つまで）- サブアクション
+        navigation: 'surface-navigation hover:brightness-105', // 通常操作（制限なし）- 移動・戻る
 
         // 🔧 Shadcn/ui標準バリアント（既存システム維持）
         destructive:

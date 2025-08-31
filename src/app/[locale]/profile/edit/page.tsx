@@ -187,7 +187,7 @@ export default function EditProfilePage() {
         </div>
 
         {/* プロフィール編集セクション */}
-        <div className="max-w-2xl">
+        <div className="max-w-4xl">
           <ProfileEditForm profile={profile} />
         </div>
       </div>

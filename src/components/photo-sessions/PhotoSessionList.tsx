@@ -640,7 +640,7 @@ export function PhotoSessionList({
           </div>
 
           {/* 撮影会作成ボタン */}
-          <Button asChild size="sm" variant="accent">
+          <Button asChild size="sm" variant="cta">
             <Link href="/photo-sessions/create">
               <Plus className="h-4 w-4 mr-2" />
               撮影会を作成
@@ -693,6 +693,7 @@ export function PhotoSessionList({
                   onClick={handleSearch}
                   disabled={loading}
                   className="px-8"
+                  variant="action"
                 >
                   {loading ? (
                     <>
