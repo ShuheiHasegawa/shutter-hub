@@ -88,7 +88,7 @@ export default function StudioEditPage() {
         <PageTitleHeader
           title="スタジオ編集"
           description={`${studio.name}の情報を編集します`}
-          backButton={{ href: `/studios/${studioId}`, variant: 'ghost' }}
+          backButton={{ onClick: () => router.back(), variant: 'ghost' }}
           className="mb-6"
         />
 

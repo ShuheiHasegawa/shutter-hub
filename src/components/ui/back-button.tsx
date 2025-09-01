@@ -7,7 +7,7 @@ import { Link } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 
-interface BackButtonProps {
+export interface BackButtonProps {
   href?: ComponentProps<typeof Link>['href'];
   onClick?: () => void;
   variant?:

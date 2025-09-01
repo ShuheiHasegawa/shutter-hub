@@ -239,7 +239,7 @@ export function ReviewCard({
                   {review.is_verified && (
                     <Badge variant="secondary" className="text-xs">
                       <CheckCircle className="h-3 w-3 mr-1" />
-                      {t('display.verified')}
+                      {t('display.verified')}aaa
                     </Badge>
                   )}
                 </div>

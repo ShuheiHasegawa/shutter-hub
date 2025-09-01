@@ -57,7 +57,8 @@ export function Sidebar({ className }: SidebarProps) {
   const t = useTranslations('navigation');
   const { profile } = useProfile();
   const [openSections, setOpenSections] = useState<string[]>([
-    'photo-sessions',
+    '撮影会',
+    'スタジオ',
   ]);
 
   const toggleSection = (section: string) => {
@@ -327,7 +328,8 @@ export function MobileSidebarTrigger() {
   const t = useTranslations('navigation');
   const { profile } = useProfile();
   const [openSections, setOpenSections] = useState<string[]>([
-    'photo-sessions',
+    '撮影会',
+    'スタジオ',
   ]);
 
   const toggleSection = (section: string) => {
