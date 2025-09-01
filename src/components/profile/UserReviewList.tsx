@@ -197,7 +197,11 @@ export function UserReviewList({ userId }: UserReviewListProps) {
                                   </div>
                                 </div>
                               </div>
-                              <Badge variant="outline" className="w-20">
+                              <Badge
+                                variant="secondary"
+                                align="center"
+                                className="w-20"
+                              >
                                 {review.reviewee_role === 'organizer'
                                   ? '主催者'
                                   : '参加者'}
