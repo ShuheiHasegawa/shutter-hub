@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { logger } from '@/lib/utils/logger';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { Alert } from '@/components/ui/alert';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ActionBar, ActionBarButton } from '@/components/ui/action-bar';
@@ -238,7 +239,7 @@ export function SlotBookingFlow({
                 {
                   id: 'next',
                   label: '次へ',
-                  variant: 'primary' as const,
+                  variant: 'accent' as const,
                   onClick: () => navigateToStep('confirm'),
                   icon: <ArrowRight className="h-4 w-4" />,
                 },
@@ -249,7 +250,7 @@ export function SlotBookingFlow({
                 {
                   id: 'next-slot',
                   label: '次へ',
-                  variant: 'primary' as const,
+                  variant: 'cta' as const,
                   onClick: () => navigateToStep('confirm', selectedSlotId),
                   disabled: !selectedSlotId,
                   icon: <ArrowRight className="h-4 w-4" />,
@@ -261,7 +262,7 @@ export function SlotBookingFlow({
                 {
                   id: 'next-multiple',
                   label: `次へ（${selectedSlotIds.length}件）`,
-                  variant: 'primary' as const,
+                  variant: 'cta' as const,
                   onClick: handleMultipleSlotConfirm,
                   disabled: selectedSlotIds.length === 0,
                   icon: <ArrowRight className="h-4 w-4" />,
@@ -286,7 +287,7 @@ export function SlotBookingFlow({
           {
             id: 'confirm',
             label: isBooking ? '予約中...' : '予約を確定する',
-            variant: 'primary',
+            variant: 'cta',
             onClick: handleBooking,
             disabled: isBooking,
             icon: isBooking ? (
@@ -300,7 +301,7 @@ export function SlotBookingFlow({
           {
             id: 'complete',
             label: '完了',
-            variant: 'accent',
+            variant: 'cta',
             onClick: handleComplete,
           },
         ];
@@ -388,12 +389,9 @@ export function SlotBookingFlow({
             {hasSlots ? (
               <div className="space-y-3">
                 {allowMultiple && (
-                  <div className="mb-4 p-3 card-info rounded-lg">
-                    <p className="text-sm text-info">
-                      💡
-                      この撮影会では複数の時間枠を選択できます。お好みの枠を複数選んでください。
-                    </p>
-                  </div>
+                  <Alert>
+                    💡&nbsp;この撮影会では複数の時間枠を選択できます。お好みの枠を複数選んでください。
+                  </Alert>
                 )}
                 {slots.map((slot, index) => (
                   <SlotCard
