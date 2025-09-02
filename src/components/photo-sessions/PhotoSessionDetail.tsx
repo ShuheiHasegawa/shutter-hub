@@ -341,7 +341,7 @@ export function PhotoSessionDetail({
               <div className="flex items-center gap-2">
                 {/* Googleカレンダー追加ボタン */}
                 <Button
-                  variant="accent"
+                  variant="navigation"
                   size="sm"
                   onClick={handleAddToGoogleCalendar}
                   className="flex items-center gap-2 mr-2"
@@ -472,7 +472,7 @@ export function PhotoSessionDetail({
               <div className="flex items-center gap-2">
                 {/* Googleカレンダー追加ボタン */}
                 <Button
-                  variant="outline"
+                  variant="navigation"
                   size="sm"
                   onClick={handleAddToGoogleCalendar}
                   className="flex items-center gap-2"

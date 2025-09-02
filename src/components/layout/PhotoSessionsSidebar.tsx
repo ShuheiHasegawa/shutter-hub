@@ -1,6 +1,11 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import {
+  normalizeSearchKeyword,
+  normalizeLocation,
+  normalizeNumberString,
+} from '@/lib/utils/input-normalizer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -56,9 +61,34 @@ export function PhotoSessionsSidebar({
   const tCommon = useTranslations('common');
 
   const updateFilter = (key: keyof FilterState, value: unknown) => {
+    let normalizedValue = value;
+
+    // 入力値の正規化処理
+    if (typeof value === 'string') {
+      switch (key) {
+        case 'keyword':
+          normalizedValue = normalizeSearchKeyword(value);
+          break;
+        case 'location':
+          normalizedValue = normalizeLocation(value);
+          break;
+        case 'priceMin':
+        case 'priceMax':
+        case 'participantsMin':
+        case 'participantsMax':
+          // 数値フィールドは正規化のみ（検証は検索実行時）
+          const numberResult = normalizeNumberString(value);
+          normalizedValue = numberResult.normalized;
+          break;
+        default:
+          // その他のフィールドは基本的な文字列正規化
+          normalizedValue = typeof value === 'string' ? value.trim() : value;
+      }
+    }
+
     onFiltersChange({
       ...filters,
-      [key]: value,
+      [key]: normalizedValue,
     });
   };
 
@@ -128,18 +158,6 @@ export function PhotoSessionsSidebar({
         </CardHeader>
 
         <CardContent className="space-y-6">
-          {hasActiveFilters && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onClearFilters}
-              className="w-full"
-            >
-              <X className="h-4 w-4 mr-2" />
-              {t('list.clearFilters')}
-            </Button>
-          )}
-
           {/* キーワード検索 */}
           <div>
             <Label className="text-base font-semibold mb-3 block">
@@ -329,7 +347,6 @@ export function PhotoSessionsSidebar({
                 onClick={onSearch}
                 disabled={isSearchLoading}
                 className="w-full"
-                size="lg"
               >
                 {isSearchLoading ? (
                   <>
@@ -344,6 +361,17 @@ export function PhotoSessionsSidebar({
                 )}
               </Button>
             </div>
+          )}
+
+          {hasActiveFilters && (
+            <Button
+              variant="outline"
+              onClick={onClearFilters}
+              className="w-full"
+            >
+              <X className="h-4 w-4 mr-2" />
+              {t('list.clearFilters')}
+            </Button>
           )}
         </CardContent>
       </Card>

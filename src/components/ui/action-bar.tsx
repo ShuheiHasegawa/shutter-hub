@@ -12,6 +12,10 @@ export interface ActionBarButton {
     | 'primary'
     | 'accent'
     | 'neutral'
+    // 🎯 用途別バリアント（操作の重要度で使い分け）
+    | 'cta'
+    | 'action'
+    | 'navigation'
     // 🔧 Shadcn/ui標準バリアント（既存システム維持）
     | 'destructive'
     | 'outline'

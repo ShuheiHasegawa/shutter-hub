@@ -1,6 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import {
+  normalizeSearchKeyword,
+  normalizeLocation,
+  normalizeNumberString,
+} from '@/lib/utils/input-normalizer';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -62,9 +67,34 @@ export function CompactFilterBar({
   const [isOpen, setIsOpen] = useState(false);
 
   const updateFilter = (key: keyof FilterState, value: unknown) => {
+    let normalizedValue = value;
+
+    // 入力値の正規化処理
+    if (typeof value === 'string') {
+      switch (key) {
+        case 'keyword':
+          normalizedValue = normalizeSearchKeyword(value);
+          break;
+        case 'location':
+          normalizedValue = normalizeLocation(value);
+          break;
+        case 'priceMin':
+        case 'priceMax':
+        case 'participantsMin':
+        case 'participantsMax':
+          // 数値フィールドは正規化のみ（検証は検索実行時）
+          const numberResult = normalizeNumberString(value);
+          normalizedValue = numberResult.normalized;
+          break;
+        default:
+          // その他のフィールドは基本的な文字列正規化
+          normalizedValue = typeof value === 'string' ? value.trim() : value;
+      }
+    }
+
     onFiltersChange({
       ...filters,
-      [key]: value,
+      [key]: normalizedValue,
     });
   };
 
@@ -219,7 +249,7 @@ export function CompactFilterBar({
   return (
     <div className={`space-y-3 ${className}`}>
       {/* メインフィルターバー - モバイル最適化 */}
-      <Card className="border border-gray-200 hover:border-blue-300 transition-all duration-200 shadow-sm">
+      <Card className="border border-gray-200 transition-all duration-200 shadow-sm">
         <CardContent className="p-3 sm:p-4">
           {/* モバイル用コンパクトレイアウト */}
           <div className="flex items-center gap-2 sm:gap-3">
@@ -230,7 +260,7 @@ export function CompactFilterBar({
                 placeholder="撮影会を検索..."
                 value={filters.keyword}
                 onChange={e => updateFilter('keyword', e.target.value)}
-                className="pl-8 sm:pl-10 text-sm sm:text-base border-0 shadow-none focus:ring-1 focus:ring-blue-500 focus:border-transparent bg-gray-50 hover:bg-white transition-colors"
+                className="pl-8 sm:pl-10 text-sm sm:text-base border-0 shadow-none focus:ring-1 focus:ring-blue-500 focus:border-transparent bg-gray-50 transition-colors"
               />
             </div>
 
@@ -240,7 +270,7 @@ export function CompactFilterBar({
                 <Button
                   variant="outline"
                   size="sm"
-                  className="gap-1.5 sm:gap-2 relative flex-shrink-0 px-2.5 sm:px-3 h-9 sm:h-10 text-xs sm:text-sm border-gray-300 hover:border-blue-400 hover:bg-blue-50"
+                  className="gap-1.5 sm:gap-2 relative flex-shrink-0 px-2.5 sm:px-3 h-9 sm:h-10 text-xs sm:text-sm border-gray-300"
                 >
                   <SlidersHorizontal className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   <span className="hidden xs:inline">フィルター</span>
@@ -262,7 +292,7 @@ export function CompactFilterBar({
                 variant="ghost"
                 size="sm"
                 onClick={onClearFilters}
-                className="flex-shrink-0 px-2 sm:px-2.5 h-9 sm:h-10 text-xs sm:text-sm text-gray-500 hover:text-red-600 hover:bg-red-50"
+                className="flex-shrink-0 px-2 sm:px-2.5 h-9 sm:h-10 text-xs sm:text-sm text-gray-500"
               >
                 <X className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 <span className="hidden sm:inline ml-1">クリア</span>
@@ -285,7 +315,7 @@ export function CompactFilterBar({
                 <Badge
                   key={`${filter.key}-${filter.value || index}`}
                   variant="secondary"
-                  className={`${filter.color} gap-1 pr-1 hover:shadow-md transition-all duration-200 text-xs sm:text-sm flex-shrink-0 cursor-default`}
+                  className={`${filter.color} gap-1 pr-1 transition-all duration-200 text-xs sm:text-sm flex-shrink-0 cursor-default`}
                   title={filter.fullLabel}
                 >
                   <Icon className="h-3 w-3" />
@@ -296,7 +326,7 @@ export function CompactFilterBar({
                     variant="ghost"
                     size="sm"
                     onClick={() => removeFilter(filter.key, filter.value)}
-                    className="h-3.5 w-3.5 p-0 ml-0.5 hover:bg-black/10 rounded-full flex-shrink-0"
+                    className="h-3.5 w-3.5 p-0 ml-0.5 rounded-full flex-shrink-0"
                   >
                     <X className="h-2.5 w-2.5" />
                   </Button>
@@ -310,7 +340,7 @@ export function CompactFilterBar({
       {/* 詳細フィルター展開エリア - 完全モバイル対応 */}
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CollapsibleContent className="space-y-0">
-          <Card className="border-blue-200 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 mt-3">
+          <Card className="border-blue-200 mt-3">
             <CardContent className="p-4 sm:p-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                 {/* 場所フィルター */}
@@ -486,6 +516,7 @@ export function CompactFilterBar({
                       disabled={isSearchLoading}
                       className="w-full sm:w-auto"
                       size="sm"
+                      variant="navigation"
                     >
                       {isSearchLoading ? (
                         <>
