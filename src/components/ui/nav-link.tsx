@@ -30,7 +30,7 @@ export function NavLink({
     underline: cn(
       'text-muted-foreground hover:text-foreground px-4 py-2',
       'after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5',
-      'after:bg-gradient-to-r after:from-brand-primary after:to-brand-secondary',
+      'after:bg-brand-primary',
       'after:transform after:scale-x-0 after:origin-left after:transition-transform after:duration-300 after:ease-out',
       'hover:after:scale-x-100',
       // アクティブ状態
@@ -41,7 +41,7 @@ export function NavLink({
     sideline: cn(
       'text-muted-foreground hover:text-foreground px-4 py-1 rounded-lg',
       'before:absolute before:left-1 before:top-1/2 before:-translate-y-1/2 before:w-0.5 before:h-4',
-      'before:bg-gradient-to-b before:from-brand-primary before:to-brand-secondary',
+      'before:bg-brand-primary',
       'before:transform before:scale-y-0 before:origin-center before:transition-transform before:duration-300 before:ease-out before:rounded-full',
       'hover:before:scale-y-100 hover:bg-muted/30',
       // アクティブ状態
