@@ -609,7 +609,6 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
                 </div>
                 <OrganizerModelManagement
                   showStatistics={false}
-                  showRefreshButton={true}
                   defaultTab="models"
                 />
               </div>

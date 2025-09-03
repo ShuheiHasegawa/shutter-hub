@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/utils/logger';
 import { ModelInvitationForm } from './ModelInvitationForm';
@@ -16,18 +15,16 @@ import type {
   OrganizerModelWithProfile,
   OrganizerModelInvitationWithProfiles,
 } from '@/types/organizer-model';
-import { RefreshCw, Users, Mail } from 'lucide-react';
+import { Users, Mail } from 'lucide-react';
 
 interface OrganizerModelManagementProps {
   showStatistics?: boolean;
-  showRefreshButton?: boolean;
   defaultTab?: 'models' | 'invitations' | 'invite';
   className?: string;
 }
 
 export function OrganizerModelManagement({
   showStatistics = true,
-  showRefreshButton = true,
   defaultTab = 'models',
   className = '',
 }: OrganizerModelManagementProps) {
@@ -107,21 +104,6 @@ export function OrganizerModelManagement({
               <Users className="h-5 w-5" />
               所属モデル管理
             </CardTitle>
-            {showRefreshButton && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={loadData}
-                disabled={isLoading}
-                className="flex items-center gap-2"
-              >
-                <RefreshCw
-                  className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`}
-                />
-                更新
-              </Button>
-            )}
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
