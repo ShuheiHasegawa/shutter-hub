@@ -26,6 +26,7 @@ import {
   X,
 } from 'lucide-react';
 import type { BookingType } from '@/types/database';
+import { LeftLineSection } from '@/components/ui/left-line-section';
 
 interface FilterState {
   keyword: string;
@@ -159,7 +160,7 @@ export function PhotoSessionsSidebar({
 
         <CardContent className="space-y-6">
           {/* キーワード検索 */}
-          <div>
+          <LeftLineSection>
             <Label className="text-base font-semibold mb-3 block">
               {tCommon('search')}
             </Label>
@@ -168,10 +169,10 @@ export function PhotoSessionsSidebar({
               value={filters.keyword}
               onChange={e => updateFilter('keyword', e.target.value)}
             />
-          </div>
+          </LeftLineSection>
 
           {/* 場所フィルター */}
-          <div>
+          <LeftLineSection>
             <Label className="text-base font-semibold mb-3 flex items-center gap-2">
               <MapPin className="h-4 w-4" />
               {t('form.locationLabel')}
@@ -181,10 +182,10 @@ export function PhotoSessionsSidebar({
               value={filters.location}
               onChange={e => updateFilter('location', e.target.value)}
             />
-          </div>
+          </LeftLineSection>
 
           {/* 日時フィルター */}
-          <div>
+          <LeftLineSection>
             <Label className="text-base font-semibold mb-3 flex items-center gap-2">
               <Calendar className="h-4 w-4" />
               {t('sidebar.dateRange')}
@@ -207,10 +208,10 @@ export function PhotoSessionsSidebar({
                 />
               </div>
             </div>
-          </div>
+          </LeftLineSection>
 
           {/* 料金フィルター */}
-          <div>
+          <LeftLineSection>
             <Label className="text-base font-semibold mb-3 flex items-center gap-2">
               <DollarSign className="h-4 w-4" />
               {t('sidebar.priceRange')}
@@ -237,10 +238,10 @@ export function PhotoSessionsSidebar({
                 />
               </div>
             </div>
-          </div>
+          </LeftLineSection>
 
           {/* 参加者数フィルター */}
-          <div>
+          <LeftLineSection>
             <Label className="text-base font-semibold mb-3 flex items-center gap-2">
               <Users className="h-4 w-4" />
               {t('sidebar.participantsRange')}
@@ -275,10 +276,10 @@ export function PhotoSessionsSidebar({
                 />
               </div>
             </div>
-          </div>
+          </LeftLineSection>
 
           {/* 予約方式フィルター */}
-          <div>
+          <LeftLineSection>
             <Label className="text-base font-semibold mb-3 block">
               {t('bookingType.title')}
             </Label>
@@ -316,10 +317,10 @@ export function PhotoSessionsSidebar({
                 );
               })}
             </div>
-          </div>
+          </LeftLineSection>
 
           {/* その他のオプション */}
-          <div>
+          <LeftLineSection>
             <Label className="text-base font-semibold mb-3 block">
               {t('sidebar.options')}
             </Label>
@@ -338,7 +339,7 @@ export function PhotoSessionsSidebar({
                 {t('sidebar.onlyAvailable')}
               </Label>
             </div>
-          </div>
+          </LeftLineSection>
 
           {/* 検索実行ボタン */}
           {onSearch && (

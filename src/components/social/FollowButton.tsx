@@ -17,7 +17,7 @@ interface FollowButtonProps {
   isMutualFollow?: boolean;
   className?: string;
   size?: 'sm' | 'md' | 'lg';
-  variant?: 'default' | 'outline' | 'ghost';
+  variant?: 'default' | 'outline' | 'ghost' | 'action';
   showIcon?: boolean;
   disabled?: boolean;
   onFollowChange?: () => void | Promise<void>;
@@ -30,7 +30,7 @@ export function FollowButton({
   isMutualFollow = false,
   className,
   size = 'md',
-  variant = 'default',
+  variant = 'action',
   showIcon = true,
   disabled = false,
   onFollowChange,

@@ -3,7 +3,7 @@
  * シンプルで明示的な命名規則による統合設計
  */
 
-import { Logger } from '@/lib/logger';
+// import { Logger } from '@/lib/logger';
 
 // ブランド色定義（テーマ不変）
 export const brandColors = {
@@ -309,15 +309,15 @@ export function applyTheme(paletteName: string, isDark = false): void {
     : palette.colors.neutral; // フォールバック
 
   // サーフェース色を設定（シンプル化）
-  Logger.info(`🎨 Applying ${paletteName} theme:`, {
-    primary: palette.colors.primary,
-    accent: palette.colors.accent,
-    neutral: palette.colors.neutral,
-    cta: ctaColor,
-    action: actionColor,
-    navigation: navigationColor,
-    isDark,
-  });
+  // Logger.info(`🎨 Applying ${paletteName} theme:`, {
+  //   primary: palette.colors.primary,
+  //   accent: palette.colors.accent,
+  //   neutral: palette.colors.neutral,
+  //   cta: ctaColor,
+  //   action: actionColor,
+  //   navigation: navigationColor,
+  //   isDark,
+  // });
 
   root.style.setProperty('--surface-primary', hexToHsl(palette.colors.primary));
   root.style.setProperty(
@@ -356,16 +356,16 @@ export function applyTheme(paletteName: string, isDark = false): void {
     hexToHsl(getContrastColor(navigationColor))
   );
 
-  Logger.info('✅ Surface colors applied:', {
-    'surface-accent': hexToHsl(palette.colors.accent),
-    'surface-accent-text': hexToHsl(getContrastColor(palette.colors.accent)),
-    'surface-cta': hexToHsl(ctaColor),
-    'surface-cta-text': hexToHsl(getContrastColor(ctaColor)),
-    'surface-action': hexToHsl(actionColor),
-    'surface-action-text': hexToHsl(getContrastColor(actionColor)),
-    'surface-navigation': hexToHsl(navigationColor),
-    'surface-navigation-text': hexToHsl(getContrastColor(navigationColor)),
-  });
+  // Logger.info('✅ Surface colors applied:', {
+  //   'surface-accent': hexToHsl(palette.colors.accent),
+  //   'surface-accent-text': hexToHsl(getContrastColor(palette.colors.accent)),
+  //   'surface-cta': hexToHsl(ctaColor),
+  //   'surface-cta-text': hexToHsl(getContrastColor(ctaColor)),
+  //   'surface-action': hexToHsl(actionColor),
+  //   'surface-action-text': hexToHsl(getContrastColor(actionColor)),
+  //   'surface-navigation': hexToHsl(navigationColor),
+  //   'surface-navigation-text': hexToHsl(getContrastColor(navigationColor)),
+  // });
 
   // ブランド色は固定（変更しない）
   root.style.setProperty('--brand-primary', hexToHsl(brandColors.primary));
@@ -419,16 +419,16 @@ export function applyTheme(paletteName: string, isDark = false): void {
       hexToHsl(getContrastColor(navigationColor))
     );
 
-    Logger.info('🌙 Dark mode colors applied:', {
-      'surface-accent': hexToHsl(accentDark),
-      'surface-accent-text': hexToHsl(getContrastColor(accentDark)),
-      'surface-cta': hexToHsl(ctaColor),
-      'surface-cta-text': hexToHsl(getContrastColor(ctaColor)),
-      'surface-action': hexToHsl(actionColor),
-      'surface-action-text': hexToHsl(getContrastColor(actionColor)),
-      'surface-navigation': hexToHsl(navigationColor),
-      'surface-navigation-text': hexToHsl(getContrastColor(navigationColor)),
-    });
+    // Logger.info('🌙 Dark mode colors applied:', {
+    //   'surface-accent': hexToHsl(accentDark),
+    //   'surface-accent-text': hexToHsl(getContrastColor(accentDark)),
+    //   'surface-cta': hexToHsl(ctaColor),
+    //   'surface-cta-text': hexToHsl(getContrastColor(ctaColor)),
+    //   'surface-action': hexToHsl(actionColor),
+    //   'surface-action-text': hexToHsl(getContrastColor(actionColor)),
+    //   'surface-navigation': hexToHsl(navigationColor),
+    //   'surface-navigation-text': hexToHsl(getContrastColor(navigationColor)),
+    // });
   }
 }
 

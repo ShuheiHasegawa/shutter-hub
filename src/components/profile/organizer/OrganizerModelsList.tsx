@@ -182,10 +182,10 @@ export function OrganizerModelsList({
             className="min-w-[140px]"
           >
             <Filter className="h-4 w-4 mr-2" />
-            {sortField === 'joined_at' && '参加日時順'}
+            {sortField === 'joined_at' && '登録日時順'}
             {sortField === 'display_name' && '名前順'}
             {sortField === 'total_sessions_participated' && '参加数順'}
-            {sortField === 'last_activity_at' && '最終活動順'}
+            {sortField === 'last_activity_at' && '最終活動日順'}
           </Button>
 
           {onRefresh && (
@@ -268,41 +268,35 @@ export function OrganizerModelsList({
                 </div>
                 <div className="flex items-center justify-center gap-2 text-xs text-gray-500 dark:text-gray-400">
                   <Calendar className="h-3 w-3" />
-                  <span>参加日: {formatDate(model.joined_at)}</span>
+                  <span>登録日: {formatDate(model.joined_at)}</span>
                 </div>
               </div>
 
               {/* 統計情報 - ミニマル */}
               <div className="grid grid-cols-3 gap-3">
-                <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 text-center">
+                <div className="rounded-lg p-3 text-center">
                   <p className="text-lg font-semibold text-gray-900 dark:text-white">
                     {model.total_sessions_participated || 0}
                   </p>
-                  <p className="text-xs text-gray-600 dark:text-gray-400">
-                    参加回数
-                  </p>
+                  <p className="text-xs">参加回数</p>
                 </div>
 
-                <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 text-center">
-                  <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                <div className="rounded-lg p-3 text-center">
+                  <p className="text-lg font-semibold">
                     ¥{Math.floor((model.total_revenue_generated || 0) / 1000)}K
                   </p>
-                  <p className="text-xs text-gray-600 dark:text-gray-400">
-                    収益貢献
-                  </p>
+                  <p className="text-xs">収益貢献</p>
                 </div>
 
-                <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 text-center">
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                <div className="rounded-lg p-3 text-center">
+                  <p className="text-lg font-semibold">
                     {model.last_activity_at
                       ? format(new Date(model.last_activity_at), 'MM/dd', {
                           locale: ja,
                         })
                       : '---'}
                   </p>
-                  <p className="text-xs text-gray-600 dark:text-gray-400">
-                    最終活動
-                  </p>
+                  <p className="text-xs">最終活動日</p>
                 </div>
               </div>
 

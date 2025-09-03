@@ -158,6 +158,7 @@ export function ModelInvitationForm({
               onClick={handleSubmit}
               disabled={!selectedModel || isLoading}
               className="flex items-center gap-2"
+              variant="cta"
             >
               {isLoading ? (
                 <>

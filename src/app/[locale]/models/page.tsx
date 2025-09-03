@@ -56,11 +56,7 @@ export default function ModelsPage() {
             </p>
           </div>
 
-          <OrganizerModelManagement
-            showStatistics={true}
-            showRefreshButton={true}
-            defaultTab="models"
-          />
+          <OrganizerModelManagement showStatistics={true} defaultTab="models" />
         </div>
       </div>
     </AuthenticatedLayout>
