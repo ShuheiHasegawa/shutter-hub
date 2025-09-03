@@ -13,6 +13,7 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { BackButton } from '@/components/ui/back-button';
 import { FollowButton } from '@/components/social/FollowButton';
+import { OrganizerModelsProfileView } from '@/components/profile/organizer/OrganizerModelsProfileView';
 import {
   User,
   Calendar,
@@ -25,6 +26,7 @@ import {
   Heart,
   Users,
   BookOpen,
+  UserCheck,
 } from 'lucide-react';
 import Link from 'next/link';
 import { format } from 'date-fns';
@@ -33,6 +35,7 @@ import { useLocale } from 'next-intl';
 import { toast } from 'sonner';
 import { createClient } from '@/lib/supabase/client';
 import { PhotobookGallery } from '@/components/profile/PhotobookGallery';
+import type { OrganizerModelWithProfile } from '@/types/organizer-model';
 
 interface ProfileData {
   id: string;
@@ -63,11 +66,31 @@ export default function UserProfilePage() {
   const locale = useLocale();
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [followStats, setFollowStats] = useState<FollowStats | null>(null);
+  const [organizerModels, setOrganizerModels] = useState<
+    OrganizerModelWithProfile[]
+  >([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingModels, setIsLoadingModels] = useState(false);
   const [currentTab, setCurrentTab] = useState('overview');
 
   const userId = params.userId as string;
   const isOwnProfile = user?.id === userId;
+
+  logger.debug('[ProfilePage] コンポーネント初期化', {
+    userId,
+    isOwnProfile,
+    currentUser: user?.id,
+  });
+
+  // マウント時のログ
+  useEffect(() => {
+    logger.info('[ProfilePage] ページマウント', {
+      userId,
+      isOwnProfile,
+      currentUser: user?.id,
+      timestamp: new Date().toISOString(),
+    });
+  }, []);
 
   // フォロー状態を更新する関数をuseCallbackでメモ化
   const updateFollowStats = useCallback(async () => {
@@ -148,11 +171,18 @@ export default function UserProfilePage() {
 
   useEffect(() => {
     const loadProfileData = async () => {
-      if (!userId) return;
+      logger.info('[ProfilePage] loadProfileData開始', { userId });
+
+      if (!userId) {
+        logger.info('[ProfilePage] userIdなし - プロフィール取得スキップ');
+        return;
+      }
 
       setIsLoading(true);
       try {
         const supabase = createClient();
+
+        logger.info('[ProfilePage] プロフィール取得クエリ実行', { userId });
 
         // プロフィール情報を取得する
         const { data: profile, error } = await supabase
@@ -176,15 +206,25 @@ export default function UserProfilePage() {
           .maybeSingle();
 
         if (error) {
-          logger.error('プロフィール取得エラー:', error);
+          logger.error('[ProfilePage] プロフィール取得エラー:', error);
           toast.error('プロフィールの読み込みに失敗しました');
           return;
         }
 
         if (!profile) {
+          logger.debug('[ProfilePage] プロフィールが見つかりません', {
+            userId,
+          });
           toast.error('プロフィールが見つかりません');
           return;
         }
+
+        logger.info('[ProfilePage] プロフィール取得成功', {
+          userId: profile.id,
+          displayName: profile.display_name,
+          userType: profile.user_type,
+          profile,
+        });
 
         setProfile(profile);
 
@@ -202,6 +242,106 @@ export default function UserProfilePage() {
 
     loadProfileData();
   }, [userId, user, isOwnProfile, updateFollowStats]);
+
+  // 所属モデルデータを取得する関数
+  const loadOrganizerModels = useCallback(async () => {
+    logger.info('[ProfilePage] loadOrganizerModels開始', {
+      userId,
+      profile: profile?.user_type,
+      hasProfile: !!profile,
+    });
+
+    if (!userId || !profile || profile.user_type !== 'organizer') {
+      logger.info('[ProfilePage] 所属モデル取得をスキップ', {
+        userId: !!userId,
+        profile: !!profile,
+        userType: profile?.user_type,
+      });
+      return;
+    }
+
+    setIsLoadingModels(true);
+    try {
+      const supabase = createClient();
+
+      logger.info('[ProfilePage] organizer_modelsクエリ実行', {
+        organizerId: userId,
+      });
+
+      // まず全ステータスのデータを確認
+      const { data: allData, error: allError } = await supabase
+        .from('organizer_models')
+        .select(
+          `
+          *,
+          model_profile:profiles!organizer_models_model_id_fkey(
+            id,
+            display_name,
+            avatar_url,
+            user_type
+          )
+        `
+        )
+        .eq('organizer_id', userId)
+        .order('joined_at', { ascending: false });
+
+      logger.info('[ProfilePage] 全ステータスの所属モデル確認', {
+        全件数: allData?.length || 0,
+        全データ: allData,
+        エラー: allError,
+      });
+
+      // アクティブのみに絞り込み
+      const { data, error } = await supabase
+        .from('organizer_models')
+        .select(
+          `
+          *,
+          model_profile:profiles!organizer_models_model_id_fkey(
+            id,
+            display_name,
+            avatar_url,
+            user_type
+          )
+        `
+        )
+        .eq('organizer_id', userId)
+        .eq('status', 'active')
+        .order('joined_at', { ascending: false });
+
+      if (error) {
+        logger.error('[ProfilePage] 所属モデル取得エラー:', error);
+        return;
+      }
+
+      logger.info('[ProfilePage] 所属モデル取得成功', {
+        取得件数: data?.length || 0,
+        データ: data,
+      });
+
+      setOrganizerModels(data || []);
+    } catch (error) {
+      logger.error('[ProfilePage] 所属モデル取得エラー:', error);
+    } finally {
+      setIsLoadingModels(false);
+    }
+  }, [userId, profile]);
+
+  // プロフィールデータ取得後に所属モデルも取得
+  useEffect(() => {
+    logger.info('[ProfilePage] useEffect: プロフィール変更検知', {
+      profile: !!profile,
+      userType: profile?.user_type,
+      isOrganizer: profile?.user_type === 'organizer',
+    });
+
+    if (profile && profile.user_type === 'organizer') {
+      logger.info('[ProfilePage] 運営者プロフィール確認 - 所属モデル取得開始');
+      loadOrganizerModels();
+    } else {
+      logger.info('[ProfilePage] 運営者ではない、または、プロフィール未取得');
+    }
+  }, [profile, loadOrganizerModels]);
 
   const getInitials = (name: string) => {
     return name
@@ -333,7 +473,9 @@ export default function UserProfilePage() {
                       {profile.display_name || 'ユーザー'}
                     </h3>
 
-                    {renderUserBadge(profile.user_type, profile.is_verified)}
+                    <div className="flex items-center justify-center gap-2">
+                      {renderUserBadge(profile.user_type, profile.is_verified)}
+                    </div>
 
                     {/* フォロー統計 */}
                     {followStats && (
@@ -414,7 +556,18 @@ export default function UserProfilePage() {
 
           {/* メインコンテンツ */}
           <div className="lg:col-span-2 space-y-6">
-            <Tabs value={currentTab} onValueChange={setCurrentTab}>
+            <Tabs
+              value={currentTab}
+              onValueChange={newTab => {
+                logger.debug('[ProfilePage] タブ変更', {
+                  from: currentTab,
+                  to: newTab,
+                  profile: profile?.user_type,
+                  organizerModelsLength: organizerModels.length,
+                });
+                setCurrentTab(newTab);
+              }}
+            >
               <TabsList>
                 <TabsTrigger
                   value="overview"
@@ -423,6 +576,16 @@ export default function UserProfilePage() {
                   <Star className="h-4 w-4" />
                   概要
                 </TabsTrigger>
+                {/* 運営者の場合のみ所属モデルタブを表示 */}
+                {profile?.user_type === 'organizer' && (
+                  <TabsTrigger
+                    value="models"
+                    className="flex items-center gap-2"
+                  >
+                    <UserCheck className="h-4 w-4" />
+                    所属モデル ({organizerModels.length})
+                  </TabsTrigger>
+                )}
                 <TabsTrigger
                   value="photobooks"
                   className="flex items-center gap-2"
@@ -494,6 +657,27 @@ export default function UserProfilePage() {
                   </CardContent>
                 </Card>
               </TabsContent>
+
+              {/* 所属モデルタブ（運営者のみ） */}
+              {profile?.user_type === 'organizer' && (
+                <TabsContent value="models">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <UserCheck className="h-5 w-5" />
+                        所属モデル
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <OrganizerModelsProfileView
+                        models={organizerModels}
+                        isLoading={isLoadingModels}
+                        showContactButton={!isOwnProfile}
+                      />
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              )}
 
               <TabsContent value="photobooks">
                 <Card>

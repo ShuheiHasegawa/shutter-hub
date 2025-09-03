@@ -11,6 +11,11 @@ interface AuthenticatedLayoutProps {
   children: React.ReactNode;
 }
 
+/**
+ * 認証済みユーザーのレイアウトコンポーネント
+ * @param {AuthenticatedLayoutProps} param0 - 子コンポーネント
+ * @returns {React.ReactNode} - 認証済みユーザーのレイアウトコンポーネント
+ */
 export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
   const { user, loading } = useAuth();
 
@@ -33,15 +38,29 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
   }
 
   return (
-    <div className="flex h-screen bg-background">
-      <Sidebar />
-      <div className="w-full">
-        <AppHeader variant="authenticated" />
+    <div className="flex h-screen bg-background overflow-hidden">
+      {/* 固定サイドバー */}
+      <div className="flex-shrink-0">
+        <Sidebar />
+      </div>
+
+      {/* メインコンテンツエリア */}
+      <div className="flex flex-col flex-1 min-w-0">
+        {/* 固定ヘッダー */}
+        <div className="flex-shrink-0">
+          <AppHeader variant="authenticated" />
+        </div>
+
+        {/* スクロール可能なメインコンテンツ */}
         <main className="flex-1 overflow-y-auto p-2 pb-16 md:pb-6">
           {children}
         </main>
       </div>
-      <BottomNavigation />
+
+      {/* 固定ボトムナビゲーション */}
+      <div className="fixed bottom-0 left-0 right-0 md:hidden z-50">
+        <BottomNavigation />
+      </div>
     </div>
   );
 }

@@ -4,6 +4,17 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import type { OrganizerModelInvitationWithProfiles } from '@/types/organizer-model';
 import { cancelModelInvitationAction } from '@/app/actions/organizer-model';
@@ -285,18 +296,46 @@ export function PendingInvitationsList({
               {/* アクションボタン */}
               {invitation.status === 'pending' && (
                 <div className="flex gap-2 mt-4">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleCancelInvitation(invitation.id)}
-                    disabled={actionLoading[invitation.id]}
-                    className="text-red-600 border-red-200 hover:bg-red-50"
-                  >
-                    <XCircle className="h-4 w-4 mr-1" />
-                    {actionLoading[invitation.id]
-                      ? '取消中...'
-                      : '招待を取り消し'}
-                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        disabled={actionLoading[invitation.id]}
+                        className="text-red-600 border-red-200 hover:bg-red-50"
+                      >
+                        <XCircle className="h-4 w-4 mr-1" />
+                        {actionLoading[invitation.id]
+                          ? '取消中...'
+                          : '招待を取り消し'}
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>
+                          招待を取り消しますか？
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                          {invitation.model_profile?.display_name ||
+                            'このモデル'}
+                          への招待を取り消します。
+                          <br />
+                          この操作は元に戻すことができません。
+                          <br />
+                          必要に応じて、後で新しい招待を送信できます。
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>キャンセル</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => handleCancelInvitation(invitation.id)}
+                          className="bg-red-600 hover:bg-red-700 text-white"
+                        >
+                          招待を取り消し
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               )}
             </div>
