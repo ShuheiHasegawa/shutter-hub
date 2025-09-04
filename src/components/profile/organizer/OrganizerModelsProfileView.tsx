@@ -62,7 +62,7 @@ export function OrganizerModelsProfileView({
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {[...Array(6)].map((_, i) => (
           <Card key={i} className="animate-pulse">
             <div className="h-32 bg-muted"></div>
@@ -91,7 +91,7 @@ export function OrganizerModelsProfileView({
 
   return (
     <div className="space-y-4">
-      {/* 統計サマリー */}
+      {/* 統計サマリー（最大4列維持） */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <Card>
           <CardContent className="p-4 text-center">
@@ -140,8 +140,8 @@ export function OrganizerModelsProfileView({
         </Card>
       </div>
 
-      {/* モデル一覧 - コンパクトグリッド */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      {/* モデル一覧 - コンパクトグリッド（最大3列） */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {models.map(model => (
           <Card
             key={model.id}
@@ -154,14 +154,14 @@ export function OrganizerModelsProfileView({
 
             {/* モデル画像 */}
             <Link href={`/profile/${model.model_id}`} className="block">
-              <div className="relative h-32 overflow-hidden bg-muted cursor-pointer">
-                <Avatar className="h-full w-full rounded-none">
+              <div className="relative h-32 overflow-hidden bg-muted cursor-pointer flex items-center justify-center">
+                <Avatar className="h-24 w-24">
                   <AvatarImage
                     src={model.model_profile?.avatar_url || undefined}
                     alt={model.model_profile?.display_name || 'モデル'}
                     className="object-cover group-hover:scale-105 transition-transform duration-300"
                   />
-                  <AvatarFallback className="h-full w-full rounded-none bg-muted text-muted-foreground text-2xl font-semibold">
+                  <AvatarFallback className="bg-muted text-muted-foreground text-xl font-semibold">
                     {model.model_profile?.display_name
                       ?.charAt(0)
                       ?.toUpperCase() || 'M'}
