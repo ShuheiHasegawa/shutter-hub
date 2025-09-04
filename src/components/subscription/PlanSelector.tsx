@@ -22,13 +22,12 @@ import { logger } from '@/lib/utils/logger';
 
 interface PlanSelectorProps {
   userType: 'model' | 'photographer' | 'organizer';
-  onPlanSelected?: (planId: string) => void;
 }
 
 /**
  * サブスクリプションプラン選択コンポーネント（Phase 1: 基本実装）
  */
-export function PlanSelector({ userType, onPlanSelected }: PlanSelectorProps) {
+export function PlanSelector({ userType }: PlanSelectorProps) {
   const { user } = useAuth();
   const { availablePlans, currentSubscription, isLoading } = useSubscription();
   const { toast } = useToast();
@@ -49,9 +48,8 @@ export function PlanSelector({ userType, onPlanSelected }: PlanSelectorProps) {
     }
 
     // フリープランの場合は即座に適用（決済不要）
-    const selectedPlan = availablePlans.find(p => p.id === planId);
-    if (selectedPlan?.tier === 'free') {
-      onPlanSelected?.(planId);
+    const selectedPlanInfo = availablePlans.find(p => p.id === planId);
+    if (selectedPlanInfo?.tier === 'free') {
       toast({
         title: 'プラン変更完了',
         description: 'フリープランに変更しました',
@@ -81,7 +79,8 @@ export function PlanSelector({ userType, onPlanSelected }: PlanSelectorProps) {
           });
         }
 
-        onPlanSelected?.(planId);
+        // Phase 1では基本的な処理のみ
+        logger.info('Plan selected successfully', { planId });
       } else {
         toast({
           title: 'エラー',

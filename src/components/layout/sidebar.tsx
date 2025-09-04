@@ -31,6 +31,7 @@ import {
   Map,
   Heart,
   Zap,
+  Crown,
 } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
 import {
@@ -174,6 +175,11 @@ export function Sidebar({ className }: SidebarProps) {
       title: t('settings'),
       href: '/settings',
       icon: Settings,
+    },
+    {
+      title: t('subscription'),
+      href: '/subscription',
+      icon: Crown,
     },
     // 開発環境でのみ表示
     ...(process.env.NODE_ENV === 'development'

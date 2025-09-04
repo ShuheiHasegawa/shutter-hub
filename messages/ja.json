@@ -36,6 +36,7 @@
     "photobook": "フォトブック",
     "photobookView": "フォトブック表示",
     "photobookEdit": "フォトブック編集",
+    "subscription": "サブスクリプション",
     "studios": "スタジオ",
     "favorites": "お気に入り",
     "settings": "設定",
@@ -1478,5 +1479,36 @@
         "description": "お気に入り一覧から簡単に目的のスタジオや撮影会にアクセスできます"
       }
     }
+  },
+  "subscription": {
+    "pageTitle": "サブスクリプション管理",
+    "pageDescription": "ShutterHubのサブスクリプションプランを管理します",
+    "currentPlan": "現在のプラン",
+    "selectPlan": "プランを選択",
+    "freePlan": "フリープラン",
+    "basicPlan": "ベーシックプラン",
+    "premiumPlan": "プレミアムプラン",
+    "proPlan": "プロプラン",
+    "businessPlan": "ビジネスプラン",
+    "standardPlan": "スタンダードプラン",
+    "professionalPlan": "プロフェッショナルプラン",
+    "monthly": "月額",
+    "free": "無料",
+    "popular": "人気",
+    "current": "現在のプラン",
+    "features": "機能",
+    "selectThisPlan": "このプランを選択",
+    "changeToPlan": "このプランに変更",
+    "processing": "処理中...",
+    "status": {
+      "active": "アクティブ",
+      "cancelled": "キャンセル済み",
+      "pastDue": "支払い遅延",
+      "trialing": "トライアル中"
+    },
+    "nextBilling": "次回請求日",
+    "cancelPlan": "プランをキャンセル",
+    "cancelling": "キャンセル中...",
+    "phase1Notice": "Phase 1: 基本機能実装中"
   }
 }

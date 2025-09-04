@@ -4,13 +4,13 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { PlanSelector } from '@/components/subscription/PlanSelector';
 import { SubscriptionStatus } from '@/components/subscription/SubscriptionStatus';
-import { logger } from '@/lib/utils/logger';
 
 export async function generateMetadata({
-  params: { locale },
+  params,
 }: {
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
+  const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'subscription' });
 
   return {
@@ -25,10 +25,11 @@ export async function generateMetadata({
  * サブスクリプション管理ページ（Phase 1: 基本実装）
  */
 export default async function SubscriptionPage({
-  params: { locale: _locale },
+  params,
 }: {
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }) {
+  const { locale: _locale } = await params;
   const supabase = await createClient();
 
   // 認証チェック
@@ -72,13 +73,7 @@ export default async function SubscriptionPage({
       <SubscriptionStatus />
 
       {/* プラン選択 */}
-      <PlanSelector
-        userType={userType}
-        onPlanSelected={planId => {
-          // Phase 1では基本的な処理のみ
-          logger.info('Plan selected', { planId });
-        }}
-      />
+      <PlanSelector userType={userType} />
 
       {/* Phase 1: 注意書き */}
       <div className="text-center text-sm text-muted-foreground bg-blue-50 p-4 rounded-lg">
