@@ -36,6 +36,7 @@
     "photobooks": "Photobook",
     "photobookView": "View Photobook",
     "photobookEdit": "Edit Photobook",
+    "subscription": "Subscription",
     "studios": "Studios",
     "settings": "Settings",
     "signin": "Sign In",
@@ -1463,5 +1464,36 @@
     "participantsInputPlaceholder": "e.g. 2",
     "durationInputPlaceholder": "e.g. 50",
     "breakInputPlaceholder": "e.g. 10"
+  },
+  "subscription": {
+    "pageTitle": "Subscription Management",
+    "pageDescription": "Manage your ShutterHub subscription plans",
+    "currentPlan": "Current Plan",
+    "selectPlan": "Select Plan",
+    "freePlan": "Free Plan",
+    "basicPlan": "Basic Plan",
+    "premiumPlan": "Premium Plan",
+    "proPlan": "Pro Plan",
+    "businessPlan": "Business Plan",
+    "standardPlan": "Standard Plan",
+    "professionalPlan": "Professional Plan",
+    "monthly": "Monthly",
+    "free": "Free",
+    "popular": "Popular",
+    "current": "Current Plan",
+    "features": "Features",
+    "selectThisPlan": "Select This Plan",
+    "changeToPlan": "Change to This Plan",
+    "processing": "Processing...",
+    "status": {
+      "active": "Active",
+      "cancelled": "Cancelled",
+      "pastDue": "Past Due",
+      "trialing": "Trial"
+    },
+    "nextBilling": "Next Billing Date",
+    "cancelPlan": "Cancel Plan",
+    "cancelling": "Cancelling...",
+    "phase1Notice": "Phase 1: Basic Features Implementation"
   }
 }
