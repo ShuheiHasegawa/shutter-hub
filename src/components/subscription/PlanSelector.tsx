@@ -223,23 +223,38 @@ export function PlanSelector({ userType }: PlanSelectorProps) {
       }
     }
 
-    return features.slice(0, 6); // Phase 1では最大6つまで表示
+    // Phase 1では最大6つまで表示、最小4つは表示する
+    const displayFeatures = features.slice(0, 6);
+
+    // 最小4つの機能を確保（空の場合は基本機能を追加）
+    while (displayFeatures.length < 4) {
+      if (displayFeatures.length === features.length) {
+        displayFeatures.push('基本機能利用可能');
+      } else {
+        break;
+      }
+    }
+
+    return displayFeatures;
   };
 
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {[...Array(3)].map((_, i) => (
-          <Card key={i} className="animate-pulse">
+          <Card key={i} className="animate-pulse h-[520px] flex flex-col">
             <CardHeader className="space-y-2">
               <div className="h-6 bg-gray-200 rounded"></div>
               <div className="h-4 bg-gray-200 rounded"></div>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="flex-1 flex flex-col space-y-3">
               <div className="h-8 bg-gray-200 rounded"></div>
-              {[...Array(4)].map((_, j) => (
-                <div key={j} className="h-4 bg-gray-200 rounded"></div>
-              ))}
+              <div className="flex-1 space-y-2">
+                {[...Array(4)].map((_, j) => (
+                  <div key={j} className="h-4 bg-gray-200 rounded"></div>
+                ))}
+              </div>
+              <div className="h-10 bg-gray-200 rounded mt-auto"></div>
             </CardContent>
           </Card>
         ))}
@@ -264,12 +279,14 @@ export function PlanSelector({ userType }: PlanSelectorProps) {
         {availablePlans.map(plan => {
           const isCurrentPlan = currentSubscription?.plan_id === plan.id;
           const isFreePlan = plan.tier === 'free';
+          const isCurrentlyFreePlan =
+            !currentSubscription || currentSubscription.plan?.tier === 'free';
           const features = renderFeatureList(plan);
 
           return (
             <Card
               key={plan.id}
-              className={`relative transition-all duration-200 ${
+              className={`relative transition-all duration-200 h-[520px] flex flex-col ${
                 isCurrentPlan
                   ? 'ring-2 ring-primary shadow-lg'
                   : 'hover:shadow-md'
@@ -318,9 +335,9 @@ export function PlanSelector({ userType }: PlanSelectorProps) {
                 </div>
               </CardHeader>
 
-              <CardContent className="space-y-4">
+              <CardContent className="flex-1 flex flex-col space-y-4">
                 {/* 機能リスト */}
-                <ul className="space-y-2">
+                <ul className="space-y-2 flex-1">
                   {features.map((feature, index) => (
                     <li
                       key={index}
@@ -333,20 +350,26 @@ export function PlanSelector({ userType }: PlanSelectorProps) {
                 </ul>
 
                 {/* アクションボタン */}
-                <div className="pt-4">
+                <div className="pt-4 mt-auto">
                   <Button
                     className="w-full"
                     variant={isCurrentPlan ? 'outline' : 'default'}
-                    disabled={isCurrentPlan || isCreating}
+                    disabled={
+                      isCurrentPlan ||
+                      isCreating ||
+                      (isFreePlan && isCurrentlyFreePlan)
+                    }
                     onClick={() => handlePlanSelect(plan.id)}
                   >
                     {isCreating && selectedPlan === plan.id
                       ? '処理中...'
                       : isCurrentPlan
                         ? '現在のプラン'
-                        : isFreePlan
-                          ? 'フリープランに変更'
-                          : 'このプランを選択'}
+                        : isFreePlan && isCurrentlyFreePlan
+                          ? '現在のプラン'
+                          : isFreePlan
+                            ? 'フリープランに変更'
+                            : 'このプランを選択'}
                   </Button>
                 </div>
               </CardContent>
