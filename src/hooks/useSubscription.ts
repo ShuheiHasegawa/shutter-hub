@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import {
   getCurrentSubscription,
-  getPlansForUserType,
   checkFeatureLimit,
   type SubscriptionPlan,
   type UserSubscription,
@@ -20,7 +19,9 @@ export function useSubscription() {
   const { user } = useAuth();
   const [currentSubscription, setCurrentSubscription] =
     useState<UserSubscription | null>(null);
-  const [availablePlans, setAvailablePlans] = useState<SubscriptionPlan[]>([]);
+  const [_availablePlans, _setAvailablePlans] = useState<SubscriptionPlan[]>(
+    []
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -42,15 +43,12 @@ export function useSubscription() {
       setCurrentSubscription(subscription);
 
       // ユーザータイプに対応するプラン一覧を取得
-      if (user.user_metadata?.user_type) {
-        const plans = await getPlansForUserType(user.user_metadata.user_type);
-        setAvailablePlans(plans);
-      }
+      // userTypeは親コンポーネントから渡されるので、ここでは取得しない
+      // プラン一覧の取得は親コンポーネントで行う
 
       logger.debug('Subscription data loaded', {
         userId: user.id,
         hasSubscription: !!subscription,
-        planCount: availablePlans.length,
       });
     } catch (error) {
       logger.error('Error loading subscription data:', error);
@@ -58,7 +56,7 @@ export function useSubscription() {
     } finally {
       setIsLoading(false);
     }
-  }, [user, availablePlans.length]);
+  }, [user]);
 
   /**
    * 機能制限をチェックする
@@ -152,7 +150,6 @@ export function useSubscription() {
   return {
     // データ
     currentSubscription,
-    availablePlans,
     isLoading,
     error,
 
