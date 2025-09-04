@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Card,
   CardContent,
@@ -15,6 +15,7 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { useAuth } from '@/hooks/useAuth';
 import {
   createSubscription,
+  getPlansForUserType,
   type SubscriptionPlan,
 } from '@/app/actions/subscription-management';
 import { useToast } from '@/hooks/use-toast';
@@ -29,10 +30,40 @@ interface PlanSelectorProps {
  */
 export function PlanSelector({ userType }: PlanSelectorProps) {
   const { user } = useAuth();
-  const { availablePlans, currentSubscription, isLoading } = useSubscription();
+  const {
+    currentSubscription,
+    isLoading: subscriptionLoading,
+    error,
+  } = useSubscription();
   const { toast } = useToast();
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [availablePlans, setAvailablePlans] = useState<SubscriptionPlan[]>([]);
+  const [plansLoading, setPlansLoading] = useState(true);
+
+  // プラン一覧を取得
+  useEffect(() => {
+    const loadPlans = async () => {
+      try {
+        setPlansLoading(true);
+        const plans = await getPlansForUserType(userType);
+        setAvailablePlans(plans);
+      } catch (error) {
+        logger.error('Error loading plans:', error);
+        toast({
+          title: 'エラー',
+          description: 'プラン情報の読み込みに失敗しました',
+          variant: 'destructive',
+        });
+      } finally {
+        setPlansLoading(false);
+      }
+    };
+
+    loadPlans();
+  }, [userType, toast]);
+
+  const isLoading = subscriptionLoading || plansLoading;
 
   /**
    * プラン選択処理
