@@ -2,8 +2,11 @@ import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
+import { CreditCard } from 'lucide-react';
 import { PlanSelector } from '@/components/subscription/PlanSelector';
 import { SubscriptionStatus } from '@/components/subscription/SubscriptionStatus';
+import { AuthenticatedLayout } from '@/components/layout/authenticated-layout';
+import { PageTitleHeader } from '@/components/ui/page-title-header';
 
 export async function generateMetadata({
   params,
@@ -55,34 +58,29 @@ export default async function SubscriptionPage({
   const userType = profile.user_type as 'model' | 'photographer' | 'organizer';
 
   return (
-    <div className="container mx-auto py-8 space-y-8">
-      {/* ページヘッダー */}
-      <div className="text-center space-y-4">
-        <h1 className="text-3xl font-bold">サブスクリプション管理</h1>
-        <p className="text-muted-foreground max-w-2xl mx-auto">
-          {userType === 'model' &&
-            'モデル活動をより充実させるプランをご選択ください'}
-          {userType === 'photographer' &&
-            'カメラマンとしての活動を支援するプランをご選択ください'}
-          {userType === 'organizer' &&
-            '撮影会運営を効率化するプランをご選択ください'}
-        </p>
+    <AuthenticatedLayout>
+      <div className="container mx-auto py-8 space-y-8">
+        {/* ページヘッダー */}
+        <PageTitleHeader
+          title="サブスクリプション管理"
+          icon={<CreditCard className="h-6 w-6" />}
+        />
+
+        {/* 現在のサブスクリプション状況 */}
+        <SubscriptionStatus />
+
+        {/* プラン選択 */}
+        <PlanSelector userType={userType} />
+
+        {/* Phase 1: 注意書き */}
+        <div className="text-center text-sm text-muted-foreground bg-blue-50 p-4 rounded-lg">
+          <p className="font-medium">Phase 1: 基本機能実装中</p>
+          <p>
+            現在は基本的なサブスクリプション機能のみ利用可能です。
+            詳細な機能は順次追加予定です。
+          </p>
+        </div>
       </div>
-
-      {/* 現在のサブスクリプション状況 */}
-      <SubscriptionStatus />
-
-      {/* プラン選択 */}
-      <PlanSelector userType={userType} />
-
-      {/* Phase 1: 注意書き */}
-      <div className="text-center text-sm text-muted-foreground bg-blue-50 p-4 rounded-lg">
-        <p className="font-medium">Phase 1: 基本機能実装中</p>
-        <p>
-          現在は基本的なサブスクリプション機能のみ利用可能です。
-          詳細な機能は順次追加予定です。
-        </p>
-      </div>
-    </div>
+    </AuthenticatedLayout>
   );
 }

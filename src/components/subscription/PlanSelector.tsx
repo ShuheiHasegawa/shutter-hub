@@ -169,7 +169,7 @@ export function PlanSelector({ userType }: PlanSelectorProps) {
       features.push(`フォトブック: ${limit}`);
     }
 
-    if (baseFeatures.premiumTemplates) {
+    if (baseFeatures.premiumTemplates === true) {
       features.push('プレミアムテンプレート利用可能');
     }
 
@@ -179,7 +179,7 @@ export function PlanSelector({ userType }: PlanSelectorProps) {
       );
     }
 
-    if (baseFeatures.prioritySupport) {
+    if (baseFeatures.prioritySupport === true) {
       features.push('優先サポート');
     }
 
@@ -194,7 +194,10 @@ export function PlanSelector({ userType }: PlanSelectorProps) {
             : `${typeFeatures.portfolioLimit}枚`;
         features.push(`ポートフォリオ: ${limit}`);
       }
-      if (typeFeatures.priorityBookingTickets > 0) {
+      if (
+        typeof typeFeatures.priorityBookingTickets === 'number' &&
+        typeFeatures.priorityBookingTickets > 0
+      ) {
         features.push(
           `優先予約チケット: 月${typeFeatures.priorityBookingTickets}枚`
         );
@@ -202,23 +205,23 @@ export function PlanSelector({ userType }: PlanSelectorProps) {
     }
 
     if (userType === 'photographer') {
-      if (typeFeatures.clientManagement) {
+      if (typeFeatures.clientManagement === true) {
         features.push('クライアント管理機能');
       }
-      if (typeFeatures.watermarkRemoval) {
+      if (typeFeatures.watermarkRemoval === true) {
         features.push('透かし除去');
       }
     }
 
     if (userType === 'organizer') {
-      if (typeFeatures.sessionLimit) {
+      if (typeof typeFeatures.sessionLimit === 'number') {
         const limit =
           typeFeatures.sessionLimit === -1
             ? '無制限'
             : `${typeFeatures.sessionLimit}件`;
         features.push(`撮影会作成: ${limit}`);
       }
-      if (typeFeatures.advancedAnalytics) {
+      if (typeFeatures.advancedAnalytics === true) {
         features.push('高度な分析機能');
       }
     }
