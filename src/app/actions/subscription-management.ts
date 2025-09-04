@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { stripe } from '@/lib/stripe/config';
 import { logger } from '@/lib/utils/logger';
+import type Stripe from 'stripe';
 
 // サブスクリプション関連の型定義
 export interface SubscriptionPlan {
@@ -304,7 +305,7 @@ export async function createSubscription(
     );
 
     // Subscription作成
-    const subscriptionParams: Record<string, unknown> = {
+    const subscriptionParams: Stripe.SubscriptionCreateParams = {
       customer: customerId,
       items: [{ price: plan.stripe_price_id }],
       payment_behavior: 'default_incomplete',
@@ -332,12 +333,22 @@ export async function createSubscription(
         stripe_subscription_id: subscription.id,
         stripe_customer_id: customerId,
         status: subscription.status,
-        current_period_start: new Date(
-          subscription.current_period_start * 1000
-        ).toISOString(),
-        current_period_end: new Date(
-          subscription.current_period_end * 1000
-        ).toISOString(),
+        current_period_start: (
+          subscription as unknown as { current_period_start?: number }
+        ).current_period_start
+          ? new Date(
+              (subscription as unknown as { current_period_start: number })
+                .current_period_start * 1000
+            ).toISOString()
+          : null,
+        current_period_end: (
+          subscription as unknown as { current_period_end?: number }
+        ).current_period_end
+          ? new Date(
+              (subscription as unknown as { current_period_end: number })
+                .current_period_end * 1000
+            ).toISOString()
+          : null,
         updated_at: new Date().toISOString(),
       });
 
@@ -348,7 +359,9 @@ export async function createSubscription(
       return { success: false, error: 'データベース保存に失敗しました' };
     }
 
-    const invoice = subscription.latest_invoice as Record<string, unknown>;
+    const invoice = subscription.latest_invoice as unknown as {
+      payment_intent?: { client_secret?: string };
+    };
     const paymentIntent = invoice?.payment_intent;
 
     logger.info('Subscription created successfully', {

@@ -139,7 +139,7 @@ export function useSubscription() {
    * ユーザーが有料プランかどうか
    */
   const isPaidUser = useCallback((): boolean => {
-    return currentSubscription?.plan?.price > 0 || false;
+    return (currentSubscription?.plan?.price ?? 0) > 0;
   }, [currentSubscription]);
 
   // 初回データ読み込み
