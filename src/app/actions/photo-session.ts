@@ -3,6 +3,10 @@
 import { createClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/utils/logger';
 import { revalidatePath } from 'next/cache';
+import {
+  checkFeatureLimit,
+  recordFeatureUsage,
+} from './subscription-management';
 
 export interface PhotoSessionData {
   title: string;
@@ -32,6 +36,42 @@ export async function createPhotoSessionAction(data: PhotoSessionData) {
       return { success: false, error: '認証が必要です' };
     }
 
+    // Phase 1: 運営者の撮影会作成制限チェック
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('user_type')
+      .eq('id', user.id)
+      .single();
+
+    if (profile?.user_type === 'organizer') {
+      // 現在の撮影会数を取得
+      const { count: currentSessionCount } = await supabase
+        .from('photo_sessions')
+        .select('id', { count: 'exact' })
+        .eq('organizer_id', user.id);
+
+      // サブスクリプション制限チェック
+      const limitCheck = await checkFeatureLimit(
+        user.id,
+        'sessionLimit',
+        currentSessionCount || 0
+      );
+
+      if (!limitCheck.allowed) {
+        logger.warn('Session creation limit exceeded', {
+          userId: user.id,
+          currentCount: limitCheck.current_usage,
+          limit: limitCheck.limit,
+          planName: limitCheck.plan_name,
+        });
+
+        return {
+          success: false,
+          error: `撮影会作成上限に達しています。現在のプラン「${limitCheck.plan_name}」では${limitCheck.limit}件まで作成可能です。`,
+        };
+      }
+    }
+
     const { data: session, error } = await supabase
       .from('photo_sessions')
       .insert({
@@ -45,6 +85,11 @@ export async function createPhotoSessionAction(data: PhotoSessionData) {
     if (error) {
       logger.error('撮影会作成エラー:', error);
       return { success: false, error: '撮影会の作成に失敗しました' };
+    }
+
+    // Phase 1: 撮影会作成時の使用量記録
+    if (profile?.user_type === 'organizer') {
+      await recordFeatureUsage(user.id, 'sessionLimit', 1);
     }
 
     revalidatePath('/photo-sessions');
