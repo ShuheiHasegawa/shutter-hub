@@ -1509,6 +1509,12 @@
     "nextBilling": "次回請求日",
     "cancelPlan": "プランをキャンセル",
     "cancelling": "キャンセル中...",
-    "phase1Notice": "Phase 1: 基本機能実装中"
+    "phase1Notice": "Phase 1: 基本機能実装中",
+    "paymentTitle": "決済情報入力",
+    "paymentDescription": "サブスクリプション決済を完了してください",
+    "paymentProcessing": "決済処理中...",
+    "paymentSuccess": "決済が完了しました",
+    "paymentFailed": "決済に失敗しました",
+    "securePayment": "安全な決済処理"
   }
 }

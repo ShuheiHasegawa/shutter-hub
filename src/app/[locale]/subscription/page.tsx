@@ -29,10 +29,13 @@ export async function generateMetadata({
  */
 export default async function SubscriptionPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ success?: string; error?: string }>;
 }) {
   const { locale: _locale } = await params;
+  const { success, error: urlError } = await searchParams;
   const supabase = await createClient();
 
   // 認証チェック
@@ -66,20 +69,26 @@ export default async function SubscriptionPage({
           icon={<CreditCard className="h-6 w-6" />}
         />
 
+        {/* 成功・エラーメッセージ */}
+        {success === 'payment_completed' && (
+          <div className="text-center p-4 bg-green-50 text-green-700 rounded-lg border border-green-200">
+            <p className="font-medium">🎉 決済が完了しました！</p>
+            <p className="text-sm">サブスクリプションが有効になりました。</p>
+          </div>
+        )}
+
+        {urlError && (
+          <div className="text-center p-4 bg-red-50 text-red-700 rounded-lg border border-red-200">
+            <p className="font-medium">❌ エラーが発生しました</p>
+            <p className="text-sm">{decodeURIComponent(urlError)}</p>
+          </div>
+        )}
+
         {/* 現在のサブスクリプション状況 */}
         <SubscriptionStatus />
 
         {/* プラン選択 */}
         <PlanSelector userType={userType} />
-
-        {/* Phase 1: 注意書き */}
-        <div className="text-center text-sm text-muted-foreground bg-blue-50 p-4 rounded-lg">
-          <p className="font-medium">Phase 1: 基本機能実装中</p>
-          <p>
-            現在は基本的なサブスクリプション機能のみ利用可能です。
-            詳細な機能は順次追加予定です。
-          </p>
-        </div>
       </div>
     </AuthenticatedLayout>
   );

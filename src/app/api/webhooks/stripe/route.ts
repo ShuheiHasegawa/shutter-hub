@@ -63,34 +63,108 @@ export async function POST(request: NextRequest) {
       case 'payment_intent.succeeded': {
         const paymentIntent = event.data.object as Stripe.PaymentIntent;
 
-        // データベースの決済ステータスを更新
-        await supabase
-          .from('payments')
-          .update({
-            status: 'succeeded',
-            paid_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          })
-          .eq('stripe_payment_intent_id', paymentIntent.id);
+        // サブスクリプション関連のPayment Intentの場合
+        if (paymentIntent.metadata.subscription_id) {
+          const subscriptionId = paymentIntent.metadata.subscription_id;
+          const userId = paymentIntent.metadata.user_id;
+          const planId = paymentIntent.metadata.plan_id;
 
-        // 予約ステータスも更新
-        const { data: payment } = await supabase
-          .from('payments')
-          .select('booking_id')
-          .eq('stripe_payment_intent_id', paymentIntent.id)
-          .single();
+          logger.info('Payment Intent succeeded for subscription', {
+            paymentIntentId: paymentIntent.id,
+            subscriptionId,
+            userId,
+            planId,
+          });
 
-        if (payment) {
+          // サブスクリプションを有効化
+          if (subscriptionId) {
+            try {
+              const updatedSubscription = await stripe.subscriptions.update(
+                subscriptionId,
+                {
+                  default_payment_method:
+                    paymentIntent.payment_method as string,
+                }
+              );
+
+              // データベースのサブスクリプション状態を更新
+              await supabase.from('user_subscriptions').upsert({
+                user_id: userId,
+                plan_id: planId,
+                stripe_subscription_id: subscriptionId,
+                stripe_customer_id: paymentIntent.customer as string,
+                status: updatedSubscription.status,
+                current_period_start: (
+                  updatedSubscription as unknown as {
+                    current_period_start?: number;
+                  }
+                ).current_period_start
+                  ? new Date(
+                      (
+                        updatedSubscription as unknown as {
+                          current_period_start: number;
+                        }
+                      ).current_period_start * 1000
+                    ).toISOString()
+                  : null,
+                current_period_end: (
+                  updatedSubscription as unknown as {
+                    current_period_end?: number;
+                  }
+                ).current_period_end
+                  ? new Date(
+                      (
+                        updatedSubscription as unknown as {
+                          current_period_end: number;
+                        }
+                      ).current_period_end * 1000
+                    ).toISOString()
+                  : null,
+                updated_at: new Date().toISOString(),
+              });
+
+              logger.info(
+                '✅ Subscription activated via payment_intent.succeeded',
+                {
+                  subscriptionId,
+                  userId,
+                  planId,
+                }
+              );
+            } catch (error) {
+              logger.error('Failed to activate subscription', error);
+            }
+          }
+        } else {
+          // 通常の予約決済の場合（既存処理）
           await supabase
-            .from('bookings')
+            .from('payments')
             .update({
-              status: 'confirmed',
+              status: 'succeeded',
+              paid_at: new Date().toISOString(),
               updated_at: new Date().toISOString(),
             })
-            .eq('id', payment.booking_id);
-        }
+            .eq('stripe_payment_intent_id', paymentIntent.id);
 
-        logger.debug('✅ Payment succeeded:', paymentIntent.id);
+          // 予約ステータスも更新
+          const { data: payment } = await supabase
+            .from('payments')
+            .select('booking_id')
+            .eq('stripe_payment_intent_id', paymentIntent.id)
+            .single();
+
+          if (payment) {
+            await supabase
+              .from('bookings')
+              .update({
+                status: 'confirmed',
+                updated_at: new Date().toISOString(),
+              })
+              .eq('id', payment.booking_id);
+          }
+
+          logger.debug('✅ Booking payment succeeded:', paymentIntent.id);
+        }
         break;
       }
 
@@ -123,6 +197,102 @@ export async function POST(request: NextRequest) {
           .eq('stripe_payment_intent_id', paymentIntent.id);
 
         logger.debug('Payment canceled:', paymentIntent.id);
+        break;
+      }
+
+      case 'customer.subscription.created': {
+        const subscription = event.data.object as Stripe.Subscription;
+        const userId = subscription.metadata.user_id;
+        const planId = subscription.metadata.plan_id;
+
+        if (userId && planId) {
+          // サブスクリプション情報をデータベースに保存
+          await supabase.from('user_subscriptions').upsert({
+            user_id: userId,
+            plan_id: planId,
+            stripe_subscription_id: subscription.id,
+            stripe_customer_id: subscription.customer as string,
+            status: subscription.status,
+            current_period_start: (
+              subscription as unknown as { current_period_start?: number }
+            ).current_period_start
+              ? new Date(
+                  (subscription as unknown as { current_period_start: number })
+                    .current_period_start * 1000
+                ).toISOString()
+              : null,
+            current_period_end: (
+              subscription as unknown as { current_period_end?: number }
+            ).current_period_end
+              ? new Date(
+                  (subscription as unknown as { current_period_end: number })
+                    .current_period_end * 1000
+                ).toISOString()
+              : null,
+            updated_at: new Date().toISOString(),
+          });
+
+          logger.info('✅ Subscription created via webhook', {
+            subscriptionId: subscription.id,
+            userId,
+            planId,
+          });
+        }
+        break;
+      }
+
+      case 'customer.subscription.updated': {
+        const subscription = event.data.object as Stripe.Subscription;
+
+        // サブスクリプション状態を更新
+        await supabase
+          .from('user_subscriptions')
+          .update({
+            status: subscription.status,
+            current_period_start: (
+              subscription as unknown as { current_period_start?: number }
+            ).current_period_start
+              ? new Date(
+                  (subscription as unknown as { current_period_start: number })
+                    .current_period_start * 1000
+                ).toISOString()
+              : null,
+            current_period_end: (
+              subscription as unknown as { current_period_end?: number }
+            ).current_period_end
+              ? new Date(
+                  (subscription as unknown as { current_period_end: number })
+                    .current_period_end * 1000
+                ).toISOString()
+              : null,
+            cancel_at_period_end: subscription.cancel_at_period_end || false,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('stripe_subscription_id', subscription.id);
+
+        logger.info('✅ Subscription updated via webhook', {
+          subscriptionId: subscription.id,
+          status: subscription.status,
+        });
+        break;
+      }
+
+      case 'customer.subscription.deleted': {
+        const subscription = event.data.object as Stripe.Subscription;
+
+        // サブスクリプションをキャンセル状態に更新
+        await supabase
+          .from('user_subscriptions')
+          .update({
+            status: 'cancelled',
+            cancelled_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+          .eq('stripe_subscription_id', subscription.id);
+
+        logger.info('✅ Subscription deleted via webhook', {
+          subscriptionId: subscription.id,
+        });
         break;
       }
 
