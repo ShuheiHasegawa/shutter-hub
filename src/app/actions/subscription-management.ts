@@ -324,56 +324,100 @@ export async function createSubscription(
 
     const subscription = await stripe.subscriptions.create(subscriptionParams);
 
-    // データベースに保存
-    const { error: dbError } = await supabase
-      .from('user_subscriptions')
-      .upsert({
-        user_id: userId,
-        plan_id: planId,
-        stripe_subscription_id: subscription.id,
-        stripe_customer_id: customerId,
-        status: subscription.status,
-        current_period_start: (
-          subscription as unknown as { current_period_start?: number }
-        ).current_period_start
-          ? new Date(
-              (subscription as unknown as { current_period_start: number })
-                .current_period_start * 1000
-            ).toISOString()
-          : null,
-        current_period_end: (
-          subscription as unknown as { current_period_end?: number }
-        ).current_period_end
-          ? new Date(
-              (subscription as unknown as { current_period_end: number })
-                .current_period_end * 1000
-            ).toISOString()
-          : null,
-        updated_at: new Date().toISOString(),
-      });
+    // Phase 1: データベース保存はWebhookで処理
+    // 決済完了後にWebhookでuser_subscriptionsテーブルに保存される
 
-    if (dbError) {
-      logger.error('Error saving subscription to database:', dbError);
-      // Stripeのサブスクリプションはキャンセル
-      await stripe.subscriptions.cancel(subscription.id);
-      return { success: false, error: 'データベース保存に失敗しました' };
-    }
+    // latest_invoiceとpayment_intentの詳細ログ
+    logger.info('Subscription created with details', {
+      subscriptionId: subscription.id,
+      subscriptionStatus: subscription.status,
+      latest_invoice: subscription.latest_invoice,
+      expand: subscriptionParams.expand,
+    });
+
+    // Stripe APIレスポンス全体をログ出力（デバッグ用）
+    logger.info('Full subscription object', {
+      subscription: JSON.stringify(subscription, null, 2),
+    });
 
     const invoice = subscription.latest_invoice as unknown as {
       payment_intent?: { client_secret?: string };
     };
     const paymentIntent = invoice?.payment_intent;
+    const clientSecret = paymentIntent?.client_secret;
+
+    logger.info('Payment intent details', {
+      hasInvoice: !!invoice,
+      hasPaymentIntent: !!paymentIntent,
+      clientSecret: clientSecret ? 'present' : 'missing',
+    });
+
+    if (!clientSecret) {
+      logger.warn(
+        'Client secret not found in subscription, creating separate Payment Intent',
+        {
+          invoice,
+          paymentIntent,
+          subscriptionStatus: subscription.status,
+        }
+      );
+
+      // 代替方法: 別途Payment Intentを作成
+      try {
+        const paymentIntentParams = {
+          amount: plan.price * 100, // 円をセント単位に変換
+          currency: 'jpy',
+          customer: customerId,
+          setup_future_usage: 'off_session' as const,
+          metadata: {
+            subscription_id: subscription.id,
+            user_id: userId,
+            plan_id: planId,
+          },
+        };
+
+        const separatePaymentIntent =
+          await stripe.paymentIntents.create(paymentIntentParams);
+
+        logger.info('Separate Payment Intent created', {
+          paymentIntentId: separatePaymentIntent.id,
+          clientSecret: separatePaymentIntent.client_secret
+            ? 'present'
+            : 'missing',
+        });
+
+        return {
+          success: true,
+          subscriptionId: subscription.id,
+          clientSecret: separatePaymentIntent.client_secret || undefined,
+        };
+      } catch (paymentIntentError) {
+        logger.error(
+          'Failed to create separate Payment Intent',
+          paymentIntentError
+        );
+
+        // サブスクリプションをキャンセル
+        await stripe.subscriptions.cancel(subscription.id);
+
+        return {
+          success: false,
+          error: 'Payment Intent作成に失敗しました',
+        };
+      }
+    }
 
     logger.info('Subscription created successfully', {
       subscriptionId: subscription.id,
       userId,
       planId,
+      hasClientSecret: !!clientSecret,
     });
 
     return {
       success: true,
       subscriptionId: subscription.id,
-      clientSecret: paymentIntent?.client_secret,
+      clientSecret,
     };
   } catch (error) {
     logger.error('Error creating subscription:', error);

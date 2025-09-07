@@ -86,7 +86,7 @@ export function SubscriptionStatus() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <span>プラン</span>
-              <Badge variant="outline">フリープラン</Badge>
+              <Badge variant="default">フリープラン</Badge>
             </div>
             <div className="text-sm text-muted-foreground">
               基本機能を無料でご利用いただいています。

@@ -20,6 +20,7 @@ import {
 } from '@/app/actions/subscription-management';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/utils/logger';
+import { PlanChangeConfirmDialog } from './PlanChangeConfirmDialog';
 
 interface PlanSelectorProps {
   userType: 'model' | 'photographer' | 'organizer';
@@ -40,6 +41,10 @@ export function PlanSelector({ userType }: PlanSelectorProps) {
   const [isCreating, setIsCreating] = useState(false);
   const [availablePlans, setAvailablePlans] = useState<SubscriptionPlan[]>([]);
   const [plansLoading, setPlansLoading] = useState(true);
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [planToChange, setPlanToChange] = useState<SubscriptionPlan | null>(
+    null
+  );
 
   // プラン一覧を取得
   useEffect(() => {
@@ -66,7 +71,7 @@ export function PlanSelector({ userType }: PlanSelectorProps) {
   const isLoading = subscriptionLoading || plansLoading;
 
   /**
-   * プラン選択処理
+   * プラン選択処理（確認ダイアログ表示）
    */
   const handlePlanSelect = async (planId: string) => {
     if (!user) {
@@ -78,49 +83,101 @@ export function PlanSelector({ userType }: PlanSelectorProps) {
       return;
     }
 
-    // フリープランの場合は即座に適用（決済不要）
     const selectedPlanInfo = availablePlans.find(p => p.id === planId);
-    if (selectedPlanInfo?.tier === 'free') {
+    if (!selectedPlanInfo) {
       toast({
-        title: 'プラン変更完了',
-        description: 'フリープランに変更しました',
+        title: 'エラー',
+        description: '選択されたプランが見つかりません',
+        variant: 'destructive',
       });
       return;
     }
 
-    setSelectedPlan(planId);
+    // フリープランの場合は即座に適用（決済不要・確認不要）
+    if (selectedPlanInfo.tier === 'free') {
+      await handlePlanChange(selectedPlanInfo);
+      return;
+    }
+
+    // 有料プランの場合は確認ダイアログを表示
+    setPlanToChange(selectedPlanInfo);
+    setConfirmDialogOpen(true);
+  };
+
+  /**
+   * プラン変更実行処理
+   */
+  const handlePlanChange = async (plan: SubscriptionPlan) => {
+    if (!user) return;
+
+    setSelectedPlan(plan.id);
     setIsCreating(true);
+    setConfirmDialogOpen(false);
 
     try {
-      logger.info('Creating subscription', { userId: user.id, planId });
+      logger.info('Creating subscription', {
+        userId: user.id,
+        planId: plan.id,
+      });
 
-      const result = await createSubscription(user.id, planId);
+      // フリープランの場合の簡易処理
+      if (plan.tier === 'free') {
+        toast({
+          title: 'プラン変更完了',
+          description: 'フリープランに変更しました',
+        });
+        return;
+      }
+
+      // 有料プランの場合はStripe決済が必要
+      const result = await createSubscription(user.id, plan.id);
+
+      // 詳細ログでresultの内容を確認
+      logger.info('Subscription creation result', {
+        success: result.success,
+        hasClientSecret: !!result.clientSecret,
+        subscriptionId: result.subscriptionId,
+        error: result.error,
+        result,
+      });
 
       if (result.success) {
-        toast({
-          title: 'サブスクリプション作成成功',
-          description: '決済情報を入力してサブスクリプションを完了してください',
+        if (result.clientSecret) {
+          // Phase 1: Stripe決済ページにリダイレクト
+          logger.info('Redirecting to payment page', {
+            clientSecret: result.clientSecret,
+            planId: plan.id,
+          });
+
+          // 決済ページにリダイレクト
+          window.location.href = `/subscription/payment?client_secret=${result.clientSecret}&plan_id=${plan.id}`;
+        } else {
+          // clientSecretがない場合（フリープラン等）
+          toast({
+            title: 'プラン変更完了',
+            description: `${plan.name}に変更しました`,
+          });
+
+          // ページをリロードして最新状態を反映
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000);
+        }
+      } else {
+        logger.error('Subscription creation failed', {
+          error: result.error,
+          planId: plan.id,
+          userId: user.id,
         });
 
-        // 決済フローにリダイレクト（Phase 1では簡易実装）
-        if (result.clientSecret) {
-          // TODO: Stripe Elements決済フォームへリダイレクト
-          logger.info('Payment required', {
-            clientSecret: result.clientSecret,
-          });
-        }
-
-        // Phase 1では基本的な処理のみ
-        logger.info('Plan selected successfully', { planId });
-      } else {
         toast({
           title: 'エラー',
-          description: result.error || 'サブスクリプションの作成に失敗しました',
+          description: result.error || 'プラン変更に失敗しました',
           variant: 'destructive',
         });
       }
     } catch (error) {
-      logger.error('Error in plan selection:', error);
+      logger.error('Error in plan change:', error);
       toast({
         title: 'エラー',
         description: '予期しないエラーが発生しました',
@@ -356,7 +413,7 @@ export function PlanSelector({ userType }: PlanSelectorProps) {
                 <div className="pt-4 mt-auto">
                   <Button
                     className="w-full"
-                    variant={isCurrentPlan ? 'outline' : 'default'}
+                    variant={isCurrentPlan ? 'outline' : 'cta'}
                     disabled={
                       isCurrentPlan ||
                       isCreating ||
@@ -385,6 +442,25 @@ export function PlanSelector({ userType }: PlanSelectorProps) {
         <div className="text-center p-4 bg-red-50 text-red-700 rounded-lg">
           {error}
         </div>
+      )}
+
+      {/* プラン変更確認ダイアログ */}
+      {planToChange && (
+        <PlanChangeConfirmDialog
+          isOpen={confirmDialogOpen}
+          onClose={() => {
+            setConfirmDialogOpen(false);
+            setPlanToChange(null);
+          }}
+          onConfirm={() => {
+            if (planToChange) {
+              handlePlanChange(planToChange);
+            }
+          }}
+          currentPlan={currentSubscription?.plan || null}
+          newPlan={planToChange}
+          isProcessing={isCreating}
+        />
       )}
     </div>
   );
