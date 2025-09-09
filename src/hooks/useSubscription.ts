@@ -22,14 +22,15 @@ export function useSubscription() {
   const [_availablePlans, _setAvailablePlans] = useState<SubscriptionPlan[]>(
     []
   );
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   /**
    * サブスクリプション情報を読み込む
    */
   const loadSubscriptionData = useCallback(async () => {
-    if (!user) {
+    if (!user?.id) {
+      setCurrentSubscription(null);
       setIsLoading(false);
       return;
     }
@@ -42,10 +43,6 @@ export function useSubscription() {
       const subscription = await getCurrentSubscription(user.id);
       setCurrentSubscription(subscription);
 
-      // ユーザータイプに対応するプラン一覧を取得
-      // userTypeは親コンポーネントから渡されるので、ここでは取得しない
-      // プラン一覧の取得は親コンポーネントで行う
-
       logger.debug('Subscription data loaded', {
         userId: user.id,
         hasSubscription: !!subscription,
@@ -56,7 +53,7 @@ export function useSubscription() {
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+  }, [user?.id]); // user.idのみに依存
 
   /**
    * 機能制限をチェックする
@@ -142,10 +139,12 @@ export function useSubscription() {
     return (currentSubscription?.plan?.price ?? 0) > 0;
   }, [currentSubscription]);
 
-  // 初回データ読み込み
+  // 初回データ読み込み（userがある場合のみ）
   useEffect(() => {
-    loadSubscriptionData();
-  }, [loadSubscriptionData]);
+    if (user?.id) {
+      loadSubscriptionData();
+    }
+  }, [loadSubscriptionData, user?.id]);
 
   return {
     // データ
