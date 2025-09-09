@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Card,
   CardContent,
@@ -46,27 +46,32 @@ export function PlanSelector({ userType }: PlanSelectorProps) {
     null
   );
 
-  // プラン一覧を取得
-  useEffect(() => {
-    const loadPlans = async () => {
-      try {
-        setPlansLoading(true);
-        const plans = await getPlansForUserType(userType);
-        setAvailablePlans(plans);
-      } catch (error) {
-        logger.error('Error loading plans:', error);
-        toast({
-          title: 'エラー',
-          description: 'プラン情報の読み込みに失敗しました',
-          variant: 'destructive',
-        });
-      } finally {
-        setPlansLoading(false);
-      }
-    };
-
-    loadPlans();
+  // プラン一覧を取得（useCallback でメモ化）
+  const loadPlans = useCallback(async () => {
+    try {
+      setPlansLoading(true);
+      const plans = await getPlansForUserType(userType);
+      setAvailablePlans(plans);
+      logger.debug('Plans loaded successfully', {
+        userType,
+        planCount: plans.length,
+      });
+    } catch (error) {
+      logger.error('Error loading plans:', error);
+      toast({
+        title: 'エラー',
+        description: 'プラン情報の読み込みに失敗しました',
+        variant: 'destructive',
+      });
+    } finally {
+      setPlansLoading(false);
+    }
   }, [userType, toast]);
+
+  // プラン一覧を取得（初回のみ）
+  useEffect(() => {
+    loadPlans();
+  }, [loadPlans]);
 
   const isLoading = subscriptionLoading || plansLoading;
 
