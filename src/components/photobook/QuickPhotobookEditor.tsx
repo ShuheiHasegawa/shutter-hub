@@ -389,10 +389,8 @@ export function QuickPhotobookEditor({
       <PhotobookPreviewModal
         images={unifiedImages}
         coverImageId={pendingCoverImageId}
-        onCoverImageSelect={handleCoverImageChange}
         isOpen={isPreviewOpen}
         onOpenChange={setIsPreviewOpen}
-        trigger={null}
       />
     </div>
   );
