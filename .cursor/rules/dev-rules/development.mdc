@@ -1611,6 +1611,36 @@ MCP連携チェックリスト:
   - [ ] "ローカルでのDB検証を避けているか？"
 ```
 
+### **🚨 MCP連携失敗時の処理中断ルール（新規追加）**
+
+```yaml
+MCP連携失敗時の対応:
+  必須手順:
+    1. "MCP連携を試行する"
+    2. "権限エラーまたは接続エラーが発生した場合、即座に処理を中断"
+    3. "ユーザーにMCP連携の問題を報告"
+    4. "データベース関連の作業は一切行わない"
+    5. "代替手段（npxコマンド等）の提案は禁止"
+
+  報告テンプレート:
+    "🚨 MCP連携エラー: データベースアクセス権限がありません
+
+    エラー詳細: [具体的なエラーメッセージ]
+
+    対応が必要な作業:
+    - Supabase MCP設定の確認
+    - プロジェクト権限の確認
+    - 接続設定の再確認
+
+    MCP連携が復旧するまで、データベース関連の作業を中断します。"
+
+  絶対禁止事項:
+    - npxコマンドでの代替実行
+    - ローカルSupabaseでの検証
+    - 手動SQL実行の提案
+    - "とりあえず"の暫定対応
+```
+
 ### **禁止される行動パターン**
 
 ```yaml
@@ -1807,3 +1837,231 @@ Cursorカスタムコマンド `/commit` を使用することで、適切なフ
 - **アクセシビリティ**: スクリーンリーダー対応
 
 ## エラーハンドリング
+
+## 🎨 **カラーシステム統一ルール（新規追加）**
+
+### **基本原則**
+
+- **固定色（Tailwind標準色）の使用禁止**: `text-green-800`, `bg-red-50`, `border-blue-200` 等の直接指定を避ける
+- **統合カラーシステム必須使用**: ブランド色・サーフェース色・統合Buttonのみ使用
+- **セマンティックな色選択**: 意味に基づいた適切な色の選択
+
+### **必須使用カラーシステム**
+
+#### **ブランド色（固定・テーマ不変）**
+
+```css
+brand-primary     /* ShutterHubロゴ・メインブランド */
+brand-secondary   /* セカンダリブランド */
+brand-success     /* 成功・完了・空きあり */
+brand-warning     /* 警告・注意・要確認 */
+brand-error       /* エラー・削除・満席 */
+brand-info        /* 情報・リンク・詳細 */
+```
+
+#### **サーフェース色（テーマ対応）**
+
+```css
+surface-primary    /* メインボタン・重要なカード・ヘッダー背景 */
+surface-accent     /* アクションボタン・強調要素・通知 */
+surface-neutral    /* サブボタン・カード背景・フッター */
+```
+
+#### **統合Buttonバリアント**
+
+```typescript
+// ✅ 推奨使用
+<Button variant="primary">メインアクション</Button>
+<Button variant="accent">強調アクション</Button>
+<Button variant="neutral">サブアクション</Button>
+
+// 固定色（機能別）
+<Button variant="destructive">削除</Button>
+<Button variant="brand-success">成功ボタン</Button>
+<Button variant="brand-warning">警告ボタン</Button>
+<Button variant="brand-error">エラーボタン</Button>
+```
+
+### **禁止パターン**
+
+```tsx
+❌ 固定色の直接使用
+<div className="bg-green-50 border-green-200">
+<h3 className="text-green-800">成功</h3>
+<p className="text-green-700">メッセージ</p>
+
+❌ 意味のない色選択
+<span className="text-red-600">一般的なテキスト</span>
+<div className="bg-blue-100">通常のカード</div>
+
+❌ Tailwind標準色の混用
+<Card className="bg-purple-100 border-purple-300">
+```
+
+### **正しいパターン**
+
+```tsx
+✅ ブランド色による機能別色分け
+<div className="surface-neutral border">
+  <h3 className="brand-success">成功</h3>
+  <p>メッセージ内容</p>
+  <Button variant="brand-success">確認</Button>
+</div>
+
+✅ 状態による適切な色選択
+// 成功状態
+<Alert className="brand-success">
+<Badge className="brand-success">完了</Badge>
+
+// 警告状態
+<Alert className="brand-warning">
+<Badge className="brand-warning">注意</Badge>
+
+// エラー状態
+<Alert className="brand-error">
+<Badge className="brand-error">エラー</Badge>
+```
+
+### **実装時チェックリスト**
+
+新規実装時は以下を必ず確認：
+
+- [ ] `text-{color}-{number}` パターンを使用していないか
+- [ ] `bg-{color}-{number}` パターンを使用していないか
+- [ ] `border-{color}-{number}` パターンを使用していないか
+- [ ] 状態表示に適切なブランド色を使用しているか
+- [ ] UI要素にサーフェース色を使用しているか
+- [ ] Buttonに統合バリアントを使用しているか
+
+### **自動検出コマンド**
+
+```bash
+# 固定色使用の検出
+grep -r "text-\(red\|green\|blue\|yellow\|purple\|pink\|orange\)-[0-9]" src/components/
+grep -r "bg-\(red\|green\|blue\|yellow\|purple\|pink\|orange\)-[0-9]" src/components/
+grep -r "border-\(red\|green\|blue\|yellow\|purple\|pink\|orange\)-[0-9]" src/components/
+
+# 新規実装ファイルのチェック
+grep -r "className.*\(green\|red\|blue\|yellow\)-[0-9]" src/components/photobook/
+```
+
+### **違反時の対応**
+
+```yaml
+即座修正:
+  - 固定色 → ブランド色・サーフェース色に置き換え
+  - 意味に基づいた適切な色選択
+  - 統合Buttonバリアント使用
+
+再発防止:
+  - 実装前にこのルールを必ず確認
+  - コードレビュー時のチェック項目に追加
+  - 自動検出コマンドの定期実行
+```
+
+## 🖼️ **Next.js Image最適化ルール**
+
+### **基本原則**
+
+- **必須使用**: `<img>`タグの代わりに`<Image />`コンポーネントを使用する
+- **パフォーマンス**: 自動的な画像最適化・遅延読み込み・レスポンシブ対応
+- **SEO向上**: Core Web Vitals（LCP）の改善
+
+### **実装パターン**
+
+#### **✅ 推奨パターン**
+
+```tsx
+import Image from 'next/image';
+
+// 固定サイズ画像
+<Image
+  src={imageUrl}
+  alt="説明文"
+  width={400}
+  height={300}
+  className="object-cover"
+/>
+
+// 親要素のサイズに合わせる場合
+<div className="relative aspect-[4/3]">
+  <Image
+    src={imageUrl}
+    alt="説明文"
+    fill
+    className="object-cover"
+  />
+</div>
+
+// レスポンシブ画像
+<Image
+  src={imageUrl}
+  alt="説明文"
+  width={800}
+  height={600}
+  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+  className="object-cover"
+/>
+```
+
+#### **❌ 禁止パターン**
+
+```tsx
+// HTMLのimgタグ直接使用
+<img src={imageUrl} alt="説明文" className="w-full h-full object-cover" />
+
+// インライン画像
+<img src="data:image/..." alt="..." />
+
+// 最適化されていない外部画像
+<img src="https://example.com/image.jpg" alt="..." />
+```
+
+### **使い分けガイドライン**
+
+| 用途                         | 推奨方法                        | 理由             |
+| ---------------------------- | ------------------------------- | ---------------- |
+| **ユーザーアップロード画像** | `<Image fill />`                | 動的サイズ対応   |
+| **固定サイズ画像**           | `<Image width height />`        | 明確なサイズ指定 |
+| **アイコン・SVG**            | `<img />` or アイコンライブラリ | 軽量で最適化済み |
+| **Base64画像**               | `<Image />`                     | 自動最適化適用   |
+
+### **実装時チェックリスト**
+
+- [ ] `<img>`タグを使用していないか
+- [ ] `import Image from 'next/image'`を追加したか
+- [ ] 適切な`alt`属性を設定したか
+- [ ] `fill`使用時に親要素が`relative`かつサイズ指定されているか
+- [ ] `width`と`height`が適切に設定されているか
+
+### **自動検出コマンド**
+
+```bash
+# HTMLのimgタグ使用の検出
+grep -r "<img" src/components/
+grep -r "img src=" src/components/
+
+# Next.js Imageの未import検出
+grep -l "<Image" src/components/ | xargs grep -L "import.*Image.*next/image"
+```
+
+### **パフォーマンス効果**
+
+- **LCP改善**: 画像の最適化による高速読み込み
+- **帯域幅削減**: WebP/AVIF形式への自動変換
+- **レスポンシブ**: デバイスに応じた最適サイズ配信
+- **遅延読み込み**: ビューポート外画像の遅延読み込み
+
+### **違反時の対応**
+
+```yaml
+即座修正:
+  - <img> → <Image />に置き換え
+  - 必要なimportを追加
+  - 適切なpropsを設定
+
+再発防止:
+  - 実装前にこのルールを確認
+  - linter警告を無視しない
+  - 自動検出コマンドの定期実行
+```
