@@ -1,195 +1,194 @@
-'use client';
-
-import React from 'react';
-import { samplePhotobook } from '@/constants/samplePhotobookData';
-import Image from 'next/image';
-import Link from 'next/link';
-import {
-  BookOpen,
-  Eye,
-  Calendar,
-  User,
-  Edit3,
-  Trash2,
-  MoreVertical,
-} from 'lucide-react';
-import { AuthenticatedLayout } from '@/components/layout/authenticated-layout';
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import React, { Suspense } from 'react';
+import { BookOpen } from 'lucide-react';
 import { PageTitleHeader } from '@/components/ui/page-title-header';
 import { BookIcon } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+  getPhotobookList,
+  getPhotobookPlanLimits,
+} from '@/app/actions/quick-photobook';
+import { getCurrentUser } from '@/lib/auth/server';
+import { QuickPhotobookShelfClient } from '@/components/photobook/QuickPhotobookShelfClient';
+import { AdvancedPhotobookShelfClient } from '@/components/photobook/AdvancedPhotobookShelfClient';
 
-export default function PhotobooksPage() {
-  // サンプルフォトブックを配列として扱う（本棚表示のため）
-  const samplePhotobooks = [samplePhotobook];
+/**
+ * アドバンスドフォトブック本棚コンポーネント
+ */
+async function AdvancedPhotobookShelf() {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    return null; // 未認証の場合は表示しない
+  }
+
+  const [photobooks, planLimits] = await Promise.all([
+    getPhotobookList(user.id, 'advanced'), // アドバンスドフォトブックのみ取得
+    getPhotobookPlanLimits(user.id),
+  ]);
 
   return (
-    <AuthenticatedLayout>
-      <div>
-        <PageTitleHeader
-          title="フォトブック"
-          icon={<BookIcon className="h-6 w-6" />}
-        />
-        {/* フォトブックについてのカード */}
-        <div className="brounded-lg p-4 border">
-          <h3 className="text-lg font-semibold mb-2">フォトブックについて</h3>
-          <p className="leading-relaxed text-sm">
-            ShutterHubのフォトブック機能では、撮影した写真を美しいレイアウトで整理し、
-            プロフェッショナルな写真集として作成することができます。
-            様々なテンプレートとレイアウトオプションをご用意しており、
-            あなたの作品を最高の形で表現できます。
-          </p>
+    <div className="mb-12">
+      {/* セクションヘッダー */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <BookOpen className="h-6 w-6 brand-primary" />
+          <h2 className="text-2xl font-bold">アドバンスドフォトブック</h2>
         </div>
+      </div>
 
-        {/* 本棚セクション */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-          {/* 本棚風レイアウト */}
-          <div className="relative">
-            {/* 本棚の背景 */}
-            <div className="bg-gradient-to-b from-amber-800 to-amber-900 dark:from-amber-900 dark:to-amber-950 rounded-lg p-8 shadow-xl">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {samplePhotobooks.map(photobook => (
-                  <div
-                    key={photobook.id}
-                    className="group transform transition-all duration-300 hover:-translate-y-2 relative"
-                  >
-                    {/* アクションボタン（右上） */}
-                    <div className="absolute top-2 right-2 z-10 opacity-100 transition-opacity duration-200">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0"
-                          >
-                            <MoreVertical className="h-4 w-4" />
-                            <span className="sr-only">アクションメニュー</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-40">
-                          <DropdownMenuItem
-                            onClick={e => {
-                              e.preventDefault();
-                              window.location.href = `/photobooks/${photobook.id}/edit`;
-                            }}
-                          >
-                            <Edit3 className="mr-2 h-4 w-4" />
-                            編集
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={e => {
-                              e.preventDefault();
-                              // TODO: 確認ダイアログの実装
-                              if (
-                                window.confirm(
-                                  'このフォトブックを削除しますか？'
-                                )
-                              ) {
-                                // TODO: 削除処理を実装
-                              }
-                            }}
-                            className="text-red-600 focus:text-red-600"
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            削除
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
+      {/* 本棚セクション */}
+      <div className="surface-neutral rounded-lg border overflow-hidden">
+        <div className="relative">
+          {/* 本棚の背景 */}
+          <div className="bg-gradient-to-b from-amber-800 to-amber-900 dark:from-amber-900 dark:to-amber-950 rounded-lg p-8 shadow-xl">
+            <AdvancedPhotobookShelfClient
+              photobooks={photobooks}
+              planLimits={planLimits}
+              userId={user.id}
+            />
+          </div>
 
-                    {/* フォトブックカード */}
-                    <Link
-                      href={`/photobook/view/${photobook.id}`}
-                      className="block"
-                    >
-                      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300">
-                        {/* カバー画像 */}
-                        <div className="aspect-[3/4] rounded-t-lg overflow-hidden bg-gray-100 dark:bg-gray-700">
-                          {photobook.coverPhoto ? (
-                            <Image
-                              src={photobook.coverPhoto.src}
-                              alt={photobook.coverPhoto.alt || photobook.title}
-                              width={300}
-                              height={400}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800">
-                              <BookOpen className="h-12 w-12 text-gray-400 dark:text-gray-500" />
-                            </div>
-                          )}
-                        </div>
+          {/* 本棚の装飾 */}
+          <div className="absolute -bottom-2 left-0 right-0 h-4 bg-gradient-to-b from-amber-900 to-amber-950 dark:from-amber-950 dark:to-black rounded-b-lg shadow-lg"></div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
-                        {/* フォトブック情報 */}
-                        <div className="p-4">
-                          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2 truncate">
-                            {photobook.title}
-                          </h3>
+/**
+ * クイックフォトブック本棚コンポーネント
+ */
+async function QuickPhotobookShelf() {
+  const user = await getCurrentUser();
 
-                          {photobook.description && (
-                            <p
-                              className="text-sm text-gray-600 dark:text-gray-300 mb-3 overflow-hidden"
-                              style={{
-                                display: '-webkit-box',
-                                WebkitLineClamp: 2,
-                                WebkitBoxOrient: 'vertical' as const,
-                              }}
-                            >
-                              {photobook.description}
-                            </p>
-                          )}
+  if (!user) {
+    return null; // 未認証の場合は表示しない
+  }
 
-                          <div className="space-y-2">
-                            <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
-                              <Calendar className="h-3 w-3 mr-1" />
-                              {new Date(photobook.createdAt).toLocaleDateString(
-                                'ja-JP'
-                              )}
-                            </div>
+  const [photobooks, planLimits] = await Promise.all([
+    getPhotobookList(user.id, 'quick'), // クイックフォトブックのみ取得
+    getPhotobookPlanLimits(user.id),
+  ]);
 
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
-                                <User className="h-3 w-3 mr-1" />
-                                <span>サンプル作品</span>
-                              </div>
+  return (
+    <div className="mb-12">
+      {/* セクションヘッダー */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <BookOpen className="h-6 w-6 brand-primary" />
+          <h2 className="text-2xl font-bold">クイックフォトブック</h2>
+        </div>
+      </div>
 
-                              <div className="flex items-center text-xs text-blue-600 dark:text-blue-400">
-                                <Eye className="h-3 w-3 mr-1" />
-                                <span>閲覧する</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-                  </div>
-                ))}
+      {/* 本棚セクション */}
+      <div className="surface-neutral rounded-lg border overflow-hidden">
+        <div className="relative">
+          {/* 本棚の背景 */}
+          <div className="bg-gradient-to-b from-amber-800 to-amber-900 dark:from-amber-900 dark:to-amber-950 rounded-lg p-8 shadow-xl">
+            <QuickPhotobookShelfClient
+              photobooks={photobooks}
+              planLimits={planLimits}
+              userId={user.id}
+            />
+          </div>
 
-                {/* 空のスロット（本棚の雰囲気作り） */}
-                {Array.from({ length: 3 }).map((_, index) => (
-                  <div
-                    key={`empty-${index}`}
-                    className="aspect-[3/4] bg-amber-700/20 dark:bg-amber-600/20 rounded-lg border-2 border-dashed border-amber-600/30 dark:border-amber-500/30 flex items-center justify-center opacity-60"
-                  >
-                    <div className="text-center text-amber-600/70 dark:text-amber-400/70">
-                      <BookOpen className="h-8 w-8 mx-auto mb-2" />
-                      <p className="text-xs">今後追加予定</p>
-                    </div>
-                  </div>
-                ))}
+          {/* 本棚の装飾 */}
+          <div className="absolute -bottom-2 left-0 right-0 h-4 bg-gradient-to-b from-amber-900 to-amber-950 dark:from-amber-950 dark:to-black rounded-b-lg shadow-lg"></div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * クイックフォトブック本棚のローディング表示
+ */
+function QuickPhotobookShelfSkeleton() {
+  return (
+    <div className="mb-12">
+      {/* セクションヘッダー */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-6 w-6" />
+          <Skeleton className="h-8 w-48" />
+        </div>
+        <Skeleton className="h-10 w-24" />
+      </div>
+
+      {/* 本棚セクション */}
+      <div className="surface-neutral rounded-lg border overflow-hidden">
+        <div className="bg-gradient-to-b from-emerald-800 to-emerald-900 dark:from-emerald-900 dark:to-emerald-950 rounded-lg p-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="aspect-[3/4] rounded-lg">
+                <Skeleton className="w-full h-full" />
               </div>
-            </div>
-
-            {/* 本棚の装飾 */}
-            <div className="absolute -bottom-2 left-0 right-0 h-4 bg-gradient-to-b from-amber-900 to-amber-950 dark:from-amber-950 dark:to-black rounded-b-lg shadow-lg"></div>
+            ))}
           </div>
         </div>
       </div>
-    </AuthenticatedLayout>
+    </div>
+  );
+}
+
+export default async function PhotobooksPage() {
+  return (
+    <div>
+      <PageTitleHeader
+        title="フォトブック"
+        icon={<BookIcon className="h-6 w-6" />}
+      />
+      {/* フォトブックについてのカード */}
+      <div className="surface-neutral p-4 border rounded-lg mb-8">
+        <h3 className="text-lg font-semibold mb-2">フォトブックについて</h3>
+        <p className="leading-relaxed text-sm opacity-80">
+          ShutterHubのフォトブック機能では、撮影した写真を美しいレイアウトで整理し、
+          プロフェッショナルな写真集として作成することができます。
+          様々なテンプレートとレイアウトオプションをご用意しており、
+          あなたの作品を最高の形で表現できます。
+        </p>
+      </div>
+
+      {/* クイックフォトブック本棚セクション */}
+      <Suspense fallback={<QuickPhotobookShelfSkeleton />}>
+        <QuickPhotobookShelf />
+      </Suspense>
+
+      {/* アドバンスドフォトブック本棚セクション */}
+      <Suspense fallback={<AdvancedPhotobookShelfSkeleton />}>
+        <AdvancedPhotobookShelf />
+      </Suspense>
+    </div>
+  );
+}
+
+/**
+ * アドバンスドフォトブック本棚スケルトン
+ */
+function AdvancedPhotobookShelfSkeleton() {
+  return (
+    <div className="mb-12">
+      {/* セクションヘッダー */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <BookOpen className="h-6 w-6 brand-primary" />
+          <h2 className="text-2xl font-bold">アドバンスドフォトブック</h2>
+        </div>
+      </div>
+
+      <div className="surface-neutral rounded-lg border overflow-hidden">
+        <div className="relative">
+          <div className="bg-gradient-to-b from-amber-800 to-amber-900 dark:from-amber-900 dark:to-amber-950 rounded-lg p-8 shadow-xl">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="aspect-[3/4] rounded-lg" />
+              ))}
+            </div>
+          </div>
+          <div className="absolute -bottom-2 left-0 right-0 h-4 bg-gradient-to-b from-amber-900 to-amber-950 dark:from-amber-950 dark:to-black rounded-b-lg shadow-lg"></div>
+        </div>
+      </div>
+    </div>
   );
 }
