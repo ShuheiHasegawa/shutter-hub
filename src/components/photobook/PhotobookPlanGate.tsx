@@ -147,7 +147,7 @@ export function PhotobookCreateLimitDisplay({
       limitCheck={limitCheck}
       feature="フォトブック作成"
     >
-      {/* この部分は表示されない */}
+      <div>プラン制限により表示されません</div>
     </PhotobookPlanGate>
   );
 }
