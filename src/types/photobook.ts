@@ -1,5 +1,7 @@
 // 写真集データモデルの型定義
 
+import { PhotobookType } from './quick-photobook';
+
 // 写真のポジションとサイズ
 export interface PhotoPosition {
   x: number;
@@ -69,6 +71,7 @@ export interface PhotobookData {
     likes_count: number;
     comments_count: number;
   }>;
+  photobook_type: PhotobookType;
 }
 
 // フォトブック統計データ

@@ -335,6 +335,14 @@
     "@dnd-kit/utilities" "^3.2.2"
     tslib "^2.0.0"
 
+"@dnd-kit/modifiers@^9.0.0":
+  version "9.0.0"
+  resolved "https://registry.npmjs.org/@dnd-kit/modifiers/-/modifiers-9.0.0.tgz"
+  integrity sha512-ybiLc66qRGuZoC20wdSSG6pDXFikui/dCNGthxv4Ndy8ylErY0N3KVxY2bgo7AWwIbxDmXDg3ylAFmnrjcbVvw==
+  dependencies:
+    "@dnd-kit/utilities" "^3.2.2"
+    tslib "^2.0.0"
+
 "@dnd-kit/sortable@^10.0.0":
   version "10.0.0"
   resolved "https://registry.npmjs.org/@dnd-kit/sortable/-/sortable-10.0.0.tgz"
@@ -351,24 +359,24 @@
     tslib "^2.0.0"
 
 "@emnapi/core@^1.4.3":
-  version "1.4.5"
-  resolved "https://registry.yarnpkg.com/@emnapi/core/-/core-1.4.5.tgz#bfbb0cbbbb9f96ec4e2c4fd917b7bbe5495ceccb"
-  integrity sha512-XsLw1dEOpkSX/WucdqUhPWP7hDxSvZiY+fsUC14h+FtQ2Ifni4znbBt8punRX+Uj2JG/uDb8nEHVKvrVlvdZ5Q==
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/@emnapi/core/-/core-1.5.0.tgz#85cd84537ec989cebb2343606a1ee663ce4edaf0"
+  integrity sha512-sbP8GzB1WDzacS8fgNPpHlp6C9VZe+SJP3F90W9rLemaQj2PzIuTEl1qDOYQf58YIpyjViI24y9aPWCjEzY2cg==
   dependencies:
-    "@emnapi/wasi-threads" "1.0.4"
+    "@emnapi/wasi-threads" "1.1.0"
     tslib "^2.4.0"
 
 "@emnapi/runtime@^1.4.3":
-  version "1.4.5"
-  resolved "https://registry.yarnpkg.com/@emnapi/runtime/-/runtime-1.4.5.tgz#c67710d0661070f38418b6474584f159de38aba9"
-  integrity sha512-++LApOtY0pEEz1zrd9vy1/zXVaVJJ/EbAF3u0fXIzPJEDtnITsBGbbK0EkM72amhl/R5b+5xx0Y/QhcVOpuulg==
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/@emnapi/runtime/-/runtime-1.5.0.tgz#9aebfcb9b17195dce3ab53c86787a6b7d058db73"
+  integrity sha512-97/BJ3iXHww3djw6hYIfErCZFee7qCtrneuLa20UXFCOTCfBM2cvQHjWJ2EG0s0MtdNwInarqCTz35i4wWXHsQ==
   dependencies:
     tslib "^2.4.0"
 
-"@emnapi/wasi-threads@1.0.4":
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/@emnapi/wasi-threads/-/wasi-threads-1.0.4.tgz#703fc094d969e273b1b71c292523b2f792862bf4"
-  integrity sha512-PJR+bOmMOPH8AtcTGAyYNiuJ3/Fcoj2XN/gBEWzDIKh254XO+mM9XoXHk5GNEhodxeMznbg7BlRojVbKN+gC6g==
+"@emnapi/wasi-threads@1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@emnapi/wasi-threads/-/wasi-threads-1.1.0.tgz#60b2102fddc9ccb78607e4a3cf8403ea69be41bf"
+  integrity sha512-WI0DdZ8xFSbgMjR1sFsKABJ/C5OnRrjT06JXbZKexJGrDuPTzZdDYfFlsgcCXCyf+suG5QU2e/y1Wo2V/OapLQ==
   dependencies:
     tslib "^2.4.0"
 
@@ -2077,9 +2085,9 @@
     tslib "^2.8.0"
 
 "@tybys/wasm-util@^0.10.0":
-  version "0.10.0"
-  resolved "https://registry.yarnpkg.com/@tybys/wasm-util/-/wasm-util-0.10.0.tgz#2fd3cd754b94b378734ce17058d0507c45c88369"
-  integrity sha512-VyyPYFlOMNylG45GoAe0xDoLwWuowvf92F9kySqzYh8vmYm7D2u4iUJKa1tOUpS70Ku13ASrOkS4ScXFsTaCNQ==
+  version "0.10.1"
+  resolved "https://registry.yarnpkg.com/@tybys/wasm-util/-/wasm-util-0.10.1.tgz#ecddd3205cf1e2d5274649ff0eedd2991ed7f414"
+  integrity sha512-9tTaPJLSiejZKx+Bmog4uSubteqTvFrVrURwkmHixBo0G4seD0zUxp98E1DzUBJxLQ3NPwXrGKDiVjwx/DpPsg==
   dependencies:
     tslib "^2.4.0"
 
@@ -2592,6 +2600,11 @@ async-function@^1.0.0:
   version "1.0.0"
   resolved "https://registry.npmjs.org/async-function/-/async-function-1.0.0.tgz"
   integrity sha512-hsU18Ae8CDTR6Kgu9DYf0EbCr/a5iGL0rytQDobUcdpYOKokk8LEjVphnXkDkgpi0wYVsqrXuP0bZxJaTqdgoA==
+
+attr-accept@^2.2.4:
+  version "2.2.5"
+  resolved "https://registry.npmjs.org/attr-accept/-/attr-accept-2.2.5.tgz"
+  integrity sha512-0bDNnY/u6pPwHDMoF0FieU354oBi0a8rD9FcsLwzcGWbc8KS8KPIi7y+s13OlVY+gMWc/9xEMUgNE6Qm8ZllYQ==
 
 available-typed-arrays@^1.0.7:
   version "1.0.7"
@@ -3547,6 +3560,13 @@ file-entry-cache@^8.0.0:
   integrity sha512-XXTUwCvisa5oacNGRP9SfNtYBNAMi+RPwBFmblZEF7N7swHYQS6/Zfk7SRwx4D5j3CH211YNRco1DEMNVfZCnQ==
   dependencies:
     flat-cache "^4.0.0"
+
+file-selector@^2.1.0:
+  version "2.1.2"
+  resolved "https://registry.npmjs.org/file-selector/-/file-selector-2.1.2.tgz"
+  integrity sha512-QgXo+mXTe8ljeqUFaX3QVHc5osSItJ/Km+xpocx0aSqWGMSCf6qYs/VnzZgS864Pjn5iceMRFigeAV7AfTlaig==
+  dependencies:
+    tslib "^2.7.0"
 
 fill-range@^7.1.1:
   version "7.1.1"
@@ -5074,6 +5094,15 @@ react-dom@^19.0.0:
   dependencies:
     scheduler "^0.26.0"
 
+react-dropzone@^14.3.8:
+  version "14.3.8"
+  resolved "https://registry.npmjs.org/react-dropzone/-/react-dropzone-14.3.8.tgz"
+  integrity sha512-sBgODnq+lcA4P296DY4wacOZz3JFpD99fp+hb//iBO2HHnyeZU3FwWyXJ6salNpqQdsZrgMrotuko/BdJMV8Ug==
+  dependencies:
+    attr-accept "^2.2.4"
+    file-selector "^2.1.0"
+    prop-types "^15.8.1"
+
 react-easy-crop@^5.5.0:
   version "5.5.0"
   resolved "https://registry.npmjs.org/react-easy-crop/-/react-easy-crop-5.5.0.tgz"
@@ -5144,7 +5173,7 @@ react-remove-scroll@^2.6.3:
 
 react-resizable-panels@^3.0.5:
   version "3.0.5"
-  resolved "https://registry.yarnpkg.com/react-resizable-panels/-/react-resizable-panels-3.0.5.tgz#50a20645263eed02344de4a70d1319bbc0014bbd"
+  resolved "https://registry.npmjs.org/react-resizable-panels/-/react-resizable-panels-3.0.5.tgz"
   integrity sha512-3z1yN25DMTXLg2wfyFrW32r5k4WEcUa3F7cJ2EgtNK07lnOs4mpM8yWLGunCpkhcQRwJX4fqoLcIh/pHPxzlmQ==
 
 react-style-singleton@^2.2.2, react-style-singleton@^2.2.3:
@@ -5835,7 +5864,7 @@ tsconfig-paths@^3.15.0:
     minimist "^1.2.6"
     strip-bom "^3.0.0"
 
-tslib@2, tslib@^2.0.0, tslib@^2.0.1, tslib@^2.1.0, tslib@^2.4.0, tslib@^2.8.0:
+tslib@2, tslib@^2.0.0, tslib@^2.0.1, tslib@^2.1.0, tslib@^2.4.0, tslib@^2.7.0, tslib@^2.8.0:
   version "2.8.1"
   resolved "https://registry.npmjs.org/tslib/-/tslib-2.8.1.tgz"
   integrity sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==

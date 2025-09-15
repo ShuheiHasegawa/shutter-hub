@@ -155,11 +155,57 @@
     "instant": {
       "title": "即座撮影リクエスト",
       "placeholder": "即座撮影機能は後のフェーズで実装予定です。"
-    },
-    "profile": {
-      "title": "プロフィール",
-      "placeholder": "プロフィール機能は後のフェーズで実装予定です。"
     }
+  },
+  "photobooks": {
+    "quickPhotobooks": "クイックフォトブック",
+    "quickPhotobooksDescription": "シンプルで素早くフォトブックを作成",
+    "createNewQuick": "新しいクイックフォトブックを作成",
+    "quickPhotobookDescription": "画像をアップロードして順番を決めるだけの簡単操作",
+    "published": "公開中",
+    "draft": "下書き",
+    "createLimitReached": "作成上限に達しています",
+    "upgradePlan": "プランをアップグレード",
+    "viewAdvanced": "アドバンスド版を見る",
+    "pages": "ページ",
+    "images": "画像",
+    "orientation": {
+      "portrait": "縦長",
+      "landscape": "横長",
+      "square": "正方形"
+    },
+    "actions": {
+      "create": "作成",
+      "edit": "編集",
+      "delete": "削除",
+      "publish": "公開",
+      "unpublish": "非公開",
+      "preview": "プレビュー",
+      "save": "保存",
+      "upload": "アップロード",
+      "reorder": "順番変更"
+    },
+    "messages": {
+      "created": "フォトブックが作成されました",
+      "updated": "フォトブックが更新されました",
+      "deleted": "フォトブックが削除されました",
+      "published": "フォトブックが公開されました",
+      "imageAdded": "画像が追加されました",
+      "imageRemoved": "画像が削除されました",
+      "orderChanged": "画像の順番が変更されました",
+      "limitReached": "ページ数の上限に達しています",
+      "uploadError": "画像のアップロードに失敗しました",
+      "saveError": "保存に失敗しました"
+    },
+    "placeholders": {
+      "title": "例: 2024年 春の撮影会",
+      "description": "フォトブックの内容や思い出を簡単に説明してください",
+      "dragAndDrop": "画像をドラッグ&ドロップまたはクリックして選択"
+    }
+  },
+  "profile": {
+    "title": "プロフィール",
+    "placeholder": "プロフィール機能は後のフェーズで実装予定です。"
   },
   "booking": {
     "reserve": "予約する",

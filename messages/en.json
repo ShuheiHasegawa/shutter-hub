@@ -158,11 +158,57 @@
     "instant": {
       "title": "Instant Photo Request",
       "placeholder": "Instant photo functionality will be implemented in a later phase."
-    },
-    "profile": {
-      "title": "Profile",
-      "placeholder": "Profile functionality will be implemented in a later phase."
     }
+  },
+  "photobooks": {
+    "quickPhotobooks": "Quick Photobooks",
+    "quickPhotobooksDescription": "Create photobooks simply and quickly",
+    "createNewQuick": "Create New Quick Photobook",
+    "quickPhotobookDescription": "Easy operation - just upload images and arrange order",
+    "published": "Published",
+    "draft": "Draft",
+    "createLimitReached": "Creation limit reached",
+    "upgradePlan": "Upgrade Plan",
+    "viewAdvanced": "View Advanced",
+    "pages": "Pages",
+    "images": "Images",
+    "orientation": {
+      "portrait": "Portrait",
+      "landscape": "Landscape",
+      "square": "Square"
+    },
+    "actions": {
+      "create": "Create",
+      "edit": "Edit",
+      "delete": "Delete",
+      "publish": "Publish",
+      "unpublish": "Unpublish",
+      "preview": "Preview",
+      "save": "Save",
+      "upload": "Upload",
+      "reorder": "Reorder"
+    },
+    "messages": {
+      "created": "Photobook created successfully",
+      "updated": "Photobook updated successfully",
+      "deleted": "Photobook deleted successfully",
+      "published": "Photobook published successfully",
+      "imageAdded": "Image added successfully",
+      "imageRemoved": "Image removed successfully",
+      "orderChanged": "Image order changed successfully",
+      "limitReached": "Page limit reached",
+      "uploadError": "Failed to upload image",
+      "saveError": "Failed to save"
+    },
+    "placeholders": {
+      "title": "e.g. Spring 2024 Photo Session",
+      "description": "Describe the contents or memories of this photobook",
+      "dragAndDrop": "Drag & drop images or click to select"
+    }
+  },
+  "profile": {
+    "title": "Profile",
+    "placeholder": "Profile functionality will be implemented in a later phase."
   },
   "booking": {
     "reserve": "Reserve",
