@@ -681,9 +681,6 @@ export default function UserProfilePage() {
 
               <TabsContent value="photobooks">
                 <Card>
-                  <CardHeader>
-                    <CardTitle>フォトブック</CardTitle>
-                  </CardHeader>
                   <CardContent>
                     <PhotobookGallery
                       userId={userId}
