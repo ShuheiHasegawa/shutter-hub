@@ -11,6 +11,7 @@ import {
   Home,
   Camera,
   Calendar,
+  Crown,
   User,
   Settings,
   BarChart3,
@@ -31,7 +32,6 @@ import {
   Map,
   Heart,
   Zap,
-  Crown,
 } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
 import {
@@ -138,7 +138,7 @@ export function Sidebar({ className }: SidebarProps) {
       ],
     },
     {
-      title: t('photobook'),
+      title: 'フォトブック',
       href: '/photobooks',
       icon: Book,
     },
@@ -393,7 +393,7 @@ export function MobileSidebarTrigger() {
       icon: User,
     },
     {
-      title: t('photobook'),
+      title: 'フォトブック',
       href: '/photobooks',
       icon: Book,
     },
