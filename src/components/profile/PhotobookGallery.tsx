@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { PhotobookData } from '@/types/photobook';
+import { Button } from '@/components/ui/button';
 
 interface PhotobookGalleryProps {
   userId: string;
@@ -39,6 +40,12 @@ export const PhotobookGallery: React.FC<PhotobookGalleryProps> = ({
       try {
         const supabase = createClient();
 
+        logger.info('フォトブック取得開始', {
+          userId,
+          isOwnProfile,
+          timestamp: new Date().toISOString(),
+        });
+
         let query = supabase
           .from('photobooks')
           .select(
@@ -57,7 +64,8 @@ export const PhotobookGallery: React.FC<PhotobookGalleryProps> = ({
               view_count,
               likes_count,
               comments_count
-            )
+            ),
+            photobook_type
           `
           )
           .eq('user_id', userId)
@@ -66,18 +74,48 @@ export const PhotobookGallery: React.FC<PhotobookGalleryProps> = ({
         // 自分のプロフィール以外は公開フォトブックのみ表示
         if (!isOwnProfile) {
           query = query.eq('is_published', true).eq('is_public', true);
+          logger.info('公開フォトブックのみフィルタリング適用');
         }
 
+        logger.info('クエリ実行中...');
         const { data, error } = await query;
 
+        logger.info('クエリ実行結果', {
+          hasError: !!error,
+          dataCount: data?.length || 0,
+          errorCode: error?.code,
+          errorMessage: error?.message,
+        });
+
         if (error) {
-          logger.error('Error loading photobooks:', error);
+          logger.error('Error loading photobooks:', {
+            error,
+            code: error.code,
+            message: error.message,
+            details: error.details,
+            hint: error.hint,
+          });
           return;
         }
 
+        logger.info('フォトブック取得成功', {
+          photobookCount: data?.length || 0,
+          photobooks:
+            data?.map(p => ({
+              id: p.id,
+              title: p.title,
+              type: p.photobook_type,
+            })) || [],
+        });
+
         setPhotobooks(data || []);
       } catch (error) {
-        logger.error('Failed to load photobooks:', error);
+        logger.error('Failed to load photobooks (catch):', {
+          error,
+          errorMessage:
+            error instanceof Error ? error.message : 'Unknown error',
+          errorStack: error instanceof Error ? error.stack : undefined,
+        });
       } finally {
         setLoading(false);
       }
@@ -90,7 +128,7 @@ export const PhotobookGallery: React.FC<PhotobookGalleryProps> = ({
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-gray-400" />
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
           <p className="text-gray-600">フォトブックを読み込み中...</p>
         </div>
       </div>
@@ -127,19 +165,19 @@ export const PhotobookGallery: React.FC<PhotobookGalleryProps> = ({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 mt-4">
       {/* コントロールバー */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <h3 className="text-lg font-semibold text-gray-900">フォトブック</h3>
-          <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+          <h3 className="text-lg font-semibold">フォトブック</h3>
+          <span className="text-sm px-2 py-1 rounded-full">
             {photobooks.length}冊
           </span>
         </div>
 
         <div className="flex items-center space-x-2">
           {/* 表示モード切り替え */}
-          <div className="flex bg-gray-100 rounded-lg p-1">
+          <div className="flex rounded-lg p-1">
             <button
               onClick={() => setViewMode('grid')}
               className={`p-2 rounded-md transition-colors ${
@@ -165,12 +203,9 @@ export const PhotobookGallery: React.FC<PhotobookGalleryProps> = ({
           </div>
 
           {isOwnProfile && (
-            <Link
-              href="/photobooks"
-              className="px-3 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              管理
-            </Link>
+            <Button variant="action" asChild>
+              <Link href="/photobooks">管理</Link>
+            </Button>
           )}
         </div>
       </div>
@@ -192,13 +227,20 @@ export const PhotobookGallery: React.FC<PhotobookGalleryProps> = ({
               exit={{ opacity: 0, y: -20 }}
               className={
                 viewMode === 'grid'
-                  ? 'bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow group'
-                  : 'bg-white rounded-lg shadow-sm border border-gray-200 p-4 flex items-center space-x-4 hover:shadow-md transition-shadow group'
+                  ? 'rounded-lg shadow-sm border overflow-hidden hover:shadow-md transition-shadow group'
+                  : 'rounded-lg shadow-sm border p-4 flex items-center space-x-4 hover:shadow-md transition-shadow group'
               }
             >
               {viewMode === 'grid' ? (
                 // グリッド表示
-                <Link href={`/photobooks/${photobook.id}`} className="block">
+                <Link
+                  href={
+                    photobook.photobook_type === 'quick'
+                      ? `/photobooks/quick/${photobook.id}`
+                      : `/photobooks/${photobook.id}`
+                  }
+                  className="block"
+                >
                   {/* カバー画像 */}
                   <div className="aspect-[3/4] bg-gray-100 relative overflow-hidden">
                     {photobook.cover_image_url ? (
@@ -206,18 +248,19 @@ export const PhotobookGallery: React.FC<PhotobookGalleryProps> = ({
                         src={photobook.cover_image_url}
                         alt={photobook.title}
                         fill
+                        sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
                         className="object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     ) : (
                       <div className="flex items-center justify-center h-full">
-                        <ImageIcon size={48} className="text-gray-400" />
+                        <ImageIcon size={48} />
                       </div>
                     )}
 
                     {/* オーバーレイ情報 */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
                       <div className="absolute bottom-4 left-4 right-4">
-                        <div className="flex items-center justify-between text-white text-sm">
+                        <div className="flex items-center justify-between text-sm">
                           <div className="flex items-center space-x-3">
                             <div className="flex items-center space-x-1">
                               <Eye size={14} />
@@ -241,13 +284,13 @@ export const PhotobookGallery: React.FC<PhotobookGalleryProps> = ({
                     {/* 状態表示 */}
                     <div className="absolute top-2 right-2 flex items-center space-x-2">
                       {!photobook.is_published && (
-                        <div className="bg-gray-900/80 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center space-x-1">
+                        <div className="bg-gray-900/80 px-2 py-1 rounded-full text-xs font-medium flex items-center space-x-1">
                           <Lock size={12} />
                           <span>非公開</span>
                         </div>
                       )}
                       {photobook.subscription_plan === 'premium' && (
-                        <div className="bg-purple-600 text-white p-1.5 rounded-full">
+                        <div className="bg-purple-600 p-1.5 rounded-full">
                           <Crown size={12} />
                         </div>
                       )}
@@ -256,15 +299,15 @@ export const PhotobookGallery: React.FC<PhotobookGalleryProps> = ({
 
                   {/* 情報エリア */}
                   <div className="p-4">
-                    <h4 className="font-medium text-gray-900 mb-1 line-clamp-1">
+                    <h4 className="font-medium mb-1 line-clamp-1">
                       {photobook.title}
                     </h4>
                     {photobook.description && (
-                      <p className="text-sm text-gray-600 line-clamp-2 mb-2">
+                      <p className="text-sm line-clamp-2 mb-2">
                         {photobook.description}
                       </p>
                     )}
-                    <div className="flex items-center text-xs text-gray-500">
+                    <div className="flex items-center text-xs">
                       <Calendar size={12} className="mr-1" />
                       <span>
                         {new Date(photobook.created_at).toLocaleDateString(
@@ -279,7 +322,11 @@ export const PhotobookGallery: React.FC<PhotobookGalleryProps> = ({
                 <>
                   {/* サムネイル */}
                   <Link
-                    href={`/photobooks/${photobook.id}`}
+                    href={
+                      photobook.photobook_type === 'quick'
+                        ? `/photobooks/quick/${photobook.id}`
+                        : `/photobooks/${photobook.id}`
+                    }
                     className="flex-shrink-0"
                   >
                     <div className="w-16 h-20 bg-gray-100 rounded relative overflow-hidden">
@@ -288,11 +335,12 @@ export const PhotobookGallery: React.FC<PhotobookGalleryProps> = ({
                           src={photobook.cover_image_url}
                           alt={photobook.title}
                           fill
+                          sizes="64px"
                           className="object-cover"
                         />
                       ) : (
                         <div className="flex items-center justify-center h-full">
-                          <ImageIcon size={24} className="text-gray-400" />
+                          <ImageIcon size={24} />
                         </div>
                       )}
                     </div>
@@ -301,18 +349,20 @@ export const PhotobookGallery: React.FC<PhotobookGalleryProps> = ({
                   {/* 情報 */}
                   <div className="flex-1 min-w-0">
                     <Link
-                      href={`/photobooks/${photobook.id}`}
+                      href={
+                        photobook.photobook_type === 'quick'
+                          ? `/photobooks/quick/${photobook.id}`
+                          : `/photobooks/${photobook.id}`
+                      }
                       className="block"
                     >
-                      <h4 className="font-medium text-gray-900 mb-1">
-                        {photobook.title}
-                      </h4>
+                      <h4 className="font-medium mb-1">{photobook.title}</h4>
                       {photobook.description && (
-                        <p className="text-sm text-gray-600 line-clamp-1 mb-2">
+                        <p className="text-sm line-clamp-1 mb-2">
                           {photobook.description}
                         </p>
                       )}
-                      <div className="flex items-center space-x-4 text-xs text-gray-500">
+                      <div className="flex items-center space-x-4 text-xs">
                         <div className="flex items-center space-x-1">
                           <Calendar size={12} />
                           <span>
@@ -342,12 +392,12 @@ export const PhotobookGallery: React.FC<PhotobookGalleryProps> = ({
                   {/* ステータス */}
                   <div className="flex items-center space-x-2">
                     {!photobook.is_published && (
-                      <div className="text-gray-400" title="非公開">
+                      <div title="非公開">
                         <Lock size={16} />
                       </div>
                     )}
                     {photobook.subscription_plan === 'premium' && (
-                      <div className="text-purple-600" title="プレミアム">
+                      <div title="プレミアム">
                         <Crown size={16} />
                       </div>
                     )}
@@ -358,19 +408,6 @@ export const PhotobookGallery: React.FC<PhotobookGalleryProps> = ({
           ))}
         </AnimatePresence>
       </div>
-
-      {/* フッター */}
-      {isOwnProfile && photobooks.length > 0 && (
-        <div className="text-center pt-6">
-          <Link
-            href="/photobooks"
-            className="inline-flex items-center px-4 py-2 text-sm text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
-          >
-            <BookOpen size={16} className="mr-2" />
-            すべてのフォトブックを管理
-          </Link>
-        </div>
-      )}
     </div>
   );
 };
