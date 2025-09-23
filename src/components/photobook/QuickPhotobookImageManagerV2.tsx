@@ -220,7 +220,7 @@ function DraggableImageCard({
                   title="表紙に設定"
                 >
                   <Star
-                    className={cn(isMobile ? 'h-2 w-2 mr-0.5' : 'h-3 w-3')}
+                    className={cn(isMobile ? 'h-2 w-2 mr-0.5' : 'h-3 w-3 mr-1')}
                   />
                   {isMobile ? '表紙' : '表紙に設定'}
                 </Button>
