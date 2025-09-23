@@ -7,9 +7,13 @@ ShutterHub v2の開発ルールに従って、機能実装完了時に適切な�
 
 ### **Step 1: ビルドチェック**
 ```bash
+# 基本ビルドチェック
 npm run build
+
+# Vercel本番環境ビルドチェック（推奨）
+npx vercel build
 ```
-エラーがないことを確認してください。
+エラーがないことを確認してください。Vercelビルドは本番環境と完全に同じ条件でテストできます。
 
 ### **Step 2: 開発サーバー停止**
 ```bash
@@ -108,10 +112,12 @@ git push origin main
 
 ### **コード品質**
 - [ ] ビルドテスト（npm run build）が成功するか
+- [ ] Vercelビルドテスト（npx vercel build）が成功するか
 - [ ] TypeScriptエラーがないか
 - [ ] ESLintエラーがないか
 - [ ] 修正した機能が正常に動作するか
 - [ ] エラーメッセージが表示されないか
+- [ ] 本番環境での動作確認（重要な変更時）
 
 ### **ドキュメント**
 - [ ] TODO.mdcが更新されているか
@@ -215,7 +221,10 @@ package.jsonに以下のスクリプトを追加：
   "scripts": {
     "dev:stop": "lsof -ti:8888 | xargs kill -9 || true",
     "dev:clean": "npm run dev:stop && npm run dev",
-    "commit:safe": "npm run dev:stop && npm run build && git add . && echo 'Ready for commit - please run: git commit -m \"your message\"'"
+    "commit:safe": "npm run dev:stop && npm run build && git add . && echo 'Ready for commit - please run: git commit -m \"your message\"'",
+    "vercel:build": "vercel build",
+    "vercel:check": "tsc --noEmit && eslint . --ext .ts,.tsx --max-warnings 0 && vercel build",
+    "deploy:safe": "npm run vercel:check && git push origin main"
   }
 }
 ```
