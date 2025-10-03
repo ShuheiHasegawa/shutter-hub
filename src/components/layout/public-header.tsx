@@ -14,7 +14,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Link } from '@/i18n/routing';
 import { useAuth } from '@/hooks/useAuth';
-import { useProfile } from '@/hooks/useProfile';
+import { useProfile } from '@/hooks/useSimpleProfile';
 import { NavLink } from '@/components/ui/nav-link';
 import { ThemePaletteSelector } from '@/components/ui/theme-palette-selector';
 import { ThemeToggle } from '@/components/ui/theme-toggle';

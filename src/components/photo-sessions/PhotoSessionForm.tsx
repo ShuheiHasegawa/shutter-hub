@@ -10,7 +10,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { useProfile } from '@/hooks/useProfile';
+import { useProfile } from '@/hooks/useSimpleProfile';
 // 通常の撮影会作成アクションは不要（スロット必須のため）
 import {
   createPhotoSessionWithSlotsAction,

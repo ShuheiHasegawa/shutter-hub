@@ -33,7 +33,7 @@ import {
   Heart,
   Zap,
 } from 'lucide-react';
-import { useProfile } from '@/hooks/useProfile';
+import { useProfile } from '@/hooks/useSimpleProfile';
 import {
   Collapsible,
   CollapsibleContent,
@@ -222,6 +222,11 @@ export function Sidebar({ className }: SidebarProps) {
                 title: '地図テスト',
                 href: '/dev/map-test',
                 icon: Map,
+              },
+              {
+                title: 'スケジュール設計',
+                href: '/dev/schedule-design',
+                icon: Calendar,
               },
             ],
           },

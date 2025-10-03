@@ -1,6 +1,6 @@
 'use client';
 
-import { useProfile } from '@/hooks/useProfile';
+import { useProfile } from '@/hooks/useSimpleProfile';
 import { OrganizerModelManagement } from '@/components/profile/organizer/OrganizerModelManagement';
 import { AuthenticatedLayout } from '@/components/layout/authenticated-layout';
 import { Skeleton } from '@/components/ui/skeleton';

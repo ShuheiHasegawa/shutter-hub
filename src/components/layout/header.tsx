@@ -32,7 +32,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Link } from '@/i18n/routing';
 import { useAuth } from '@/hooks/useAuth';
-import { useProfile } from '@/hooks/useProfile';
+import { useProfile } from '@/hooks/useSimpleProfile';
 import { ThemePaletteSelector } from '@/components/ui/theme-palette-selector';
 
 interface AppHeaderProps {
