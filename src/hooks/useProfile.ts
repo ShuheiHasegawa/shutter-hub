@@ -1,162 +1,243 @@
-'use client';
-
-import { useState, useEffect, useCallback } from 'react';
-import { useAuth } from './useAuth';
-import { getProfile } from '@/lib/auth/profile';
+import useSWR, { mutate } from 'swr';
+import { createClient } from '@/lib/supabase/client';
 import { logger } from '@/lib/utils/logger';
 
-interface ProfileData {
+// プロフィールデータの型定義
+export interface ProfileData {
   id: string;
-  user_type: string;
   display_name: string | null;
   email: string;
   avatar_url: string | null;
   bio: string | null;
   location: string | null;
   website: string | null;
-  instagram_handle: string | null;
-  twitter_handle: string | null;
-  phone: string | null;
+  user_type: 'model' | 'photographer' | 'organizer';
+  is_verified: boolean;
   created_at: string;
   updated_at: string;
+  username?: string | null;
 }
 
-// グローバルなプロフィール更新通知システム
-class ProfileUpdateNotifier {
-  private listeners: (() => void)[] = [];
-
-  subscribe(listener: () => void) {
-    this.listeners.push(listener);
-    logger.debug('プロフィール更新リスナー登録', {
-      listenerCount: this.listeners.length,
-    });
-    return () => {
-      this.listeners = this.listeners.filter(l => l !== listener);
-      logger.debug('プロフィール更新リスナー解除', {
-        listenerCount: this.listeners.length,
-      });
-    };
-  }
-
-  notify() {
-    logger.debug('プロフィール更新通知実行', {
-      listenerCount: this.listeners.length,
-    });
-    this.listeners.forEach((listener, index) => {
-      logger.debug(`リスナー${index + 1}実行開始`);
-      listener();
-      logger.debug(`リスナー${index + 1}実行完了`);
-    });
-  }
+// フォロー統計の型定義
+export interface FollowStats {
+  followers_count: number;
+  following_count: number;
+  is_following: boolean;
+  follow_status?: 'accepted' | 'pending';
+  is_mutual_follow: boolean;
 }
 
-const profileUpdateNotifier = new ProfileUpdateNotifier();
+// 活動統計の型定義
+export interface UserActivityStats {
+  organizedSessions: number;
+  participatedSessions: number;
+  receivedReviews: number;
+  sessionReviews: number;
+}
 
-// プロフィール更新を通知するヘルパー関数
-export const notifyProfileUpdate = () => {
-  logger.debug('notifyProfileUpdate呼び出し');
-  profileUpdateNotifier.notify();
-};
+// プロフィールデータ取得関数
+async function fetchProfile(userId: string): Promise<ProfileData> {
+  const supabase = createClient();
 
-export function useProfile() {
-  const { user, loading: authLoading } = useAuth();
-  const [profile, setProfile] = useState<ProfileData | null>(null);
-  const [profileLoading, setProfileLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', userId)
+    .single();
 
-  const fetchProfile = useCallback(async () => {
-    if (!user?.id) {
-      logger.debug('ユーザーIDなし、プロフィール取得をスキップ');
-      setProfile(null);
-      setProfileLoading(false);
-      return;
-    }
+  if (error) {
+    logger.error('プロフィール取得エラー:', error);
+    throw new Error('プロフィールの取得に失敗しました');
+  }
 
-    try {
-      logger.debug('プロフィール取得開始', { userId: user.id });
-      setProfileLoading(true);
-      setError(null);
+  return data;
+}
 
-      const { data, error: profileError } = await getProfile(user.id);
+// フォロー統計取得関数
+async function fetchFollowStats(
+  userId: string,
+  currentUserId: string
+): Promise<FollowStats> {
+  const supabase = createClient();
 
-      if (profileError) {
-        logger.error('プロフィール取得エラー', {
-          profileError,
-          userId: user.id,
-        });
-        setError('プロフィール情報の取得に失敗しました');
-        setProfile(null);
-        return;
-      }
+  const [
+    { data: followersData },
+    { data: followingData },
+    { data: isFollowingData },
+  ] = await Promise.all([
+    // フォロワー数
+    supabase
+      .from('user_follow_stats')
+      .select('followers_count')
+      .eq('user_id', userId)
+      .single(),
 
-      logger.info('プロフィール取得成功', {
-        userId: user.id,
-        avatarUrl: data?.avatar_url,
-        displayName: data?.display_name,
-        updatedAt: data?.updated_at,
-      });
-      setProfile(data);
-    } catch (err) {
-      logger.error('予期しないエラー', { err, userId: user.id });
-      setError('予期しないエラーが発生しました');
-      setProfile(null);
-    } finally {
-      setProfileLoading(false);
-    }
-  }, [user?.id]);
+    // フォロー中数
+    supabase
+      .from('user_follow_stats')
+      .select('following_count')
+      .eq('user_id', userId)
+      .single(),
 
-  useEffect(() => {
-    logger.debug('useProfile初期化、プロフィール取得実行');
-    fetchProfile();
-  }, [fetchProfile]);
-
-  // プロフィール更新通知をリッスン
-  useEffect(() => {
-    logger.debug('プロフィール更新通知リスナー設定');
-    const unsubscribe = profileUpdateNotifier.subscribe(() => {
-      logger.debug('プロフィール更新通知受信、再取得実行');
-      fetchProfile();
-    });
-    return unsubscribe;
-  }, [fetchProfile]);
-
-  // プロフィールを強制的に再取得する関数
-  const refreshProfile = useCallback(() => {
-    logger.debug('手動プロフィール再取得実行');
-    fetchProfile();
-  }, [fetchProfile]);
-
-  // プロフィール画像のキャッシュバスティング用URLを生成
-  // 画像が存在する場合のみキャッシュバスティングを適用
-  const avatarUrlWithCacheBuster = profile?.avatar_url
-    ? `${profile.avatar_url}?t=${profile.updated_at ? new Date(profile.updated_at).getTime() : Date.now()}`
-    : null;
-
-  // プロフィール画像のURL優先順位：保存済み画像 > OAuth画像 > null
-  const finalAvatarUrl =
-    avatarUrlWithCacheBuster || user?.user_metadata?.avatar_url || null;
-
-  logger.debug('useProfile最終値', {
-    profileId: profile?.id,
-    originalAvatarUrl: profile?.avatar_url,
-    avatarUrlWithCacheBuster,
-    finalAvatarUrl,
-    displayName: profile?.display_name,
-    loading: authLoading || profileLoading,
-  });
+    // 現在のユーザーがフォローしているか
+    supabase
+      .from('follows')
+      .select('status')
+      .eq('follower_id', currentUserId)
+      .eq('following_id', userId)
+      .eq('status', 'accepted')
+      .maybeSingle(),
+  ]);
 
   return {
-    user,
-    profile,
-    loading: authLoading || profileLoading,
-    error,
-    refreshProfile,
-    // プロフィール画像のURL（保存済み画像 > OAuth画像 > デフォルト）
-    avatarUrl: finalAvatarUrl,
-    displayName:
-      profile?.display_name ||
-      user?.user_metadata?.full_name ||
-      user?.email ||
-      'ユーザー',
+    followers_count: followersData?.followers_count || 0,
+    following_count: followingData?.following_count || 0,
+    is_following: !!isFollowingData,
+    follow_status: isFollowingData?.status || undefined,
+    is_mutual_follow: false, // 後で実装
   };
+}
+
+// 活動統計取得関数
+async function fetchUserActivityStats(
+  userId: string
+): Promise<UserActivityStats> {
+  const supabase = createClient();
+
+  const [
+    { count: organizedSessionsCount },
+    { count: participatedSessionsCount },
+    { count: receivedReviewsCount },
+    { count: sessionReviewsCount },
+  ] = await Promise.all([
+    // 主催した撮影会数
+    supabase
+      .from('photo_sessions')
+      .select('*', { count: 'exact', head: true })
+      .eq('organizer_id', userId),
+
+    // 参加した撮影会数
+    supabase
+      .from('bookings')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .eq('status', 'confirmed'),
+
+    // 受け取ったレビュー数
+    supabase
+      .from('user_reviews')
+      .select('*', { count: 'exact', head: true })
+      .eq('reviewee_id', userId)
+      .eq('status', 'published'),
+
+    // 撮影会レビュー数
+    supabase
+      .from('photo_session_reviews')
+      .select('photo_sessions!photo_session_reviews_photo_session_id_fkey(*)', {
+        count: 'exact',
+        head: true,
+      })
+      .eq('photo_sessions.organizer_id', userId)
+      .eq('status', 'published'),
+  ]);
+
+  return {
+    organizedSessions: organizedSessionsCount || 0,
+    participatedSessions: participatedSessionsCount || 0,
+    receivedReviews: receivedReviewsCount || 0,
+    sessionReviews: sessionReviewsCount || 0,
+  };
+}
+
+/**
+ * プロフィールデータ用SWRフック
+ */
+export function useProfileData(userId: string) {
+  const { data, error, isLoading, mutate } = useSWR(
+    userId ? `profile-data-${userId}` : null,
+    () => fetchProfile(userId),
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      dedupingInterval: 300000, // 5分間重複防止
+      errorRetryCount: 3,
+      errorRetryInterval: 1000,
+    }
+  );
+
+  return {
+    profile: data,
+    isLoading,
+    error,
+    refresh: mutate,
+  };
+}
+
+/**
+ * フォロー統計用SWRフック
+ */
+export function useFollowStats(
+  userId: string,
+  currentUserId: string,
+  isOwnProfile: boolean
+) {
+  const { data, error, isLoading, mutate } = useSWR(
+    !isOwnProfile && userId && currentUserId ? `follow-stats-${userId}` : null,
+    () => fetchFollowStats(userId, currentUserId),
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      dedupingInterval: 600000, // 10分間重複防止
+      errorRetryCount: 2,
+    }
+  );
+
+  return {
+    followStats: data,
+    isLoading,
+    error,
+    refresh: mutate,
+  };
+}
+
+/**
+ * 活動統計用SWRフック
+ */
+export function useUserActivityStats(userId: string) {
+  const { data, error, isLoading, mutate } = useSWR(
+    userId ? `activity-stats-${userId}` : null,
+    () => fetchUserActivityStats(userId),
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      dedupingInterval: 1800000, // 30分間重複防止
+      errorRetryCount: 2,
+    }
+  );
+
+  return {
+    activityStats: data,
+    isLoading,
+    error,
+    refresh: mutate,
+  };
+}
+
+/**
+ * プロフィール関連データの一括無効化
+ */
+export function invalidateProfileCache(userId: string) {
+  // 関連するキャッシュを全て無効化
+  mutate(`profile-data-${userId}`);
+  mutate(`follow-stats-${userId}`);
+  mutate(`activity-stats-${userId}`);
+  logger.info('プロフィールキャッシュを無効化:', { userId });
+}
+
+/**
+ * 手動リフレッシュ機能
+ */
+export function refreshProfileData(userId: string) {
+  invalidateProfileCache(userId);
+  logger.info('プロフィールデータを手動リフレッシュ:', { userId });
 }
