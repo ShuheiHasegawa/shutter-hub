@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, Suspense } from 'react';
 import { logger } from '@/lib/utils/logger';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
@@ -11,15 +11,14 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { BackButton } from '@/components/ui/back-button';
 import { FollowButton } from '@/components/social/FollowButton';
 import { OrganizerModelsProfileView } from '@/components/profile/organizer/OrganizerModelsProfileView';
+import { UserReviewList } from '@/components/profile/UserReviewList';
 import {
   User,
   Calendar,
   MapPin,
   Loader2,
-  UserX,
   Camera,
   Verified,
   Star,
@@ -27,367 +26,109 @@ import {
   Users,
   BookOpen,
   UserCheck,
+  TrendingUp,
+  MessageSquare,
+  UserIcon,
+  Pencil,
 } from 'lucide-react';
-import Link from 'next/link';
 import { format } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import { useLocale } from 'next-intl';
-import { toast } from 'sonner';
-import { createClient } from '@/lib/supabase/client';
 import { PhotobookGallery } from '@/components/profile/PhotobookGallery';
+import { UserScheduleManager } from '@/components/profile/UserScheduleManager';
+import {
+  ProfileSkeleton,
+  ProfileCompactSkeleton,
+} from '@/components/profile/ProfileSkeleton';
+import { ProfileErrorBoundary } from '@/components/profile/ProfileErrorBoundary';
+import { ActivityChartsContainer } from '@/components/profile/activity-charts/ActivityChartsContainer';
+import {
+  useProfileData,
+  useFollowStats,
+  useUserActivityStats,
+} from '@/hooks/useProfile';
 import type { OrganizerModelWithProfile } from '@/types/organizer-model';
-
-interface ProfileData {
-  id: string;
-  display_name: string | null;
-  email: string;
-  avatar_url: string | null;
-  bio: string | null;
-  location: string | null;
-  website: string | null;
-  user_type: string;
-  is_verified: boolean;
-  created_at: string;
-  updated_at: string;
-}
-
-interface FollowStats {
-  followers_count: number;
-  following_count: number;
-  is_following: boolean;
-  follow_status?: 'accepted' | 'pending';
-  is_mutual_follow: boolean;
-}
+import { PageTitleHeader } from '@/components/ui/page-title-header';
 
 export default function UserProfilePage() {
   const params = useParams();
   const { user } = useAuth();
   const router = useRouter();
   const locale = useLocale();
-  const [profile, setProfile] = useState<ProfileData | null>(null);
-  const [followStats, setFollowStats] = useState<FollowStats | null>(null);
-  const [organizerModels, setOrganizerModels] = useState<
-    OrganizerModelWithProfile[]
-  >([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingModels, setIsLoadingModels] = useState(false);
-  const [currentTab, setCurrentTab] = useState('overview');
+  const [organizerModels] = useState<OrganizerModelWithProfile[]>([]);
+  const [currentTab, setCurrentTab] = useState('schedule');
 
   const userId = params.userId as string;
   const isOwnProfile = user?.id === userId;
 
-  logger.debug('[ProfilePage] コンポーネント初期化', {
-    userId,
-    isOwnProfile,
-    currentUser: user?.id,
-  });
+  // SWRフックでデータ取得（デファクトスタンダード）
+  const { profile, isLoading: profileLoading } = useProfileData(userId);
+  const { followStats } = useFollowStats(userId, user?.id || '', false); // 自分でもフォロー統計を表示
+  const { activityStats, isLoading: statsLoading } =
+    useUserActivityStats(userId);
 
-  // マウント時のログ
-  useEffect(() => {
-    logger.info('[ProfilePage] ページマウント', {
-      userId,
-      isOwnProfile,
-      currentUser: user?.id,
-      timestamp: new Date().toISOString(),
-    });
-  }, []);
-
-  // フォロー状態を更新する関数をuseCallbackでメモ化
-  const updateFollowStats = useCallback(async () => {
-    if (!user || isOwnProfile) return;
-
-    try {
-      const supabase = createClient();
-
-      // フォロー数を取得
-      const { data: followersData, error: followersError } = await supabase
-        .from('follows')
-        .select('id')
-        .eq('following_id', userId)
-        .eq('status', 'accepted');
-
-      if (followersError) {
-        logger.warn('Followers fetch error:', followersError);
-      }
-
-      const { data: followingData, error: followingError } = await supabase
-        .from('follows')
-        .select('id')
-        .eq('follower_id', userId)
-        .eq('status', 'accepted');
-
-      if (followingError) {
-        logger.warn('Following fetch error:', followingError);
-      }
-
-      // 現在のフォロー関係を確認
-      const { data: followRelation, error: followRelationError } =
-        await supabase
-          .from('follows')
-          .select('status')
-          .eq('follower_id', user.id)
-          .eq('following_id', userId)
-          .maybeSingle(); // singleの代わりにmaybeSingleを使用
-
-      if (followRelationError) {
-        logger.warn('Follow relation fetch error:', followRelationError);
-      }
-
-      const { data: mutualFollow, error: mutualFollowError } = await supabase
-        .from('follows')
-        .select('status')
-        .eq('follower_id', userId)
-        .eq('following_id', user.id)
-        .maybeSingle(); // singleの代わりにmaybeSingleを使用
-
-      if (mutualFollowError) {
-        logger.warn('Mutual follow fetch error:', mutualFollowError);
-      }
-
-      setFollowStats({
-        followers_count: followersData?.length || 0,
-        following_count: followingData?.length || 0,
-        is_following: followRelation?.status === 'accepted',
-        follow_status: followRelation?.status as
-          | 'accepted'
-          | 'pending'
-          | undefined,
-        is_mutual_follow:
-          followRelation?.status === 'accepted' &&
-          mutualFollow?.status === 'accepted',
-      });
-    } catch (error) {
-      logger.error('Follow stats update error:', error);
-      // エラーが発生してもフォロー機能を無効にしない
-      setFollowStats({
-        followers_count: 0,
-        following_count: 0,
-        is_following: false,
-        follow_status: undefined,
-        is_mutual_follow: false,
-      });
-    }
-  }, [user, userId, isOwnProfile]);
-
-  useEffect(() => {
-    const loadProfileData = async () => {
-      logger.info('[ProfilePage] loadProfileData開始', { userId });
-
-      if (!userId) {
-        logger.info('[ProfilePage] userIdなし - プロフィール取得スキップ');
-        return;
-      }
-
-      setIsLoading(true);
-      try {
-        const supabase = createClient();
-
-        logger.info('[ProfilePage] プロフィール取得クエリ実行', { userId });
-
-        // プロフィール情報を取得する
-        const { data: profile, error } = await supabase
-          .from('profiles')
-          .select(
-            `
-            id,
-            display_name,
-            email,
-            avatar_url,
-            bio,
-            location,
-            website,
-            user_type,
-            is_verified,
-            created_at,
-            updated_at
-          `
-          )
-          .eq('id', userId)
-          .maybeSingle();
-
-        if (error) {
-          logger.error('[ProfilePage] プロフィール取得エラー:', error);
-          toast.error('プロフィールの読み込みに失敗しました');
-          return;
-        }
-
-        if (!profile) {
-          logger.debug('[ProfilePage] プロフィールが見つかりません', {
-            userId,
-          });
-          toast.error('プロフィールが見つかりません');
-          return;
-        }
-
-        logger.info('[ProfilePage] プロフィール取得成功', {
-          userId: profile.id,
-          displayName: profile.display_name,
-          userType: profile.user_type,
-          profile,
-        });
-
-        setProfile(profile);
-
-        // フォロー統計情報を取得（自分以外のプロフィールの場合）
-        if (!isOwnProfile && user) {
-          await updateFollowStats();
-        }
-      } catch (error) {
-        logger.error('Profile load error:', error);
-        toast.error('プロフィールの読み込みに失敗しました');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadProfileData();
-  }, [userId, user, isOwnProfile, updateFollowStats]);
-
-  // 所属モデルデータを取得する関数
-  const loadOrganizerModels = useCallback(async () => {
-    logger.info('[ProfilePage] loadOrganizerModels開始', {
-      userId,
-      profile: profile?.user_type,
-      hasProfile: !!profile,
-    });
-
-    if (!userId || !profile || profile.user_type !== 'organizer') {
-      logger.info('[ProfilePage] 所属モデル取得をスキップ', {
-        userId: !!userId,
-        profile: !!profile,
-        userType: profile?.user_type,
-      });
-      return;
-    }
-
-    setIsLoadingModels(true);
-    try {
-      const supabase = createClient();
-
-      logger.info('[ProfilePage] organizer_modelsクエリ実行', {
-        organizerId: userId,
-      });
-
-      // まず全ステータスのデータを確認
-      const { data: allData, error: allError } = await supabase
-        .from('organizer_models')
-        .select(
-          `
-          *,
-          model_profile:profiles!organizer_models_model_id_fkey(
-            id,
-            display_name,
-            avatar_url,
-            user_type
-          )
-        `
-        )
-        .eq('organizer_id', userId)
-        .order('joined_at', { ascending: false });
-
-      logger.info('[ProfilePage] 全ステータスの所属モデル確認', {
-        全件数: allData?.length || 0,
-        全データ: allData,
-        エラー: allError,
-      });
-
-      // アクティブのみに絞り込み
-      const { data, error } = await supabase
-        .from('organizer_models')
-        .select(
-          `
-          *,
-          model_profile:profiles!organizer_models_model_id_fkey(
-            id,
-            display_name,
-            avatar_url,
-            user_type
-          )
-        `
-        )
-        .eq('organizer_id', userId)
-        .eq('status', 'active')
-        .order('joined_at', { ascending: false });
-
-      if (error) {
-        logger.error('[ProfilePage] 所属モデル取得エラー:', error);
-        return;
-      }
-
-      logger.info('[ProfilePage] 所属モデル取得成功', {
-        取得件数: data?.length || 0,
-        データ: data,
-      });
-
-      setOrganizerModels(data || []);
-    } catch (error) {
-      logger.error('[ProfilePage] 所属モデル取得エラー:', error);
-    } finally {
-      setIsLoadingModels(false);
-    }
-  }, [userId, profile]);
-
-  // プロフィールデータ取得後に所属モデルも取得
-  useEffect(() => {
-    logger.info('[ProfilePage] useEffect: プロフィール変更検知', {
-      profile: !!profile,
-      userType: profile?.user_type,
-      isOrganizer: profile?.user_type === 'organizer',
-    });
-
-    if (profile && profile.user_type === 'organizer') {
-      logger.info('[ProfilePage] 運営者プロフィール確認 - 所属モデル取得開始');
-      loadOrganizerModels();
-    } else {
-      logger.info('[ProfilePage] 運営者ではない、または、プロフィール未取得');
-    }
-  }, [profile, loadOrganizerModels]);
-
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map(n => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
+  // 日付フォーマット関数
   const formatDate = (dateString: string) => {
     return format(new Date(dateString), 'PPP', {
       locale: locale === 'ja' ? ja : undefined,
     });
   };
 
+  // イニシャル取得関数
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase();
+  };
+
+  // ユーザータイプバッジ表示関数
   const renderUserBadge = (userType: string, isVerified: boolean) => {
-    const badgeVariant = userType === 'photographer' ? 'default' : 'secondary';
-    const badgeText =
-      userType === 'photographer' ? 'フォトグラファー' : 'モデル';
+    const getUserTypeData = (type: string) => {
+      switch (type) {
+        case 'model':
+          return { label: 'モデル', variant: 'secondary' as const, icon: User };
+        case 'photographer':
+          return {
+            label: 'フォトグラファー',
+            variant: 'default' as const,
+            icon: Camera,
+          };
+        case 'organizer':
+          return { label: '運営者', variant: 'outline' as const, icon: Users };
+        default:
+          return {
+            label: 'ユーザー',
+            variant: 'secondary' as const,
+            icon: User,
+          };
+      }
+    };
+
+    const typeData = getUserTypeData(userType);
+    const IconComponent = typeData.icon;
 
     return (
-      <div className="flex items-center gap-2">
-        <Badge variant={badgeVariant} className="flex items-center gap-1">
-          <Camera className="h-3 w-3" />
-          {badgeText}
+      <div className="flex items-center gap-2 flex-wrap justify-center">
+        <Badge variant={typeData.variant} className="flex items-center gap-1">
+          <IconComponent className="h-3 w-3" />
+          {typeData.label}
         </Badge>
         {isVerified && (
-          <div className="flex items-center gap-1">
-            <Verified className="h-4 w-4 text-blue-500" />
-            <span className="text-sm text-blue-600">認証済み</span>
-          </div>
+          <Badge variant="outline" className="flex items-center gap-1">
+            <Verified className="h-3 w-3 text-blue-500" />
+            認証済み
+          </Badge>
         )}
       </div>
     );
   };
 
-  if (isLoading) {
+  if (profileLoading) {
     return (
       <AuthenticatedLayout>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-            <p className="text-muted-foreground">プロフィールを読み込み中...</p>
-          </div>
-        </div>
+        <ProfileSkeleton />
       </AuthenticatedLayout>
     );
   }
@@ -395,13 +136,19 @@ export default function UserProfilePage() {
   if (!profile) {
     return (
       <AuthenticatedLayout>
-        <div className="text-center py-12">
-          <UserX className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-          <h1 className="text-2xl font-bold mb-2">ユーザーが見つかりません</h1>
-          <p className="text-muted-foreground mb-6">
-            指定されたユーザーは存在しないか、削除されています。
-          </p>
-          <BackButton href="/" variant="outline" ariaLabel="ホームに戻る" />
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center space-y-4">
+            <User className="h-12 w-12 text-muted-foreground mx-auto" />
+            <div>
+              <h3 className="text-lg font-medium">
+                プロフィールが見つかりません
+              </h3>
+              <p className="text-muted-foreground">
+                指定されたユーザーは存在しないか、削除された可能性があります。
+              </p>
+            </div>
+            <Button onClick={() => router.back()}>戻る</Button>
+          </div>
         </div>
       </AuthenticatedLayout>
     );
@@ -409,320 +156,327 @@ export default function UserProfilePage() {
 
   return (
     <AuthenticatedLayout>
-      <div className="space-y-6">
-        {/* ヘッダー */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <BackButton
-              onClick={() => router.back()}
-              variant="outline"
-              ariaLabel="前のページに戻る"
-            />
-            <div>
-              <h1 className="text-3xl font-bold">
-                {profile.display_name || 'ユーザー'}
-              </h1>
-              <p className="text-muted-foreground">プロフィール</p>
-            </div>
-          </div>
+      <ProfileErrorBoundary>
+        <div>
+          {/* ヘッダー */}
+          <PageTitleHeader
+            title="プロフィール"
+            icon={<UserIcon className="h-6 w-6" />}
+          />
 
-          {/* アクションボタン */}
-          <div className="flex items-center gap-2">
-            {isOwnProfile ? (
-              <Button variant="outline" asChild>
-                <Link href="/profile/edit">
-                  <User className="h-4 w-4 mr-2" />
-                  プロフィール編集
-                </Link>
-              </Button>
-            ) : (
-              user && (
-                <FollowButton
-                  userId={userId}
-                  isFollowing={followStats?.is_following}
-                  followStatus={followStats?.follow_status}
-                  isMutualFollow={followStats?.is_mutual_follow}
-                  size="md"
-                  onFollowChange={updateFollowStats}
-                />
-              )
-            )}
-          </div>
-        </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
+            {/* プロフィール情報 */}
+            <div className="lg:col-span-1 space-y-4 lg:space-y-6">
+              <Card>
+                <CardContent className="p-6 relative">
+                  {/* 右上の編集/フォローボタン */}
+                  <div className="absolute top-4 right-4">
+                    {isOwnProfile ? (
+                      <Button
+                        variant="cta"
+                        onClick={() => router.push('/profile/edit')}
+                      >
+                        <Pencil className="w-4 h-4 mr-2" />
+                        編集
+                      </Button>
+                    ) : (
+                      user &&
+                      followStats && (
+                        <FollowButton
+                          userId={userId}
+                          isFollowing={followStats.is_following}
+                          followStatus={followStats.follow_status}
+                          isMutualFollow={followStats.is_mutual_follow}
+                          size="sm"
+                          onFollowChange={() => {
+                            // SWRが自動的にキャッシュを更新
+                          }}
+                        />
+                      )
+                    )}
+                  </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* プロフィール情報 */}
-          <div className="lg:col-span-1 space-y-6">
-            <Card>
-              <CardContent className="p-6">
-                {/* アバターと基本情報 */}
-                <div className="flex flex-col items-center text-center space-y-4">
-                  <Avatar className="h-24 w-24">
-                    <AvatarImage src={profile.avatar_url || undefined} />
-                    <AvatarFallback className="text-lg">
-                      {profile.display_name ? (
-                        getInitials(profile.display_name)
-                      ) : (
-                        <User className="h-8 w-8" />
+                  {/* アバターと基本情報 */}
+                  <div className="flex flex-col items-center text-center space-y-4 mt-6">
+                    <Avatar className="h-24 w-24">
+                      <AvatarImage src={profile.avatar_url || undefined} />
+                      <AvatarFallback className="text-lg">
+                        {profile.display_name ? (
+                          getInitials(profile.display_name)
+                        ) : (
+                          <User className="h-8 w-8" />
+                        )}
+                      </AvatarFallback>
+                    </Avatar>
+
+                    <div className="space-y-2">
+                      <h3 className="text-xl font-semibold">
+                        {profile.display_name || 'ユーザー'}
+                      </h3>
+
+                      <div className="flex items-center justify-center gap-2">
+                        {renderUserBadge(
+                          profile.user_type,
+                          profile.is_verified
+                        )}
+                      </div>
+
+                      {/* フォロー統計（自分・他人共通表示） */}
+                      {followStats && (
+                        <div className="flex items-center justify-center gap-4 text-sm">
+                          <div className="text-center">
+                            <p className="font-semibold">
+                              {followStats.followers_count}
+                            </p>
+                            <p className="text-muted-foreground">フォロワー</p>
+                          </div>
+                          <div className="text-center">
+                            <p className="font-semibold">
+                              {followStats.following_count}
+                            </p>
+                            <p className="text-muted-foreground">フォロー中</p>
+                          </div>
+                        </div>
                       )}
-                    </AvatarFallback>
-                  </Avatar>
+                    </div>
+                  </div>
 
-                  <div className="space-y-2">
-                    <h3 className="text-xl font-semibold">
-                      {profile.display_name || 'ユーザー'}
-                    </h3>
+                  <Separator className="my-6" />
 
-                    <div className="flex items-center justify-center gap-2">
-                      {renderUserBadge(profile.user_type, profile.is_verified)}
+                  {/* 詳細情報 */}
+                  <div className="space-y-4 text-left">
+                    {profile.bio && (
+                      <div>
+                        <h4 className="text-sm font-medium mb-2">自己紹介</h4>
+                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                          {profile.bio}
+                        </p>
+                      </div>
+                    )}
+
+                    {profile.location && (
+                      <div className="flex items-center gap-2">
+                        <MapPin className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm">{profile.location}</span>
+                      </div>
+                    )}
+
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm">
+                        {formatDate(profile.created_at)}に参加
+                      </span>
                     </div>
 
-                    {/* フォロー統計 */}
-                    {followStats && (
-                      <div className="flex items-center justify-center gap-4 text-sm">
-                        <div className="text-center">
-                          <p className="font-semibold">
-                            {followStats.followers_count}
-                          </p>
-                          <p className="text-muted-foreground">フォロワー</p>
-                        </div>
-                        <div className="text-center">
-                          <p className="font-semibold">
-                            {followStats.following_count}
-                          </p>
-                          <p className="text-muted-foreground">フォロー中</p>
-                        </div>
+                    {profile.website && (
+                      <div>
+                        <h4 className="text-sm font-medium mb-2">
+                          ウェブサイト
+                        </h4>
+                        <a
+                          href={profile.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-primary hover:underline"
+                        >
+                          {profile.website}
+                        </a>
                       </div>
                     )}
                   </div>
-                </div>
+                </CardContent>
+              </Card>
+            </div>
 
-                <Separator className="my-6" />
-
-                {/* 詳細情報 */}
-                <div className="space-y-4 text-left">
-                  {profile.bio && (
-                    <div>
-                      <h4 className="text-sm font-medium mb-2">自己紹介</h4>
-                      <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                        {profile.bio}
-                      </p>
-                    </div>
-                  )}
-
-                  {profile.location && (
-                    <div className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm">{profile.location}</span>
-                    </div>
-                  )}
-
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">
-                      {formatDate(profile.created_at)}に参加
-                    </span>
-                  </div>
-
-                  {profile.website && (
-                    <div>
-                      <h4 className="text-sm font-medium mb-2">ウェブサイト</h4>
-                      <a
-                        href={profile.website}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-primary hover:underline"
-                      >
-                        {profile.website}
-                      </a>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* 評価統計（今後実装予定） */}
-            <Card>
-              <CardHeader>
-                <CardTitle>評価統計</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <p className="text-muted-foreground">実装予定の機能です</p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* メインコンテンツ */}
-          <div className="lg:col-span-2 space-y-6">
-            <Tabs
-              value={currentTab}
-              onValueChange={newTab => {
-                logger.debug('[ProfilePage] タブ変更', {
-                  from: currentTab,
-                  to: newTab,
-                  profile: profile?.user_type,
-                  organizerModelsLength: organizerModels.length,
-                });
-                setCurrentTab(newTab);
-              }}
-            >
-              <TabsList>
-                <TabsTrigger
-                  value="overview"
-                  className="flex items-center gap-2"
+            {/* メインコンテンツ */}
+            <div className="lg:col-span-2 space-y-4 lg:space-y-6">
+              <Tabs
+                value={currentTab}
+                onValueChange={newTab => {
+                  logger.info('[ProfilePage] タブ変更', {
+                    from: currentTab,
+                    to: newTab,
+                    userId,
+                  });
+                  setCurrentTab(newTab);
+                }}
+              >
+                <TabsList
+                  className={`grid w-full ${profile?.user_type === 'organizer' ? 'grid-cols-5' : 'grid-cols-4'} lg:flex lg:w-auto`}
                 >
-                  <Star className="h-4 w-4" />
-                  概要
-                </TabsTrigger>
+                  <TabsTrigger
+                    value="schedule"
+                    className="flex items-center justify-center gap-1 lg:gap-2 px-1 lg:px-3 min-w-0"
+                  >
+                    <Calendar className="h-4 w-4 flex-shrink-0" />
+                    <span className="hidden lg:inline whitespace-nowrap">
+                      スケジュール
+                    </span>
+                  </TabsTrigger>
+                  {/* 運営者の場合のみ所属モデルタブを表示 */}
+                  {profile?.user_type === 'organizer' && (
+                    <TabsTrigger
+                      value="models"
+                      className="flex items-center justify-center gap-1 lg:gap-2 px-1 lg:px-3 min-w-0"
+                    >
+                      <UserCheck className="h-4 w-4 flex-shrink-0" />
+                      <span className="hidden lg:inline whitespace-nowrap">
+                        所属モデル
+                      </span>
+                      <span className="hidden lg:inline">
+                        ({organizerModels.length})
+                      </span>
+                    </TabsTrigger>
+                  )}
+                  <TabsTrigger
+                    value="photobooks"
+                    className="flex items-center justify-center gap-1 lg:gap-2 px-1 lg:px-3 min-w-0"
+                  >
+                    <BookOpen className="h-4 w-4 flex-shrink-0" />
+                    <span className="hidden lg:inline whitespace-nowrap">
+                      フォトブック
+                    </span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="reviews"
+                    className="flex items-center justify-center gap-1 lg:gap-2 px-1 lg:px-3 min-w-0"
+                  >
+                    <Heart className="h-4 w-4 flex-shrink-0" />
+                    <span className="hidden lg:inline whitespace-nowrap">
+                      レビュー
+                    </span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="activity"
+                    className="flex items-center justify-center gap-1 lg:gap-2 px-1 lg:px-3 min-w-0"
+                  >
+                    <TrendingUp className="h-4 w-4 flex-shrink-0" />
+                    <span className="hidden lg:inline whitespace-nowrap">
+                      活動統計
+                    </span>
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="schedule">
+                  <Suspense fallback={<ProfileCompactSkeleton />}>
+                    <UserScheduleManager
+                      userId={userId}
+                      isOwnProfile={isOwnProfile}
+                      userType={
+                        profile?.user_type as
+                          | 'model'
+                          | 'photographer'
+                          | 'organizer'
+                      }
+                    />
+                  </Suspense>
+                </TabsContent>
+
                 {/* 運営者の場合のみ所属モデルタブを表示 */}
                 {profile?.user_type === 'organizer' && (
-                  <TabsTrigger
-                    value="models"
-                    className="flex items-center gap-2"
-                  >
-                    <UserCheck className="h-4 w-4" />
-                    所属モデル ({organizerModels.length})
-                  </TabsTrigger>
+                  <TabsContent value="models">
+                    <OrganizerModelsProfileView
+                      models={organizerModels}
+                      isLoading={false}
+                      showContactButton={isOwnProfile}
+                    />
+                  </TabsContent>
                 )}
-                <TabsTrigger
-                  value="photobooks"
-                  className="flex items-center gap-2"
-                >
-                  <BookOpen className="h-4 w-4" />
-                  フォトブック
-                </TabsTrigger>
-                <TabsTrigger
-                  value="reviews"
-                  className="flex items-center gap-2"
-                >
-                  <Heart className="h-4 w-4" />
-                  レビュー
-                </TabsTrigger>
-                <TabsTrigger
-                  value="activity"
-                  className="flex items-center gap-2"
-                >
-                  <Users className="h-4 w-4" />
-                  活動履歴
-                </TabsTrigger>
-              </TabsList>
 
-              <TabsContent value="overview" className="space-y-6">
-                {/* 活動統計 */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>活動統計</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div className="text-center">
-                        <p className="text-2xl font-bold">-</p>
-                        <p className="text-sm text-muted-foreground">
-                          主催撮影会
-                        </p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-2xl font-bold">-</p>
-                        <p className="text-sm text-muted-foreground">
-                          参加撮影会
-                        </p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-2xl font-bold">-</p>
-                        <p className="text-sm text-muted-foreground">投稿数</p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-2xl font-bold">-</p>
-                        <p className="text-sm text-muted-foreground">
-                          レビュー数
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* 最近の活動 */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>最近の活動</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-center py-8">
-                      <p className="text-muted-foreground">
-                        最近の活動データはありません
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              {/* 所属モデルタブ（運営者のみ） */}
-              {profile?.user_type === 'organizer' && (
-                <TabsContent value="models">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <UserCheck className="h-5 w-5" />
-                        所属モデル
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <OrganizerModelsProfileView
-                        models={organizerModels}
-                        isLoading={isLoadingModels}
-                        showContactButton={!isOwnProfile}
-                      />
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-              )}
-
-              <TabsContent value="photobooks">
-                <Card>
-                  <CardContent>
+                <TabsContent value="photobooks">
+                  <Suspense fallback={<ProfileCompactSkeleton />}>
                     <PhotobookGallery
                       userId={userId}
                       isOwnProfile={isOwnProfile}
                     />
-                  </CardContent>
-                </Card>
-              </TabsContent>
+                  </Suspense>
+                </TabsContent>
 
-              <TabsContent value="reviews">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>レビュー一覧</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-center py-8">
-                      <p className="text-muted-foreground">
-                        実装予定の機能です
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
+                <TabsContent value="reviews">
+                  <Suspense fallback={<ProfileCompactSkeleton />}>
+                    <UserReviewList userId={userId} />
+                  </Suspense>
+                </TabsContent>
 
-              <TabsContent value="activity">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>活動履歴</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-center py-8">
-                      <p className="text-muted-foreground">
-                        活動履歴機能は実装予定です
-                      </p>
+                <TabsContent value="activity">
+                  <Suspense fallback={<ProfileCompactSkeleton />}>
+                    <ActivityChartsContainer
+                      userId={userId}
+                      isOwnProfile={isOwnProfile}
+                    />
+                  </Suspense>
+                </TabsContent>
+              </Tabs>
+            </div>
+          </div>
+
+          {/* 活動統計 */}
+          <div className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5" />
+                  活動統計サマリー
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {statsLoading ? (
+                  <div className="flex items-center justify-center py-4">
+                    <Loader2 className="h-6 w-6 animate-spin" />
+                  </div>
+                ) : activityStats ? (
+                  <>
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-primary">
+                          {activityStats.organizedSessions}
+                        </div>
+                        <div className="text-sm text-muted-foreground flex items-center justify-center gap-1">
+                          <Camera className="h-3 w-3" />
+                          主催撮影会
+                        </div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-primary">
+                          {activityStats.participatedSessions}
+                        </div>
+                        <div className="text-sm text-muted-foreground flex items-center justify-center gap-1">
+                          <Users className="h-3 w-3" />
+                          参加撮影会
+                        </div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-primary">
+                          {activityStats.sessionReviews}
+                        </div>
+                        <div className="text-sm text-muted-foreground flex items-center justify-center gap-1">
+                          <Star className="h-3 w-3" />
+                          撮影会レビュー
+                        </div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-primary">
+                          {activityStats.receivedReviews}
+                        </div>
+                        <div className="text-sm text-muted-foreground flex items-center justify-center gap-1">
+                          <MessageSquare className="h-3 w-3" />
+                          受信レビュー
+                        </div>
+                      </div>
                     </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
+                  </>
+                ) : (
+                  <div className="text-center py-4">
+                    <p className="text-muted-foreground">
+                      データを読み込めませんでした
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </div>
-      </div>
+      </ProfileErrorBoundary>
     </AuthenticatedLayout>
   );
 }
