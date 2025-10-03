@@ -205,7 +205,37 @@
   },
   "profile": {
     "title": "プロフィール",
-    "placeholder": "プロフィール機能は後のフェーズで実装予定です。"
+    "placeholder": "プロフィール機能は後のフェーズで実装予定です。",
+    "schedule": {
+      "title": "スケジュール管理",
+      "calendar": "スケジュールカレンダー",
+      "availableTimes": "設定済み空き時間",
+      "noAvailability": "空き時間が設定されていません。",
+      "noAvailabilityOwn": "カレンダーから日付を選択して設定してください。",
+      "encourageSet": "空き時間を設定して撮影チャンスを増やしましょう",
+      "editTitle": "スケジュール編集",
+      "manageTitle": "空き時間管理",
+      "editSlot": "空き時間編集",
+      "addSlot": "新しい空き時間追加",
+      "thisDateSlots": "この日の設定済み空き時間",
+      "addButton": "空き時間を追加",
+      "copyButton": "他の日に複製",
+      "startTime": "開始時間",
+      "endTime": "終了時間",
+      "notes": "メモ（任意）",
+      "notesPlaceholder": "この時間帯に関するメモ...",
+      "commonTimes": "よく使う時間設定",
+      "update": "更新",
+      "add": "追加",
+      "readOnlyAccess": "他のユーザーのスケジュールは閲覧のみ可能です",
+      "layerControl": {
+        "userTime": "自分の空き時間",
+        "organizerTime": "所属運営の空き時間",
+        "availableTime": "対応可能時間"
+      },
+      "requestPhotoAvailable": "リクエスト撮影対応可能",
+      "requestPhotoDescription": "所属運営との空き時間が一致しているため、リクエスト撮影に対応できます"
+    }
   },
   "booking": {
     "reserve": "予約する",
