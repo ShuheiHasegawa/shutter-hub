@@ -1,7 +1,7 @@
 'use server';
 
 import { withServerActionErrorHandler } from '@/lib/server-action-error-handler';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createServiceRoleClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/utils/logger';
 import { revalidatePath } from 'next/cache';
 
@@ -32,6 +32,10 @@ export type NotificationType =
   | 'admin_user_report'
   | 'admin_system_alert'
   | 'admin_content_flagged'
+  | 'organizer_invitation_received'
+  | 'organizer_invitation_accepted'
+  | 'organizer_invitation_rejected'
+  | 'organizer_invitation_expired'
   | 'system_maintenance'
   | 'system_update'
   | 'system_security_alert'
@@ -45,7 +49,8 @@ export type NotificationCategory =
   | 'social'
   | 'payment'
   | 'system'
-  | 'admin';
+  | 'admin'
+  | 'organizer';
 
 export type NotificationPriority = 'low' | 'normal' | 'high' | 'urgent';
 
@@ -84,8 +89,10 @@ export const createNotification = withServerActionErrorHandler(
       title: data.title,
     });
 
-    const supabase = await createClient();
+    // サービスロールクライアントを使用（RLSをバイパス）
+    const supabase = createServiceRoleClient();
 
+    // 通知を作成
     const { data: notification, error } = await supabase
       .from('notifications')
       .insert({
