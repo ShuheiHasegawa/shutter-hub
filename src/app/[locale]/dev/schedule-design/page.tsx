@@ -494,7 +494,7 @@ export default function ScheduleDesignPage() {
       </Card>
 
       {/* 設定済み空き時間一覧 */}
-      <Card>
+      <Card className="mt-2">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Clock className="h-5 w-5" />

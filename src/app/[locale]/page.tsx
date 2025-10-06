@@ -190,9 +190,6 @@ export default function HomePage() {
                 <Button asChild size="lg" variant="cta">
                   <Link href="/auth/signup">{t('cta.getStarted')}</Link>
                 </Button>
-                <Button asChild size="lg" variant="neutral">
-                  <Link href="/about">{t('cta.learnMore')}</Link>
-                </Button>
               </div>
             </div>
           </div>
