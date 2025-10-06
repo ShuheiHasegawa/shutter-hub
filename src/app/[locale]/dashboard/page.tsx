@@ -213,10 +213,7 @@ export default function DashboardPage() {
           </Alert>
         )}
 
-        <PageTitleHeader
-          title="ダッシュボード"
-          description="あなたの統計情報を表示しています"
-        />
+        <PageTitleHeader title="ダッシュボード" />
 
         {/* モデル向け招待通知 */}
         {profile.user_type === 'model' && <ModelInvitationNotifications />}

@@ -6,7 +6,13 @@ import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
 import {
   Home,
   Camera,
@@ -531,15 +537,9 @@ export function MobileSidebarTrigger() {
       </SheetTrigger>
       <SheetContent side="left" className="w-64 p-0">
         <div className="flex h-full flex-col">
-          <div className="flex h-12 items-center border-b px-4">
-            <button
-              onClick={() => navigate('/dashboard')}
-              className="flex items-center space-x-2"
-            >
-              <Camera className="h-6 w-6 text-primary" />
-              <span className="font-bold text-lg">ShutterHub</span>
-            </button>
-          </div>
+          <SheetHeader className="px-4 py-3 border-b">
+            <SheetTitle>メニュー</SheetTitle>
+          </SheetHeader>
           <ScrollArea className="flex-1 px-3">
             <div className="space-y-1 py-4">
               {navItems.map(item => renderNavItem(item))}
