@@ -38,6 +38,12 @@ export type NotificationType =
   | 'admin_system_alert'
   | 'admin_content_flagged'
 
+  // 運営者招待関連
+  | 'organizer_invitation_received'
+  | 'organizer_invitation_accepted'
+  | 'organizer_invitation_rejected'
+  | 'organizer_invitation_expired'
+
   // システム関連
   | 'system_maintenance'
   | 'system_update'
