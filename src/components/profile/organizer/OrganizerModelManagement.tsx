@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/utils/logger';
 import { ModelInvitationForm } from './ModelInvitationForm';
-import { OrganizerModelsList } from './OrganizerModelsList';
+import { OrganizerModelsCommon } from './OrganizerModelsCommon';
 import { PendingInvitationsList } from './PendingInvitationsList';
 import {
   getOrganizerModelsAction,
@@ -196,10 +196,12 @@ export function OrganizerModelManagement({
           {/* タブコンテンツ */}
           <div className="mt-6">
             {activeTab === 'models' && (
-              <OrganizerModelsList
+              <OrganizerModelsCommon
                 models={models}
-                onRefresh={loadData}
                 isLoading={isLoading}
+                showContactButton={false}
+                showStatistics={true}
+                variant="management"
               />
             )}
 

@@ -101,40 +101,28 @@ export function PendingInvitationsList({
     switch (status) {
       case 'pending':
         return (
-          <Badge
-            variant="secondary"
-            className="bg-yellow-100 text-yellow-800 border-yellow-300 dark:bg-yellow-900/20 dark:text-yellow-300"
-          >
+          <Badge variant="secondary" className="brand-warning">
             <Clock className="h-3 w-3 mr-1" />
             保留中
           </Badge>
         );
       case 'accepted':
         return (
-          <Badge
-            variant="default"
-            className="bg-green-100 text-green-800 border-green-300 dark:bg-green-900/20 dark:text-green-300"
-          >
+          <Badge variant="secondary" className="brand-success">
             <CheckCircle className="h-3 w-3 mr-1" />
             承認済み
           </Badge>
         );
       case 'rejected':
         return (
-          <Badge
-            variant="destructive"
-            className="bg-red-100 text-red-800 border-red-300 dark:bg-red-900/20 dark:text-red-300"
-          >
+          <Badge variant="secondary" className="brand-error">
             <XCircle className="h-3 w-3 mr-1" />
             拒否
           </Badge>
         );
       case 'expired':
         return (
-          <Badge
-            variant="outline"
-            className="bg-gray-100 text-gray-600 border-gray-300 dark:bg-gray-900/20 dark:text-gray-400"
-          >
+          <Badge variant="outline">
             <AlertCircle className="h-3 w-3 mr-1" />
             期限切れ
           </Badge>
@@ -175,11 +163,11 @@ export function PendingInvitationsList({
   if (invitations.length === 0) {
     return (
       <div className="text-center py-12">
-        <Mail className="mx-auto h-12 w-12 text-gray-400" />
-        <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">
+        <Mail className="mx-auto h-12 w-12 text-muted-foreground" />
+        <h3 className="mt-2 text-sm font-medium text-foreground">
           招待履歴がありません
         </h3>
-        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        <p className="mt-1 text-sm text-muted-foreground">
           「新規招待」タブからモデルを招待してみましょう
         </p>
       </div>
@@ -193,7 +181,7 @@ export function PendingInvitationsList({
           key={invitation.id}
           className={`hover:shadow-md transition-shadow ${
             invitation.status === 'pending' && isExpiring(invitation.expires_at)
-              ? 'border-yellow-300 bg-yellow-50 dark:bg-yellow-900/10'
+              ? 'border-brand-warning bg-brand-warning/10'
               : ''
           }`}
         >
@@ -221,10 +209,10 @@ export function PendingInvitationsList({
 
                   {/* 招待メッセージ */}
                   {invitation.invitation_message && (
-                    <div className="mb-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                    <div className="mb-3 p-3 bg-brand-info/10 border border-brand-info/20 rounded-lg">
                       <div className="flex items-start gap-2">
-                        <MessageSquare className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
-                        <p className="text-sm text-blue-700 dark:text-blue-300">
+                        <MessageSquare className="h-4 w-4 brand-info mt-0.5 flex-shrink-0" />
+                        <p className="text-sm brand-info">
                           {invitation.invitation_message}
                         </p>
                       </div>
@@ -234,14 +222,14 @@ export function PendingInvitationsList({
                   {/* 拒否理由 */}
                   {invitation.rejection_reason &&
                     invitation.status === 'rejected' && (
-                      <div className="mb-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                      <div className="mb-3 p-3 bg-brand-error/10 border border-brand-error/20 rounded-lg">
                         <div className="flex items-start gap-2">
-                          <XCircle className="h-4 w-4 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
+                          <XCircle className="h-4 w-4 brand-error mt-0.5 flex-shrink-0" />
                           <div>
-                            <p className="text-sm font-medium text-red-700 dark:text-red-300 mb-1">
+                            <p className="text-sm font-medium brand-error mb-1">
                               拒否理由
                             </p>
-                            <p className="text-sm text-red-600 dark:text-red-400">
+                            <p className="text-sm brand-error">
                               {invitation.rejection_reason}
                             </p>
                           </div>
@@ -252,8 +240,8 @@ export function PendingInvitationsList({
                   {/* タイムライン */}
                   <div className="space-y-2 text-sm">
                     <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-gray-400" />
-                      <span className="text-gray-600 dark:text-gray-400">
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-muted-foreground">
                         招待送信:{' '}
                         {formatDateTime(
                           invitation.invited_at || invitation.created_at
@@ -263,8 +251,8 @@ export function PendingInvitationsList({
 
                     {invitation.responded_at && (
                       <div className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-gray-400" />
-                        <span className="text-gray-600 dark:text-gray-400">
+                        <CheckCircle className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-muted-foreground">
                           回答: {formatDateTime(invitation.responded_at)}
                         </span>
                       </div>
@@ -272,17 +260,17 @@ export function PendingInvitationsList({
 
                     {invitation.status === 'pending' && (
                       <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-gray-400" />
+                        <Clock className="h-4 w-4 text-muted-foreground" />
                         <span
-                          className={`text-gray-600 dark:text-gray-400 ${
+                          className={`text-muted-foreground ${
                             isExpiring(invitation.expires_at)
-                              ? 'text-yellow-600 dark:text-yellow-400 font-medium'
+                              ? 'brand-warning font-medium'
                               : ''
                           }`}
                         >
                           期限: {formatDate(invitation.expires_at)}
                           {isExpiring(invitation.expires_at) && (
-                            <span className="ml-1 text-yellow-600 dark:text-yellow-400">
+                            <span className="ml-1 brand-warning">
                               (まもなく期限切れ)
                             </span>
                           )}
@@ -302,7 +290,6 @@ export function PendingInvitationsList({
                         variant="destructive"
                         size="sm"
                         disabled={actionLoading[invitation.id]}
-                        className="text-red-600 border-red-200 hover:bg-red-50"
                       >
                         <XCircle className="h-4 w-4 mr-1" />
                         {actionLoading[invitation.id]
@@ -329,7 +316,7 @@ export function PendingInvitationsList({
                         <AlertDialogCancel>キャンセル</AlertDialogCancel>
                         <AlertDialogAction
                           onClick={() => handleCancelInvitation(invitation.id)}
-                          className="bg-red-600 hover:bg-red-700 text-white"
+                          className="brand-error"
                         >
                           招待を取り消し
                         </AlertDialogAction>
