@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { logger } from '@/lib/utils/logger';
 import { createClient } from '@/lib/supabase/server';
+import { createNotification } from '@/app/actions/notifications';
 import type {
   CreateInvitationData,
   InvitationResponse,
@@ -55,6 +56,17 @@ export async function createModelInvitationAction(
       };
     }
 
+    // 運営者のプロフィール情報を取得
+    const { data: organizerProfile } = await supabase
+      .from('profiles')
+      .select('display_name')
+      .eq('id', user.id)
+      .single();
+
+    if (!organizerProfile) {
+      return { success: false, error: '運営者情報が見つかりません' };
+    }
+
     // 既存の招待をチェック
     const { data: existingInvitation } = await supabase
       .from('organizer_model_invitations')
@@ -98,6 +110,50 @@ export async function createModelInvitationAction(
         return { success: false, error: '所属モデル管理機能はまだ準備中です' };
       }
       return { success: false, error: '招待の送信に失敗しました' };
+    }
+
+    // モデルに招待通知を送信
+    try {
+      logger.info('招待通知送信開始:', {
+        modelId: data.model_id,
+        organizerId: user.id,
+        organizerName: organizerProfile.display_name,
+        invitationId: invitation.id,
+      });
+
+      await createNotification({
+        userId: data.model_id,
+        type: 'organizer_invitation_received',
+        category: 'organizer',
+        priority: 'high',
+        title: '運営者からの招待が届きました',
+        message: `${organizerProfile.display_name}さんから所属モデルの招待が届きました。`,
+        data: {
+          organizer_id: user.id,
+          organizer_name: organizerProfile.display_name,
+          invitation_id: invitation.id,
+          invitation_message: data.invitation_message,
+          expiresAt: invitation.expires_at,
+        },
+        relatedEntityType: 'organizer_invitation',
+        relatedEntityId: invitation.id,
+        actionUrl: '/dashboard',
+        actionLabel: '招待を確認',
+        expiresAt: invitation.expires_at,
+      });
+
+      logger.info('招待通知送信成功:', {
+        modelId: data.model_id,
+        invitationId: invitation.id,
+      });
+    } catch (notificationError) {
+      logger.error('招待通知送信エラー:', {
+        error: notificationError,
+        modelId: data.model_id,
+        organizerId: user.id,
+        invitationId: invitation.id,
+      });
+      // 通知エラーは招待作成を阻害しない
     }
 
     revalidatePath('/profile/edit');
@@ -497,7 +553,7 @@ export async function acceptModelInvitationAction(
     // モデル権限チェック
     const { data: profile } = await supabase
       .from('profiles')
-      .select('user_type, email')
+      .select('user_type, email, display_name')
       .eq('id', user.id)
       .single();
 
@@ -570,6 +626,34 @@ export async function acceptModelInvitationAction(
 
     logger.info('招待受諾成功:', { invitationId, modelId: user.id });
 
+    // 運営者に受諾通知を送信
+    try {
+      await createNotification({
+        userId: invitation.organizer_id,
+        type: 'organizer_invitation_accepted',
+        category: 'organizer',
+        priority: 'normal',
+        title: 'モデル招待が受諾されました',
+        message: `${profile?.display_name || 'モデル'}さんが所属モデルの招待を受諾しました。`,
+        data: {
+          model_id: user.id,
+          model_name: profile?.display_name,
+          invitation_id: invitationId,
+        },
+        relatedEntityType: 'organizer_invitation',
+        relatedEntityId: invitationId,
+        actionUrl: '/models',
+        actionLabel: '所属モデルを確認',
+      });
+
+      logger.info('受諾通知送信成功:', {
+        organizerId: invitation.organizer_id,
+        invitationId,
+      });
+    } catch (notificationError) {
+      logger.error('受諾通知送信エラー:', notificationError);
+    }
+
     revalidatePath('/dashboard');
     return { success: true };
   } catch (error) {
@@ -599,7 +683,7 @@ export async function rejectModelInvitationAction(
     // モデル権限チェック
     const { data: profile } = await supabase
       .from('profiles')
-      .select('user_type, email')
+      .select('user_type, email, display_name')
       .eq('id', user.id)
       .single();
 
@@ -610,7 +694,7 @@ export async function rejectModelInvitationAction(
     // 招待の存在確認と権限チェック（emailベース検索に簡略化）
     const { data: invitation } = await supabase
       .from('organizer_model_invitations')
-      .select('id, model_id, status, email')
+      .select('id, model_id, status, email, organizer_id')
       .eq('id', invitationId)
       .eq('email', profile.email)
       .single();
@@ -661,10 +745,109 @@ export async function rejectModelInvitationAction(
       rejectionReason,
     });
 
+    // 運営者に拒否通知を送信
+    try {
+      await createNotification({
+        userId: invitation.organizer_id,
+        type: 'organizer_invitation_rejected',
+        category: 'organizer',
+        priority: 'normal',
+        title: 'モデル招待が拒否されました',
+        message: `${profile?.display_name || 'モデル'}さんが所属モデルの招待を拒否しました。`,
+        data: {
+          model_id: user.id,
+          model_name: profile?.display_name,
+          invitation_id: invitationId,
+          rejection_reason: rejectionReason,
+        },
+        relatedEntityType: 'organizer_invitation',
+        relatedEntityId: invitationId,
+        actionUrl: '/models',
+        actionLabel: '招待履歴を確認',
+      });
+
+      logger.info('拒否通知送信成功:', {
+        organizerId: invitation.organizer_id,
+        invitationId,
+      });
+    } catch (notificationError) {
+      logger.error('拒否通知送信エラー:', notificationError);
+    }
+
     revalidatePath('/dashboard');
     return { success: true };
   } catch (error) {
     logger.error('招待拒否処理エラー:', error);
+    return { success: false, error: '予期しないエラーが発生しました' };
+  }
+}
+
+/**
+ * 指定されたユーザーの所属モデル一覧を取得（プロフィール表示用）
+ */
+export async function getOrganizerModelsByUserIdAction(
+  userId: string
+): Promise<OrganizerModelResponse> {
+  try {
+    const supabase = await createClient();
+
+    // 対象ユーザーが運営者かチェック
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('user_type')
+      .eq('id', userId)
+      .single();
+
+    if (profile?.user_type !== 'organizer') {
+      return { success: true, data: [] }; // 運営者でない場合は空配列
+    }
+
+    // 所属モデル基本情報を取得
+    const { data: models, error } = await supabase
+      .from('organizer_models')
+      .select('*')
+      .eq('organizer_id', userId)
+      .order('invited_at', { ascending: false });
+
+    if (error) {
+      logger.error('所属モデル一覧取得エラー:', error);
+      // テーブルやカラムが存在しない場合は空配列を返す
+      if (
+        error.code === 'PGRST106' ||
+        error.code === '42P01' ||
+        error.code === '42703' || // カラムが存在しない
+        error.message?.includes('does not exist')
+      ) {
+        return { success: true, data: [] };
+      }
+      return { success: false, error: '所属モデル一覧の取得に失敗しました' };
+    }
+
+    if (!models || models.length === 0) {
+      return { success: true, data: [] };
+    }
+
+    // モデルのプロフィール情報を別途取得
+    const modelIds = models.map(m => m.model_id);
+    const { data: profiles, error: profilesError } = await supabase
+      .from('profiles')
+      .select('id, display_name, avatar_url, user_type')
+      .in('id', modelIds);
+
+    if (profilesError) {
+      logger.error('モデルプロフィール取得エラー:', profilesError);
+      return { success: false, error: 'モデル情報の取得に失敗しました' };
+    }
+
+    // データを結合
+    const modelsWithProfiles = models.map(model => ({
+      ...model,
+      model_profile: profiles?.find(p => p.id === model.model_id) || null,
+    }));
+
+    return { success: true, data: modelsWithProfiles };
+  } catch (error) {
+    logger.error('所属モデル一覧取得処理エラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }

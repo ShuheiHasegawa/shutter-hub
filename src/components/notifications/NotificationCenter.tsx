@@ -125,6 +125,16 @@ export function NotificationCenter({
       case 'payment_failed':
         return <CreditCard className="h-4 w-4 text-red-600" />;
 
+      // 運営者招待関連
+      case 'organizer_invitation_received':
+        return <User className="h-4 w-4 text-theme-primary" />;
+      case 'organizer_invitation_accepted':
+        return <CheckCircle className="h-4 w-4 text-green-600" />;
+      case 'organizer_invitation_rejected':
+        return <AlertTriangle className="h-4 w-4 text-red-600" />;
+      case 'organizer_invitation_expired':
+        return <Clock className="h-4 w-4 text-orange-600" />;
+
       // システム・管理者関連
       case 'admin_user_report':
         return <AlertTriangle className="h-4 w-4 text-red-600" />;
@@ -159,6 +169,22 @@ export function NotificationCenter({
         return 'bg-theme-primary/10 border-theme-primary/20 text-theme-primary';
       default:
         return 'bg-theme-primary/10 border-theme-primary/20 text-theme-primary';
+    }
+  };
+
+  // 通知の優先度を日本語で表示
+  const getPriorityLabel = (priority: string) => {
+    switch (priority) {
+      case 'urgent':
+        return '緊急';
+      case 'high':
+        return '重要';
+      case 'normal':
+        return '通常';
+      case 'low':
+        return '低';
+      default:
+        return '通常';
     }
   };
 
@@ -336,7 +362,7 @@ export function NotificationCenter({
                                     notification.priority
                                   )}`}
                                 >
-                                  {notification.priority}
+                                  {getPriorityLabel(notification.priority)}
                                 </Badge>
 
                                 {!notification.read && (
