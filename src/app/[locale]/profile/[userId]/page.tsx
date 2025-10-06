@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, Suspense, useEffect, useCallback } from 'react';
 import { logger } from '@/lib/utils/logger';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
@@ -14,6 +14,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { FollowButton } from '@/components/social/FollowButton';
 import { OrganizerModelsProfileView } from '@/components/profile/organizer/OrganizerModelsProfileView';
 import { UserReviewList } from '@/components/profile/UserReviewList';
+import { getOrganizerModelsByUserIdAction } from '@/app/actions/organizer-model';
 import {
   User,
   Calendar,
@@ -55,7 +56,10 @@ export default function UserProfilePage() {
   const { user } = useAuth();
   const router = useRouter();
   const locale = useLocale();
-  const [organizerModels] = useState<OrganizerModelWithProfile[]>([]);
+  const [organizerModels, setOrganizerModels] = useState<
+    OrganizerModelWithProfile[]
+  >([]);
+  const [modelsLoading, setModelsLoading] = useState(false);
   const [currentTab, setCurrentTab] = useState('schedule');
 
   const userId = params.userId as string;
@@ -66,6 +70,38 @@ export default function UserProfilePage() {
   const { followStats } = useFollowStats(userId, user?.id || '', false); // 自分でもフォロー統計を表示
   const { activityStats, isLoading: statsLoading } =
     useUserActivityStats(userId);
+
+  // 運営者の所属モデルデータ取得
+  const loadOrganizerModels = useCallback(async () => {
+    if (profile?.user_type !== 'organizer') return;
+
+    setModelsLoading(true);
+    try {
+      const result = await getOrganizerModelsByUserIdAction(userId);
+      if (result.success && Array.isArray(result.data)) {
+        setOrganizerModels(result.data);
+        logger.info('[ProfilePage] 所属モデル取得成功', {
+          userId,
+          modelsCount: result.data.length,
+        });
+      } else {
+        logger.error('[ProfilePage] 所属モデル取得エラー:', result.error);
+        setOrganizerModels([]);
+      }
+    } catch (error) {
+      logger.error('[ProfilePage] 所属モデル取得例外:', error);
+      setOrganizerModels([]);
+    } finally {
+      setModelsLoading(false);
+    }
+  }, [profile?.user_type, userId]);
+
+  // プロフィール読み込み完了後に所属モデルを取得
+  useEffect(() => {
+    if (profile?.user_type === 'organizer') {
+      loadOrganizerModels();
+    }
+  }, [profile?.user_type, loadOrganizerModels]);
 
   // 日付フォーマット関数
   const formatDate = (dateString: string) => {
@@ -293,7 +329,7 @@ export default function UserProfilePage() {
               <Tabs
                 value={currentTab}
                 onValueChange={newTab => {
-                  logger.info('[ProfilePage] タブ変更', {
+                  logger.info('[ProfilePage] タブ変更を実行', {
                     from: currentTab,
                     to: newTab,
                     userId,
@@ -377,8 +413,9 @@ export default function UserProfilePage() {
                   <TabsContent value="models">
                     <OrganizerModelsProfileView
                       models={organizerModels}
-                      isLoading={false}
-                      showContactButton={isOwnProfile}
+                      isLoading={modelsLoading}
+                      showContactButton={!isOwnProfile}
+                      isOwnProfile={isOwnProfile}
                     />
                   </TabsContent>
                 )}
