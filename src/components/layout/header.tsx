@@ -9,7 +9,6 @@ import { NotificationCenter } from '@/components/instant/NotificationCenter';
 import {
   Sheet,
   SheetContent,
-  SheetDescription,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -34,6 +33,7 @@ import { Link } from '@/i18n/routing';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useSimpleProfile';
 import { ThemePaletteSelector } from '@/components/ui/theme-palette-selector';
+import { MobileSidebarTrigger } from './sidebar';
 
 interface AppHeaderProps {
   variant?: 'default' | 'authenticated' | 'public';
@@ -56,6 +56,11 @@ export function AppHeader({
   if (variant === 'authenticated') {
     return (
       <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[48px] lg:px-6">
+        {/* モバイルメニュー（ダッシュボード用） */}
+        <div className="flex items-center md:hidden">
+          <MobileSidebarTrigger />
+        </div>
+
         <div className="flex flex-1 items-center justify-end space-x-2">
           {user && <NotificationCenter />}
           <LanguageToggle />
@@ -274,7 +279,6 @@ export function AppHeader({
           <SheetContent side="left" className="w-[300px] sm:w-[400px]">
             <SheetHeader>
               <SheetTitle>メニュー</SheetTitle>
-              <SheetDescription>ShutterHubのナビゲーション</SheetDescription>
             </SheetHeader>
             <div className="grid gap-4 py-4">
               <Link href="/photo-sessions" className="block px-2 py-1 text-lg">
