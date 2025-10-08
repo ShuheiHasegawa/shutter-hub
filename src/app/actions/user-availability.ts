@@ -132,20 +132,7 @@ export async function getUserAvailability(
       return { success: false, error: '認証が必要です' };
     }
 
-    // 権限確認（自分のデータまたは運営が所属モデルを確認）
-    if (user.id !== userId) {
-      const { data: permission, error: permError } = await supabase
-        .from('organizer_models')
-        .select('id')
-        .eq('organizer_id', user.id)
-        .eq('model_id', userId)
-        .eq('is_active', true)
-        .single();
-
-      if (permError || !permission) {
-        return { success: false, error: 'アクセス権限がありません' };
-      }
-    }
+    // 権限管理はRLSポリシーに委任
 
     // データ取得
     const { data, error } = await supabase
@@ -444,20 +431,7 @@ export async function getOrganizerOverlaps(
       return { success: false, error: '認証が必要です' };
     }
 
-    // 権限確認（本人または所属運営のみ）
-    if (user.id !== modelId) {
-      const { data: permission, error: permError } = await supabase
-        .from('organizer_models')
-        .select('id')
-        .eq('organizer_id', user.id)
-        .eq('model_id', modelId)
-        .eq('is_active', true)
-        .single();
-
-      if (permError || !permission) {
-        return { success: false, error: 'アクセス権限がありません' };
-      }
-    }
+    // 権限管理はRLSポリシーに委任
 
     // ユーザータイプ確認（モデルのみ）
     const { data: profile, error: profileError } = await supabase
