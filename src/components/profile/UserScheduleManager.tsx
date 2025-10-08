@@ -34,15 +34,31 @@ import {
   createUserAvailability,
   getUserAvailability,
   deleteUserAvailability,
-  getOrganizerOverlaps,
 } from '@/app/actions/user-availability';
 import { timeToMinutes, validateTimeRange } from '@/lib/utils/time-utils';
-import type { TimeSlot, OrganizerOverlap } from '@/types/user-availability';
+import type { TimeSlot } from '@/types/user-availability';
+import { getOrganizersOfModelAction } from '@/app/actions/organizer-model';
 
 interface UserScheduleManagerProps {
   userId: string;
   isOwnProfile: boolean;
   userType: 'model' | 'photographer' | 'organizer';
+}
+
+// カレンダーの状態変更を監視するコンポーネント
+function CalendarStateWatcher({
+  onDateChange,
+}: {
+  onDateChange: (month: number, year: number) => void;
+}) {
+  const [month] = useCalendarMonth();
+  const [year] = useCalendarYear();
+
+  useEffect(() => {
+    onDateChange(month, year);
+  }, [month, year, onDateChange]);
+
+  return null;
 }
 
 // カスタムカレンダーヘッダーコンポーネント
@@ -68,12 +84,18 @@ interface CustomCalendarBodyProps {
   features: Feature[];
   onDateClick: (date: Date) => void;
   onBadgeClick: (date: Date) => void;
+  organizerLabelsByDay?: { [day: number]: string };
+  showUserSchedule?: boolean;
+  showOrganizerSchedule?: boolean;
 }
 
 function CustomCalendarBody({
   features,
   onDateClick,
   onBadgeClick,
+  organizerLabelsByDay,
+  showUserSchedule,
+  showOrganizerSchedule,
 }: CustomCalendarBodyProps) {
   const [month] = useCalendarMonth();
   const [year] = useCalendarYear();
@@ -127,8 +149,32 @@ function CustomCalendarBody({
         {/* 日付番号 */}
         <div className="text-xs font-medium mb-0.5">{day}</div>
 
+        {/* 所属運営の空き時間（モデル時・表示ON時） */}
+        {organizerLabelsByDay &&
+          organizerLabelsByDay[day] &&
+          showOrganizerSchedule && (
+            <div className="mt-0.5">
+              <div
+                className="relative text-xs px-0.5 py-0.5 rounded truncate"
+                style={{ backgroundColor: '#16a34a20' }}
+              >
+                {/* 左側縦線（グリーン） */}
+                <div
+                  className="absolute left-0 top-0 bottom-0 w-0.5 rounded-full"
+                  style={{ backgroundColor: '#16a34a' }}
+                />
+                <span className="ml-1 hidden lg:inline text-xs truncate">
+                  {organizerLabelsByDay[day]}
+                </span>
+                <span className="ml-1 lg:hidden text-xs font-mono">
+                  {organizerLabelsByDay[day]}
+                </span>
+              </div>
+            </div>
+          )}
+
         {/* 空き時間表示（left-line-sectionスタイル） */}
-        {featuresForDay.length > 0 && (
+        {featuresForDay.length > 0 && showUserSchedule && (
           <div className="mt-0.5">
             <div
               className="relative text-xs px-0.5 py-0.5 rounded truncate cursor-pointer"
@@ -149,9 +195,7 @@ function CustomCalendarBody({
               </span>
               {/* スマホ表示：時刻のみ表示 */}
               <span className="ml-1 lg:hidden text-xs font-mono">
-                {featuresForDay[0].name.includes('🕐')
-                  ? featuresForDay[0].name.replace('🕐 ', '')
-                  : '●'}
+                {featuresForDay[0].name || '●'}
               </span>
             </div>
           </div>
@@ -191,18 +235,25 @@ export function UserScheduleManager({
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [userSlots, setUserSlots] = useState<TimeSlot[]>([]);
-  const [organizerOverlaps, setOrganizerOverlaps] = useState<
-    OrganizerOverlap[]
-  >([]);
   const [editingSlot, setEditingSlot] = useState<TimeSlot | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showMemoDialog, setShowMemoDialog] = useState(false);
+  const [organizerLabelsByDay, setOrganizerLabelsByDay] = useState<{
+    [day: number]: string;
+  }>({});
 
   // レイヤー表示制御
-  const [showUserLayer, setShowUserLayer] = useState(true);
-  const [showOrganizerLayer, setShowOrganizerLayer] = useState(true);
-  const [showOverlapLayer, setShowOverlapLayer] = useState(true);
+  const [showUserSchedule, setShowUserSchedule] = useState(true);
+  const [showOrganizerSchedule, setShowOrganizerSchedule] = useState(true);
+
+  // カレンダー表示月の管理
+  const [displayMonth, setDisplayMonth] = useState<number>(
+    new Date().getMonth()
+  );
+  const [displayYear, setDisplayYear] = useState<number>(
+    new Date().getFullYear()
+  );
 
   // フォーム状態
   const [formData, setFormData] = useState({
@@ -212,54 +263,36 @@ export function UserScheduleManager({
   });
 
   // 空き時間データの読み込み
-  const loadUserAvailability = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      // 現在の月の前後3ヶ月分のデータを取得
-      const currentDate = new Date();
-      const startDate = new Date(currentDate);
-      startDate.setMonth(startDate.getMonth() - 3);
-      startDate.setDate(1); // 3ヶ月前の1日
-
-      const endDate = new Date(currentDate);
-      endDate.setMonth(endDate.getMonth() + 3);
-      endDate.setDate(0); // 3ヶ月後の末日
-
-      const result = await getUserAvailability(
-        userId,
-        startDate.toISOString().split('T')[0],
-        endDate.toISOString().split('T')[0]
-      );
-
-      if (result.success && result.data) {
-        setUserSlots(result.data);
-      } else {
-        toast.error(result.error || '空き時間の取得に失敗しました');
-      }
-    } catch {
-      toast.error('予期しないエラーが発生しました');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [userId]);
-
-  // 運営重複データの読み込み（モデル専用）
-  const loadOrganizerOverlaps = useCallback(
-    async (date: Date) => {
-      if (userType !== 'model') return;
-
+  const loadUserAvailability = useCallback(
+    async (targetMonth?: number, targetYear?: number) => {
+      setIsLoading(true);
       try {
-        const dateStr = date.toISOString().split('T')[0];
-        const result = await getOrganizerOverlaps(userId, dateStr);
+        // 指定された月の前後1ヶ月分のデータを取得（デフォルトは現在月）
+        const now = new Date();
+        const month = targetMonth ?? now.getMonth();
+        const year = targetYear ?? now.getFullYear();
+
+        const startDate = new Date(year, month - 1, 1); // 1ヶ月前の1日
+        const endDate = new Date(year, month + 1, 0); // 1ヶ月後の末日
+
+        const result = await getUserAvailability(
+          userId,
+          startDate.toISOString().split('T')[0],
+          endDate.toISOString().split('T')[0]
+        );
 
         if (result.success && result.data) {
-          setOrganizerOverlaps(result.data);
+          setUserSlots(result.data);
+        } else {
+          toast.error(result.error || '空き時間の取得に失敗しました');
         }
       } catch {
-        // 運営重複データの取得失敗は警告レベル（機能に必須ではない）
+        toast.error('予期しないエラーが発生しました');
+      } finally {
+        setIsLoading(false);
       }
     },
-    [userId, userType]
+    [userId]
   );
 
   // ユーザーの空き時間をカレンダー用Featureに変換
@@ -274,21 +307,14 @@ export function UserScheduleManager({
     );
 
     return Object.entries(slotsByDate).map(([date, slots]) => {
-      // 時刻表示を生成
+      // 時刻表示を生成（時計アイコンは不要）
       const timeRanges = slots
         .sort((a, b) => a.startMinutes - b.startMinutes)
         .map(slot => `${slot.startTime}-${slot.endTime}`)
         .join(', ');
 
-      // より分かりやすい表示形式
-      let displayName;
-      if (slots.length === 1) {
-        displayName = `🕐 ${timeRanges}`;
-      } else if (slots.length <= 3) {
-        displayName = `🕐 ${timeRanges}`;
-      } else {
-        displayName = `🕐 ${slots.length}件 (${timeRanges})`;
-      }
+      const displayName =
+        slots.length <= 3 ? timeRanges : `${slots.length}件 (${timeRanges})`;
 
       return {
         id: `user-${date}`,
@@ -313,13 +339,8 @@ export function UserScheduleManager({
       setShowModal(true);
       setEditingSlot(null);
       setIsCreating(false);
-
-      // 運営重複データ読み込み
-      if (userType === 'model') {
-        await loadOrganizerOverlaps(date);
-      }
     },
-    [isOwnProfile, userType, loadOrganizerOverlaps]
+    [isOwnProfile]
   );
 
   // 選択された日の時間枠取得
@@ -391,7 +412,141 @@ export function UserScheduleManager({
     loadUserAvailability();
   }, [loadUserAvailability]);
 
+  // カレンダー表示月の変更を監視してデータを再取得
+  useEffect(() => {
+    // 表示月に基づいてデータを取得
+    loadUserAvailability(displayMonth, displayYear);
+
+    // 所属運営の空き時間も再取得（モデルのみ）
+    if (userType === 'model') {
+      const loadOrganizerData = async () => {
+        try {
+          const orgRes = await getOrganizersOfModelAction(userId);
+          if (orgRes.success && orgRes.data && orgRes.data.length > 0) {
+            const monthStart = new Date(displayYear, displayMonth, 1);
+            const monthEnd = new Date(displayYear, displayMonth + 1, 0);
+
+            const supabase = await (
+              await import('@/lib/supabase/client')
+            ).createClient();
+
+            const labels: { [day: number]: string } = {};
+
+            for (const org of orgRes.data) {
+              const { data: slots } = await supabase
+                .from('user_availability')
+                .select('available_date, start_time_minutes, end_time_minutes')
+                .eq('user_id', org.organizer_id)
+                .eq('is_active', true)
+                .gte('available_date', monthStart.toISOString().split('T')[0])
+                .lte('available_date', monthEnd.toISOString().split('T')[0]);
+
+              (slots || []).forEach(
+                (s: {
+                  available_date: string;
+                  start_time_minutes: number;
+                  end_time_minutes: number;
+                }) => {
+                  const d = new Date(s.available_date);
+                  const day = d.getDate();
+                  const start = `${String(Math.floor(s.start_time_minutes / 60)).padStart(2, '0')}:${String(
+                    s.start_time_minutes % 60
+                  ).padStart(2, '0')}`;
+                  const end = `${String(Math.floor(s.end_time_minutes / 60)).padStart(2, '0')}:${String(
+                    s.end_time_minutes % 60
+                  ).padStart(2, '0')}`;
+                  const range = `${start}-${end}`;
+                  const prev = labels[day];
+                  if (prev) {
+                    const merged = `${prev}, ${range}`;
+                    labels[day] = merged.split(', ').slice(0, 3).join(', ');
+                  } else {
+                    labels[day] = range;
+                  }
+                }
+              );
+            }
+
+            setOrganizerLabelsByDay(labels);
+          } else {
+            setOrganizerLabelsByDay({});
+          }
+        } catch {
+          setOrganizerLabelsByDay({});
+        }
+      };
+
+      loadOrganizerData();
+    }
+  }, [displayMonth, displayYear, loadUserAvailability, userType, userId]);
+
   const features = transformUserSlotsToFeatures();
+
+  // モデル所属時: カレンダーに表示する所属運営の当日空きをまとめたラベルを生成
+  useEffect(() => {
+    const buildOrganizerLabels = async (
+      targetMonth?: number,
+      targetYear?: number
+    ) => {
+      if (userType !== 'model') return;
+
+      // 所属運営を取得
+      const orgRes = await getOrganizersOfModelAction(userId);
+      if (!orgRes.success || !orgRes.data || orgRes.data.length === 0) {
+        setOrganizerLabelsByDay({});
+        return;
+      }
+
+      // 指定された月の範囲を取得（デフォルトは現在月）
+      const now = new Date();
+      const month = targetMonth ?? now.getMonth();
+      const year = targetYear ?? now.getFullYear();
+      const monthStart = new Date(year, month, 1);
+      const monthEnd = new Date(year, month + 1, 0);
+
+      // すべての所属運営の当月空きを取得
+      // 簡易実装: 個別にuser_availabilityをフェッチ（RLSでSELECT可）
+      const supabase = await (
+        await import('@/lib/supabase/client')
+      ).createClient();
+
+      const labels: { [day: number]: string } = {};
+
+      for (const org of orgRes.data) {
+        const { data: slots } = await supabase
+          .from('user_availability')
+          .select('available_date, start_time_minutes, end_time_minutes')
+          .eq('user_id', org.organizer_id)
+          .eq('is_active', true)
+          .gte('available_date', monthStart.toISOString().split('T')[0])
+          .lte('available_date', monthEnd.toISOString().split('T')[0]);
+
+        (slots || []).forEach(s => {
+          const d = new Date(s.available_date);
+          const day = d.getDate();
+          const start = `${String(Math.floor(s.start_time_minutes / 60)).padStart(2, '0')}:${String(
+            s.start_time_minutes % 60
+          ).padStart(2, '0')}`;
+          const end = `${String(Math.floor(s.end_time_minutes / 60)).padStart(2, '0')}:${String(
+            s.end_time_minutes % 60
+          ).padStart(2, '0')}`;
+          const range = `${start}-${end}`;
+          const prev = labels[day];
+          if (prev) {
+            // 同日の他運営/他スロットを結合（過剰にならないよう3つまで）
+            const merged = `${prev}, ${range}`;
+            labels[day] = merged.split(', ').slice(0, 3).join(', ');
+          } else {
+            labels[day] = range;
+          }
+        });
+      }
+
+      setOrganizerLabelsByDay(labels);
+    };
+
+    buildOrganizerLabels();
+  }, [userId, userType]);
 
   if (isLoading) {
     return (
@@ -420,14 +575,22 @@ export function UserScheduleManager({
 
       {/* メインカレンダー */}
       <Card>
-        <CardHeader className="pb-3 lg:pb-6">
+        <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base lg:text-lg">
             <Calendar className="h-4 w-4 lg:h-5 lg:w-5" />
             スケジュールカレンダー
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-2 sm:p-6 overflow-hidden">
+        <CardContent className="p-2 sm:p-6 sm:pt-0 overflow-hidden">
           <CalendarProvider locale="ja-JP" startDay={0}>
+            <CalendarStateWatcher
+              onDateChange={(month, year) => {
+                if (month !== displayMonth || year !== displayYear) {
+                  setDisplayMonth(month);
+                  setDisplayYear(year);
+                }
+              }}
+            />
             <CalendarDate>
               <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-4">
                 <CalendarDatePicker>
@@ -447,11 +610,45 @@ export function UserScheduleManager({
                   setSelectedDate(date);
                   setShowMemoDialog(true);
                 }}
+                organizerLabelsByDay={organizerLabelsByDay}
+                showUserSchedule={showUserSchedule}
+                showOrganizerSchedule={showOrganizerSchedule}
               />
             </div>
           </CalendarProvider>
         </CardContent>
       </Card>
+
+      {/* カレンダー表示オプション（直下配置） */}
+      <div className="mt-2 mb-4">
+        <div className="flex flex-wrap gap-4 p-3 bg-muted/30 rounded-lg">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <Checkbox
+              checked={showUserSchedule}
+              onCheckedChange={checked => setShowUserSchedule(checked === true)}
+            />
+            <div className="flex items-center gap-2">
+              <div className="h-3 w-3 rounded-full bg-blue-500 flex-shrink-0" />
+              <span className="text-sm font-medium">自分の空き時間</span>
+            </div>
+          </label>
+
+          {userType === 'model' && (
+            <label className="flex items-center gap-2 cursor-pointer">
+              <Checkbox
+                checked={showOrganizerSchedule}
+                onCheckedChange={checked =>
+                  setShowOrganizerSchedule(checked === true)
+                }
+              />
+              <div className="flex items-center gap-2">
+                <div className="h-3 w-3 rounded-full bg-green-500 flex-shrink-0" />
+                <span className="text-sm font-medium">所属運営の空き時間</span>
+              </div>
+            </label>
+          )}
+        </div>
+      </div>
 
       {/* 設定済み空き時間一覧 */}
       <Card>
@@ -461,7 +658,7 @@ export function UserScheduleManager({
             設定済み空き時間
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-3 lg:p-6">
+        <CardContent className="p-3 lg:p-6 lg:pt-0">
           <div className="space-y-4">
             {userSlots.length === 0 ? (
               <div className="text-center py-6 lg:py-8 space-y-4">
@@ -758,76 +955,6 @@ export function UserScheduleManager({
                   )}
                 </CardContent>
               </Card>
-
-              {/* 時間軸表示エリア（所属モデルのみ運営連携機能） */}
-              {userType === 'model' && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">時間軸表示</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {/* レイヤー制御（凡例として機能） */}
-                      <div className="flex flex-wrap gap-4 p-3 bg-muted/30 rounded-lg">
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <Checkbox
-                            checked={showUserLayer}
-                            onCheckedChange={checked =>
-                              setShowUserLayer(checked === true)
-                            }
-                          />
-                          <div className="flex items-center gap-2">
-                            <div className="h-3 w-3 rounded-full bg-blue-500 flex-shrink-0" />
-                            <span className="text-sm font-medium">
-                              自分の空き時間
-                            </span>
-                          </div>
-                        </label>
-
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <Checkbox
-                            checked={showOrganizerLayer}
-                            onCheckedChange={checked =>
-                              setShowOrganizerLayer(checked === true)
-                            }
-                          />
-                          <div className="flex items-center gap-2">
-                            <div className="h-3 w-3 rounded-full bg-green-500 flex-shrink-0" />
-                            <span className="text-sm font-medium">
-                              所属運営の空き時間
-                            </span>
-                          </div>
-                        </label>
-
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <Checkbox
-                            checked={showOverlapLayer}
-                            onCheckedChange={checked =>
-                              setShowOverlapLayer(checked === true)
-                            }
-                          />
-                          <div className="flex items-center gap-2">
-                            <div className="h-3 w-3 rounded-full bg-purple-500 flex-shrink-0" />
-                            <span className="text-sm font-medium">
-                              対応可能時間
-                            </span>
-                          </div>
-                        </label>
-                      </div>
-
-                      {/* 運営重複情報表示 */}
-                      {organizerOverlaps.length > 0 && showOverlapLayer && (
-                        <div className="bg-green-50 p-3 rounded-lg border border-green-200">
-                          <p className="text-sm text-green-800">
-                            <strong>✨ リクエスト撮影対応可能</strong>:
-                            所属運営との空き時間が一致しているため、リクエスト撮影に対応できます
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
             </div>
           </DialogContent>
         </Dialog>
