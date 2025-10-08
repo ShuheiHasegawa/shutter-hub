@@ -141,7 +141,12 @@ function CustomCalendarBody({
               <span className="ml-1 hidden lg:inline text-xs truncate">
                 {featuresForDay[0].name}
               </span>
-              <span className="ml-1 lg:hidden text-xs">●</span>
+              {/* スマホ表示：時刻のみ表示 */}
+              <span className="ml-1 lg:hidden text-xs font-mono">
+                {featuresForDay[0].name.includes('🕐')
+                  ? featuresForDay[0].name.replace('🕐 ', '')
+                  : '●'}
+              </span>
             </div>
           </div>
         )}
@@ -261,17 +266,35 @@ export function UserScheduleManager({
       {} as Record<string, TimeSlot[]>
     );
 
-    return Object.entries(slotsByDate).map(([date, slots]) => ({
-      id: `user-${date}`,
-      name: `空き時間 ${slots.length}件`,
-      startAt: new Date(date + 'T00:00:00'),
-      endAt: new Date(date + 'T23:59:59'),
-      status: {
-        id: 'user-available',
-        name: '設定済み',
-        color: '#3B82F6', // 青色
-      },
-    }));
+    return Object.entries(slotsByDate).map(([date, slots]) => {
+      // 時刻表示を生成
+      const timeRanges = slots
+        .sort((a, b) => a.startMinutes - b.startMinutes)
+        .map(slot => `${slot.startTime}-${slot.endTime}`)
+        .join(', ');
+
+      // より分かりやすい表示形式
+      let displayName;
+      if (slots.length === 1) {
+        displayName = `🕐 ${timeRanges}`;
+      } else if (slots.length <= 3) {
+        displayName = `🕐 ${timeRanges}`;
+      } else {
+        displayName = `🕐 ${slots.length}件 (${timeRanges})`;
+      }
+
+      return {
+        id: `user-${date}`,
+        name: displayName,
+        startAt: new Date(date + 'T00:00:00'),
+        endAt: new Date(date + 'T23:59:59'),
+        status: {
+          id: 'user-available',
+          name: '設定済み',
+          color: '#3B82F6', // 青色
+        },
+      };
+    });
   }, [userSlots]);
 
   // 日付クリック処理
