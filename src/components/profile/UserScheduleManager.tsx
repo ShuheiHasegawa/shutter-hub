@@ -203,11 +203,15 @@ export function UserScheduleManager({
   const loadUserAvailability = useCallback(async () => {
     setIsLoading(true);
     try {
-      const startDate = new Date();
-      startDate.setDate(1); // 今月の1日
-      const endDate = new Date(startDate);
-      endDate.setMonth(endDate.getMonth() + 1);
-      endDate.setDate(0); // 今月の末日
+      // 現在の月の前後3ヶ月分のデータを取得
+      const currentDate = new Date();
+      const startDate = new Date(currentDate);
+      startDate.setMonth(startDate.getMonth() - 3);
+      startDate.setDate(1); // 3ヶ月前の1日
+
+      const endDate = new Date(currentDate);
+      endDate.setMonth(endDate.getMonth() + 3);
+      endDate.setDate(0); // 3ヶ月後の末日
 
       const result = await getUserAvailability(
         userId,
