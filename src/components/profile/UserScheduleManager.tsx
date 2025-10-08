@@ -67,11 +67,13 @@ function CustomCalendarHeader() {
 interface CustomCalendarBodyProps {
   features: Feature[];
   onDateClick: (date: Date) => void;
+  onBadgeClick: (date: Date) => void;
 }
 
 function CustomCalendarBody({
   features,
   onDateClick,
+  onBadgeClick,
 }: CustomCalendarBodyProps) {
   const [month] = useCalendarMonth();
   const [year] = useCalendarYear();
@@ -129,8 +131,12 @@ function CustomCalendarBody({
         {featuresForDay.length > 0 && (
           <div className="mt-0.5">
             <div
-              className="relative text-xs px-0.5 py-0.5 rounded truncate"
+              className="relative text-xs px-0.5 py-0.5 rounded truncate cursor-pointer"
               style={{ backgroundColor: featuresForDay[0].status.color + '10' }}
+              onClick={e => {
+                e.stopPropagation();
+                onBadgeClick(currentDate);
+              }}
             >
               {/* 左側縦線 */}
               <div
@@ -191,6 +197,7 @@ export function UserScheduleManager({
   const [editingSlot, setEditingSlot] = useState<TimeSlot | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showMemoDialog, setShowMemoDialog] = useState(false);
 
   // レイヤー表示制御
   const [showUserLayer, setShowUserLayer] = useState(true);
@@ -436,6 +443,10 @@ export function UserScheduleManager({
               <CustomCalendarBody
                 features={features}
                 onDateClick={handleDateClick}
+                onBadgeClick={date => {
+                  setSelectedDate(date);
+                  setShowMemoDialog(true);
+                }}
               />
             </div>
           </CalendarProvider>
@@ -821,6 +832,40 @@ export function UserScheduleManager({
           </DialogContent>
         </Dialog>
       )}
+
+      {/* メモ表示ダイアログ（全ユーザー向け閲覧） */}
+      <Dialog open={showMemoDialog} onOpenChange={setShowMemoDialog}>
+        <DialogContent className="max-w-lg w-[95vw] sm:w-full">
+          <DialogHeader>
+            <DialogTitle>
+              メモ - {selectedDate?.toLocaleDateString('ja-JP')}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            {getSelectedDateSlots().length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                この日のメモはありません
+              </p>
+            ) : (
+              getSelectedDateSlots().map(slot => (
+                <div key={slot.id} className="p-3 border rounded">
+                  <div className="font-mono text-sm mb-1">
+                    {slot.startTime} - {slot.endTime}
+                  </div>
+                  <div className="text-sm text-muted-foreground whitespace-pre-wrap">
+                    {slot.notes?.trim() || 'メモはありません'}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+          <div className="flex justify-end">
+            <Button variant="outline" onClick={() => setShowMemoDialog(false)}>
+              閉じる
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
