@@ -37,7 +37,6 @@ import {
   validateProfileImageFile,
 } from '@/lib/storage/profile-images';
 import { getCurrentUsername } from '@/app/actions/username';
-import { notifyProfileUpdate } from '@/hooks/useProfile';
 import { logger } from '@/lib/utils/logger';
 import { User, Save, X, Camera, AtSign } from 'lucide-react';
 import { OrganizerModelManagement } from '@/components/profile/organizer/OrganizerModelManagement';
@@ -266,7 +265,7 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
 
       // プロフィール更新をグローバルに通知（キャッシュクリア）
       logger.debug('プロフィール更新通知開始');
-      notifyProfileUpdate();
+      // TODO: プロフィール更新通知機能の実装
       logger.debug('プロフィール更新通知完了');
 
       // プレビューURLのクリーンアップ

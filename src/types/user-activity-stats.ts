@@ -24,6 +24,8 @@ export interface SessionTypeData {
   value: number;
   /** グラフ表示用カラー */
   color: string;
+  /** 追加プロパティ用のインデックス署名 */
+  [key: string]: unknown;
 }
 
 /**
