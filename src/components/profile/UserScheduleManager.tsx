@@ -628,7 +628,7 @@ export function UserScheduleManager({
                   />
                   <div className="flex items-center gap-2">
                     <div className="h-3 w-3 rounded-full bg-blue-500 flex-shrink-0" />
-                    <span className="text-sm font-medium">自分の空き時間</span>
+                    <span className="text-sm font-medium">空き時間</span>
                   </div>
                 </label>
 
@@ -643,7 +643,7 @@ export function UserScheduleManager({
                     <div className="flex items-center gap-2">
                       <div className="h-3 w-3 rounded-full bg-green-500 flex-shrink-0" />
                       <span className="text-sm font-medium">
-                        所属運営の空き時間
+                        所属運営の対応可能時間
                       </span>
                     </div>
                   </label>
@@ -665,7 +665,7 @@ export function UserScheduleManager({
         <CardContent className="p-3 lg:p-6 lg:pt-0">
           <div className="space-y-4">
             {userSlots.length === 0 ? (
-              <div className="text-center py-6 lg:py-8 space-y-4">
+              <div className="text-center py-4 space-y-4">
                 <p className="text-muted-foreground text-sm lg:text-base">
                   空き時間が設定されていません。
                   {isOwnProfile &&
