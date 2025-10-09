@@ -102,17 +102,6 @@ export function SessionTypeChart({
     return null;
   };
 
-  // カスタムラベル関数
-  const renderCustomLabel = ({
-    name,
-    percent,
-  }: {
-    name: string;
-    percent: number;
-  }) => {
-    return `${name} ${(percent * 100).toFixed(0)}%`;
-  };
-
   // カスタム凡例
   const CustomLegend = ({
     payload,
@@ -152,7 +141,7 @@ export function SessionTypeChart({
                 cx="50%"
                 cy="40%"
                 labelLine={false}
-                label={renderCustomLabel}
+                label={false}
                 outerRadius={80}
                 fill="#8884d8"
                 dataKey="value"
@@ -166,7 +155,7 @@ export function SessionTypeChart({
               </Pie>
               <Tooltip content={<CustomTooltip />} />
               <Legend
-                content={<CustomLegend />}
+                content={<CustomLegend payload={[]} />}
                 wrapperStyle={{ paddingTop: '20px' }}
               />
             </PieChart>
