@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Suspense, useEffect, useCallback } from 'react';
+import { useState, Suspense, useEffect, useCallback, useMemo } from 'react';
 import { logger } from '@/lib/utils/logger';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
@@ -50,6 +50,7 @@ import {
 } from '@/hooks/useProfile';
 import type { OrganizerModelWithProfile } from '@/types/organizer-model';
 import { PageTitleHeader } from '@/components/ui/page-title-header';
+import { getOrganizersOfModelAction } from '@/app/actions/organizer-model';
 
 export default function UserProfilePage() {
   const params = useParams();
@@ -61,11 +62,28 @@ export default function UserProfilePage() {
   >([]);
   const [modelsLoading, setModelsLoading] = useState(false);
   const [currentTab, setCurrentTab] = useState('schedule');
+  const [affiliations, setAffiliations] = useState<
+    { organizer_id: string; organizer_name: string | null }[]
+  >([]);
+
+  // 所属の重複除外（フロント側でユニーク化）
+  const uniqueAffiliations = useMemo(() => {
+    const seen = new Set<string>();
+    return affiliations.filter(a => {
+      const nameKey = (a.organizer_name || '').trim().toLowerCase();
+      const fallbackKey = (a.organizer_id || '').trim();
+      const key = nameKey || fallbackKey;
+      if (!key) return false;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }, [affiliations]);
 
   const userId = params.userId as string;
   const isOwnProfile = user?.id === userId;
 
-  // SWRフックでデータ取得（デファクトスタンダード）
+  // SWRフックでデータ取得
   const { profile, isLoading: profileLoading } = useProfileData(userId);
   const { followStats } = useFollowStats(userId, user?.id || '', false); // 自分でもフォロー統計を表示
   const { activityStats, isLoading: statsLoading } =
@@ -102,6 +120,17 @@ export default function UserProfilePage() {
       loadOrganizerModels();
     }
   }, [profile?.user_type, loadOrganizerModels]);
+
+  // モデルの所属運営を取得
+  useEffect(() => {
+    const fetchAffiliations = async () => {
+      if (profile?.user_type !== 'model') return;
+      const res = await getOrganizersOfModelAction(userId);
+      if (res.success && res.data) setAffiliations(res.data);
+      else setAffiliations([]);
+    };
+    fetchAffiliations();
+  }, [profile?.user_type, userId]);
 
   // 日付フォーマット関数
   const formatDate = (dateString: string) => {
@@ -233,7 +262,7 @@ export default function UserProfilePage() {
                   </div>
 
                   {/* アバターと基本情報 */}
-                  <div className="flex flex-col items-center text-center space-y-4 mt-6">
+                  <div className="flex flex-col items-center text-center space-y-4 mt-8">
                     <Avatar className="h-24 w-24">
                       <AvatarImage src={profile.avatar_url || undefined} />
                       <AvatarFallback className="text-lg">
@@ -257,9 +286,28 @@ export default function UserProfilePage() {
                         )}
                       </div>
 
+                      {/* 所属運営バッジ（モデルのみ） */}
+                      {profile.user_type === 'model' &&
+                        uniqueAffiliations.length > 0 && (
+                          <div className="flex flex-wrap items-center justify-center gap-2 mt-2">
+                            {uniqueAffiliations.map(org => (
+                              <Badge
+                                key={org.organizer_id}
+                                variant="secondary"
+                                className="flex items-center gap-1"
+                              >
+                                <Users className="h-3 w-3" />
+                                {org.organizer_name
+                                  ? `${org.organizer_name} 所属`
+                                  : '所属'}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+
                       {/* フォロー統計（自分・他人共通表示） */}
                       {followStats && (
-                        <div className="flex items-center justify-center gap-4 text-sm">
+                        <div className="flex items-center justify-center gap-4 text-sm pt-4">
                           <div className="text-center">
                             <p className="font-semibold">
                               {followStats.followers_count}
@@ -322,6 +370,83 @@ export default function UserProfilePage() {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* 活動統計 */}
+              <div className="mt-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <TrendingUp className="h-5 w-5" />
+                      活動統計サマリー
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {statsLoading ? (
+                      <div className="flex items-center justify-center py-4">
+                        <Loader2 className="h-6 w-6 animate-spin" />
+                      </div>
+                    ) : activityStats ? (
+                      <>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="text-center p-4 bg-muted/30 rounded-lg">
+                            <div className="flex items-center justify-center mb-2">
+                              <Camera className="h-5 w-5 text-muted-foreground" />
+                            </div>
+                            <div className="text-2xl font-bold">
+                              {activityStats.organizedSessions}
+                            </div>
+                            <div className="text-sm text-muted-foreground mt-1">
+                              主催撮影会
+                            </div>
+                          </div>
+
+                          <div className="text-center p-4 bg-muted/30 rounded-lg">
+                            <div className="flex items-center justify-center mb-2">
+                              <Users className="h-5 w-5 text-muted-foreground" />
+                            </div>
+                            <div className="text-2xl font-bold">
+                              {activityStats.participatedSessions}
+                            </div>
+                            <div className="text-sm text-muted-foreground mt-1">
+                              参加撮影会
+                            </div>
+                          </div>
+
+                          <div className="text-center p-4 bg-muted/30 rounded-lg">
+                            <div className="flex items-center justify-center mb-2">
+                              <Star className="h-5 w-5 text-muted-foreground" />
+                            </div>
+                            <div className="text-2xl font-bold">
+                              {activityStats.sessionReviews}
+                            </div>
+                            <div className="text-sm text-muted-foreground mt-1">
+                              撮影会レビュー
+                            </div>
+                          </div>
+
+                          <div className="text-center p-4 bg-muted/30 rounded-lg">
+                            <div className="flex items-center justify-center mb-2">
+                              <MessageSquare className="h-5 w-5 text-muted-foreground" />
+                            </div>
+                            <div className="text-2xl font-bold">
+                              {activityStats.receivedReviews}
+                            </div>
+                            <div className="text-sm text-muted-foreground mt-1">
+                              受信レビュー
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="text-center py-4">
+                        <p className="text-muted-foreground">
+                          データを読み込めませんでした
+                        </p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
             </div>
 
             {/* メインコンテンツ */}
@@ -338,7 +463,7 @@ export default function UserProfilePage() {
                 }}
               >
                 <TabsList
-                  className={`grid w-full ${profile?.user_type === 'organizer' ? 'grid-cols-5' : 'grid-cols-4'} lg:flex lg:w-auto`}
+                  className={`grid w-full ${profile?.user_type === 'organizer' ? 'grid-cols-5' : 'grid-cols-4'}`}
                 >
                   <TabsTrigger
                     value="schedule"
@@ -445,72 +570,6 @@ export default function UserProfilePage() {
                 </TabsContent>
               </Tabs>
             </div>
-          </div>
-
-          {/* 活動統計 */}
-          <div className="mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5" />
-                  活動統計サマリー
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {statsLoading ? (
-                  <div className="flex items-center justify-center py-4">
-                    <Loader2 className="h-6 w-6 animate-spin" />
-                  </div>
-                ) : activityStats ? (
-                  <>
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-primary">
-                          {activityStats.organizedSessions}
-                        </div>
-                        <div className="text-sm text-muted-foreground flex items-center justify-center gap-1">
-                          <Camera className="h-3 w-3" />
-                          主催撮影会
-                        </div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-primary">
-                          {activityStats.participatedSessions}
-                        </div>
-                        <div className="text-sm text-muted-foreground flex items-center justify-center gap-1">
-                          <Users className="h-3 w-3" />
-                          参加撮影会
-                        </div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-primary">
-                          {activityStats.sessionReviews}
-                        </div>
-                        <div className="text-sm text-muted-foreground flex items-center justify-center gap-1">
-                          <Star className="h-3 w-3" />
-                          撮影会レビュー
-                        </div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-primary">
-                          {activityStats.receivedReviews}
-                        </div>
-                        <div className="text-sm text-muted-foreground flex items-center justify-center gap-1">
-                          <MessageSquare className="h-3 w-3" />
-                          受信レビュー
-                        </div>
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <div className="text-center py-4">
-                    <p className="text-muted-foreground">
-                      データを読み込めませんでした
-                    </p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
           </div>
         </div>
       </ProfileErrorBoundary>
