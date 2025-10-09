@@ -615,40 +615,44 @@ export function UserScheduleManager({
                 showOrganizerSchedule={showOrganizerSchedule}
               />
             </div>
+
+            {/* カレンダー表示オプション（直下配置） */}
+            <div className="mt-2 mb-4">
+              <div className="flex flex-wrap justify-center gap-4 p-3 rounded-lg">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <Checkbox
+                    checked={showUserSchedule}
+                    onCheckedChange={checked =>
+                      setShowUserSchedule(checked === true)
+                    }
+                  />
+                  <div className="flex items-center gap-2">
+                    <div className="h-3 w-3 rounded-full bg-blue-500 flex-shrink-0" />
+                    <span className="text-sm font-medium">自分の空き時間</span>
+                  </div>
+                </label>
+
+                {userType === 'model' && (
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <Checkbox
+                      checked={showOrganizerSchedule}
+                      onCheckedChange={checked =>
+                        setShowOrganizerSchedule(checked === true)
+                      }
+                    />
+                    <div className="flex items-center gap-2">
+                      <div className="h-3 w-3 rounded-full bg-green-500 flex-shrink-0" />
+                      <span className="text-sm font-medium">
+                        所属運営の空き時間
+                      </span>
+                    </div>
+                  </label>
+                )}
+              </div>
+            </div>
           </CalendarProvider>
         </CardContent>
       </Card>
-
-      {/* カレンダー表示オプション（直下配置） */}
-      <div className="mt-2 mb-4">
-        <div className="flex flex-wrap gap-4 p-3 bg-muted/30 rounded-lg">
-          <label className="flex items-center gap-2 cursor-pointer">
-            <Checkbox
-              checked={showUserSchedule}
-              onCheckedChange={checked => setShowUserSchedule(checked === true)}
-            />
-            <div className="flex items-center gap-2">
-              <div className="h-3 w-3 rounded-full bg-blue-500 flex-shrink-0" />
-              <span className="text-sm font-medium">自分の空き時間</span>
-            </div>
-          </label>
-
-          {userType === 'model' && (
-            <label className="flex items-center gap-2 cursor-pointer">
-              <Checkbox
-                checked={showOrganizerSchedule}
-                onCheckedChange={checked =>
-                  setShowOrganizerSchedule(checked === true)
-                }
-              />
-              <div className="flex items-center gap-2">
-                <div className="h-3 w-3 rounded-full bg-green-500 flex-shrink-0" />
-                <span className="text-sm font-medium">所属運営の空き時間</span>
-              </div>
-            </label>
-          )}
-        </div>
-      </div>
 
       {/* 設定済み空き時間一覧 */}
       <Card>
@@ -668,8 +672,8 @@ export function UserScheduleManager({
                     'カレンダーから日付を選択して設定してください。'}
                 </p>
                 {isOwnProfile && (
-                  <div className="bg-blue-50 p-3 rounded border border-blue-200 mx-2 lg:mx-0">
-                    <p className="text-xs lg:text-sm text-blue-800">
+                  <div className="p-3 rounded border border-blue-200 mx-2 lg:mx-0">
+                    <p className="text-xs lg:text-sm">
                       💡{' '}
                       <strong>
                         空き時間を設定して撮影チャンスを増やしましょう
@@ -702,7 +706,7 @@ export function UserScheduleManager({
                   {isOwnProfile && (
                     <div className="flex items-center gap-2 self-end sm:self-center">
                       <Button
-                        variant="outline"
+                        variant="neutral"
                         size="sm"
                         onClick={() => {
                           setSelectedDate(new Date(slot.date + 'T00:00:00'));
@@ -718,7 +722,7 @@ export function UserScheduleManager({
                         編集
                       </Button>
                       <Button
-                        variant="outline"
+                        variant="destructive"
                         size="sm"
                         onClick={() => handleDeleteSlot(slot.id)}
                       >
