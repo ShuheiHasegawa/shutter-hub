@@ -952,7 +952,7 @@ export function QuickPhotobookImageManagerV2({
           </div>
           <div className="flex items-center gap-2">
             <Button
-              variant="outline"
+              variant="neutral"
               onClick={handleReset}
               disabled={isProcessing}
               className="flex items-center gap-2"
@@ -961,6 +961,7 @@ export function QuickPhotobookImageManagerV2({
               元に戻す
             </Button>
             <Button
+              variant="cta"
               onClick={handleSaveDraft}
               disabled={isProcessing}
               className="flex items-center gap-2"

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -31,8 +31,11 @@ import {
   Sparkles,
 } from 'lucide-react';
 import Link from 'next/link';
-import { Photobook } from '@/types/quick-photobook';
-import { updatePhotobook } from '@/app/actions/quick-photobook';
+import { Photobook, PhotobookPlanLimits } from '@/types/quick-photobook';
+import {
+  updatePhotobook,
+  getPhotobookPlanLimits,
+} from '@/app/actions/quick-photobook';
 import { logger } from '@/lib/utils/logger';
 import { toast } from 'sonner';
 
@@ -72,6 +75,19 @@ export function QuickPhotobookSettings({
   onUpdate,
 }: QuickPhotobookSettingsProps) {
   const [isSaving, setIsSaving] = useState(false);
+  const [planLimits, setPlanLimits] = useState<PhotobookPlanLimits | null>(
+    null
+  );
+
+  // プラン上限を取得する
+  // フォームの最大値に適用する
+  useEffect(() => {
+    const fetchLimits = async () => {
+      const limits = await getPhotobookPlanLimits(userId);
+      setPlanLimits(limits);
+    };
+    fetchLimits();
+  }, [userId]);
 
   const form = useForm<SettingsForm>({
     resolver: zodResolver(settingsSchema),
@@ -169,7 +185,11 @@ export function QuickPhotobookSettings({
                       <Input
                         type="number"
                         min={photobook.current_pages} // 現在のページ数より少なくできない
-                        max={15}
+                        max={
+                          photobook.photobook_type === 'quick'
+                            ? (planLimits?.quick.maxPages ?? 15)
+                            : (planLimits?.advanced.maxPages ?? 15)
+                        }
                         {...field}
                         onChange={e => field.onChange(Number(e.target.value))}
                       />
@@ -177,6 +197,15 @@ export function QuickPhotobookSettings({
                     <FormDescription>
                       現在 {photobook.current_pages}{' '}
                       ページ使用中（削除はできません）
+                      {planLimits && (
+                        <>
+                          。このプランの上限は{' '}
+                          {photobook.photobook_type === 'quick'
+                            ? planLimits.quick.maxPages
+                            : planLimits.advanced.maxPages}
+                          ページです
+                        </>
+                      )}
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
