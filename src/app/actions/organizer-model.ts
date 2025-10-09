@@ -853,3 +853,60 @@ export async function getOrganizerModelsByUserIdAction(
 }
 
 // 再送信機能は削除（取り消し→新規招待で対応）
+
+/**
+ * 指定されたモデルに紐づく所属運営一覧を取得（プロフィール表示用）
+ */
+export async function getOrganizersOfModelAction(modelUserId: string): Promise<{
+  success: boolean;
+  data?: { organizer_id: string; organizer_name: string | null }[];
+  error?: string;
+}> {
+  try {
+    const supabase = await createClient();
+
+    // モデルの所属運営一覧（activeのみ）を取得
+    const { data, error } = await supabase
+      .from('organizer_models')
+      .select('organizer_id, status')
+      .eq('model_id', modelUserId)
+      .eq('status', 'active');
+
+    if (error) {
+      logger.error('モデル所属運営一覧取得エラー:', error);
+      return { success: false, error: '所属運営の取得に失敗しました' };
+    }
+
+    if (!data || data.length === 0) return { success: true, data: [] };
+
+    // 重複する所属レコード対策でorganizer_idをユニーク化
+    const organizerIds = Array.from(
+      new Set((data || []).map(d => d.organizer_id))
+    );
+
+    const { data: organizers, error: orgErr } = await supabase
+      .from('profiles')
+      .select('id, display_name')
+      .in('id', organizerIds);
+
+    if (orgErr) {
+      logger.error('運営プロフィール取得エラー:', orgErr);
+      return { success: false, error: '運営情報の取得に失敗しました' };
+    }
+
+    const result = (organizers || [])
+      .map(o => ({
+        organizer_id: o.id,
+        organizer_name: o.display_name ?? null,
+      }))
+      // 表示の安定化（名称でソート）
+      .sort((a, b) =>
+        (a.organizer_name || '').localeCompare(b.organizer_name || '')
+      );
+
+    return { success: true, data: result };
+  } catch (error) {
+    logger.error('モデル所属運営一覧取得処理エラー:', error);
+    return { success: false, error: '予期しないエラーが発生しました' };
+  }
+}
