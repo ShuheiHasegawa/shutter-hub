@@ -32,7 +32,7 @@ import { logger } from '@/lib/utils/logger';
 import { toast } from 'sonner';
 
 /**
- * フォームスキーマ
+ * フォームスキーマを定義する
  */
 const createPhotobookSchema = z.object({
   title: z
@@ -43,10 +43,6 @@ const createPhotobookSchema = z.object({
     .string()
     .max(500, '説明は500文字以内で入力してください')
     .optional(),
-  max_pages: z
-    .number()
-    .min(1, '最低1ページは必要です')
-    .max(15, '最大15ページまでです'),
 });
 
 type CreatePhotobookForm = z.infer<typeof createPhotobookSchema>;
@@ -122,7 +118,6 @@ export function QuickPhotobookCreateForm({
     defaultValues: {
       title: '',
       description: '',
-      max_pages: 5, // デフォルトはフリープラン制限
     },
   });
 
@@ -147,7 +142,8 @@ export function QuickPhotobookCreateForm({
         title: data.title,
         description: data.description,
         photobook_type: 'quick',
-        max_pages: data.max_pages,
+        // プラン制限に基づく最大ページ数を適用する
+        max_pages: planLimits?.quick.maxPages ?? 5,
       });
 
       if (result.success && result.photobookId) {
@@ -249,31 +245,11 @@ export function QuickPhotobookCreateForm({
                     )}
                   />
 
-                  {/* ページ数設定 */}
-                  <FormField
-                    control={form.control}
-                    name="max_pages"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>最大ページ数</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            min={1}
-                            max={15}
-                            {...field}
-                            onChange={e =>
-                              field.onChange(Number(e.target.value))
-                            }
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          後から変更することもできます（プラン制限内）
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  {/* 最大ページ数は作成時にプラン制限を自動適用する */}
+                  <div className="text-sm opacity-80">
+                    作成時の最大ページ数は現在のプラン上限（
+                    {planLimits?.quick.maxPages ?? '-'}ページ）を自動適用する
+                  </div>
 
                   {/* 送信ボタン */}
                   <div className="flex gap-3 pt-4">
