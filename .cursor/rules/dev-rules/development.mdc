@@ -2,6 +2,15 @@
 alwaysApply: true
 ---
 
+## SEO/タイトル共通化（seo.ts）
+
+- タイトル生成は `src/lib/seo.ts` の `buildTitle(main: string, suffix?: string)` を使用する。
+  - 出力形式: `{main} (- {suffix}) | ShutterHub`
+  - 例（静的）: `export const metadata = { title: buildTitle('ダッシュボード') }`
+  - 例（動的）: `title: buildTitle(entity.title, '編集')`
+- 適用箇所: `layout.tsx` の `metadata` または `generateMetadata()`。
+- ルール: 一覧/作成は固定、詳細/編集は「名称 + サフィックス」で統一する。
+
 variant: 'destructive',
 });
 
