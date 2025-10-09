@@ -13,7 +13,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 import {
   CalendarProvider,
@@ -27,7 +26,6 @@ import {
   useCalendarYear,
 } from '@/components/ui/shadcn-io/calendar';
 import { Clock, Plus, Copy, Calendar, Settings } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { getDaysInMonth, getDay } from 'date-fns';
 
 // モックデータ型定義
@@ -267,11 +265,6 @@ export default function ScheduleDesignPage() {
   const [editingSlot, setEditingSlot] = useState<TimeSlot | null>(null);
   const [isCreating, setIsCreating] = useState(false);
 
-  // レイヤー表示制御
-  const [showUserLayer, setShowUserLayer] = useState(true);
-  const [showOrganizerLayer, setShowOrganizerLayer] = useState(true);
-  const [showOverlapLayer, setShowOverlapLayer] = useState(true);
-
   // フォーム状態
   const [formData, setFormData] = useState({
     startTime: '10:00',
@@ -343,81 +336,6 @@ export default function ScheduleDesignPage() {
     setUserSlots(prev => prev.filter(slot => slot.id !== slotId));
     setEditingSlot(null);
   }, []);
-
-  // 時間軸の範囲（6:00-24:00）
-  const timeAxisHours = Array.from({ length: 18 }, (_, i) => i + 6);
-
-  // 時間軸上の位置計算
-  const getTimePosition = (minutes: number): number => {
-    const startMinutes = 6 * 60; // 6:00
-    const totalMinutes = 18 * 60; // 18時間
-    return ((minutes - startMinutes) / totalMinutes) * 100;
-  };
-
-  // レイヤー表示用の時間バー生成
-  const generateTimeBars = () => {
-    const selectedDateSlots = getSelectedDateSlots();
-    const dateStr = selectedDate?.toISOString().split('T')[0];
-
-    // ユーザーの時間枠
-    const userBars = showUserLayer
-      ? selectedDateSlots.map(slot => ({
-          id: slot.id,
-          type: 'user' as const,
-          startPos: getTimePosition(slot.startMinutes),
-          width:
-            getTimePosition(slot.endMinutes) -
-            getTimePosition(slot.startMinutes),
-          color: '#3B82F6', // 青色
-          label: `${slot.startTime}-${slot.endTime}`,
-          notes: slot.notes,
-          slot,
-        }))
-      : [];
-
-    // 運営の時間枠（モデルの場合のみ）
-    const organizerBars =
-      showOrganizerLayer && dateStr === '2025-09-27'
-        ? [
-            {
-              id: 'org-1',
-              type: 'organizer' as const,
-              startPos: getTimePosition(540), // 9:00
-              width: getTimePosition(1020) - getTimePosition(540), // 17:00まで
-              color: '#10B981', // 緑色
-              label: '運営: 9:00-17:00',
-              notes: 'スタッフ配置可能',
-            },
-          ]
-        : [];
-
-    // 重複部分（計算例）
-    const overlapBars =
-      showOverlapLayer && dateStr === '2025-09-27'
-        ? [
-            {
-              id: 'overlap-1',
-              type: 'overlap' as const,
-              startPos: getTimePosition(540), // 9:00
-              width: getTimePosition(720) - getTimePosition(540), // 12:00まで
-              color: '#8B5CF6', // 紫色
-              label: '対応可能: 9:00-12:00',
-              notes: 'リクエスト撮影対応可能',
-            },
-            {
-              id: 'overlap-2',
-              type: 'overlap' as const,
-              startPos: getTimePosition(840), // 14:00
-              width: getTimePosition(960) - getTimePosition(840), // 16:00まで
-              color: '#8B5CF6', // 紫色
-              label: '対応可能: 14:00-16:00',
-              notes: 'リクエスト撮影対応可能',
-            },
-          ]
-        : [];
-
-    return [...organizerBars, ...userBars, ...overlapBars];
-  };
 
   const features = transformUserSlotsToFeatures();
 
@@ -508,8 +426,8 @@ export default function ScheduleDesignPage() {
                 <p className="text-muted-foreground">
                   空き時間が設定されていません。カレンダーから日付を選択して設定してください。
                 </p>
-                <div className="bg-blue-50 p-3 rounded border border-blue-200">
-                  <p className="text-sm text-blue-800">
+                <div className="p-3 rounded border border-blue-200">
+                  <p className="text-sm">
                     💡{' '}
                     <strong>
                       空き時間を設定して撮影チャンスを増やしましょう
@@ -780,135 +698,6 @@ export default function ScheduleDesignPage() {
                     </div>
                   </div>
                 )}
-              </CardContent>
-            </Card>
-
-            {/* 時間軸表示エリア（レイヤー制御統合） */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">時間軸表示</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {/* レイヤー制御（凡例として機能） */}
-                  <div className="flex flex-wrap gap-4 p-3 bg-muted/30 rounded-lg">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <Checkbox
-                        checked={showUserLayer}
-                        onCheckedChange={checked =>
-                          setShowUserLayer(checked === true)
-                        }
-                      />
-                      <div className="flex items-center gap-2">
-                        <div className="h-3 w-3 rounded-full bg-blue-500 flex-shrink-0" />
-                        <span className="text-sm font-medium">
-                          自分の空き時間
-                        </span>
-                      </div>
-                    </label>
-
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <Checkbox
-                        checked={showOrganizerLayer}
-                        onCheckedChange={checked =>
-                          setShowOrganizerLayer(checked === true)
-                        }
-                      />
-                      <div className="flex items-center gap-2">
-                        <div className="h-3 w-3 rounded-full bg-green-500 flex-shrink-0" />
-                        <span className="text-sm font-medium">
-                          所属運営の空き時間
-                        </span>
-                      </div>
-                    </label>
-
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <Checkbox
-                        checked={showOverlapLayer}
-                        onCheckedChange={checked =>
-                          setShowOverlapLayer(checked === true)
-                        }
-                      />
-                      <div className="flex items-center gap-2">
-                        <div className="h-3 w-3 rounded-full bg-purple-500 flex-shrink-0" />
-                        <span className="text-sm font-medium">
-                          対応可能時間
-                        </span>
-                      </div>
-                    </label>
-                  </div>
-
-                  {/* 時間軸ヘッダー */}
-                  <div className="relative">
-                    <div className="flex">
-                      {timeAxisHours.map(hour => (
-                        <div
-                          key={hour}
-                          className="flex-1 text-center text-sm font-medium border-l first:border-l-0"
-                        >
-                          {hour}:00
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* レイヤー表示エリア */}
-                  <div className="relative h-32 bg-gray-50 rounded border">
-                    {/* 時間軸グリッド */}
-                    {timeAxisHours.map(hour => (
-                      <div
-                        key={hour}
-                        className="absolute top-0 bottom-0 border-l border-gray-200"
-                        style={{ left: `${((hour - 6) / 18) * 100}%` }}
-                      />
-                    ))}
-
-                    {/* 時間バー表示 */}
-                    {generateTimeBars().map(bar => (
-                      <div
-                        key={bar.id}
-                        className={cn(
-                          'absolute h-8 rounded flex items-center px-2 text-white text-xs font-medium',
-                          'border border-white/20 cursor-pointer hover:opacity-80 transition-opacity'
-                        )}
-                        style={{
-                          left: `${bar.startPos}%`,
-                          width: `${bar.width}%`,
-                          backgroundColor: bar.color,
-                          top:
-                            bar.type === 'user'
-                              ? '8px'
-                              : bar.type === 'organizer'
-                                ? '40px'
-                                : '72px',
-                        }}
-                        onClick={() => {
-                          if (bar.type === 'user' && 'slot' in bar) {
-                            setEditingSlot(bar.slot);
-                            setFormData({
-                              startTime: bar.slot.startTime,
-                              endTime: bar.slot.endTime,
-                              notes: bar.slot.notes || '',
-                            });
-                          }
-                        }}
-                      >
-                        <span className="truncate">{bar.label}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* リクエスト撮影対応可能時間の情報表示 */}
-                  {selectedDate?.toISOString().split('T')[0] === '2025-09-27' &&
-                    showOverlapLayer && (
-                      <div className="bg-green-50 p-3 rounded-lg border border-green-200">
-                        <p className="text-sm text-green-800">
-                          <strong>✨ リクエスト撮影対応可能</strong>:
-                          所属運営（株式会社フォトプロダクション）との空き時間が一致しているため、リクエスト撮影に対応できます
-                        </p>
-                      </div>
-                    )}
-                </div>
               </CardContent>
             </Card>
 
