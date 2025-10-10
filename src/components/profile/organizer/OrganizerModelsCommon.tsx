@@ -101,62 +101,11 @@ export function OrganizerModelsCommon({
 
   return (
     <div className="space-y-4">
-      {/* 統計サマリー */}
-      {showStatistics && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <Card>
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold brand-primary">
-                {models.length}
-              </div>
-              <div className="text-xs text-muted-foreground">総モデル数</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold brand-success">
-                {models.filter(m => m.status === 'active').length}
-              </div>
-              <div className="text-xs text-muted-foreground">アクティブ</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold brand-info">
-                {models.reduce(
-                  (sum, m) => sum + (m.total_sessions_participated || 0),
-                  0
-                )}
-              </div>
-              <div className="text-xs text-muted-foreground">総参加回数</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold brand-warning">
-                ¥
-                {Math.floor(
-                  models.reduce(
-                    (sum, m) => sum + (m.total_revenue_generated || 0),
-                    0
-                  ) / 1000
-                )}
-                K
-              </div>
-              <div className="text-xs text-muted-foreground">総収益貢献</div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
       {/* プロフィール表示で自分のプロフィールの場合のみ管理ページへの導線 */}
       {variant === 'profile' && isOwnProfile && (
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center mt-4 mb-4">
           <Link href="/models">
-            <Button variant="outline" className="flex items-center gap-2">
+            <Button variant="navigation" className="flex items-center gap-2">
               <Settings className="h-4 w-4" />
               モデル管理ページへ
             </Button>
@@ -250,7 +199,7 @@ export function OrganizerModelsCommon({
               {showContactButton && (
                 <div className="pt-2 border-t">
                   <Button
-                    variant="outline"
+                    variant="navigation"
                     size="sm"
                     className="w-full text-xs"
                   >
@@ -263,6 +212,57 @@ export function OrganizerModelsCommon({
           </Card>
         ))}
       </div>
+
+      {/* 統計サマリー */}
+      {showStatistics && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <Card>
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold brand-primary">
+                {models.length}
+              </div>
+              <div className="text-xs text-muted-foreground">総モデル数</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold brand-success">
+                {models.filter(m => m.status === 'active').length}
+              </div>
+              <div className="text-xs text-muted-foreground">アクティブ</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold brand-info">
+                {models.reduce(
+                  (sum, m) => sum + (m.total_sessions_participated || 0),
+                  0
+                )}
+              </div>
+              <div className="text-xs text-muted-foreground">総参加回数</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold brand-warning">
+                ¥
+                {Math.floor(
+                  models.reduce(
+                    (sum, m) => sum + (m.total_revenue_generated || 0),
+                    0
+                  ) / 1000
+                )}
+                K
+              </div>
+              <div className="text-xs text-muted-foreground">総収益貢献</div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
