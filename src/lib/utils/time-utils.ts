@@ -75,6 +75,19 @@ export function validateTimeRange(
 }
 
 /**
+ * 日付オブジェクトをローカルタイムゾーンでYYYY-MM-DD形式の文字列に変換する
+ * UTCタイムゾーン変換を避けて正確な日付を取得する
+ * @param date 日付オブジェクト
+ * @returns YYYY-MM-DD形式の日付文字列
+ */
+export function formatDateToLocalString(date: Date): string {
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+/**
  * 日付文字列の妥当性をチェックする
  * @param dateStr YYYY-MM-DD形式の日付文字列
  * @returns 妥当性チェック結果

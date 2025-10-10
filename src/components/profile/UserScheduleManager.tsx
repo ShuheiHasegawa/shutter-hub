@@ -35,7 +35,11 @@ import {
   getUserAvailability,
   deleteUserAvailability,
 } from '@/app/actions/user-availability';
-import { timeToMinutes, validateTimeRange } from '@/lib/utils/time-utils';
+import {
+  timeToMinutes,
+  validateTimeRange,
+  formatDateToLocalString,
+} from '@/lib/utils/time-utils';
 import type { TimeSlot } from '@/types/user-availability';
 import { getOrganizersOfModelAction } from '@/app/actions/organizer-model';
 
@@ -346,7 +350,7 @@ export function UserScheduleManager({
   // 選択された日の時間枠取得
   const getSelectedDateSlots = useCallback((): TimeSlot[] => {
     if (!selectedDate) return [];
-    const dateStr = selectedDate.toISOString().split('T')[0];
+    const dateStr = formatDateToLocalString(selectedDate);
     return userSlots.filter(slot => slot.date === dateStr);
   }, [selectedDate, userSlots]);
 
@@ -363,7 +367,7 @@ export function UserScheduleManager({
     setIsLoading(true);
     try {
       const result = await createUserAvailability({
-        available_date: selectedDate.toISOString().split('T')[0],
+        available_date: formatDateToLocalString(selectedDate),
         start_time_minutes: timeToMinutes(formData.startTime),
         end_time_minutes: timeToMinutes(formData.endTime),
         notes: formData.notes || undefined,
@@ -374,6 +378,8 @@ export function UserScheduleManager({
         await loadUserAvailability();
         setFormData({ startTime: '10:00', endTime: '18:00', notes: '' });
         setIsCreating(false);
+        // モーダルを閉じる
+        setShowModal(false);
       } else {
         toast.error(result.error || '追加に失敗しました');
       }
@@ -592,7 +598,7 @@ export function UserScheduleManager({
               }}
             />
             <CalendarDate>
-              <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-4">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
                 <CalendarDatePicker>
                   <CalendarYearPicker end={2026} start={2024} />
                   <CalendarMonthPicker />
@@ -709,7 +715,11 @@ export function UserScheduleManager({
                         variant="neutral"
                         size="sm"
                         onClick={() => {
-                          setSelectedDate(new Date(slot.date + 'T00:00:00'));
+                          // 日付文字列から正確にDateオブジェクトを作成（タイムゾーン問題を回避）
+                          const [year, month, day] = slot.date
+                            .split('-')
+                            .map(Number);
+                          setSelectedDate(new Date(year, month - 1, day));
                           setEditingSlot(slot);
                           setFormData({
                             startTime: slot.startTime,
@@ -776,7 +786,7 @@ export function UserScheduleManager({
                           getSelectedDateSlots().map(slot => (
                             <div
                               key={slot.id}
-                              className="flex items-center justify-between p-3 border rounded"
+                              className="flex items-center justify-between border rounded"
                             >
                               <div>
                                 <div className="font-mono text-sm">
