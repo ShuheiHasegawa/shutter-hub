@@ -139,26 +139,26 @@ export const PhotobookGallery: React.FC<PhotobookGalleryProps> = ({
     return (
       <div className="text-center py-12">
         <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-          <BookOpen size={32} className="text-gray-400" />
+          <BookOpen size={32} />
         </div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">
+        <h3 className="text-lg font-medium mb-2">
           {isOwnProfile
             ? 'フォトブックがありません'
             : '公開フォトブックがありません'}
         </h3>
-        <p className="text-gray-600 mb-6 max-w-md mx-auto">
+        <p className="mb-6 max-w-md mx-auto">
           {isOwnProfile
             ? '撮影した写真を美しいフォトブックにまとめて、作品ポートフォリオを作成しましょう。'
             : 'このユーザーはまだフォトブックを公開していません。'}
         </p>
         {isOwnProfile && (
-          <Link
-            href="/photobooks/create"
-            className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+          <Button
+            variant="navigation"
+            className="inline-flex items-center px-6 py-3 font-medium rounded-lg hover:bg-blue-700 transition-colors"
           >
             <BookOpen size={20} className="mr-2" />
             最初のフォトブックを作成
-          </Link>
+          </Button>
         )}
       </div>
     );
@@ -182,7 +182,7 @@ export const PhotobookGallery: React.FC<PhotobookGalleryProps> = ({
               onClick={() => setViewMode('grid')}
               className={`p-2 rounded-md transition-colors ${
                 viewMode === 'grid'
-                  ? 'bg-white text-gray-900 shadow-sm'
+                  ? 'surface-primary'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
               title="グリッド表示"
@@ -193,7 +193,7 @@ export const PhotobookGallery: React.FC<PhotobookGalleryProps> = ({
               onClick={() => setViewMode('list')}
               className={`p-2 rounded-md transition-colors ${
                 viewMode === 'list'
-                  ? 'bg-white text-gray-900 shadow-sm'
+                  ? 'surface-primary'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
               title="リスト表示"
@@ -242,7 +242,7 @@ export const PhotobookGallery: React.FC<PhotobookGalleryProps> = ({
                   className="block"
                 >
                   {/* カバー画像 */}
-                  <div className="aspect-[3/4] bg-gray-100 relative overflow-hidden">
+                  <div className="aspect-[3/4] surface-neutral relative overflow-hidden">
                     {photobook.cover_image_url ? (
                       <Image
                         src={photobook.cover_image_url}
@@ -284,13 +284,13 @@ export const PhotobookGallery: React.FC<PhotobookGalleryProps> = ({
                     {/* 状態表示 */}
                     <div className="absolute top-2 right-2 flex items-center space-x-2">
                       {!photobook.is_published && (
-                        <div className="bg-gray-900/80 px-2 py-1 rounded-full text-xs font-medium flex items-center space-x-1">
+                        <div className="surface-neutral px-2 py-1 rounded-full text-xs font-medium flex items-center space-x-1">
                           <Lock size={12} />
                           <span>非公開</span>
                         </div>
                       )}
                       {photobook.subscription_plan === 'premium' && (
-                        <div className="bg-purple-600 p-1.5 rounded-full">
+                        <div className="brand-primary p-1.5 rounded-full">
                           <Crown size={12} />
                         </div>
                       )}
@@ -329,7 +329,7 @@ export const PhotobookGallery: React.FC<PhotobookGalleryProps> = ({
                     }
                     className="flex-shrink-0"
                   >
-                    <div className="w-16 h-20 bg-gray-100 rounded relative overflow-hidden">
+                    <div className="w-16 h-20 surface-neutral rounded relative overflow-hidden">
                       {photobook.cover_image_url ? (
                         <Image
                           src={photobook.cover_image_url}

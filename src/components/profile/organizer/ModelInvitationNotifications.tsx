@@ -223,9 +223,7 @@ export function ModelInvitationNotifications({
           <Badge
             variant="secondary"
             className={`${
-              isExpiring(expiresAt)
-                ? 'bg-yellow-100 text-yellow-800 border-yellow-300'
-                : 'bg-blue-100 text-blue-800 border-blue-300'
+              isExpiring(expiresAt) ? 'brand-warning' : 'brand-info'
             }`}
           >
             <Clock className="h-3 w-3 mr-1" />
@@ -234,20 +232,14 @@ export function ModelInvitationNotifications({
         );
       case 'accepted':
         return (
-          <Badge
-            variant="default"
-            className="bg-green-100 text-green-800 border-green-300"
-          >
+          <Badge variant="default" className="brand-success">
             <CheckCircle className="h-3 w-3 mr-1" />
             承認済み
           </Badge>
         );
       case 'rejected':
         return (
-          <Badge
-            variant="destructive"
-            className="bg-red-100 text-red-800 border-red-300"
-          >
+          <Badge variant="destructive" className="brand-error">
             <XCircle className="h-3 w-3 mr-1" />
             拒否済み
           </Badge>
@@ -308,11 +300,11 @@ export function ModelInvitationNotifications({
               className={`${
                 invitation.status === 'pending' &&
                 isExpiring(invitation.expires_at)
-                  ? 'border-yellow-300 bg-yellow-50'
+                  ? 'brand-warning'
                   : ''
               }`}
             >
-              <CardContent className="p-4">
+              <CardContent className="p-4 surface-accent">
                 <div className="flex items-start space-x-4">
                   <Avatar className="h-12 w-12">
                     <AvatarImage
@@ -334,14 +326,14 @@ export function ModelInvitationNotifications({
 
                     {/* 招待メッセージ */}
                     {invitation.invitation_message && (
-                      <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <div className="mb-3 p-3 brand-info rounded-lg">
                         <div className="flex items-start gap-2">
                           <MessageSquare className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
                           <div>
-                            <p className="text-sm font-medium text-blue-700 mb-1">
+                            <p className="text-sm font-medium mb-1">
                               招待メッセージ
                             </p>
-                            <p className="text-sm text-blue-600">
+                            <p className="text-sm">
                               {invitation.invitation_message}
                             </p>
                           </div>
@@ -365,15 +357,13 @@ export function ModelInvitationNotifications({
                             <span
                               className={` ${
                                 isExpiring(invitation.expires_at)
-                                  ? 'text-yellow-600 font-medium'
+                                  ? 'font-medium'
                                   : ''
                               }`}
                             >
                               期限: {formatDate(invitation.expires_at)}
                               {isExpiring(invitation.expires_at) && (
-                                <span className="ml-1 text-yellow-600">
-                                  (まもなく期限切れ)
-                                </span>
+                                <span className="ml-1">(まもなく期限切れ)</span>
                               )}
                             </span>
                           </div>
@@ -388,7 +378,7 @@ export function ModelInvitationNotifications({
                             size="sm"
                             onClick={() => handleAccept(invitation.id)}
                             disabled={actionLoading[invitation.id]}
-                            className="bg-green-600 hover:bg-green-700"
+                            className="brand-success"
                           >
                             <CheckCircle className="h-4 w-4 mr-1" />
                             {actionLoading[invitation.id]
@@ -412,7 +402,7 @@ export function ModelInvitationNotifications({
                                 onClick={() =>
                                   setShowRejectDialog(invitation.id)
                                 }
-                                className="text-red-600 border-red-200 hover:bg-red-50"
+                                className="brand-error"
                               >
                                 <XCircle className="h-4 w-4 mr-1" />
                                 拒否
@@ -445,7 +435,7 @@ export function ModelInvitationNotifications({
                               </div>
                               <DialogFooter>
                                 <Button
-                                  variant="outline"
+                                  variant="cta"
                                   onClick={() => {
                                     setShowRejectDialog(null);
                                     setRejectionReason('');
