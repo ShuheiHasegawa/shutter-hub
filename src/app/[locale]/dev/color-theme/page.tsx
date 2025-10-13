@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { PublicLayout } from '@/components/layout/public-layout';
 import { Button } from '@/components/ui/button';
+import { DevToolsNavigation } from '@/components/dev/DevToolsNavigation';
 import { colorPalettes, applyTheme } from '@/lib/utils/color-system';
 import { Moon, Sun } from 'lucide-react';
 
@@ -17,6 +18,7 @@ export default function ColorThemePage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <DevToolsNavigation />
       <PublicLayout>
         {/* ヘッダーセクション */}
         <section className="py-24 surface-primary">
