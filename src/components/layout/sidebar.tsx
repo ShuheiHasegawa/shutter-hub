@@ -32,10 +32,6 @@ import {
   Users,
   Building,
   Code,
-  Palette,
-  Bug,
-  CreditCard,
-  Map,
   Heart,
   Zap,
 } from 'lucide-react';
@@ -191,50 +187,9 @@ export function Sidebar({ className }: SidebarProps) {
     ...(process.env.NODE_ENV === 'development'
       ? [
           {
-            title: 'Dev Tools',
+            title: '開発ツール',
+            href: '/dev',
             icon: Code,
-            children: [
-              {
-                title: 'テストログイン',
-                href: '/dev/test-login',
-                icon: User,
-              },
-              {
-                title: 'テーマカラーデモ',
-                href: '/dev/color-theme',
-                icon: Palette,
-              },
-              {
-                title: 'テスト決済',
-                href: '/dev/test-payment',
-                icon: CreditCard,
-              },
-              {
-                title: 'テストスロット選択',
-                href: '/dev/test-slot-selection',
-                icon: Calendar,
-              },
-              {
-                title: 'Sentry テストページ',
-                href: '/dev/sentry-example-page',
-                icon: Bug,
-              },
-              {
-                title: 'Sentry モニタリングテスト',
-                href: '/dev/sentry-monitoring-test',
-                icon: Bug,
-              },
-              {
-                title: '地図テスト',
-                href: '/dev/map-test',
-                icon: Map,
-              },
-              {
-                title: 'スケジュール設計',
-                href: '/dev/schedule-design',
-                icon: Calendar,
-              },
-            ],
           },
         ]
       : []),
@@ -441,20 +396,9 @@ export function MobileSidebarTrigger() {
     ...(process.env.NODE_ENV === 'development'
       ? [
           {
-            title: 'Dev Tools',
+            title: '開発ツール',
+            href: '/dev',
             icon: Code,
-            children: [
-              {
-                title: 'テーマカラーデモ',
-                href: '/dev/color-theme',
-                icon: Palette,
-              },
-              {
-                title: '地図テスト',
-                href: '/dev/map-test',
-                icon: Map,
-              },
-            ],
           },
         ]
       : []),
