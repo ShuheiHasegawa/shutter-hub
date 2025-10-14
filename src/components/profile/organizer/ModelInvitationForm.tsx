@@ -7,17 +7,21 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { UserPlus, User, Send } from 'lucide-react';
+import { UserPlus, User, Send, AlertTriangle } from 'lucide-react';
 import { ModelSearchInput } from '@/components/photo-sessions/ModelSearchInput';
 import { createModelInvitationAction } from '@/app/actions/organizer-model';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import type { ModelSearchResult } from '@/types/photo-session';
+import type { ModelLimitCheck } from '@/lib/subscription-limits';
 
 interface ModelInvitationFormProps {
   onInvitationSent?: () => void;
+  limitCheck?: ModelLimitCheck | null;
 }
 
 export function ModelInvitationForm({
   onInvitationSent,
+  limitCheck,
 }: ModelInvitationFormProps) {
   const { toast } = useToast();
   const [selectedModel, setSelectedModel] = useState<ModelSearchResult | null>(
@@ -35,6 +39,16 @@ export function ModelInvitationForm({
       toast({
         title: 'エラー',
         description: 'モデルを選択してください',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // 制限チェック（UI側でも確認）
+    if (limitCheck && !limitCheck.canInvite) {
+      toast({
+        title: '所属モデル上限に達しています',
+        description: `現在のプランでは最大${limitCheck.limit}名までのモデルを管理できます。より多くのモデルを管理するには、プランをアップグレードしてください。`,
         variant: 'destructive',
       });
       return;
@@ -60,11 +74,20 @@ export function ModelInvitationForm({
         // 親コンポーネントに通知
         onInvitationSent?.();
       } else {
-        toast({
-          title: 'エラー',
-          description: result.error || '招待の送信に失敗しました',
-          variant: 'destructive',
-        });
+        // 制限情報がある場合は詳細なエラーメッセージを表示
+        if (result.limitInfo) {
+          toast({
+            title: '招待制限に達しています',
+            description: result.error || '招待の送信に失敗しました',
+            variant: 'destructive',
+          });
+        } else {
+          toast({
+            title: 'エラー',
+            description: result.error || '招待の送信に失敗しました',
+            variant: 'destructive',
+          });
+        }
       }
     } catch {
       toast({
@@ -87,6 +110,34 @@ export function ModelInvitationForm({
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
+          {/* 制限警告 */}
+          {limitCheck && !limitCheck.canInvite && (
+            <Alert variant="destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription className="flex flex-col gap-2">
+                <span>
+                  所属モデル上限（{limitCheck.limit}名）に達しています。
+                </span>
+                <span className="text-sm">
+                  現在のプランでは最大{limitCheck.limit}
+                  名までのモデルを管理できます。
+                  より多くのモデルを管理するには、プランをアップグレードしてください。
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="self-start mt-2"
+                  onClick={() => {
+                    // プラン変更ページへのリダイレクト
+                    window.location.href = '/subscription';
+                  }}
+                >
+                  プランを変更
+                </Button>
+              </AlertDescription>
+            </Alert>
+          )}
+
           {/* モデル検索・選択 */}
           <div className="space-y-2">
             <Label>招待するモデル</Label>
@@ -158,7 +209,6 @@ export function ModelInvitationForm({
               onClick={handleSubmit}
               disabled={!selectedModel || isLoading}
               className="flex items-center gap-2"
-              variant="cta"
             >
               {isLoading ? (
                 <>

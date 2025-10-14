@@ -149,6 +149,11 @@ export interface InvitationResponse {
     | OrganizerModelInvitationWithProfiles
     | OrganizerModelInvitationWithProfiles[];
   error?: string;
+  limitInfo?: {
+    currentCount: number;
+    limit: number;
+    isUnlimited: boolean;
+  };
 }
 
 // バルク操作用

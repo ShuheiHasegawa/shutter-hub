@@ -116,6 +116,7 @@ CREATE TABLE subscription_plans (
 ```json
 {
   "sessionLimit": 20,
+  "modelLimit": 15,
   "advancedAnalytics": true,
   "marketingTools": false,
   "participantCRM": true,
@@ -321,15 +322,15 @@ INSERT INTO subscription_plans (id, name, user_type, tier, price, stripe_price_i
 INSERT INTO subscription_plans (id, name, user_type, tier, price, stripe_price_id, base_features, type_specific_features) VALUES
 ('organizer_free', '運営者 フリープラン', 'organizer', 'free', 0, NULL,
  '{"photobookLimit": 3, "premiumTemplates": false, "exportQuality": "standard", "prioritySupport": false, "storageLimit": 1000}',
- '{"sessionLimit": 3, "advancedAnalytics": false, "marketingTools": false, "participantCRM": false, "revenueReports": false}'),
+ '{"sessionLimit": 3, "modelLimit": 3, "advancedAnalytics": false, "marketingTools": false, "participantCRM": false, "revenueReports": false}'),
 
 ('organizer_standard', '運営者 スタンダードプラン', 'organizer', 'standard', 1480, 'price_organizer_standard_monthly',
  '{"photobookLimit": 15, "premiumTemplates": true, "exportQuality": "high", "prioritySupport": false, "storageLimit": 5000}',
- '{"sessionLimit": 20, "advancedAnalytics": true, "marketingTools": false, "participantCRM": true, "revenueReports": true}'),
+ '{"sessionLimit": 20, "modelLimit": 15, "advancedAnalytics": true, "marketingTools": false, "participantCRM": true, "revenueReports": true}'),
 
 ('organizer_professional', '運営者 プロフェッショナルプラン', 'organizer', 'professional', 2980, 'price_organizer_professional_monthly',
  '{"photobookLimit": -1, "premiumTemplates": true, "exportQuality": "ultra", "prioritySupport": true, "storageLimit": 50000}',
- '{"sessionLimit": -1, "advancedAnalytics": true, "marketingTools": true, "participantCRM": true, "revenueReports": true, "customBranding": true, "apiAccess": true}');
+ '{"sessionLimit": -1, "modelLimit": -1, "advancedAnalytics": true, "marketingTools": true, "participantCRM": true, "revenueReports": true, "customBranding": true, "apiAccess": true}');
 ```
 
 ## 🔒 RLS (Row Level Security) ポリシー
