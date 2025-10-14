@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { logger } from '@/lib/utils/logger';
 import { createClient } from '@/lib/supabase/server';
 import { createNotification } from '@/app/actions/notifications';
+import { canInviteModel } from '@/lib/subscription-limits';
 import type {
   CreateInvitationData,
   InvitationResponse,
@@ -36,6 +37,20 @@ export async function createModelInvitationAction(
 
     if (profile?.user_type !== 'organizer') {
       return { success: false, error: '運営者のみが招待を送信できます' };
+    }
+
+    // 所属モデル上限チェック
+    const inviteCheck = await canInviteModel(user.id);
+    if (!inviteCheck.canInvite) {
+      return {
+        success: false,
+        error: inviteCheck.reason || '招待できません',
+        limitInfo: {
+          currentCount: inviteCheck.currentCount,
+          limit: inviteCheck.limit,
+          isUnlimited: inviteCheck.isUnlimited,
+        },
+      };
     }
 
     // 招待対象のモデル情報を取得（emailを含む）

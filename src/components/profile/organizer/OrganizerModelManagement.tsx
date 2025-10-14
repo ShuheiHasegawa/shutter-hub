@@ -7,14 +7,18 @@ import { logger } from '@/lib/utils/logger';
 import { ModelInvitationForm } from './ModelInvitationForm';
 import { OrganizerModelsCommon } from './OrganizerModelsCommon';
 import { PendingInvitationsList } from './PendingInvitationsList';
+import { ModelLimitDisplay } from './ModelLimitDisplay';
 import {
   getOrganizerModelsAction,
   getOrganizerInvitationsAction,
 } from '@/app/actions/organizer-model';
+import { checkModelLimit } from '@/lib/subscription-limits';
+import { createClient } from '@/lib/supabase/client';
 import type {
   OrganizerModelWithProfile,
   OrganizerModelInvitationWithProfiles,
 } from '@/types/organizer-model';
+import type { ModelLimitCheck } from '@/lib/subscription-limits';
 import { Users, Mail } from 'lucide-react';
 
 interface OrganizerModelManagementProps {
@@ -39,6 +43,7 @@ export function OrganizerModelManagement({
   const [invitations, setInvitations] = useState<
     OrganizerModelInvitationWithProfiles[]
   >([]);
+  const [limitCheck, setLimitCheck] = useState<ModelLimitCheck | null>(null);
 
   // データ読み込み
   const loadData = useCallback(async () => {
@@ -76,13 +81,32 @@ export function OrganizerModelManagement({
     }
   }, [toast]);
 
+  // 制限情報を読み込み
+  const loadLimitCheck = useCallback(async () => {
+    try {
+      // 現在のユーザーIDを取得
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const limitInfo = await checkModelLimit(user.id);
+      setLimitCheck(limitInfo);
+    } catch (error) {
+      logger.error('制限情報読み込みエラー:', error);
+    }
+  }, []);
+
   useEffect(() => {
     loadData();
-  }, [loadData]);
+    loadLimitCheck();
+  }, [loadData, loadLimitCheck]);
 
   // 招待成功時のコールバック
   const handleInvitationSent = () => {
     loadData(); // データを再読み込み
+    loadLimitCheck(); // 制限情報も再読み込み
     setActiveTab('invitations'); // 招待一覧タブに切り替え
     toast({
       title: '成功',
@@ -107,6 +131,9 @@ export function OrganizerModelManagement({
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
+          {/* 制限情報表示 */}
+          {limitCheck && <ModelLimitDisplay limitCheck={limitCheck} />}
+
           {/* 概要統計 */}
           {showStatistics && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -119,6 +146,11 @@ export function OrganizerModelManagement({
                     </p>
                     <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">
                       {models.length}
+                      {limitCheck && !limitCheck.isUnlimited && (
+                        <span className="text-sm font-normal text-blue-600 dark:text-blue-400">
+                          / {limitCheck.limit}
+                        </span>
+                      )}
                     </p>
                   </div>
                 </div>
@@ -214,7 +246,10 @@ export function OrganizerModelManagement({
             )}
 
             {activeTab === 'invite' && (
-              <ModelInvitationForm onInvitationSent={handleInvitationSent} />
+              <ModelInvitationForm
+                onInvitationSent={handleInvitationSent}
+                limitCheck={limitCheck}
+              />
             )}
           </div>
         </CardContent>
