@@ -170,7 +170,7 @@ function CustomCalendarBody({
                 <span className="ml-1 hidden lg:inline text-xs truncate">
                   {organizerLabelsByDay[day]}
                 </span>
-                <span className="ml-1 lg:hidden text-xs font-mono">
+                <span className="ml-1 lg:hidden text-[9px] font-mono leading-tight">
                   {organizerLabelsByDay[day]}
                 </span>
               </div>
@@ -198,7 +198,7 @@ function CustomCalendarBody({
                 {featuresForDay[0].name}
               </span>
               {/* スマホ表示：時刻のみ表示 */}
-              <span className="ml-1 lg:hidden text-xs font-mono">
+              <span className="ml-1 lg:hidden text-[9px] font-mono leading-tight">
                 {featuresForDay[0].name || '●'}
               </span>
             </div>
