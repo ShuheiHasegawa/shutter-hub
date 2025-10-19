@@ -65,26 +65,8 @@ function CalendarStateWatcher({
   return null;
 }
 
-// カスタムカレンダーヘッダーコンポーネント
-function CustomCalendarHeader() {
-  const daysData = ['日', '月', '火', '水', '木', '金', '土'];
-
-  return (
-    <div className="grid grid-cols-7 gap-0 border-l border-t border-gray-200 w-full overflow-hidden">
-      {daysData.map(day => (
-        <div
-          key={day}
-          className="p-1 sm:p-2 lg:p-3 text-center text-muted-foreground text-xs sm:text-sm font-medium border-r border-b border-gray-200 bg-muted/30"
-        >
-          {day}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-// カスタムカレンダーボディコンポーネント
-interface CustomCalendarBodyProps {
+// 統合カレンダーグリッドコンポーネント（ヘッダー＋ボディを1つのグリッドで管理）
+interface UnifiedCalendarGridProps {
   features: Feature[];
   onDateClick: (date: Date) => void;
   onBadgeClick: (date: Date) => void;
@@ -93,14 +75,14 @@ interface CustomCalendarBodyProps {
   showOrganizerSchedule?: boolean;
 }
 
-function CustomCalendarBody({
+function UnifiedCalendarGrid({
   features,
   onDateClick,
   onBadgeClick,
   organizerLabelsByDay,
   showUserSchedule,
   showOrganizerSchedule,
-}: CustomCalendarBodyProps) {
+}: UnifiedCalendarGridProps) {
   const [month] = useCalendarMonth();
   const [year] = useCalendarYear();
 
@@ -114,118 +96,219 @@ function CustomCalendarBody({
   );
   const firstDay = useMemo(() => getDay(currentMonthDate), [currentMonthDate]);
 
-  // 日付ごとの機能をグループ化
-  const featuresByDay = useMemo(() => {
-    const result: { [day: number]: Feature[] } = {};
+  const daysData = ['日', '月', '火', '水', '木', '金', '土'];
+  const featuresMap = useMemo(() => {
+    const map: { [dateKey: string]: Feature[] } = {};
     features.forEach(feature => {
-      const day = feature.startAt.getDate();
-      if (!result[day]) result[day] = [];
-      result[day].push(feature);
+      const dateKey = `${feature.startAt.getFullYear()}-${feature.startAt.getMonth()}-${feature.startAt.getDate()}`;
+      if (!map[dateKey]) map[dateKey] = [];
+
+      // 複数の時間枠が含まれている場合は分割
+      const timeRanges = feature.name.split(', ');
+      if (timeRanges.length > 1) {
+        // 複数の時間枠を個別のfeatureとして追加
+        timeRanges.forEach(timeRange => {
+          const splitFeature = {
+            ...feature,
+            name: timeRange.trim(),
+          };
+          map[dateKey].push(splitFeature);
+        });
+      } else {
+        // 単一の時間枠
+        map[dateKey].push(feature);
+      }
     });
-    return result;
+    return map;
   }, [features]);
 
-  const days: React.ReactNode[] = [];
-
-  // 前月の日付（空白部分）
-  for (let i = 0; i < firstDay; i++) {
-    days.push(
-      <div
-        key={`prev-${i}`}
-        className="relative aspect-square min-h-10 sm:min-h-14 lg:min-h-20 p-1 border-r border-b border-gray-200 text-muted-foreground/50"
-      >
-        {/* 空白 */}
-      </div>
-    );
-  }
-
-  // 現在月の日付
-  for (let day = 1; day <= daysInMonth; day++) {
-    const currentDate = new Date(year, month, day);
-    const featuresForDay = featuresByDay[day] || [];
-
-    days.push(
-      <div
-        key={day}
-        className="relative aspect-square min-h-10 sm:min-h-14 lg:min-h-20 p-0.5 sm:p-1 border-r border-b border-gray-200 cursor-pointer hover:bg-accent/20 transition-colors"
-        onClick={() => onDateClick(currentDate)}
-      >
-        {/* 日付番号 */}
-        <div className="text-xs font-medium mb-0.5">{day}</div>
-
-        {/* 所属運営の空き時間（モデル時・表示ON時） */}
-        {organizerLabelsByDay &&
-          organizerLabelsByDay[day] &&
-          showOrganizerSchedule && (
-            <div className="mt-0.5">
-              <div
-                className="relative text-xs px-0.5 py-0.5 rounded truncate"
-                style={{ backgroundColor: '#16a34a20' }}
-              >
-                {/* 左側縦線（グリーン） */}
-                <div
-                  className="absolute left-0 top-0 bottom-0 w-0.5 rounded-full"
-                  style={{ backgroundColor: '#16a34a' }}
-                />
-                <span className="ml-1 hidden lg:inline text-xs truncate">
-                  {organizerLabelsByDay[day]}
-                </span>
-                <span className="ml-1 lg:hidden text-[9px] font-mono leading-tight">
-                  {organizerLabelsByDay[day]}
-                </span>
-              </div>
-            </div>
-          )}
-
-        {/* 空き時間表示（left-line-sectionスタイル） */}
-        {featuresForDay.length > 0 && showUserSchedule && (
-          <div className="mt-0.5">
-            <div
-              className="relative text-xs px-0.5 py-0.5 rounded truncate cursor-pointer"
-              style={{ backgroundColor: featuresForDay[0].status.color + '10' }}
-              onClick={e => {
-                e.stopPropagation();
-                onBadgeClick(currentDate);
-              }}
-            >
-              {/* 左側縦線 */}
-              <div
-                className="absolute left-0 top-0 bottom-0 w-0.5 rounded-full"
-                style={{ backgroundColor: featuresForDay[0].status.color }}
-              />
-              {/* テキスト（レスポンシブ） */}
-              <span className="ml-1 hidden lg:inline text-xs truncate">
-                {featuresForDay[0].name}
-              </span>
-              {/* スマホ表示：時刻のみ表示 */}
-              <span className="ml-1 lg:hidden text-[9px] font-mono leading-tight">
-                {featuresForDay[0].name || '●'}
-              </span>
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  // 来月の日付（空白部分）
-  const remainingDays = 7 - ((firstDay + daysInMonth) % 7);
-  if (remainingDays < 7) {
-    for (let i = 0; i < remainingDays; i++) {
-      days.push(
-        <div
-          key={`next-${i}`}
-          className="relative aspect-square min-h-10 sm:min-h-14 lg:min-h-20 p-1 border-r border-b border-gray-200 text-muted-foreground/50"
-        >
-          {/* 空白 */}
-        </div>
-      );
-    }
-  }
-
   return (
-    <div className="grid grid-cols-7 gap-0 border-l border-t border-gray-200 w-full overflow-hidden">
-      {days}
+    <div className="w-full border border-gray-200">
+      <table
+        className="w-full border-collapse"
+        style={{ tableLayout: 'fixed' }}
+      >
+        <thead>
+          <tr>
+            {daysData.map(day => (
+              <th
+                key={`header-${day}`}
+                className="p-1 sm:p-2 lg:p-3 text-center text-muted-foreground text-xs sm:text-sm font-medium bg-muted/30 border border-gray-200 h-12 sm:h-14 lg:h-16"
+              >
+                {day}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {/* 週ごとに行を作成 */}
+          {Array.from({ length: Math.ceil((firstDay + daysInMonth) / 7) }).map(
+            (_, weekIdx) => (
+              <tr
+                key={`week-${weekIdx}`}
+                style={{
+                  height: '120px', // 固定高さを設定
+                }}
+              >
+                {Array.from({ length: 7 }).map((_, dayIdx) => {
+                  const cellIndex = weekIdx * 7 + dayIdx;
+                  const day = cellIndex - firstDay + 1;
+                  const isCurrentMonth = day > 0 && day <= daysInMonth;
+                  const currentDate = new Date(year, month, day);
+                  // 日付キーを生成（featuresMapと同じ形式）
+                  const dateKey = isCurrentMonth
+                    ? `${year}-${month}-${day}`
+                    : '';
+                  const featuresForDay = isCurrentMonth
+                    ? featuresMap[dateKey] || []
+                    : [];
+
+                  return (
+                    <td
+                      key={`cell-${weekIdx}-${dayIdx}`}
+                      className="relative p-1 sm:p-2 lg:p-3 border border-gray-200 align-top cursor-pointer hover:bg-accent/20 transition-colors"
+                      style={{
+                        height: '100%', // 親要素の高さいっぱいに
+                      }}
+                      onClick={() => isCurrentMonth && onDateClick(currentDate)}
+                    >
+                      {isCurrentMonth && (
+                        <>
+                          {/* 日付番号 */}
+                          <div className="text-[10px] sm:text-xs font-medium mb-0.5 leading-none">
+                            {day}
+                          </div>
+
+                          {/* スケジュール表示エリア */}
+                          <div className="flex flex-col gap-0.5 overflow-visible">
+                            {/* 所属運営のスケジュール */}
+                            {organizerLabelsByDay &&
+                              organizerLabelsByDay[day] &&
+                              showOrganizerSchedule && (
+                                <div className="flex-shrink-0">
+                                  <div
+                                    className="relative text-xs px-0.5 py-0.5 rounded truncate"
+                                    style={{ backgroundColor: '#16a34a20' }}
+                                  >
+                                    <div
+                                      className="absolute left-0 top-0 bottom-0 w-0.5 rounded-full"
+                                      style={{ backgroundColor: '#16a34a' }}
+                                    />
+                                    <span className="ml-1 hidden lg:inline text-xs truncate">
+                                      {organizerLabelsByDay[day]}
+                                    </span>
+                                    <div className="ml-1 lg:hidden text-[10px] sm:text-[9px] font-mono leading-tight">
+                                      {(() => {
+                                        const timeText =
+                                          organizerLabelsByDay[day];
+                                        const timeMatch = timeText.match(
+                                          /(\d{1,2}:\d{2})-(\d{1,2}:\d{2})/
+                                        );
+                                        if (timeMatch) {
+                                          return (
+                                            <div className="flex flex-col">
+                                              <div>{timeMatch[1]}</div>
+                                              <div>-{timeMatch[2]}</div>
+                                            </div>
+                                          );
+                                        }
+                                        return timeText;
+                                      })()}
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+
+                            {/* ユーザーのスケジュール */}
+                            {featuresForDay.length > 0 && showUserSchedule && (
+                              <div className="flex flex-col gap-0.5 overflow-visible">
+                                {featuresForDay.map((feature, idx) => (
+                                  <div
+                                    key={`feature-${idx}`}
+                                    className="flex-shrink-0"
+                                  >
+                                    <div
+                                      className="relative text-xs px-0.5 py-0.5 rounded truncate cursor-pointer"
+                                      style={{
+                                        backgroundColor:
+                                          feature.status.color + '10',
+                                      }}
+                                      onClick={e => {
+                                        e.stopPropagation();
+                                        onBadgeClick(currentDate);
+                                      }}
+                                    >
+                                      <div
+                                        className="absolute left-0 top-0 bottom-0 w-0.5 rounded-full"
+                                        style={{
+                                          backgroundColor: feature.status.color,
+                                        }}
+                                      />
+                                      <span className="ml-1 hidden lg:inline text-xs truncate">
+                                        {feature.name}
+                                      </span>
+                                      <div className="ml-1 lg:hidden text-[10px] sm:text-[9px] font-mono leading-tight">
+                                        {(() => {
+                                          const timeText = feature.name || '●';
+                                          if (timeText === '●') return timeText;
+                                          const timeMatch = timeText.match(
+                                            /(\d{1,2}:\d{2})-(\d{1,2}:\d{2})/
+                                          );
+                                          if (timeMatch) {
+                                            return (
+                                              <div className="flex flex-col">
+                                                <div>{timeMatch[1]}</div>
+                                                <div>-{timeMatch[2]}</div>
+                                              </div>
+                                            );
+                                          }
+                                          return timeText;
+                                        })()}
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </>
+                      )}
+                    </td>
+                  );
+                })}
+              </tr>
+            )
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+// モバイル用のカレンダー移動ナビゲーションコンポーネント
+function MobileCalendarNavigation() {
+  return (
+    <div className="flex items-center justify-center gap-2">
+      {/* 年選択 */}
+      <div className="bg-background/80 rounded px-1 py-1 text-xs">
+        <CalendarDatePicker>
+          <div className="w-20 [&_button]:!w-20 [&_button]:!min-w-20 [&_button]:text-xs [&_button]:px-2 [&_button]:py-1 [&_button]:h-7">
+            <CalendarYearPicker end={2026} start={2024} />
+          </div>
+        </CalendarDatePicker>
+      </div>
+
+      {/* 月選択 */}
+      <div className="bg-background/80 rounded px-1 py-1 text-xs">
+        <CalendarDatePicker>
+          <div className="w-20 [&_button]:!w-20 [&_button]:!min-w-20 [&_button]:text-xs [&_button]:px-2 [&_button]:py-1 [&_button]:h-7">
+            <CalendarMonthPicker />
+          </div>
+        </CalendarDatePicker>
+      </div>
+
+      {/* ナビゲーションボタン（PCと同じ） */}
+      <CalendarDatePagination />
     </div>
   );
 }
@@ -598,23 +681,38 @@ export function UserScheduleManager({
               }}
             />
             <CalendarDate>
-              <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
+              {/* PC表示（lg以上）: 横並びレイアウト */}
+              <div className="hidden lg:flex items-center justify-between gap-4 mb-4">
                 <CalendarDatePicker>
-                  <CalendarYearPicker end={2026} start={2024} />
-                  <CalendarMonthPicker />
+                  <div className="flex items-center gap-2">
+                    <CalendarYearPicker end={2026} start={2024} />
+                    <CalendarMonthPicker />
+                  </div>
                 </CalendarDatePicker>
                 <CalendarDatePagination />
               </div>
+
+              {/* モバイル・タブレット表示（lg未満）: 1行レイアウト */}
+              <div className="block lg:hidden">
+                <MobileCalendarNavigation />
+              </div>
             </CalendarDate>
 
-            <div className="w-full overflow-hidden">
-              <CustomCalendarHeader />
-              <CustomCalendarBody
+            <div className="w-full">
+              <UnifiedCalendarGrid
                 features={features}
                 onDateClick={handleDateClick}
                 onBadgeClick={date => {
                   setSelectedDate(date);
-                  setShowMemoDialog(true);
+                  if (isOwnProfile) {
+                    // 自分のプロフィールの場合は編集モーダルを開く
+                    setShowModal(true);
+                    setEditingSlot(null);
+                    setIsCreating(false);
+                  } else {
+                    // 他人のプロフィールの場合は詳細表示のみ
+                    setShowMemoDialog(true);
+                  }
                 }}
                 organizerLabelsByDay={organizerLabelsByDay}
                 showUserSchedule={showUserSchedule}
@@ -692,10 +790,10 @@ export function UserScheduleManager({
               userSlots.map(slot => (
                 <div
                   key={slot.id}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 border rounded-lg gap-2 sm:gap-4"
+                  className="flex items-start justify-between p-3 sm:p-4 border rounded-lg gap-3"
                 >
-                  <div className="flex-1">
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
                       <div className="font-medium text-sm sm:text-base">
                         {slot.date}
                       </div>
@@ -710,10 +808,11 @@ export function UserScheduleManager({
                     )}
                   </div>
                   {isOwnProfile && (
-                    <div className="flex items-center gap-2 self-end sm:self-center">
+                    <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
                       <Button
                         variant="neutral"
                         size="sm"
+                        className="text-xs px-2 py-1 sm:text-sm sm:px-3 sm:py-2"
                         onClick={() => {
                           // 日付文字列から正確にDateオブジェクトを作成（タイムゾーン問題を回避）
                           const [year, month, day] = slot.date
@@ -734,6 +833,7 @@ export function UserScheduleManager({
                       <Button
                         variant="destructive"
                         size="sm"
+                        className="text-xs px-2 py-1 sm:text-sm sm:px-3 sm:py-2"
                         onClick={() => handleDeleteSlot(slot.id)}
                       >
                         削除
@@ -749,7 +849,19 @@ export function UserScheduleManager({
 
       {/* スケジュール編集モーダル */}
       {isOwnProfile && (
-        <Dialog open={showModal} onOpenChange={setShowModal}>
+        <Dialog
+          open={showModal}
+          onOpenChange={open => {
+            setShowModal(open);
+            if (!open) {
+              // モーダルを閉じる際に状態をクリア
+              setSelectedDate(null);
+              setEditingSlot(null);
+              setIsCreating(false);
+              setFormData({ startTime: '10:00', endTime: '18:00', notes: '' });
+            }
+          }}
+        >
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto w-[95vw] sm:w-full">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
@@ -800,7 +912,7 @@ export function UserScheduleManager({
                               </div>
                               <div className="flex gap-2">
                                 <Button
-                                  variant="outline"
+                                  variant="neutral"
                                   size="sm"
                                   onClick={() => {
                                     setEditingSlot(slot);
@@ -814,7 +926,7 @@ export function UserScheduleManager({
                                   編集
                                 </Button>
                                 <Button
-                                  variant="outline"
+                                  variant="destructive"
                                   size="sm"
                                   onClick={() => handleDeleteSlot(slot.id)}
                                 >
@@ -974,30 +1086,37 @@ export function UserScheduleManager({
         </Dialog>
       )}
 
-      {/* メモ表示ダイアログ（全ユーザー向け閲覧） */}
+      {/* 空き時間詳細表示ダイアログ（他人のプロフィール閲覧用） */}
       <Dialog open={showMemoDialog} onOpenChange={setShowMemoDialog}>
         <DialogContent className="max-w-lg w-[95vw] sm:w-full">
           <DialogHeader>
-            <DialogTitle>
-              メモ - {selectedDate?.toLocaleDateString('ja-JP')}
+            <DialogTitle className="flex items-center gap-2">
+              <Calendar className="h-5 w-5" />
+              空き時間詳細 - {selectedDate?.toLocaleDateString('ja-JP')}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             {getSelectedDateSlots().length === 0 ? (
               <p className="text-sm text-muted-foreground">
-                この日のメモはありません
+                この日は空き時間が設定されていません
               </p>
             ) : (
-              getSelectedDateSlots().map(slot => (
-                <div key={slot.id} className="p-3 border rounded">
-                  <div className="font-mono text-sm mb-1">
-                    {slot.startTime} - {slot.endTime}
+              <div className="space-y-2">
+                <p className="text-sm font-medium">設定されている空き時間:</p>
+                {getSelectedDateSlots().map(slot => (
+                  <div key={slot.id} className="p-3 border rounded bg-muted/30">
+                    <div className="font-mono text-sm font-medium mb-2 text-blue-600">
+                      {slot.startTime} - {slot.endTime}
+                    </div>
+                    {slot.notes?.trim() && (
+                      <div className="text-sm text-muted-foreground whitespace-pre-wrap">
+                        <span className="font-medium">メモ:</span>{' '}
+                        {slot.notes.trim()}
+                      </div>
+                    )}
                   </div>
-                  <div className="text-sm text-muted-foreground whitespace-pre-wrap">
-                    {slot.notes?.trim() || 'メモはありません'}
-                  </div>
-                </div>
-              ))
+                ))}
+              </div>
             )}
           </div>
           <div className="flex justify-end">

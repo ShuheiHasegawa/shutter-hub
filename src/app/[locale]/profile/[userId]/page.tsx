@@ -370,83 +370,6 @@ export default function UserProfilePage() {
                   </div>
                 </CardContent>
               </Card>
-
-              {/* 活動統計 */}
-              <div className="mt-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <TrendingUp className="h-5 w-5" />
-                      活動統計サマリー
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {statsLoading ? (
-                      <div className="flex items-center justify-center py-4">
-                        <Loader2 className="h-6 w-6 animate-spin" />
-                      </div>
-                    ) : activityStats ? (
-                      <>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="text-center p-4 bg-muted/30 rounded-lg">
-                            <div className="flex items-center justify-center mb-2">
-                              <Camera className="h-5 w-5 text-muted-foreground" />
-                            </div>
-                            <div className="text-2xl font-bold">
-                              {activityStats.organizedSessions}
-                            </div>
-                            <div className="text-sm text-muted-foreground mt-1">
-                              主催撮影会
-                            </div>
-                          </div>
-
-                          <div className="text-center p-4 bg-muted/30 rounded-lg">
-                            <div className="flex items-center justify-center mb-2">
-                              <Users className="h-5 w-5 text-muted-foreground" />
-                            </div>
-                            <div className="text-2xl font-bold">
-                              {activityStats.participatedSessions}
-                            </div>
-                            <div className="text-sm text-muted-foreground mt-1">
-                              参加撮影会
-                            </div>
-                          </div>
-
-                          <div className="text-center p-4 bg-muted/30 rounded-lg">
-                            <div className="flex items-center justify-center mb-2">
-                              <Star className="h-5 w-5 text-muted-foreground" />
-                            </div>
-                            <div className="text-2xl font-bold">
-                              {activityStats.sessionReviews}
-                            </div>
-                            <div className="text-sm text-muted-foreground mt-1">
-                              撮影会レビュー
-                            </div>
-                          </div>
-
-                          <div className="text-center p-4 bg-muted/30 rounded-lg">
-                            <div className="flex items-center justify-center mb-2">
-                              <MessageSquare className="h-5 w-5 text-muted-foreground" />
-                            </div>
-                            <div className="text-2xl font-bold">
-                              {activityStats.receivedReviews}
-                            </div>
-                            <div className="text-sm text-muted-foreground mt-1">
-                              受信レビュー
-                            </div>
-                          </div>
-                        </div>
-                      </>
-                    ) : (
-                      <div className="text-center py-4">
-                        <p className="text-muted-foreground">
-                          データを読み込めませんでした
-                        </p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
             </div>
 
             {/* メインコンテンツ */}
@@ -519,18 +442,95 @@ export default function UserProfilePage() {
                 </TabsList>
 
                 <TabsContent value="schedule">
-                  <Suspense fallback={<ProfileCompactSkeleton />}>
-                    <UserScheduleManager
-                      userId={userId}
-                      isOwnProfile={isOwnProfile}
-                      userType={
-                        profile?.user_type as
-                          | 'model'
-                          | 'photographer'
-                          | 'organizer'
-                      }
-                    />
-                  </Suspense>
+                  <div className="space-y-6">
+                    <Suspense fallback={<ProfileCompactSkeleton />}>
+                      <UserScheduleManager
+                        userId={userId}
+                        isOwnProfile={isOwnProfile}
+                        userType={
+                          profile?.user_type as
+                            | 'model'
+                            | 'photographer'
+                            | 'organizer'
+                        }
+                      />
+                    </Suspense>
+
+                    {/* 活動統計サマリー */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <TrendingUp className="h-5 w-5" />
+                          活動統計サマリー
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        {statsLoading ? (
+                          <div className="flex items-center justify-center py-4">
+                            <Loader2 className="h-6 w-6 animate-spin" />
+                          </div>
+                        ) : activityStats ? (
+                          <>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                              <div className="text-center p-4 bg-muted/30 rounded-lg">
+                                <div className="flex items-center justify-center mb-2">
+                                  <Camera className="h-5 w-5 text-muted-foreground" />
+                                </div>
+                                <div className="text-2xl font-bold">
+                                  {activityStats.organizedSessions}
+                                </div>
+                                <div className="text-sm text-muted-foreground mt-1">
+                                  主催撮影会
+                                </div>
+                              </div>
+
+                              <div className="text-center p-4 bg-muted/30 rounded-lg">
+                                <div className="flex items-center justify-center mb-2">
+                                  <Users className="h-5 w-5 text-muted-foreground" />
+                                </div>
+                                <div className="text-2xl font-bold">
+                                  {activityStats.participatedSessions}
+                                </div>
+                                <div className="text-sm text-muted-foreground mt-1">
+                                  参加撮影会
+                                </div>
+                              </div>
+
+                              <div className="text-center p-4 bg-muted/30 rounded-lg">
+                                <div className="flex items-center justify-center mb-2">
+                                  <Star className="h-5 w-5 text-muted-foreground" />
+                                </div>
+                                <div className="text-2xl font-bold">
+                                  {activityStats.sessionReviews}
+                                </div>
+                                <div className="text-sm text-muted-foreground mt-1">
+                                  撮影会レビュー
+                                </div>
+                              </div>
+
+                              <div className="text-center p-4 bg-muted/30 rounded-lg">
+                                <div className="flex items-center justify-center mb-2">
+                                  <MessageSquare className="h-5 w-5 text-muted-foreground" />
+                                </div>
+                                <div className="text-2xl font-bold">
+                                  {activityStats.receivedReviews}
+                                </div>
+                                <div className="text-sm text-muted-foreground mt-1">
+                                  受信レビュー
+                                </div>
+                              </div>
+                            </div>
+                          </>
+                        ) : (
+                          <div className="text-center py-4">
+                            <p className="text-muted-foreground">
+                              データを読み込めませんでした
+                            </p>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </div>
                 </TabsContent>
 
                 {/* 運営者の場合のみ所属モデルタブを表示 */}
