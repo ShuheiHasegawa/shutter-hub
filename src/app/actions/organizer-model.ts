@@ -804,6 +804,12 @@ export async function getOrganizerModelsByUserIdAction(
   userId: string
 ): Promise<OrganizerModelResponse> {
   try {
+    logger.warn('🚨 [ServerAction] getOrganizerModelsByUserIdAction CALLED', {
+      userId,
+      timestamp: new Date().toISOString(),
+      stackTrace: new Error().stack?.split('\n').slice(1, 5).join('\n'),
+    });
+
     const supabase = await createClient();
 
     // 対象ユーザーが運営者かチェック
@@ -878,6 +884,12 @@ export async function getOrganizersOfModelAction(modelUserId: string): Promise<{
   error?: string;
 }> {
   try {
+    logger.warn('🚨 [ServerAction] getOrganizersOfModelAction CALLED', {
+      modelUserId,
+      timestamp: new Date().toISOString(),
+      stackTrace: new Error().stack?.split('\n').slice(1, 5).join('\n'),
+    });
+
     const supabase = await createClient();
 
     // モデルの所属運営一覧（activeのみ）を取得

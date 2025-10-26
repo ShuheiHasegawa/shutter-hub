@@ -1,6 +1,9 @@
 import useSWR, { mutate } from 'swr';
-import { createClient } from '@/lib/supabase/client';
 import { logger } from '@/lib/utils/logger';
+import {
+  executeQuery,
+  executeParallelQueries,
+} from '@/lib/supabase/query-wrapper';
 
 // プロフィールデータの型定義
 export interface ProfileData {
@@ -37,20 +40,11 @@ export interface UserActivityStats {
 
 // プロフィールデータ取得関数
 async function fetchProfile(userId: string): Promise<ProfileData> {
-  const supabase = createClient();
-
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', userId)
-    .single();
-
-  if (error) {
-    logger.error('プロフィール取得エラー:', error);
-    throw new Error('プロフィールの取得に失敗しました');
-  }
-
-  return data;
+  return await executeQuery<ProfileData>(
+    'fetchProfile',
+    supabase => supabase.from('profiles').select('*').eq('id', userId).single(),
+    { detailed: true }
+  );
 }
 
 // フォロー統計取得関数
@@ -58,42 +52,55 @@ async function fetchFollowStats(
   userId: string,
   currentUserId: string
 ): Promise<FollowStats> {
-  const supabase = createClient();
+  const results = await executeParallelQueries({
+    followersData: {
+      operation: 'fetchFollowersCount',
+      queryBuilder: supabase =>
+        supabase
+          .from('user_follow_stats')
+          .select('followers_count')
+          .eq('user_id', userId)
+          .single(),
+      options: { detailed: false },
+    },
+    followingData: {
+      operation: 'fetchFollowingCount',
+      queryBuilder: supabase =>
+        supabase
+          .from('user_follow_stats')
+          .select('following_count')
+          .eq('user_id', userId)
+          .single(),
+      options: { detailed: false },
+    },
+    isFollowingData: {
+      operation: 'checkFollowStatus',
+      queryBuilder: supabase =>
+        supabase
+          .from('follows')
+          .select('status')
+          .eq('follower_id', currentUserId)
+          .eq('following_id', userId)
+          .eq('status', 'accepted')
+          .maybeSingle(),
+      options: { detailed: false },
+    },
+  });
 
-  const [
-    { data: followersData },
-    { data: followingData },
-    { data: isFollowingData },
-  ] = await Promise.all([
-    // フォロワー数
-    supabase
-      .from('user_follow_stats')
-      .select('followers_count')
-      .eq('user_id', userId)
-      .single(),
-
-    // フォロー中数
-    supabase
-      .from('user_follow_stats')
-      .select('following_count')
-      .eq('user_id', userId)
-      .single(),
-
-    // 現在のユーザーがフォローしているか
-    supabase
-      .from('follows')
-      .select('status')
-      .eq('follower_id', currentUserId)
-      .eq('following_id', userId)
-      .eq('status', 'accepted')
-      .maybeSingle(),
-  ]);
+  const { followersData, followingData, isFollowingData } = results;
 
   return {
-    followers_count: followersData?.followers_count || 0,
-    following_count: followingData?.following_count || 0,
-    is_following: !!isFollowingData,
-    follow_status: isFollowingData?.status || undefined,
+    followers_count:
+      (followersData as { followers_count?: number } | null)?.followers_count ||
+      0,
+    following_count:
+      (followingData as { following_count?: number } | null)?.following_count ||
+      0,
+    is_following: !!(isFollowingData as { status?: string } | null)?.status,
+    follow_status: (isFollowingData as { status?: string } | null)?.status as
+      | 'accepted'
+      | 'pending'
+      | undefined,
     is_mutual_follow: false, // 後で実装
   };
 }
@@ -102,44 +109,83 @@ async function fetchFollowStats(
 async function fetchUserActivityStats(
   userId: string
 ): Promise<UserActivityStats> {
-  const supabase = createClient();
+  const results = await executeParallelQueries({
+    /**
+     * 撮影会開催統計取得関数
+     */
+    organizedSessions: {
+      operation: 'fetchOrganizedSessionsCount',
+      queryBuilder: supabase =>
+        supabase
+          .from('photo_sessions')
+          .select('*', { count: 'exact', head: true })
+          .eq('organizer_id', userId),
+      options: { detailed: false },
+    },
+    /**
+     * 撮影会参加統計取得関数
+     */
+    participatedSessions: {
+      operation: 'fetchParticipatedSessionsCount',
+      queryBuilder: supabase =>
+        supabase
+          .from('bookings')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', userId)
+          .eq('status', 'confirmed'),
+      options: { detailed: false },
+    },
+    /**
+     * レビュー統計取得関数
+     */
+    receivedReviews: {
+      operation: 'fetchReceivedReviewsCount',
+      queryBuilder: supabase =>
+        supabase
+          .from('user_reviews')
+          .select('*', { count: 'exact', head: true })
+          .eq('reviewee_id', userId)
+          .eq('status', 'published'),
+      options: { detailed: false },
+    },
+    /**
+     * 撮影会レビュー統計取得関数
+     */
+    sessionReviews: {
+      operation: 'fetchSessionReviewsCount',
+      queryBuilder: supabase =>
+        supabase
+          .from('photo_session_reviews')
+          .select(
+            'photo_sessions!photo_session_reviews_photo_session_id_fkey(*)',
+            {
+              count: 'exact',
+              head: true,
+            }
+          )
+          .eq('photo_sessions.organizer_id', userId)
+          .eq('status', 'published'),
+      options: { detailed: false },
+    },
+  });
 
-  const [
-    { count: organizedSessionsCount },
-    { count: participatedSessionsCount },
-    { count: receivedReviewsCount },
-    { count: sessionReviewsCount },
-  ] = await Promise.all([
-    // 主催した撮影会数
-    supabase
-      .from('photo_sessions')
-      .select('*', { count: 'exact', head: true })
-      .eq('organizer_id', userId),
+  const {
+    organizedSessions,
+    participatedSessions,
+    receivedReviews,
+    sessionReviews,
+  } = results;
 
-    // 参加した撮影会数
-    supabase
-      .from('bookings')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', userId)
-      .eq('status', 'confirmed'),
-
-    // 受け取ったレビュー数
-    supabase
-      .from('user_reviews')
-      .select('*', { count: 'exact', head: true })
-      .eq('reviewee_id', userId)
-      .eq('status', 'published'),
-
-    // 撮影会レビュー数
-    supabase
-      .from('photo_session_reviews')
-      .select('photo_sessions!photo_session_reviews_photo_session_id_fkey(*)', {
-        count: 'exact',
-        head: true,
-      })
-      .eq('photo_sessions.organizer_id', userId)
-      .eq('status', 'published'),
-  ]);
+  const organizedSessionsCount = (
+    organizedSessions as { count?: number } | null
+  )?.count;
+  const participatedSessionsCount = (
+    participatedSessions as { count?: number } | null
+  )?.count;
+  const receivedReviewsCount = (receivedReviews as { count?: number } | null)
+    ?.count;
+  const sessionReviewsCount = (sessionReviews as { count?: number } | null)
+    ?.count;
 
   return {
     organizedSessions: organizedSessionsCount || 0,
