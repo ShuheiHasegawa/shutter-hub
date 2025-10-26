@@ -49,6 +49,7 @@ ShutterHub v2では、開発効率とパフォーマンス最適化のために�
 
 #### **統合クエリラッパー**
 - **ファイル**: `src/lib/supabase/query-wrapper.ts`
+- **監視システム**: `src/lib/utils/query-performance-monitor.ts`
 - **機能**: 全てのSupabaseクエリを統一的に監視・ログ出力
 - **利点**: 実行時間、成功/失敗率、キャッシュヒット率の自動追跡
 
