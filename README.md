@@ -41,6 +41,128 @@ ShutterHubは、撮影業界の三者（モデル、カメラマン、運営者�
 - **デプロイ**: Vercel
 - **地図**: OpenStreetMap + Leaflet.js
 
+## 📊 パフォーマンス監視・ログ出力システム
+
+ShutterHub v2では、開発効率とパフォーマンス最適化のために統合されたログ出力・監視システムを提供しています。
+
+### 🎯 システム概要
+
+#### **統合クエリラッパー**
+- **ファイル**: `src/lib/supabase/query-wrapper.ts`
+- **機能**: 全てのSupabaseクエリを統一的に監視・ログ出力
+- **利点**: 実行時間、成功/失敗率、キャッシュヒット率の自動追跡
+
+```typescript
+// 使用例
+import { executeQuery, executeParallelQueries } from '@/lib/supabase/query-wrapper';
+
+// 単一クエリ
+const profile = await executeQuery('fetchProfile', 
+  (supabase) => supabase.from('profiles').select('*').eq('id', userId).single()
+);
+
+// 並列クエリ
+const results = await executeParallelQueries({
+  profile: { operation: 'fetchProfile', queryBuilder: (supabase) => ... },
+  stats: { operation: 'fetchStats', queryBuilder: (supabase) => ... }
+});
+```
+
+#### **リアルタイムパフォーマンスダッシュボード**
+- **ファイル**: `src/components/dev/performance-dashboard.tsx`
+- **表示位置**: 画面右下（開発環境のみ）
+- **機能**: API呼び出し統計、レスポンス時間、成功率をリアルタイム表示
+
+#### **ログレベル別出力**
+```typescript
+import { logger } from '@/lib/utils/logger';
+
+// 開発時のデバッグ情報
+logger.info('処理開始', { userId, timestamp: new Date().toISOString() });
+
+// 警告レベル（重要な状態変化）
+logger.warn('重複実行検出', { operation: 'fetchData', userId });
+
+// エラーレベル（問題発生時）
+logger.error('API呼び出し失敗', error, { context: 'userProfile' });
+```
+
+### 🔧 開発者向け活用方法
+
+#### **1. パフォーマンス問題の特定**
+- ダッシュボードで遅いクエリを即座に特定
+- 重複実行やN+1問題の自動検出
+- キャッシュ効率の可視化
+
+#### **2. デバッグ効率化**
+```bash
+# 開発環境でのログ有効化
+export NEXT_PUBLIC_ENABLE_DEBUG_LOGGING=true
+npm run dev
+
+# ログ出力例
+🔄 [ProfilePage] loadOrganizerModels called
+🚨 [ServerAction] getOrganizersOfModelAction CALLED
+✅ [QueryWrapper] executeQuery completed: fetchProfile (245ms)
+```
+
+#### **3. 本番環境での監視**
+- 環境変数 `NEXT_PUBLIC_ENABLE_DEBUG_LOGGING=false` で詳細ログを自動抑制
+- 重要なエラーのみ本番ログに出力
+- パフォーマンス統計は継続収集
+
+### 📈 監視対象メトリクス
+
+| メトリクス | 説明 | 活用方法 |
+|-----------|------|----------|
+| **API呼び出し回数** | 総実行回数・成功/失敗数 | 重複実行の検出 |
+| **レスポンス時間** | 平均・最小・最大時間 | パフォーマンスボトルネック特定 |
+| **キャッシュヒット率** | SWRキャッシュの効率性 | キャッシュ戦略最適化 |
+| **エラー率** | 失敗したクエリの割合 | 信頼性向上 |
+
+### 🛠️ カスタマイズ方法
+
+#### **新しいクエリの監視追加**
+```typescript
+// 既存のuseProfile.tsパターンに従う
+async function fetchCustomData(id: string) {
+  return await executeQuery<CustomData>(
+    'fetchCustomData',  // 操作名（ダッシュボードで表示）
+    (supabase) => supabase.from('custom_table').select('*').eq('id', id),
+    { detailed: true }  // 詳細ログ有効
+  );
+}
+```
+
+#### **コンポーネントレベル監視**
+```typescript
+// UserScheduleManager.tsx のキャッシングパターンを参考
+const cacheRef = useRef<{ userId: string; data: unknown; timestamp: number } | null>(null);
+const CACHE_TTL = 60000; // 60秒
+
+// 重複実行防止ロジック
+if (cacheRef.current && cacheRef.current.userId === userId && 
+    Date.now() - cacheRef.current.timestamp < CACHE_TTL) {
+  logger.info('Using cached data');
+  return cacheRef.current.data;
+}
+```
+
+### 🎯 トラブルシューティング
+
+#### **よくある問題と解決法**
+1. **POST連続実行**: `useEffect` 依存配列の見直し、`useRef` フラグによる重複防止
+2. **React Strict Mode**: 開発環境での二重実行を考慮した実装
+3. **SWRキャッシュ競合**: 適切なキー設計と `dedupingInterval` 設定
+
+#### **デバッグ手順**
+1. パフォーマンスダッシュボードで異常値を確認
+2. ログ出力で実行フローを追跡
+3. `query-wrapper.ts` の統計情報で根本原因を特定
+4. キャッシング戦略で最適化
+
+このシステムにより、開発効率の向上とパフォーマンス問題の早期発見が可能になります。
+
 ## 🚀 開発環境セットアップ
 
 ### 前提条件
