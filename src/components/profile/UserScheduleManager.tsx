@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -42,6 +42,7 @@ import {
 } from '@/lib/utils/time-utils';
 import type { TimeSlot } from '@/types/user-availability';
 import { getOrganizersOfModelAction } from '@/app/actions/organizer-model';
+import { logger } from '@/lib/utils/logger';
 
 interface UserScheduleManagerProps {
   userId: string;
@@ -334,13 +335,21 @@ export function UserScheduleManager({
   const [showUserSchedule, setShowUserSchedule] = useState(true);
   const [showOrganizerSchedule, setShowOrganizerSchedule] = useState(true);
 
-  // カレンダー表示月の管理
+  // カレンダー表示の月年を管理
   const [displayMonth, setDisplayMonth] = useState<number>(
     new Date().getMonth()
   );
   const [displayYear, setDisplayYear] = useState<number>(
     new Date().getFullYear()
   );
+
+  // 所属運営データのキャッシング（重複呼び出し防止）
+  const organizerDataCacheRef = useRef<{
+    userId: string;
+    data: unknown;
+    timestamp: number;
+  } | null>(null);
+  const CACHE_TTL = 60000; // 60秒間キャッシュ保持
 
   // フォーム状態
   const [formData, setFormData] = useState({
@@ -510,7 +519,85 @@ export function UserScheduleManager({
     if (userType === 'model') {
       const loadOrganizerData = async () => {
         try {
+          // キャッシュをチェック
+          const now = Date.now();
+          const cacheValid =
+            organizerDataCacheRef.current &&
+            organizerDataCacheRef.current.userId === userId &&
+            now - organizerDataCacheRef.current.timestamp < CACHE_TTL;
+
+          if (cacheValid && organizerDataCacheRef.current) {
+            logger.info('[UserScheduleManager] Using cached organizer data');
+            // キャッシュからデータを使用
+            const orgRes = organizerDataCacheRef.current.data as unknown as {
+              success?: boolean;
+              data?: Array<{ id: string; organizer_id?: string }>;
+            } | null;
+            // ... 以下、orgResを使用する処理は同じ
+            if (orgRes?.success && orgRes?.data && orgRes.data.length > 0) {
+              const monthStart = new Date(displayYear, displayMonth, 1);
+              const monthEnd = new Date(displayYear, displayMonth + 1, 0);
+
+              const supabase = await (
+                await import('@/lib/supabase/client')
+              ).createClient();
+
+              const labels: { [day: number]: string } = {};
+
+              for (const org of orgRes.data) {
+                const { data: slots } = await supabase
+                  .from('user_availability')
+                  .select(
+                    'available_date, start_time_minutes, end_time_minutes'
+                  )
+                  .eq('user_id', org.organizer_id)
+                  .eq('is_active', true)
+                  .gte('available_date', monthStart.toISOString().split('T')[0])
+                  .lte('available_date', monthEnd.toISOString().split('T')[0]);
+
+                (slots || []).forEach(
+                  (s: {
+                    available_date: string;
+                    start_time_minutes: number;
+                    end_time_minutes: number;
+                  }) => {
+                    const d = new Date(s.available_date);
+                    const day = d.getDate();
+                    const start = `${String(Math.floor(s.start_time_minutes / 60)).padStart(2, '0')}:${String(
+                      s.start_time_minutes % 60
+                    ).padStart(2, '0')}`;
+                    const end = `${String(Math.floor(s.end_time_minutes / 60)).padStart(2, '0')}:${String(
+                      s.end_time_minutes % 60
+                    ).padStart(2, '0')}`;
+                    const range = `${start}-${end}`;
+                    const prev = labels[day];
+                    if (prev) {
+                      const merged = `${prev}, ${range}`;
+                      labels[day] = merged.split(', ').slice(0, 3).join(', ');
+                    } else {
+                      labels[day] = range;
+                    }
+                  }
+                );
+              }
+              setOrganizerLabelsByDay(labels);
+            } else {
+              setOrganizerLabelsByDay({});
+            }
+            return;
+          }
+
+          // キャッシュがないまたは無効 → 新規取得
+          logger.info('[UserScheduleManager] Fetching organizer data from API');
           const orgRes = await getOrganizersOfModelAction(userId);
+
+          // キャッシュに保存
+          organizerDataCacheRef.current = {
+            userId,
+            data: orgRes,
+            timestamp: now,
+          };
+
           if (orgRes.success && orgRes.data && orgRes.data.length > 0) {
             const monthStart = new Date(displayYear, displayMonth, 1);
             const monthEnd = new Date(displayYear, displayMonth + 1, 0);
@@ -567,75 +654,16 @@ export function UserScheduleManager({
 
       loadOrganizerData();
     }
-  }, [displayMonth, displayYear, loadUserAvailability, userType, userId]);
+  }, [
+    displayMonth,
+    displayYear,
+    loadUserAvailability,
+    userType,
+    userId,
+    CACHE_TTL,
+  ]);
 
   const features = transformUserSlotsToFeatures();
-
-  // モデル所属時: カレンダーに表示する所属運営の当日空きをまとめたラベルを生成
-  useEffect(() => {
-    const buildOrganizerLabels = async (
-      targetMonth?: number,
-      targetYear?: number
-    ) => {
-      if (userType !== 'model') return;
-
-      // 所属運営を取得
-      const orgRes = await getOrganizersOfModelAction(userId);
-      if (!orgRes.success || !orgRes.data || orgRes.data.length === 0) {
-        setOrganizerLabelsByDay({});
-        return;
-      }
-
-      // 指定された月の範囲を取得（デフォルトは現在月）
-      const now = new Date();
-      const month = targetMonth ?? now.getMonth();
-      const year = targetYear ?? now.getFullYear();
-      const monthStart = new Date(year, month, 1);
-      const monthEnd = new Date(year, month + 1, 0);
-
-      // すべての所属運営の当月空きを取得
-      // 簡易実装: 個別にuser_availabilityをフェッチ（RLSでSELECT可）
-      const supabase = await (
-        await import('@/lib/supabase/client')
-      ).createClient();
-
-      const labels: { [day: number]: string } = {};
-
-      for (const org of orgRes.data) {
-        const { data: slots } = await supabase
-          .from('user_availability')
-          .select('available_date, start_time_minutes, end_time_minutes')
-          .eq('user_id', org.organizer_id)
-          .eq('is_active', true)
-          .gte('available_date', monthStart.toISOString().split('T')[0])
-          .lte('available_date', monthEnd.toISOString().split('T')[0]);
-
-        (slots || []).forEach(s => {
-          const d = new Date(s.available_date);
-          const day = d.getDate();
-          const start = `${String(Math.floor(s.start_time_minutes / 60)).padStart(2, '0')}:${String(
-            s.start_time_minutes % 60
-          ).padStart(2, '0')}`;
-          const end = `${String(Math.floor(s.end_time_minutes / 60)).padStart(2, '0')}:${String(
-            s.end_time_minutes % 60
-          ).padStart(2, '0')}`;
-          const range = `${start}-${end}`;
-          const prev = labels[day];
-          if (prev) {
-            // 同日の他運営/他スロットを結合（過剰にならないよう3つまで）
-            const merged = `${prev}, ${range}`;
-            labels[day] = merged.split(', ').slice(0, 3).join(', ');
-          } else {
-            labels[day] = range;
-          }
-        });
-      }
-
-      setOrganizerLabelsByDay(labels);
-    };
-
-    buildOrganizerLabels();
-  }, [userId, userType]);
 
   if (isLoading) {
     return (

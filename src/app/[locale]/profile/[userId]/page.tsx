@@ -1,7 +1,15 @@
 'use client';
 
-import { useState, Suspense, useEffect, useCallback, useMemo } from 'react';
+import {
+  useState,
+  Suspense,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+} from 'react';
 import { logger } from '@/lib/utils/logger';
+// import { queryMonitor, monitoredCall } from '@/lib/utils/query-performance-monitor';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { AuthenticatedLayout } from '@/components/layout/authenticated-layout';
@@ -57,6 +65,8 @@ export default function UserProfilePage() {
   const { user } = useAuth();
   const router = useRouter();
   const locale = useLocale();
+
+  // シンプルなパフォーマンス監視
   const [organizerModels, setOrganizerModels] = useState<
     OrganizerModelWithProfile[]
   >([]);
@@ -65,6 +75,12 @@ export default function UserProfilePage() {
   const [affiliations, setAffiliations] = useState<
     { organizer_id: string; organizer_name: string | null }[]
   >([]);
+
+  // 所属取得の実行制御（重複実行防止）- userId ごとに管理
+  const affiliationsFetchedRef = useRef<Map<string, boolean>>(new Map());
+
+  const userId = params.userId as string;
+  const isOwnProfile = user?.id === userId;
 
   // 所属の重複除外（フロント側でユニーク化）
   const uniqueAffiliations = useMemo(() => {
@@ -80,8 +96,22 @@ export default function UserProfilePage() {
     });
   }, [affiliations]);
 
-  const userId = params.userId as string;
-  const isOwnProfile = user?.id === userId;
+  // コンポーネントマウント・アンマウントログ
+  useEffect(() => {
+    logger.warn('🏗️ [ProfilePage] Component MOUNTED', {
+      userId,
+      timestamp: new Date().toISOString(),
+      userAgent:
+        typeof window !== 'undefined' ? window.navigator.userAgent : 'SSR',
+    });
+
+    return () => {
+      logger.warn('🗑️ [ProfilePage] Component UNMOUNTING', {
+        userId,
+        timestamp: new Date().toISOString(),
+      });
+    };
+  }, [userId]);
 
   // SWRフックでデータ取得
   const { profile, isLoading: profileLoading } = useProfileData(userId);
@@ -89,48 +119,161 @@ export default function UserProfilePage() {
   const { activityStats, isLoading: statsLoading } =
     useUserActivityStats(userId);
 
+  // プロフィール変更の監視
+  useEffect(() => {
+    logger.info('🔄 [ProfilePage] Profile data changed', {
+      userId,
+      userType: profile?.user_type,
+      displayName: profile?.display_name,
+      isLoading: profileLoading,
+      timestamp: new Date().toISOString(),
+    });
+  }, [profile, profileLoading, userId]);
+
   // 運営者の所属モデルデータ取得
   const loadOrganizerModels = useCallback(async () => {
-    if (profile?.user_type !== 'organizer') return;
+    logger.warn('🔄 [ProfilePage] loadOrganizerModels called', {
+      userId,
+      userType: profile?.user_type,
+      timestamp: new Date().toISOString(),
+      stackTrace: new Error().stack?.split('\n').slice(1, 4).join('\n'),
+    });
+
+    if (profile?.user_type !== 'organizer') {
+      logger.info(
+        '⏭️ [ProfilePage] Skipping loadOrganizerModels - not organizer',
+        {
+          userType: profile?.user_type,
+        }
+      );
+      return;
+    }
 
     setModelsLoading(true);
     try {
+      logger.info('📡 [ProfilePage] Calling getOrganizerModelsByUserIdAction', {
+        userId,
+      });
       const result = await getOrganizerModelsByUserIdAction(userId);
       if (result.success && Array.isArray(result.data)) {
         setOrganizerModels(result.data);
-        logger.info('[ProfilePage] 所属モデル取得成功', {
+        logger.info('✅ [ProfilePage] 所属モデル取得成功', {
           userId,
           modelsCount: result.data.length,
         });
       } else {
-        logger.error('[ProfilePage] 所属モデル取得エラー:', result.error);
+        logger.error('❌ [ProfilePage] 所属モデル取得エラー:', result.error);
         setOrganizerModels([]);
       }
     } catch (error) {
-      logger.error('[ProfilePage] 所属モデル取得例外:', error);
+      logger.error('💥 [ProfilePage] 所属モデル取得例外:', error);
       setOrganizerModels([]);
     } finally {
       setModelsLoading(false);
+      logger.info('🏁 [ProfilePage] loadOrganizerModels completed');
     }
   }, [profile?.user_type, userId]);
 
   // プロフィール読み込み完了後に所属モデルを取得
   useEffect(() => {
+    logger.warn('🎯 [ProfilePage] useEffect[loadOrganizerModels] triggered', {
+      userType: profile?.user_type,
+      userId,
+      timestamp: new Date().toISOString(),
+      stackTrace: new Error().stack?.split('\n').slice(1, 3).join('\n'),
+    });
+
     if (profile?.user_type === 'organizer') {
+      logger.info(
+        '🚀 [ProfilePage] Triggering loadOrganizerModels from useEffect'
+      );
       loadOrganizerModels();
+    } else {
+      logger.info(
+        '⏭️ [ProfilePage] Skipping loadOrganizerModels - user_type:',
+        profile?.user_type
+      );
     }
-  }, [profile?.user_type, loadOrganizerModels]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile?.user_type]);
 
   // モデルの所属運営を取得
   useEffect(() => {
+    logger.warn('🎯 [ProfilePage] useEffect[fetchAffiliations] triggered', {
+      userType: profile?.user_type,
+      userId,
+      timestamp: new Date().toISOString(),
+      fetchedFlag: affiliationsFetchedRef.current.get(userId),
+      stackTrace: new Error().stack?.split('\n').slice(1, 3).join('\n'),
+    });
+
+    // React Strict Mode による重複実行を防止
+    if (affiliationsFetchedRef.current.get(userId)) {
+      logger.warn(
+        '🛑 [ProfilePage] fetchAffiliations already executed - skipping duplicate',
+        {
+          userId,
+          timestamp: new Date().toISOString(),
+        }
+      );
+      return;
+    }
+
     const fetchAffiliations = async () => {
-      if (profile?.user_type !== 'model') return;
-      const res = await getOrganizersOfModelAction(userId);
-      if (res.success && res.data) setAffiliations(res.data);
-      else setAffiliations([]);
+      if (profile?.user_type !== 'model') {
+        logger.info('⏭️ [ProfilePage] Skipping fetchAffiliations - not model', {
+          userType: profile?.user_type,
+        });
+        return;
+      }
+
+      try {
+        logger.info('📡 [ProfilePage] Calling getOrganizersOfModelAction', {
+          userId,
+          timestamp: new Date().toISOString(),
+        });
+        const res = await getOrganizersOfModelAction(userId);
+        if (res.success && res.data) {
+          setAffiliations(res.data);
+          logger.info('✅ [ProfilePage] 所属運営取得成功', {
+            userId,
+            affiliationsCount: res.data.length,
+          });
+        } else {
+          setAffiliations([]);
+          logger.warn('⚠️ [ProfilePage] 所属運営取得失敗', res.error);
+        }
+      } catch (error) {
+        setAffiliations([]);
+        logger.error('💥 [ProfilePage] 所属運営取得例外:', error);
+      }
     };
+
+    logger.info('🚀 [ProfilePage] About to call fetchAffiliations', {
+      userId,
+      timestamp: new Date().toISOString(),
+    });
     fetchAffiliations();
-  }, [profile?.user_type, userId]);
+
+    // 実行済みフラグを設定（重複実行防止）
+    affiliationsFetchedRef.current.set(userId, true);
+    logger.info('✅ [ProfilePage] Set affiliationsFetchedRef.current = true', {
+      userId,
+      timestamp: new Date().toISOString(),
+    });
+  }, [userId]); // ← profile?.user_type を削除！userId の変更時のみ実行
+
+  // パフォーマンス統計の出力（開発環境のみ）- 一時的に無効化
+  // useEffect(() => {
+  //   if (process.env.NEXT_PUBLIC_ENABLE_DEBUG_LOGGING === 'true') {
+  //     const timer = setTimeout(() => {
+  //       // 統計出力機能は後で実装
+  //       logger.info('[ProfilePage] Performance monitoring disabled');
+  //     }, 5000);
+
+  //     return () => clearTimeout(timer);
+  //   }
+  // }, []);
 
   // 日付フォーマット関数
   const formatDate = (dateString: string) => {
