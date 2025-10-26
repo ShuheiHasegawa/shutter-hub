@@ -6,7 +6,10 @@ import { routing } from '@/i18n/routing';
 import { notFound } from 'next/navigation';
 import '../globals.css';
 import { ThemeProvider } from '@/components/providers/theme-provider';
+import { SWRProvider } from '@/components/providers/swr-provider';
 import { Toaster } from '@/components/ui/toaster';
+import { PerformanceDashboard } from '@/components/dev/performance-dashboard';
+import { enableQueryStatistics } from '@/lib/supabase/query-wrapper';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -101,6 +104,11 @@ export default async function LocaleLayout({
   // side is the easiest way to get started
   const messages = await getMessages();
 
+  // クエリ統計を有効化（開発環境のみ）
+  if (process.env.NEXT_PUBLIC_ENABLE_DEBUG_LOGGING === 'true') {
+    enableQueryStatistics();
+  }
+
   return (
     <html lang={locale} suppressHydrationWarning>
       <body
@@ -108,15 +116,18 @@ export default async function LocaleLayout({
         suppressHydrationWarning
       >
         <NextIntlClientProvider messages={messages}>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            {children}
-            <Toaster />
-          </ThemeProvider>
+          <SWRProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              {children}
+              <Toaster />
+              <PerformanceDashboard />
+            </ThemeProvider>
+          </SWRProvider>
         </NextIntlClientProvider>
       </body>
     </html>
