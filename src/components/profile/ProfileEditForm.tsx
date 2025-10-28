@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
@@ -27,7 +26,6 @@ import {
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { ActionSheet, ActionButton } from '@/components/ui/action-sheet';
 import { ImageCropDialog } from '@/components/profile/ImageCropDialog';
 import { UsernameSetupDialog } from '@/components/profile/UsernameSetupDialog';
 import { updateProfile } from '@/lib/auth/profile';
@@ -38,7 +36,7 @@ import {
 } from '@/lib/storage/profile-images';
 import { getCurrentUsername } from '@/app/actions/username';
 import { logger } from '@/lib/utils/logger';
-import { User, Save, X, Camera, AtSign } from 'lucide-react';
+import { User, Camera, AtSign } from 'lucide-react';
 import { OrganizerModelManagement } from '@/components/profile/organizer/OrganizerModelManagement';
 
 const profileEditSchema = z.object({
@@ -96,10 +94,8 @@ interface ProfileEditFormProps {
 }
 
 export function ProfileEditForm({ profile }: ProfileEditFormProps) {
-  const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [showActionSheet, setShowActionSheet] = useState(false);
   const [showUsernameDialog, setShowUsernameDialog] = useState(false);
   const [currentUsername, setCurrentUsername] = useState<string | null>(null);
 
@@ -275,15 +271,7 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
       }
       setSelectedImageFile(null);
 
-      // 短時間待機してから遷移（プロフィール更新を確実に反映させるため）
-      logger.debug('プロフィール反映待機開始（1秒）');
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      logger.debug('プロフィール反映待機完了、画面遷移開始');
-
-      // プロフィールページに戻る
-      setShowActionSheet(false);
-      router.push('/profile');
-      router.refresh();
+      // 画面遷移やリロードは行わない（無駄なAPI呼び出しを回避する）
     } catch (error) {
       logger.error('予期しないエラー', error);
       toast({
@@ -296,42 +284,13 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
     }
   };
 
-  const handleCancel = () => {
-    // プレビューURLのクリーンアップ
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
-      setPreviewUrl(null);
-    }
-    setSelectedImageFile(null);
-    setShowActionSheet(false);
-    router.push('/profile');
-  };
+  // キャンセル操作は廃止する
 
   const handleSaveClick = () => {
     form.handleSubmit(onSubmit)();
   };
 
-  // プロフィール編集用のアクションボタン
-  const profileActions: ActionButton[] = [
-    {
-      id: 'cancel',
-      label: 'キャンセル',
-      variant: 'navigation',
-      onClick: handleCancel,
-      icon: <X className="h-4 w-4" />,
-      className:
-        'border-muted-foreground/20 text-muted-foreground hover:bg-muted/50',
-    },
-    {
-      id: 'save',
-      label: 'プロフィールを更新',
-      variant: 'cta',
-      onClick: handleSaveClick,
-      loading: isLoading,
-      icon: <Save className="h-4 w-4" />,
-      className: 'bg-primary hover:bg-primary/90 text-primary-foreground',
-    },
-  ];
+  // 即時保存に変更したため、アクションシート定義を削除する
 
   const getInitials = (name: string) => {
     return name
@@ -405,7 +364,7 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
                     <div className="flex items-center gap-2 p-3 border rounded-md bg-muted/50">
                       <AtSign className="h-4 w-4 text-muted-foreground" />
                       <span className="text-sm font-medium">
-                        @{currentUsername}
+                        {currentUsername}
                       </span>
                       <Badge variant="secondary" className="text-xs">
                         設定済み
@@ -613,20 +572,19 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
               </div>
             )}
 
-            {/* ActionSheetを使った保存・キャンセルボタン */}
-            <div className="pt-6">
-              <ActionSheet
-                trigger={
-                  <Button className="w-full" size="lg" variant="cta">
-                    変更を保存する
-                  </Button>
-                }
-                title="変更の保存"
-                description="プロフィールの変更を保存しますか？"
-                actions={profileActions}
-                open={showActionSheet}
-                onOpenChange={setShowActionSheet}
-              />
+            {/* 保存ボタン（即時保存） */}
+            <div className="pt-4">
+              <div className="flex justify-end">
+                <Button
+                  type="button"
+                  variant="cta"
+                  onClick={handleSaveClick}
+                  disabled={isLoading}
+                  className="w-full"
+                >
+                  {isLoading ? '保存中…' : '保存'}
+                </Button>
+              </div>
             </div>
           </form>
         </Form>

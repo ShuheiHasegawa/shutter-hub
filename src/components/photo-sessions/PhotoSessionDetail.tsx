@@ -333,7 +333,31 @@ export function PhotoSessionDetail({
       {isOrganizer && (
         <Card>
           <CardHeader>
-            <div className="flex justify-between items-start">
+            {/* スマホ表示: 縦並びレイアウト */}
+            <div className="flex flex-col space-y-4 md:hidden">
+              <div className="flex items-center gap-2">
+                <BackButton href="/photo-sessions" />
+                <CardTitle className="text-lg leading-tight">
+                  {session.title}
+                </CardTitle>
+              </div>
+              <div className="flex items-center justify-between">
+                {/* Googleカレンダー追加ボタン */}
+                <Button
+                  variant="navigation"
+                  size="default"
+                  onClick={handleAddToGoogleCalendar}
+                  className="flex items-center gap-2 px-4 py-2"
+                >
+                  <CalendarPlus className="h-4 w-4" />
+                  <span className="text-sm">カレンダーに追加</span>
+                </Button>
+                {getStatusBadge()}
+              </div>
+            </div>
+
+            {/* デスクトップ表示: 横並びレイアウト */}
+            <div className="hidden md:flex justify-between items-start">
               <div className="flex items-center gap-2">
                 <BackButton href="/photo-sessions" />
                 <CardTitle className="text-2xl">{session.title}</CardTitle>
@@ -347,8 +371,7 @@ export function PhotoSessionDetail({
                   className="flex items-center gap-2 mr-2"
                 >
                   <CalendarPlus className="h-4 w-4" />
-                  <span className="hidden sm:inline">カレンダーに追加</span>
-                  <span className="sm:hidden">追加</span>
+                  <span>カレンダーに追加</span>
                 </Button>
                 {getStatusBadge()}
               </div>
@@ -464,7 +487,31 @@ export function PhotoSessionDetail({
       {!isOrganizer && (
         <Card>
           <CardHeader>
-            <div className="flex justify-between items-start">
+            {/* スマホ表示: 縦並びレイアウト */}
+            <div className="flex flex-col space-y-4 md:hidden">
+              <div className="flex items-center gap-2">
+                <BackButton href="/photo-sessions" />
+                <CardTitle className="text-lg leading-tight">
+                  {session.title}
+                </CardTitle>
+              </div>
+              <div className="flex items-center justify-between">
+                {/* Googleカレンダー追加ボタン */}
+                <Button
+                  variant="navigation"
+                  size="default"
+                  onClick={handleAddToGoogleCalendar}
+                  className="flex items-center gap-2 px-4 py-2"
+                >
+                  <CalendarPlus className="h-4 w-4" />
+                  <span className="text-sm">カレンダーに追加</span>
+                </Button>
+                {getStatusBadge()}
+              </div>
+            </div>
+
+            {/* デスクトップ表示: 横並びレイアウト */}
+            <div className="hidden md:flex justify-between items-start">
               <div className="flex items-center gap-2">
                 <BackButton href="/photo-sessions" />
                 <CardTitle className="text-2xl">{session.title}</CardTitle>
@@ -473,13 +520,12 @@ export function PhotoSessionDetail({
                 {/* Googleカレンダー追加ボタン */}
                 <Button
                   variant="navigation"
-                  size="sm"
+                  size="default"
                   onClick={handleAddToGoogleCalendar}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 px-4 py-2"
                 >
                   <CalendarPlus className="h-4 w-4" />
-                  <span className="hidden sm:inline">カレンダーに追加</span>
-                  <span className="sm:hidden">追加</span>
+                  <span className="text-sm">カレンダーに追加</span>
                 </Button>
                 {getStatusBadge()}
               </div>
