@@ -76,9 +76,10 @@ export function ActionBar({
     <div
       className={cn(
         'border-t',
-        sticky && 'fixed bottom-0 right-0 z-40',
+        sticky && 'fixed right-0 z-40',
         sticky && 'left-0 md:left-64',
         sticky && 'w-full md:w-[calc(100%-16rem)]', // サイドバー幅（16rem = 256px）を考慮
+        sticky && 'bottom-16 md:bottom-0', // スマホでは下部ナビゲーション分（64px）のマージン、デスクトップでは通常のbottom-0
         !sticky && 'w-full',
         backgroundClasses[background],
         className
@@ -99,7 +100,7 @@ export function ActionBar({
               <Button
                 key={action.id}
                 variant={action.variant || 'default'}
-                size={action.size || 'lg'}
+                size={action.size || 'default'}
                 onClick={action.onClick}
                 disabled={action.disabled || action.loading}
                 className={cn(

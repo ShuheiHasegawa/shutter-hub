@@ -7,12 +7,12 @@ import { Alert } from '@/components/ui/alert';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ActionBar, ActionBarButton } from '@/components/ui/action-bar';
+import { Progress } from '@/components/ui/progress';
 import {
   ArrowLeft,
   ArrowRight,
   CheckCircle,
   Clock,
-  Users as UsersIcon,
   CircleDollarSign as CircleDollarSignIcon,
   Loader2,
 } from 'lucide-react';
@@ -325,49 +325,34 @@ export function SlotBookingFlow({
   ]);
 
   // ステップインジケーター
-  const StepIndicator = () => (
-    <div className="flex items-center justify-center space-x-8 py-4 mb-6">
-      {['select', 'confirm', 'complete'].map((step, index) => {
-        const isActive = currentStep === step;
-        const isCompleted =
-          (currentStep === 'confirm' && step === 'select') ||
-          (currentStep === 'complete' && step !== 'complete');
-        const stepNumber = index + 1;
-        const stepLabels = {
-          select: '時間枠選択',
-          confirm: '予約確認',
-          complete: '完了',
-        };
+  const StepIndicator = () => {
+    const steps = ['select', 'confirm', 'complete'] as const;
+    const stepLabels = {
+      select: '時間枠選択',
+      confirm: '予約確認',
+      complete: '完了',
+    };
 
-        return (
-          <div key={step} className="flex items-center space-x-2">
-            <div
-              className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors ${
-                isCompleted
-                  ? 'surface-accent'
-                  : isActive
-                    ? 'surface-primary'
-                    : 'surface-neutral-1'
-              }`}
-            >
-              {isCompleted ? <CheckCircle className="h-4 w-4" /> : stepNumber}
-            </div>
-            <span
-              className={`text-sm font-medium ${
-                isActive
-                  ? 'text-theme-text-primary'
-                  : isCompleted
-                    ? 'text-theme-text-primary'
-                    : 'text-theme-text-muted'
-              }`}
-            >
-              {stepLabels[step as keyof typeof stepLabels]}
+    const currentStepIndex = steps.indexOf(currentStep);
+    const progress = ((currentStepIndex + 1) / steps.length) * 100;
+
+    return (
+      <div className="space-y-4 py-6">
+        {/* プログレスバー */}
+        <div className="space-y-2">
+          <div className="flex justify-between text-sm text-theme-text-muted">
+            <span>
+              ステップ {currentStepIndex + 1} / {steps.length}
+            </span>
+            <span className="font-medium text-theme-text-primary">
+              {stepLabels[currentStep]}
             </span>
           </div>
-        );
-      })}
-    </div>
-  );
+          <Progress value={progress} className="h-2 bg-surface-neutral-1" />
+        </div>
+      </div>
+    );
+  };
 
   // ステップ1: 時間枠選択
   if (currentStep === 'select') {
@@ -434,15 +419,15 @@ export function SlotBookingFlow({
             ) : (
               <SessionInfoDisplay session={session} />
             )}
-
-            {/* ActionBar統一ボタン */}
-            <ActionBar
-              actions={getActionBarButtons()}
-              maxColumns={2}
-              background="blur"
-            />
           </CardContent>
         </Card>
+
+        {/* ActionBar統一ボタン */}
+        <ActionBar
+          actions={getActionBarButtons()}
+          maxColumns={2}
+          background="blur"
+        />
       </div>
     );
   }
@@ -678,15 +663,15 @@ export function SlotBookingFlow({
                 </div>
               </CardContent>
             </Card>
-
-            {/* ActionBar統一ボタン */}
-            <ActionBar
-              actions={getActionBarButtons()}
-              maxColumns={2}
-              background="blur"
-            />
           </CardContent>
         </Card>
+
+        {/* ActionBar統一ボタン */}
+        <ActionBar
+          actions={getActionBarButtons()}
+          maxColumns={2}
+          background="blur"
+        />
       </div>
     );
   }
@@ -708,14 +693,16 @@ export function SlotBookingFlow({
                   予約が完了しました！
                 </h3>
               </div>
-              <ActionBar
-                actions={getActionBarButtons()}
-                maxColumns={1}
-                background="blur"
-              />
             </div>
           </CardContent>
         </Card>
+
+        {/* ActionBar統一ボタン */}
+        <ActionBar
+          actions={getActionBarButtons()}
+          maxColumns={1}
+          background="blur"
+        />
       </div>
     );
   }
@@ -775,9 +762,10 @@ function SlotCard({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
-        <div className="text-center">
-          <div className="flex items-center justify-center gap-1 text-theme-text-muted mb-1">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-sm">
+        {/* 時間（左側） */}
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 text-theme-text-muted">
             <Clock className="h-4 w-4" />
             <span>時間</span>
           </div>
@@ -787,18 +775,9 @@ function SlotCard({
           </div>
         </div>
 
-        <div className="text-center">
-          <div className="flex items-center justify-center gap-1 text-theme-text-muted mb-1">
-            <UsersIcon className="h-4 w-4" />
-            <span>参加者</span>
-          </div>
-          <div className="font-medium">
-            {slot.current_participants}/{slot.max_participants}人
-          </div>
-        </div>
-
-        <div className="text-center">
-          <div className="flex items-center justify-center gap-1 text-theme-text-muted mb-1">
+        {/* 料金（右側） */}
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 text-theme-text-muted">
             <CircleDollarSignIcon className="h-4 w-4" />
             <span>料金</span>
           </div>
