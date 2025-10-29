@@ -26,6 +26,11 @@ import {
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import {
+  ActionBar,
+  ActionBarButton,
+  ActionBarSentinel,
+} from '@/components/ui/action-bar';
 import { ImageCropDialog } from '@/components/profile/ImageCropDialog';
 import { UsernameSetupDialog } from '@/components/profile/UsernameSetupDialog';
 import { updateProfile } from '@/lib/auth/profile';
@@ -290,7 +295,17 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
     form.handleSubmit(onSubmit)();
   };
 
-  // 即時保存に変更したため、アクションシート定義を削除する
+  // プロフィール編集用のアクションボタン
+  const profileActions: ActionBarButton[] = [
+    {
+      id: 'save',
+      label: '保存',
+      variant: 'cta',
+      onClick: handleSaveClick,
+      loading: isLoading,
+      disabled: isLoading,
+    },
+  ];
 
   const getInitials = (name: string) => {
     return name
@@ -572,22 +587,30 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
               </div>
             )}
 
-            {/* 保存ボタン（即時保存） */}
-            <div className="pt-4">
-              <div className="flex justify-end">
-                <Button
-                  type="button"
-                  variant="cta"
-                  onClick={handleSaveClick}
-                  disabled={isLoading}
-                  className="w-full"
-                >
-                  {isLoading ? '保存中…' : '保存'}
-                </Button>
-              </div>
-            </div>
+            {/* 保存ボタン（ページ下部 + ActionBar自動制御） */}
+            <ActionBarSentinel className="pt-4">
+              <Button
+                type="button"
+                variant="cta"
+                size="sm"
+                onClick={handleSaveClick}
+                disabled={isLoading}
+                className="text-base font-medium w-full transition-colors"
+              >
+                {isLoading ? '保存中…' : '保存'}
+              </Button>
+            </ActionBarSentinel>
           </form>
         </Form>
+
+        {/* 下部固定ActionBar（Sentinel非表示時のみ表示） */}
+        <ActionBar
+          actions={profileActions}
+          maxColumns={1}
+          background="blur"
+          sticky={true}
+          autoHide={true}
+        />
 
         {/* ユーザー名設定ダイアログ */}
         <UsernameSetupDialog

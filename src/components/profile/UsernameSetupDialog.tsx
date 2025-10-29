@@ -205,7 +205,7 @@ export function UsernameSetupDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="w-[calc(100%-2rem)] sm:w-auto sm:max-w-md">
         <DialogHeader>
           <DialogTitle>
             {variant === 'setup' ? 'ユーザー名を設定' : 'ユーザー名を変更'}
@@ -220,7 +220,7 @@ export function UsernameSetupDialog({
           <div className="space-y-2">
             <Label htmlFor="username">ユーザー名</Label>
             <div className="relative">
-              <div className="absolute left-3 top-3 text-sm text-muted-foreground">
+              <div className="absolute left-3 top-2 text-sm text-muted-foreground">
                 @
               </div>
               <Input
@@ -294,7 +294,7 @@ export function UsernameSetupDialog({
             </div>
           )}
 
-          <DialogFooter>
+          <DialogFooter className="gap-2">
             <Button
               type="button"
               variant="outline"
@@ -310,6 +310,7 @@ export function UsernameSetupDialog({
                 isSubmitting ||
                 (!usernameStatus.canChange && variant === 'change')
               }
+              variant="cta"
             >
               {isSubmitting && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

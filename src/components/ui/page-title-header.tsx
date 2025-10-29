@@ -49,13 +49,13 @@ export function PageTitleHeader({
   return (
     <div className={cn('pt-4 pb-2', className)}>
       {/* メインヘッダー行 */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center">
         {/* 戻るボタン */}
         {backButton && <BackButton {...backButton} />}
 
         {/* タイトル部分 */}
-        <div className="flex-1 pl-2">
-          <h1 className="text-2xl font-bold flex items-center gap-2">
+        <div className="flex-1">
+          <h1 className="text-lg font-bold flex items-center">
             {icon}
             {title}
           </h1>
