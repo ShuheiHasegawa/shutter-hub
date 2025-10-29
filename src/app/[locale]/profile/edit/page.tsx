@@ -79,7 +79,7 @@ export default function EditProfilePage() {
   if (authLoading || profileLoading) {
     return (
       <AuthenticatedLayout>
-        <div className="space-y-4">
+        <div>
           <PageTitleHeader
             title="プロフィール編集"
             description="読み込み中..."
@@ -120,7 +120,7 @@ export default function EditProfilePage() {
   if (error) {
     return (
       <AuthenticatedLayout>
-        <div className="space-y-4">
+        <div>
           <PageTitleHeader
             title="プロフィール編集"
             description="エラーが発生しました"
@@ -143,7 +143,7 @@ export default function EditProfilePage() {
   if (!profile) {
     return (
       <AuthenticatedLayout>
-        <div className="space-y-4">
+        <div>
           <PageTitleHeader
             title="プロフィール編集"
             description="プロフィールが見つかりません"
@@ -165,10 +165,9 @@ export default function EditProfilePage() {
 
   return (
     <AuthenticatedLayout>
-      <div className="space-y-4">
+      <div>
         <PageTitleHeader
           title="プロフィール編集"
-          description="あなたのプロフィール情報を編集してください"
           backButton={{ href: '/profile', variant: 'ghost', size: 'sm' }}
         />
 

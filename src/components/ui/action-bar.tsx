@@ -1,8 +1,9 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { logger } from '@/lib/utils/logger';
 
 export interface ActionBarButton {
   id: string;
@@ -41,6 +42,7 @@ interface ActionBarProps {
   sticky?: boolean;
   maxColumns?: 1 | 2 | 3 | 4;
   background?: 'default' | 'blur' | 'solid';
+  autoHide?: boolean; // 自動表示制御を有効化
 }
 
 /**
@@ -65,7 +67,43 @@ export function ActionBar({
   sticky = true,
   maxColumns = 2,
   background = 'blur',
+  autoHide = false, // デフォルトfalse（既存動作維持）
 }: ActionBarProps) {
+  const [isVisible, setIsVisible] = useState(true);
+
+  // autoHide有効時：Sentinel要素の可視状態を監視
+  useEffect(() => {
+    if (!autoHide) return;
+
+    const sentinel = document.querySelector(
+      '[data-action-bar-sentinel="true"]'
+    );
+    if (!sentinel) {
+      logger.debug(
+        'ActionBar: autoHide enabled but no ActionBarSentinel found'
+      );
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        // Sentinelが見えている = ActionBar非表示
+        // Sentinelが隠れている = ActionBar表示
+        setIsVisible(!entry.isIntersecting);
+      },
+      {
+        root: null,
+        threshold: 0.1, // 10%見えたら判定
+        rootMargin: '0px 0px -50px 0px', // 下部50px手前で切り替え（スムーズな体験）
+      }
+    );
+
+    observer.observe(sentinel);
+
+    return () => observer.disconnect();
+  }, [autoHide]);
+
+  // autoHide有効時はopacityとpointer-eventsで制御（フェード効果のため）
   const backgroundClasses = {
     default: 'surface-neutral/95 backdrop-blur-sm border-theme-neutral/20',
     blur: 'surface-neutral/90 backdrop-blur-md border-theme-neutral/20',
@@ -75,7 +113,9 @@ export function ActionBar({
   return (
     <div
       className={cn(
-        'border-t',
+        'border-t transition-all duration-300 ease-in-out',
+        autoHide && !isVisible && 'opacity-0 pointer-events-none',
+        autoHide && isVisible && 'opacity-100 pointer-events-auto',
         sticky && 'fixed right-0 z-40',
         sticky && 'left-0 md:left-64',
         sticky && 'w-full md:w-[calc(100%-16rem)]', // サイドバー幅（16rem = 256px）を考慮
@@ -104,7 +144,7 @@ export function ActionBar({
                 onClick={action.onClick}
                 disabled={action.disabled || action.loading}
                 className={cn(
-                  'h-12 text-base font-medium w-full transition-colors',
+                  'text-base font-medium w-full transition-colors',
                   action.className
                 )}
               >
@@ -124,6 +164,30 @@ export function ActionBar({
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+/**
+ * ActionBar用Sentinelコンポーネント
+ * ページ下部の操作ボタンエリアをマークする
+ * ActionBarはこの要素の可視状態を監視して自動表示制御する
+ *
+ * @example
+ * <ActionBarSentinel>
+ *   <Button onClick={handleSave}>保存</Button>
+ * </ActionBarSentinel>
+ */
+export function ActionBarSentinel({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div data-action-bar-sentinel="true" className={cn('w-full', className)}>
+      {children}
     </div>
   );
 }
