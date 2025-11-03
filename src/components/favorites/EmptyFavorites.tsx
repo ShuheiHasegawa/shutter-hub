@@ -99,17 +99,6 @@ export function EmptyFavorites({
         </p>
 
         <div className="space-y-4">
-          <Button
-            onClick={() => router.push(typeInfo.actionPath)}
-            size="lg"
-            className="bg-theme-primary text-theme-primary-foreground hover:bg-theme-primary/90"
-            variant="navigation"
-          >
-            <Plus className="h-5 w-5 mr-2" />
-            {typeInfo.actionText}
-          </Button>
-
-          {/* 追加のアクション */}
           <div className="flex justify-center gap-4 pt-4">
             {type === 'studio' ? (
               <Button
