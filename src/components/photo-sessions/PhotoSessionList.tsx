@@ -21,19 +21,15 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import {
-  PlusIcon,
-  SearchIcon,
-  Loader2,
-  SidebarClose,
-  SidebarOpen,
-  Plus,
-} from 'lucide-react';
+import { PlusIcon, SearchIcon, Loader2, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
+import { usePhotoSessions } from '@/hooks/usePhotoSessions';
 import type { PhotoSessionWithOrganizer, BookingType } from '@/types/database';
 import { useTranslations } from 'next-intl';
 import type { User } from '@supabase/supabase-js';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 
 interface FilterState {
   keyword: string;
@@ -66,8 +62,8 @@ export function PhotoSessionList({
   title,
   filters,
   searchTrigger = 0,
-  sidebarOpen = false,
-  onToggleSidebar,
+  sidebarOpen: _sidebarOpen = false,
+  onToggleSidebar: _onToggleSidebar,
 }: PhotoSessionListProps) {
   const router = useRouter();
   const t = useTranslations('photoSessions');
@@ -75,7 +71,6 @@ export function PhotoSessionList({
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-  const [page, setPage] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [locationFilter, setLocationFilter] = useState('');
   const [sortBy, setSortBy] = useState<
@@ -86,6 +81,13 @@ export function PhotoSessionList({
   const [favoriteStates, setFavoriteStates] = useState<
     Record<string, { isFavorited: boolean; favoriteCount: number }>
   >({});
+  const [dataPage, setDataPage] = useState(0);
+  // 確定済みフィルター（検索ボタン押下時のみ更新）
+  const [appliedFilters, setAppliedFilters] = useState<FilterState | undefined>(
+    filters
+  );
+  const [appliedSearchQuery, setAppliedSearchQuery] = useState('');
+  const [appliedLocationFilter, setAppliedLocationFilter] = useState('');
 
   // 無限スクロール用のrefs
   const loadMoreTriggerRef = useRef<HTMLDivElement>(null);
@@ -94,286 +96,94 @@ export function PhotoSessionList({
   // フィルター変更検知用のref
   const prevFiltersRef = useRef<string>('');
   const isLoadingRef = useRef(false); // API呼び出し制御用
+  const pendingResetRef = useRef(false);
 
-  // loadSessions を通常の関数として定義（useCallbackなし）
-  const loadSessions = async (reset = false) => {
-    // 既にローディング中の場合は重複呼び出しを防ぐ
-    if (isLoadingRef.current) return;
+  // SWRパラメータ構築（確定済みフィルターのみ使用）
+  const swrParams = {
+    keyword:
+      normalizeSearchKeyword(appliedFilters?.keyword || appliedSearchQuery) ||
+      null,
+    location:
+      normalizeLocation(appliedFilters?.location || appliedLocationFilter) ||
+      null,
+    priceMin: appliedFilters?.priceMin
+      ? Number(normalizeNumberString(appliedFilters.priceMin).numericValue)
+      : null,
+    priceMax: appliedFilters?.priceMax
+      ? Number(normalizeNumberString(appliedFilters.priceMax).numericValue)
+      : null,
+    dateFrom: appliedFilters?.dateFrom || null,
+    dateTo: appliedFilters?.dateTo || null,
+    participantsMin: appliedFilters?.participantsMin
+      ? Number(
+          normalizeNumberString(appliedFilters.participantsMin).numericValue
+        )
+      : null,
+    participantsMax: appliedFilters?.participantsMax
+      ? Number(
+          normalizeNumberString(appliedFilters.participantsMax).numericValue
+        )
+      : null,
+    bookingTypes: (appliedFilters?.bookingTypes || []).map(b => String(b)),
+    onlyAvailable: !!appliedFilters?.onlyAvailable,
+    organizerId: organizerId || null,
+    sortBy: sortBy,
+    sortOrder: sortOrder,
+    page: dataPage,
+    pageSize: ITEMS_PER_PAGE + 1, // +1件でhasMore判定
+  };
 
-    isLoadingRef.current = true;
+  // SWRフック使用
+  const {
+    sessions: swrSessions,
+    isLoading: swrLoading,
+    error: swrError,
+  } = usePhotoSessions(swrParams);
 
-    if (reset) {
-      setLoading(true);
-      setPage(0);
-    } else {
-      setLoadingMore(true);
-    }
+  // マウント時に認証ユーザー取得（isOwner判定用）
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => {
+      setCurrentUser(data.user ?? null);
+    });
+  }, []);
+
+  // SWRデータ反映
+  useEffect(() => {
+    if (!isLoadingRef.current) return;
+    if (swrLoading) return;
 
     try {
-      logger.debug('[PhotoSessionList] loadSessions開始', {
-        reset,
-        currentPage: reset ? 0 : page,
-      });
-      const supabase = createClient();
-      const currentPage = reset ? 0 : page;
-
-      // 直接認証状態を取得
-      const {
-        data: { user: authUser },
-      } = await supabase.auth.getUser();
-
-      if (reset) {
-        setCurrentUser(authUser);
-        logger.debug('[PhotoSessionList] ユーザー情報設定完了', {
-          userId: authUser?.id,
-        });
-      }
-
-      let query = supabase.from('photo_sessions').select(`
-        *,
-        organizer:profiles!photo_sessions_organizer_id_fkey(
-          id,
-          display_name,
-          email,
-          avatar_url
-        )
-      `);
-
-      logger.debug('[PhotoSessionList] 基本クエリ作成完了');
-
-      // フィルター条件を適用
-      if (organizerId) {
-        // 特定の主催者の撮影会を表示（プロフィールページなど）
-        query = query.eq('organizer_id', organizerId);
-      } else {
-        // 一般的な撮影会一覧では公開済みのもののみ表示
-        query = query.eq('is_published', true);
-
-        // 自分が開催者の撮影会は除外（ログイン時のみ）
-        if (authUser?.id) {
-          query = query.neq('organizer_id', authUser.id);
-        }
-
-        // 過去の撮影会を除外：現在日時より後の撮影会のみ表示
-        const now = new Date().toISOString();
-        query = query.gte('start_time', now);
-      }
-
-      // サイドバーフィルターを優先、なければ従来のフィルターを使用
-      const rawKeyword = filters?.keyword || searchQuery;
-      const rawLocation = filters?.location || locationFilter;
-
-      // 検索条件を正規化
-      const keyword = normalizeSearchKeyword(rawKeyword);
-      const location = normalizeLocation(rawLocation);
-
-      logger.debug('[PhotoSessionList] 検索条件適用', {
-        rawKeyword,
-        keyword,
-        rawLocation,
-        location,
-        hasFilters: !!filters,
-      });
-
-      if (keyword) {
-        query = query.or(
-          `title.ilike.%${keyword}%,description.ilike.%${keyword}%`
-        );
-        logger.debug('[PhotoSessionList] キーワード検索条件追加:', keyword);
-      }
-
-      if (location) {
-        query = query.ilike('location', `%${location}%`);
-        logger.debug('[PhotoSessionList] 場所検索条件追加:', location);
-      }
-
-      // 追加のフィルター条件（サイドバーから）
-      if (filters) {
-        logger.debug('[PhotoSessionList] 詳細フィルター適用開始', filters);
-
-        // 料金フィルター（正規化処理適用）
-        if (filters.priceMin) {
-          const priceMinResult = normalizeNumberString(filters.priceMin);
-          if (priceMinResult.isValid && priceMinResult.numericValue !== null) {
-            query = query.gte('price_per_person', priceMinResult.numericValue);
-            logger.debug('[PhotoSessionList] 最低料金フィルター:', {
-              raw: filters.priceMin,
-              normalized: priceMinResult.normalized,
-              value: priceMinResult.numericValue,
-            });
-          } else {
-            logger.warn('[PhotoSessionList] 無効な最低料金:', {
-              raw: filters.priceMin,
-              normalized: priceMinResult.normalized,
-            });
-          }
-        }
-        if (filters.priceMax) {
-          const priceMaxResult = normalizeNumberString(filters.priceMax);
-          if (priceMaxResult.isValid && priceMaxResult.numericValue !== null) {
-            query = query.lte('price_per_person', priceMaxResult.numericValue);
-            logger.debug('[PhotoSessionList] 最高料金フィルター:', {
-              raw: filters.priceMax,
-              normalized: priceMaxResult.normalized,
-              value: priceMaxResult.numericValue,
-            });
-          } else {
-            logger.warn('[PhotoSessionList] 無効な最高料金:', {
-              raw: filters.priceMax,
-              normalized: priceMaxResult.normalized,
-            });
-          }
-        }
-
-        // 日時フィルター
-        if (filters.dateFrom) {
-          query = query.gte('start_time', filters.dateFrom);
-          logger.debug(
-            '[PhotoSessionList] 開始日フィルター:',
-            filters.dateFrom
-          );
-        }
-        if (filters.dateTo) {
-          const endDate = filters.dateTo + 'T23:59:59';
-          query = query.lte('start_time', endDate);
-          logger.debug('[PhotoSessionList] 終了日フィルター:', endDate);
-        }
-
-        // 参加者数フィルター（正規化処理適用）
-        if (filters.participantsMin) {
-          const participantsMinResult = normalizeNumberString(
-            filters.participantsMin
-          );
-          if (
-            participantsMinResult.isValid &&
-            participantsMinResult.numericValue !== null
-          ) {
-            query = query.gte(
-              'max_participants',
-              participantsMinResult.numericValue
-            );
-            logger.debug('[PhotoSessionList] 最少参加者数フィルター:', {
-              raw: filters.participantsMin,
-              normalized: participantsMinResult.normalized,
-              value: participantsMinResult.numericValue,
-            });
-          } else {
-            logger.warn('[PhotoSessionList] 無効な最少参加者数:', {
-              raw: filters.participantsMin,
-              normalized: participantsMinResult.normalized,
-            });
-          }
-        }
-        if (filters.participantsMax) {
-          const participantsMaxResult = normalizeNumberString(
-            filters.participantsMax
-          );
-          if (
-            participantsMaxResult.isValid &&
-            participantsMaxResult.numericValue !== null
-          ) {
-            query = query.lte(
-              'max_participants',
-              participantsMaxResult.numericValue
-            );
-            logger.debug('[PhotoSessionList] 最多参加者数フィルター:', {
-              raw: filters.participantsMax,
-              normalized: participantsMaxResult.normalized,
-              value: participantsMaxResult.numericValue,
-            });
-          } else {
-            logger.warn('[PhotoSessionList] 無効な最多参加者数:', {
-              raw: filters.participantsMax,
-              normalized: participantsMaxResult.normalized,
-            });
-          }
-        }
-
-        // 予約方式フィルター
-        if (filters.bookingTypes.length > 0) {
-          query = query.in('booking_type', filters.bookingTypes);
-          logger.debug(
-            '[PhotoSessionList] 予約方式フィルター:',
-            filters.bookingTypes
-          );
-        }
-
-        // 空きありフィルター
-        if (filters.onlyAvailable) {
-          // 空きがある撮影会のみ表示
-          // 満席でない条件：現在の参加者数 < 最大参加者数
-          query = query.lt('current_participants', 'max_participants');
-          logger.debug('[PhotoSessionList] 空きありフィルター適用（修正版）');
-        }
-      }
-
-      // ソート条件を適用
-      const ascending = sortOrder === 'asc';
-      switch (sortBy) {
-        case 'start_time':
-          query = query.order('start_time', { ascending });
-          break;
-        case 'end_time':
-          query = query.order('end_time', { ascending });
-          break;
-        case 'price':
-          query = query.order('price_per_person', { ascending });
-          break;
-        case 'popularity':
-          // 人気順は参加者数で判定（降順がデフォルト）
-          query = query.order('current_participants', {
-            ascending: !ascending,
-          });
-          break;
-        case 'created_at':
-          query = query.order('created_at', { ascending: !ascending });
-          break;
-      }
-
-      // ページネーション
-      const rangeStart = currentPage * ITEMS_PER_PAGE;
-      const rangeEnd = (currentPage + 1) * ITEMS_PER_PAGE - 1;
-      query = query.range(rangeStart, rangeEnd);
-
-      logger.debug('[PhotoSessionList] クエリ実行直前', {
-        rangeStart,
-        rangeEnd,
-        currentPage,
-        ITEMS_PER_PAGE,
-        sortBy,
-        sortOrder,
-      });
-
-      const { data, error } = await query;
-
-      if (error) {
-        logger.error('[PhotoSessionList] 撮影会一覧取得エラー詳細:', {
-          error,
-          errorMessage: error?.message,
-          errorCode: error?.code,
-          errorDetails: error?.details,
-          errorHint: error?.hint,
-          filters: filters,
-          searchQuery,
-          locationFilter,
-          currentPage,
-          sortBy,
-          sortOrder,
-        });
+      if (swrError) {
+        logger.error('撮影会一覧取得エラー:', swrError);
         return;
       }
 
-      const newSessions = data || [];
-      logger.debug('[PhotoSessionList] データ取得完了', {
+      let fetched = (swrSessions || []) as PhotoSessionWithOrganizer[];
+      // クライアント側で「空きあり」を絞り込む（サーバー側比較が不可のため）
+      const onlyAvail = (appliedFilters?.onlyAvailable ?? false) || false;
+      if (onlyAvail) {
+        fetched = fetched.filter(
+          s =>
+            typeof s.max_participants === 'number' &&
+            typeof s.current_participants === 'number' &&
+            s.current_participants < s.max_participants
+        );
+      }
+      const hasMoreData = fetched.length > ITEMS_PER_PAGE;
+      const newSessions = hasMoreData
+        ? fetched.slice(0, ITEMS_PER_PAGE)
+        : fetched;
+
+      logger.debug('[PhotoSessionList] SWRデータ反映', {
         取得件数: newSessions.length,
-        ページ: currentPage,
-        リセット: reset,
+        ページ: dataPage,
+        リセット: pendingResetRef.current,
       });
 
-      if (reset) {
+      if (pendingResetRef.current) {
         setSessions(newSessions);
       } else {
-        // 重複防止：既存のIDと重複しないもののみ追加
         setSessions(prev => {
           const existingIds = new Set(prev.map(s => s.id));
           const uniqueNewSessions = newSessions.filter(
@@ -389,63 +199,50 @@ export function PhotoSessionList({
           type: 'photo_session' as const,
           id: session.id,
         }));
-
-        try {
-          const favoriteResult = await getBulkFavoriteStatusAction(
-            favoriteItems
-          ).catch(error => {
-            logger.error(
-              '[PhotoSessionList] getBulkFavoriteStatusAction Server Action Error:',
-              error
-            );
-            return {
-              success: false,
-              error: 'Server Action呼び出しエラー',
-              favoriteStates: {},
-            };
-          });
-
-          // favoriteResultがundefinedでないことを確認
-          if (favoriteResult && favoriteResult.success) {
-            if (reset) {
-              setFavoriteStates(favoriteResult.favoriteStates);
+        getBulkFavoriteStatusAction(favoriteItems)
+          .then(favoriteResult => {
+            if (favoriteResult && favoriteResult.success) {
+              if (pendingResetRef.current) {
+                setFavoriteStates(favoriteResult.favoriteStates);
+              } else {
+                setFavoriteStates(prev => ({
+                  ...prev,
+                  ...favoriteResult.favoriteStates,
+                }));
+              }
             } else {
-              setFavoriteStates(prev => ({
-                ...prev,
-                ...favoriteResult.favoriteStates,
-              }));
+              logger.warn(
+                '[PhotoSessionList] お気に入り状態取得失敗:',
+                favoriteResult
+              );
             }
-          } else {
-            logger.warn(
-              '[PhotoSessionList] お気に入り状態取得失敗 - レスポンスが無効:',
-              favoriteResult
-            );
-          }
-        } catch (error) {
-          logger.error('[PhotoSessionList] お気に入り状態取得エラー:', error);
-        }
+          })
+          .catch(error => {
+            logger.error('[PhotoSessionList] お気に入り状態取得エラー:', error);
+          });
       }
 
-      // 次のページがあるかチェック
-      const hasMoreData = newSessions.length === ITEMS_PER_PAGE;
       setHasMore(hasMoreData);
-
-      logger.debug('[PhotoSessionList] hasMore更新', {
-        newSessionsLength: newSessions.length,
-        ITEMS_PER_PAGE,
-        hasMoreData,
-        nextPage: reset ? 1 : page + 1,
-      });
-
-      if (!reset) {
-        setPage(prev => prev + 1);
-      }
-    } catch (error) {
-      logger.error('撮影会一覧取得エラー:', error);
     } finally {
       setLoading(false);
       setLoadingMore(false);
       isLoadingRef.current = false;
+      pendingResetRef.current = false;
+    }
+  }, [swrSessions, swrLoading, swrError, dataPage]);
+
+  // loadSessions を通常の関数として定義（SWRトリガー用）
+  const loadSessions = (reset = false) => {
+    if (isLoadingRef.current) return;
+    isLoadingRef.current = true;
+
+    if (reset) {
+      setLoading(true);
+      setDataPage(0);
+      pendingResetRef.current = true;
+    } else {
+      setLoadingMore(true);
+      setDataPage(prev => prev + 1);
     }
   };
 
@@ -457,9 +254,18 @@ export function PhotoSessionList({
       sortBy,
       sortOrder,
       filters,
+      appliedBefore: appliedFilters,
+    });
+    // 確定済みフィルターを更新（これによりSWRキーが変わってフェッチが走る）
+    setAppliedFilters(filters);
+    setAppliedSearchQuery(searchQuery);
+    setAppliedLocationFilter(locationFilter);
+    logger.info('[PhotoSessionList] 確定済みフィルター更新完了', {
+      newAppliedFilters: filters,
+      newAppliedSearchQuery: searchQuery,
+      newAppliedLocationFilter: locationFilter,
     });
     setSessions([]);
-    setPage(0);
     setHasMore(true);
     loadSessions(true);
   };
@@ -570,8 +376,7 @@ export function PhotoSessionList({
         observerRef.current.disconnect();
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasMore, loadingMore, sessions.length]); // loadSessions の依存関係を削除
+  }, [hasMore, loadingMore, sessions.length]);
 
   // クリーンアップ処理
   useEffect(() => {
@@ -670,24 +475,50 @@ export function PhotoSessionList({
   }
 
   return (
-    <div>
-      {/* ヘッダーコントロール */}
-      <div className="flex justify-between items-center py-2">
-        {/* 左側: フィルタートグルアイコン */}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onToggleSidebar}
-          className="h-9 w-9 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-          title={sidebarOpen ? 'フィルターを閉じる' : 'フィルターを開く'}
-          aria-label={sidebarOpen ? 'フィルターを閉じる' : 'フィルターを開く'}
-        >
-          {sidebarOpen ? (
-            <SidebarClose className="h-5 w-5" />
-          ) : (
-            <SidebarOpen className="h-5 w-5" />
-          )}
-        </Button>
+    <div className="flex flex-col flex-1 min-h-0">
+      {/* ヘッダーコントロール - 固定 */}
+      <div className="flex-shrink-0 sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b flex justify-between items-center py-2">
+        {/* 左側: 空きがある撮影会のみ（PC表示） */}
+        <div className="hidden md:flex items-center gap-2 pl-4">
+          <Checkbox
+            id="only-available-header"
+            checked={
+              !!appliedFilters?.onlyAvailable || !!filters?.onlyAvailable
+            }
+            onCheckedChange={checked => {
+              const next = checked === true;
+              // ローカルの確定フィルタに即時反映して再検索する
+              const newFilters = {
+                ...(filters || {
+                  keyword: '',
+                  location: '',
+                  priceMin: '',
+                  priceMax: '',
+                  dateFrom: '',
+                  dateTo: '',
+                  bookingTypes: [] as BookingType[],
+                  participantsMin: '',
+                  participantsMax: '',
+                  onlyAvailable: false,
+                }),
+                onlyAvailable: next,
+              } as FilterState;
+
+              setAppliedFilters(newFilters);
+              setAppliedSearchQuery(searchQuery);
+              setAppliedLocationFilter(locationFilter);
+              setSessions([]);
+              setHasMore(true);
+              loadSessions(true);
+            }}
+          />
+          <Label
+            htmlFor="only-available-header"
+            className="text-sm font-normal cursor-pointer select-none"
+          >
+            {t('sidebar.onlyAvailable')}
+          </Label>
+        </div>
 
         {/* 右側: 並び順と撮影会作成ボタン */}
         <div className="flex items-center gap-2">
@@ -753,151 +584,153 @@ export function PhotoSessionList({
         </div>
       </div>
 
-      {/* 検索・フィルター（サイドバーがない場合のみ表示） */}
-      {!filters && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">{t('list.searchFilter')}</CardTitle>
-          </CardHeader>
-          <Separator className="my-2" />
-          <CardContent>
-            <div className="space-y-4">
-              {/* 検索入力フィールド */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="relative">
-                  <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      {/* スクロール可能なコンテンツエリア */}
+      <div className="flex-1 overflow-y-auto min-h-0 flex flex-col">
+        {/* 検索・フィルター（サイドバーがない場合のみ表示） */}
+        {!filters && (
+          <Card className="m-4 flex-shrink-0">
+            <CardHeader>
+              <CardTitle className="text-lg">
+                {t('list.searchFilter')}
+              </CardTitle>
+            </CardHeader>
+            <Separator className="my-2" />
+            <CardContent>
+              <div className="space-y-4">
+                {/* 検索入力フィールド */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="relative">
+                    <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder={t('list.keywordPlaceholder')}
+                      value={searchQuery}
+                      onChange={e => setSearchQuery(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+
                   <Input
-                    placeholder={t('list.keywordPlaceholder')}
-                    value={searchQuery}
-                    onChange={e => setSearchQuery(e.target.value)}
-                    onKeyDown={e => {
-                      if (e.key === 'Enter') {
-                        handleSearch();
-                      }
-                    }}
-                    className="pl-10"
+                    placeholder={t('list.locationPlaceholder')}
+                    value={locationFilter}
+                    onChange={e => setLocationFilter(e.target.value)}
                   />
                 </div>
 
-                <Input
-                  placeholder={t('list.locationPlaceholder')}
-                  value={locationFilter}
-                  onChange={e => setLocationFilter(e.target.value)}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter') {
-                      handleSearch();
+                {/* 検索・リセットボタン */}
+                <div className="flex gap-2 justify-center">
+                  <Button
+                    onClick={handleSearch}
+                    disabled={loading}
+                    className="px-8"
+                    variant="action"
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="animate-spin-slow h-4 w-4 mr-2" />
+                        検索中...
+                      </>
+                    ) : (
+                      <>
+                        <SearchIcon className="h-4 w-4 mr-2" />
+                        検索
+                      </>
+                    )}
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setSearchQuery('');
+                      setLocationFilter('');
+                      setSortBy('start_time');
+                      setSortOrder('asc');
+                    }}
+                    disabled={loading}
+                  >
+                    {t('list.reset')}
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* 撮影会一覧 */}
+        <div className="flex flex-col">
+          {sessions.length === 0 && !loading ? (
+            <Card className="flex-shrink-0">
+              <CardContent className="text-center py-12">
+                <p className="text-muted-foreground mb-4">
+                  {searchQuery ||
+                  locationFilter ||
+                  filters?.keyword ||
+                  filters?.location
+                    ? t('list.noResults')
+                    : t('list.noSessions')}
+                </p>
+                {showCreateButton && !searchQuery && !locationFilter && (
+                  <Button onClick={handleCreate}>
+                    <PlusIcon className="h-4 w-4 mr-2" />
+                    {t('list.createFirst')}
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-3 md:space-y-4">
+              {sessions.map(session => {
+                const favoriteState =
+                  favoriteStates[`photo_session_${session.id}`];
+                return (
+                  <PhotoSessionCard
+                    key={session.id}
+                    session={session}
+                    onViewDetails={handleViewDetails}
+                    onEdit={handleEdit}
+                    isOwner={currentUser?.id === session.organizer_id}
+                    showActions={true}
+                    layoutMode="card"
+                    favoriteState={favoriteState}
+                    onFavoriteToggle={(isFavorited, favoriteCount) =>
+                      handleFavoriteToggle(
+                        session.id,
+                        isFavorited,
+                        favoriteCount
+                      )
                     }
-                  }}
-                />
-              </div>
-
-              {/* 検索・リセットボタン */}
-              <div className="flex gap-2 justify-center">
-                <Button
-                  onClick={handleSearch}
-                  disabled={loading}
-                  className="px-8"
-                  variant="action"
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="animate-spin-slow h-4 w-4 mr-2" />
-                      検索中...
-                    </>
-                  ) : (
-                    <>
-                      <SearchIcon className="h-4 w-4 mr-2" />
-                      検索
-                    </>
-                  )}
-                </Button>
-
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setSearchQuery('');
-                    setLocationFilter('');
-                    setSortBy('start_time');
-                    setSortOrder('asc');
-                  }}
-                  disabled={loading}
-                >
-                  {t('list.reset')}
-                </Button>
-              </div>
+                  />
+                );
+              })}
             </div>
-          </CardContent>
-        </Card>
-      )}
+          )}
 
-      {/* 撮影会一覧 */}
-      {sessions.length === 0 && !loading ? (
-        <Card>
-          <CardContent className="text-center py-12">
-            <p className="text-muted-foreground mb-4">
-              {searchQuery ||
-              locationFilter ||
-              filters?.keyword ||
-              filters?.location
-                ? t('list.noResults')
-                : t('list.noSessions')}
-            </p>
-            {showCreateButton && !searchQuery && !locationFilter && (
-              <Button onClick={handleCreate}>
-                <PlusIcon className="h-4 w-4 mr-2" />
-                {t('list.createFirst')}
-              </Button>
+          {/* 無限スクロール用のトリガー要素 */}
+          <div className="flex justify-center pt-4 pb-24 md:pb-28 lg:pb-32 flex-shrink-0">
+            {loadingMore && (
+              <div className="flex items-center text-muted-foreground">
+                <Loader2 className="mr-2 h-4 w-4 animate-spin-slow" />
+                さらに読み込み中...
+              </div>
             )}
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-3 md:space-y-4 pb-8">
-          {sessions.map(session => {
-            const favoriteState = favoriteStates[`photo_session_${session.id}`];
-            return (
-              <PhotoSessionCard
-                key={session.id}
-                session={session}
-                onViewDetails={handleViewDetails}
-                onEdit={handleEdit}
-                isOwner={currentUser?.id === session.organizer_id}
-                showActions={true}
-                layoutMode="card"
-                favoriteState={favoriteState}
-                onFavoriteToggle={(isFavorited, favoriteCount) =>
-                  handleFavoriteToggle(session.id, isFavorited, favoriteCount)
-                }
-              />
-            );
-          })}
+            {!hasMore && sessions.length > 0 && (
+              <p className="text-muted-foreground text-center">
+                すべての撮影会を表示しました
+              </p>
+            )}
+            {/* hasMoreがtrueの場合のみトリガー要素を表示 */}
+            {hasMore && !loadingMore && sessions.length > 0 && (
+              <div
+                ref={loadMoreTriggerRef}
+                className="flex justify-center min-h-[20px] w-full"
+                style={{ minHeight: '20px' }}
+              >
+                <p className="text-muted-foreground text-center text-sm">
+                  スクロールして続きを読み込む
+                </p>
+              </div>
+            )}
+          </div>
         </div>
-      )}
-
-      {/* 無限スクロール用のトリガー要素 */}
-      <div className="flex justify-center pb-8">
-        {loadingMore && (
-          <div className="flex items-center text-muted-foreground">
-            <Loader2 className="mr-2 h-4 w-4 animate-spin-slow" />
-            さらに読み込み中...
-          </div>
-        )}
-        {!hasMore && sessions.length > 0 && (
-          <p className="text-muted-foreground text-center">
-            すべての撮影会を表示しました
-          </p>
-        )}
-        {/* hasMoreがtrueの場合のみトリガー要素を表示 */}
-        {hasMore && !loadingMore && sessions.length > 0 && (
-          <div
-            ref={loadMoreTriggerRef}
-            className="flex justify-center min-h-[20px] w-full"
-            style={{ minHeight: '20px' }}
-          >
-            <p className="text-muted-foreground text-center text-sm">
-              スクロールして続きを読み込む
-            </p>
-          </div>
-        )}
       </div>
     </div>
   );
