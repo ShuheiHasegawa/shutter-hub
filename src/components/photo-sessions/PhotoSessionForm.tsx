@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { logger } from '@/lib/utils/logger';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -35,6 +35,11 @@ import { FormattedDateTime } from '@/components/ui/formatted-display';
 import { PageTitleHeader } from '@/components/ui/page-title-header';
 // PriceInput は不要（スロットで料金設定するため）
 import { Check, CameraIcon } from 'lucide-react';
+import {
+  ActionBar,
+  ActionBarButton,
+  ActionBarSentinel,
+} from '@/components/ui/action-bar';
 interface PhotoSessionFormProps {
   initialData?: PhotoSessionWithOrganizer;
   isEditing?: boolean;
@@ -56,6 +61,7 @@ export function PhotoSessionForm({
   const tCommon = useTranslations('common');
   const tErrors = useTranslations('errors');
   const [isLoading, setIsLoading] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
 
   const [formData, setFormData] = useState({
     title: isDuplicating
@@ -373,8 +379,20 @@ export function PhotoSessionForm({
     }
   };
 
+  // 下部固定アクションバー用ボタン
+  const actionBarButtons: ActionBarButton[] = [
+    {
+      id: 'submit',
+      label: isEditing ? t('form.updateButton') : t('form.createButton'),
+      variant: 'cta',
+      onClick: () => formRef.current?.requestSubmit(),
+      loading: isLoading,
+      disabled: isLoading,
+    },
+  ];
+
   return (
-    <>
+    <div>
       <PageTitleHeader
         title={
           isDuplicating
@@ -385,9 +403,9 @@ export function PhotoSessionForm({
         }
         icon={<CameraIcon className="h-6 w-6" />}
       />
-      <Card className="w-full max-w-4xl mx-auto">
-        <CardContent className="mt-4">
-          <form onSubmit={handleSubmit} className="space-y-6">
+      <Card className="w-full mx-auto">
+        <CardContent className="py-4">
+          <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
             {/* 画像アップロード */}
             <div className="space-y-4">
               <h3 className="text-lg font-medium">イメージ画像</h3>
@@ -763,26 +781,39 @@ export function PhotoSessionForm({
               </div>
             </div>
 
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={isLoading}
-              variant="cta"
-            >
-              {isLoading ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                  {isEditing ? t('form.updating') : t('form.creating')}
-                </>
-              ) : isEditing ? (
-                t('form.updateButton')
-              ) : (
-                t('form.createButton')
-              )}
-            </Button>
+            <ActionBarSentinel className="pt-4 pb-0">
+              <Button
+                type="submit"
+                className="text-base font-medium w-full transition-colors"
+                disabled={isLoading}
+                variant="cta"
+              >
+                {isLoading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                    {isEditing ? t('form.updating') : t('form.creating')}
+                  </>
+                ) : isEditing ? (
+                  t('form.updateButton')
+                ) : (
+                  t('form.createButton')
+                )}
+              </Button>
+            </ActionBarSentinel>
           </form>
         </CardContent>
       </Card>
-    </>
+
+      {/* 下部固定ActionBar（Sentinel非表示時のみ表示） */}
+      <ActionBar
+        actions={actionBarButtons}
+        maxColumns={1}
+        background="blur"
+        sticky={true}
+        autoHide={true}
+      />
+      {/* ActionBar用のスペーサー（fixed要素の高さ分） */}
+      <div className="h-20 md:h-20 flex-shrink-0" />
+    </div>
   );
 }
