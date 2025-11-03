@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Sidebar } from './sidebar';
 import { AppHeader } from './header';
 import { BottomNavigation } from './bottom-navigation';
+import { AuthenticatedFooter } from './authenticated-footer';
 import { redirect } from 'next/navigation';
 import { useEffect } from 'react';
 
@@ -38,22 +39,24 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
   }
 
   return (
-    <div className="flex bg-background overflow-hidden">
+    <div className="flex bg-background overflow-hidden h-screen">
       {/* 固定サイドバー */}
       <div className="flex-shrink-0">
         <Sidebar />
       </div>
 
       {/* メインコンテンツエリア */}
-      <div className="flex flex-col flex-1 min-w-0">
+      <div className="flex flex-col flex-1 min-w-0 min-h-0">
         {/* 固定ヘッダー */}
         <div className="flex-shrink-0">
           <AppHeader variant="authenticated" />
         </div>
 
         {/* スクロール可能なメインコンテンツ */}
-        <main className="flex-1 overflow-y-auto p-2 pb-16 md:pb-6">
-          {children}
+        <main className="flex-1 overflow-y-auto min-h-0 flex flex-col">
+          <div className="flex-1 px-4 pb-16 md:pb-16">{children}</div>
+          {/* フッター */}
+          <AuthenticatedFooter />
         </main>
       </div>
 
