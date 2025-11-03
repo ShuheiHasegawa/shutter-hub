@@ -3,9 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Heart, Building2, Search, Filter } from 'lucide-react';
+import { Heart, Search, Filter } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -135,23 +134,14 @@ export function StudioFavoritesContent() {
   const filteredItems = filterAndSortItems(studioFavorites, searchTerm, sortBy);
 
   return (
-    <div className="space-y-6">
+    <div>
       {/* 統計情報 */}
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Building2 className="h-5 w-5 text-theme-accent" />
-              <span className="font-semibold text-theme-text-primary">
-                お気に入りスタジオ
-              </span>
-              <Badge variant="secondary" className="font-semibold">
-                {studioFavorites.length}件
-              </Badge>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="flex items-center gap-3 py-4">
+        <h2 className="text-2xl font-bold text-theme-text-primary">検索結果</h2>
+        <Badge variant="secondary" className="font-semibold">
+          {studioFavorites.length}件
+        </Badge>
+      </div>
 
       {/* 検索・フィルター */}
       <div className="flex flex-col sm:flex-row gap-4">
