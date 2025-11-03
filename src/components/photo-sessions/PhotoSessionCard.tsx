@@ -119,7 +119,7 @@ export function PhotoSessionCard({
               </div>
 
               {/* お気に入りボタン：右上に配置 */}
-              <div className="absolute top-4 right-4">
+              <div className="absolute" style={{ top: '4px', right: '4px' }}>
                 <CardFavoriteButton
                   favoriteType="photo_session"
                   favoriteId={session.id}
@@ -210,7 +210,7 @@ export function PhotoSessionCard({
                 <CalendarIcon className="h-12 w-12 text-info/60 opacity-60" />
               </div>
               {/* バッジ：左上に配置 */}
-              <div className="absolute top-4 left-4">
+              <div className="absolute" style={{ top: '12px', left: '12px' }}>
                 <Badge
                   variant={
                     status === 'available'
@@ -230,7 +230,7 @@ export function PhotoSessionCard({
               </div>
 
               {/* お気に入りボタン：右上に配置 */}
-              <div className="absolute top-4 right-4">
+              <div className="absolute" style={{ top: '4px', right: '4px' }}>
                 <CardFavoriteButton
                   favoriteType="photo_session"
                   favoriteId={session.id}
@@ -261,7 +261,7 @@ export function PhotoSessionCard({
                     {session.organizer.display_name || session.organizer.email}
                   </span>
                 </div>
-                <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
+                <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed line-clamp-3">
                   {session.description}
                 </p>
               </div>
