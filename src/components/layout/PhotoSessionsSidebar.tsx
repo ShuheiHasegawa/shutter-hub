@@ -1,11 +1,12 @@
 'use client';
 
+import { useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import {
   normalizeSearchKeyword,
   normalizeLocation,
-  normalizeNumberString,
 } from '@/lib/utils/input-normalizer';
+import { logger } from '@/lib/utils/logger';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,7 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import {
   Calendar,
   MapPin,
-  Users,
+  // Users, // 参加者数フィルターで使用（一旦非表示）
   DollarSign,
   Clock,
   Shuffle,
@@ -61,44 +62,96 @@ export function PhotoSessionsSidebar({
   const t = useTranslations('photoSessions');
   const tCommon = useTranslations('common');
 
-  const updateFilter = (key: keyof FilterState, value: unknown) => {
-    let normalizedValue = value;
+  // ref定義（テキスト入力フィールド用）
+  const keywordRef = useRef<HTMLInputElement>(null);
+  const locationRef = useRef<HTMLInputElement>(null);
+  const priceMinRef = useRef<HTMLInputElement>(null);
+  const priceMaxRef = useRef<HTMLInputElement>(null);
+  const dateFromRef = useRef<HTMLInputElement>(null);
+  const dateToRef = useRef<HTMLInputElement>(null);
+  const participantsMinRef = useRef<HTMLInputElement>(null);
+  const participantsMaxRef = useRef<HTMLInputElement>(null);
 
-    // 入力値の正規化処理
-    if (typeof value === 'string') {
-      switch (key) {
-        case 'keyword':
-          normalizedValue = normalizeSearchKeyword(value);
-          break;
-        case 'location':
-          normalizedValue = normalizeLocation(value);
-          break;
-        case 'priceMin':
-        case 'priceMax':
-        case 'participantsMin':
-        case 'participantsMax':
-          // 数値フィールドは正規化のみ（検証は検索実行時）
-          const numberResult = normalizeNumberString(value);
-          normalizedValue = numberResult.normalized;
-          break;
-        default:
-          // その他のフィールドは基本的な文字列正規化
-          normalizedValue = typeof value === 'string' ? value.trim() : value;
-      }
+  // チェックボックスはstateで管理（即時反映が必要）
+  const [bookingTypes, setBookingTypes] = useState<BookingType[]>(
+    filters.bookingTypes || []
+  );
+  const [onlyAvailable, setOnlyAvailable] = useState(
+    filters.onlyAvailable || false
+  );
+
+  // 検索実行時にrefから値を取得して親に通知
+  const handleSearch = () => {
+    const newFilters: FilterState = {
+      keyword: keywordRef.current?.value || '',
+      location: locationRef.current?.value || '',
+      priceMin: priceMinRef.current?.value || '',
+      priceMax: priceMaxRef.current?.value || '',
+      dateFrom: dateFromRef.current?.value || '',
+      dateTo: dateToRef.current?.value || '',
+      participantsMin: participantsMinRef.current?.value || '',
+      participantsMax: participantsMaxRef.current?.value || '',
+      bookingTypes,
+      onlyAvailable,
+    };
+
+    // 正規化処理
+    newFilters.keyword = normalizeSearchKeyword(newFilters.keyword);
+    newFilters.location = normalizeLocation(newFilters.location);
+
+    logger.info('[PhotoSessionsSidebar] 検索実行', { newFilters });
+
+    onFiltersChange(newFilters);
+    onSearch?.();
+  };
+
+  // クリア処理
+  const handleClearFilters = () => {
+    // refの値をクリア
+    if (keywordRef.current) keywordRef.current.value = '';
+    if (locationRef.current) locationRef.current.value = '';
+    if (priceMinRef.current) priceMinRef.current.value = '';
+    if (priceMaxRef.current) priceMaxRef.current.value = '';
+    if (dateFromRef.current) dateFromRef.current.value = '';
+    if (dateToRef.current) dateToRef.current.value = '';
+    if (participantsMinRef.current) participantsMinRef.current.value = '';
+    if (participantsMaxRef.current) participantsMaxRef.current.value = '';
+
+    // チェックボックスのstateもクリア
+    setBookingTypes([]);
+    setOnlyAvailable(false);
+
+    // 空のフィルター状態で親に通知
+    const emptyFilters: FilterState = {
+      keyword: '',
+      location: '',
+      priceMin: '',
+      priceMax: '',
+      dateFrom: '',
+      dateTo: '',
+      participantsMin: '',
+      participantsMax: '',
+      bookingTypes: [],
+      onlyAvailable: false,
+    };
+
+    logger.info('[PhotoSessionsSidebar] フィルタークリア', { emptyFilters });
+
+    // 親のフィルター状態も更新
+    onFiltersChange(emptyFilters);
+    onClearFilters();
+
+    // クリア後、空のフィルターで検索を実行
+    if (onSearch) {
+      onSearch();
     }
-
-    onFiltersChange({
-      ...filters,
-      [key]: normalizedValue,
-    });
   };
 
   const toggleBookingType = (bookingType: BookingType) => {
-    const newTypes = filters.bookingTypes.includes(bookingType)
-      ? filters.bookingTypes.filter(type => type !== bookingType)
-      : [...filters.bookingTypes, bookingType];
-
-    updateFilter('bookingTypes', newTypes);
+    const newTypes = bookingTypes.includes(bookingType)
+      ? bookingTypes.filter(type => type !== bookingType)
+      : [...bookingTypes, bookingType];
+    setBookingTypes(newTypes);
   };
 
   const bookingTypeOptions = [
@@ -128,18 +181,6 @@ export function PhotoSessionsSidebar({
     },
   ];
 
-  const hasActiveFilters =
-    filters.keyword ||
-    filters.location ||
-    filters.priceMin ||
-    filters.priceMax ||
-    filters.dateFrom ||
-    filters.dateTo ||
-    filters.bookingTypes.length > 0 ||
-    filters.participantsMin ||
-    filters.participantsMax ||
-    filters.onlyAvailable;
-
   return (
     <div className={`${className}`}>
       {/* フィルター */}
@@ -150,24 +191,19 @@ export function PhotoSessionsSidebar({
               <Filter className="h-5 w-5" />
               <CardTitle className="text-lg">{tCommon('filter')}</CardTitle>
             </div>
-            {hasActiveFilters && (
-              <Badge variant="secondary" className="text-xs">
-                {t('list.activeFilters')}
-              </Badge>
-            )}
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-6">
+        <CardContent>
           {/* キーワード検索 */}
           <LeftLineSection>
             <Label className="text-base font-semibold mb-3 block">
               {tCommon('search')}
             </Label>
             <Input
+              ref={keywordRef}
               placeholder={t('list.keywordPlaceholder')}
-              value={filters.keyword}
-              onChange={e => updateFilter('keyword', e.target.value)}
+              defaultValue={filters.keyword}
             />
           </LeftLineSection>
 
@@ -178,9 +214,9 @@ export function PhotoSessionsSidebar({
               {t('form.locationLabel')}
             </Label>
             <Input
+              ref={locationRef}
               placeholder={t('list.locationPlaceholder')}
-              value={filters.location}
-              onChange={e => updateFilter('location', e.target.value)}
+              defaultValue={filters.location}
             />
           </LeftLineSection>
 
@@ -194,17 +230,17 @@ export function PhotoSessionsSidebar({
               <div>
                 <Label className="text-sm">{t('sidebar.dateFrom')}</Label>
                 <Input
+                  ref={dateFromRef}
                   type="date"
-                  value={filters.dateFrom}
-                  onChange={e => updateFilter('dateFrom', e.target.value)}
+                  defaultValue={filters.dateFrom}
                 />
               </div>
               <div>
                 <Label className="text-sm">{t('sidebar.dateTo')}</Label>
                 <Input
+                  ref={dateToRef}
                   type="date"
-                  value={filters.dateTo}
-                  onChange={e => updateFilter('dateTo', e.target.value)}
+                  defaultValue={filters.dateTo}
                 />
               </div>
             </div>
@@ -220,28 +256,28 @@ export function PhotoSessionsSidebar({
               <div>
                 <Label className="text-sm">{t('sidebar.priceMin')}</Label>
                 <Input
+                  ref={priceMinRef}
                   type="number"
                   min="0"
                   placeholder="0"
-                  value={filters.priceMin}
-                  onChange={e => updateFilter('priceMin', e.target.value)}
+                  defaultValue={filters.priceMin}
                 />
               </div>
               <div>
                 <Label className="text-sm">{t('sidebar.priceMax')}</Label>
                 <Input
+                  ref={priceMaxRef}
                   type="number"
                   min="0"
                   placeholder="10000"
-                  value={filters.priceMax}
-                  onChange={e => updateFilter('priceMax', e.target.value)}
+                  defaultValue={filters.priceMax}
                 />
               </div>
             </div>
           </LeftLineSection>
 
-          {/* 参加者数フィルター */}
-          <LeftLineSection>
+          {/* 参加者数フィルター - 一旦非表示 */}
+          {/* <LeftLineSection>
             <Label className="text-base font-semibold mb-3 flex items-center gap-2">
               <Users className="h-4 w-4" />
               {t('sidebar.participantsRange')}
@@ -252,13 +288,11 @@ export function PhotoSessionsSidebar({
                   {t('sidebar.participantsMin')}
                 </Label>
                 <Input
+                  ref={participantsMinRef}
                   type="number"
                   min="1"
                   placeholder="1"
-                  value={filters.participantsMin}
-                  onChange={e =>
-                    updateFilter('participantsMin', e.target.value)
-                  }
+                  defaultValue={filters.participantsMin}
                 />
               </div>
               <div>
@@ -266,17 +300,15 @@ export function PhotoSessionsSidebar({
                   {t('sidebar.participantsMax')}
                 </Label>
                 <Input
+                  ref={participantsMaxRef}
                   type="number"
                   min="1"
                   placeholder="50"
-                  value={filters.participantsMax}
-                  onChange={e =>
-                    updateFilter('participantsMax', e.target.value)
-                  }
+                  defaultValue={filters.participantsMax}
                 />
               </div>
             </div>
-          </LeftLineSection>
+          </LeftLineSection> */}
 
           {/* 予約方式フィルター */}
           <LeftLineSection>
@@ -286,7 +318,7 @@ export function PhotoSessionsSidebar({
             <div className="space-y-3">
               {bookingTypeOptions.map(option => {
                 const Icon = option.icon;
-                const isChecked = filters.bookingTypes.includes(option.value);
+                const isChecked = bookingTypes.includes(option.value);
 
                 return (
                   <div
@@ -319,35 +351,14 @@ export function PhotoSessionsSidebar({
             </div>
           </LeftLineSection>
 
-          {/* その他のオプション */}
-          <LeftLineSection>
-            <Label className="text-base font-semibold mb-3 block">
-              {t('sidebar.options')}
-            </Label>
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="only-available"
-                checked={filters.onlyAvailable}
-                onCheckedChange={checked =>
-                  updateFilter('onlyAvailable', checked)
-                }
-              />
-              <Label
-                htmlFor="only-available"
-                className="text-sm font-normal cursor-pointer"
-              >
-                {t('sidebar.onlyAvailable')}
-              </Label>
-            </div>
-          </LeftLineSection>
-
           {/* 検索実行ボタン */}
           {onSearch && (
             <div className="pt-4 border-t">
               <Button
-                onClick={onSearch}
+                onClick={handleSearch}
                 disabled={isSearchLoading}
                 className="w-full"
+                variant="action"
               >
                 {isSearchLoading ? (
                   <>
@@ -364,16 +375,14 @@ export function PhotoSessionsSidebar({
             </div>
           )}
 
-          {hasActiveFilters && (
-            <Button
-              variant="outline"
-              onClick={onClearFilters}
-              className="w-full"
-            >
-              <X className="h-4 w-4 mr-2" />
-              {t('list.clearFilters')}
-            </Button>
-          )}
+          <Button
+            variant="outline"
+            onClick={handleClearFilters}
+            className="w-full mt-2"
+          >
+            <X className="h-4 w-4 mr-2" />
+            {t('list.clearFilters')}
+          </Button>
         </CardContent>
       </Card>
     </div>
