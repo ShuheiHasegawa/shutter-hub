@@ -1,10 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import {
   normalizeSearchKeyword,
   normalizeLocation,
-  normalizeNumberString,
 } from '@/lib/utils/input-normalizer';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -66,62 +65,122 @@ export function CompactFilterBar({
 }: CompactFilterBarProps) {
   const [isOpen, setIsOpen] = useState(false);
 
-  const updateFilter = (key: keyof FilterState, value: unknown) => {
-    let normalizedValue = value;
+  // ref定義（テキスト入力フィールド用）
+  const keywordRef = useRef<HTMLInputElement>(null);
+  const locationRef = useRef<HTMLInputElement>(null);
+  const priceMinRef = useRef<HTMLInputElement>(null);
+  const priceMaxRef = useRef<HTMLInputElement>(null);
+  const dateFromRef = useRef<HTMLInputElement>(null);
+  const dateToRef = useRef<HTMLInputElement>(null);
+  const participantsMinRef = useRef<HTMLInputElement>(null);
+  const participantsMaxRef = useRef<HTMLInputElement>(null);
 
-    // 入力値の正規化処理
-    if (typeof value === 'string') {
-      switch (key) {
-        case 'keyword':
-          normalizedValue = normalizeSearchKeyword(value);
-          break;
-        case 'location':
-          normalizedValue = normalizeLocation(value);
-          break;
-        case 'priceMin':
-        case 'priceMax':
-        case 'participantsMin':
-        case 'participantsMax':
-          // 数値フィールドは正規化のみ（検証は検索実行時）
-          const numberResult = normalizeNumberString(value);
-          normalizedValue = numberResult.normalized;
-          break;
-        default:
-          // その他のフィールドは基本的な文字列正規化
-          normalizedValue = typeof value === 'string' ? value.trim() : value;
-      }
+  // チェックボックスはstateで管理（即時反映が必要）
+  const [bookingTypes, setBookingTypes] = useState<BookingType[]>(
+    filters.bookingTypes || []
+  );
+  const [onlyAvailable, setOnlyAvailable] = useState(
+    filters.onlyAvailable || false
+  );
+
+  // 検索実行時にrefから値を取得して親に通知
+  const handleSearch = () => {
+    const newFilters: FilterState = {
+      keyword: keywordRef.current?.value || '',
+      location: locationRef.current?.value || '',
+      priceMin: priceMinRef.current?.value || '',
+      priceMax: priceMaxRef.current?.value || '',
+      dateFrom: dateFromRef.current?.value || '',
+      dateTo: dateToRef.current?.value || '',
+      participantsMin: participantsMinRef.current?.value || '',
+      participantsMax: participantsMaxRef.current?.value || '',
+      bookingTypes,
+      onlyAvailable,
+    };
+
+    // 正規化処理
+    newFilters.keyword = normalizeSearchKeyword(newFilters.keyword);
+    newFilters.location = normalizeLocation(newFilters.location);
+
+    onFiltersChange(newFilters);
+    onSearch?.();
+  };
+
+  // クリア処理
+  const handleClearFilters = () => {
+    // refの値をクリア
+    if (keywordRef.current) keywordRef.current.value = '';
+    if (locationRef.current) locationRef.current.value = '';
+    if (priceMinRef.current) priceMinRef.current.value = '';
+    if (priceMaxRef.current) priceMaxRef.current.value = '';
+    if (dateFromRef.current) dateFromRef.current.value = '';
+    if (dateToRef.current) dateToRef.current.value = '';
+    if (participantsMinRef.current) participantsMinRef.current.value = '';
+    if (participantsMaxRef.current) participantsMaxRef.current.value = '';
+
+    // チェックボックスのstateもクリア
+    setBookingTypes([]);
+    setOnlyAvailable(false);
+
+    // 空のフィルター状態で親に通知
+    const emptyFilters: FilterState = {
+      keyword: '',
+      location: '',
+      priceMin: '',
+      priceMax: '',
+      dateFrom: '',
+      dateTo: '',
+      participantsMin: '',
+      participantsMax: '',
+      bookingTypes: [],
+      onlyAvailable: false,
+    };
+
+    onFiltersChange(emptyFilters);
+    onClearFilters();
+
+    // クリア後、空のフィルターで検索を実行
+    if (onSearch) {
+      onSearch();
     }
-
-    onFiltersChange({
-      ...filters,
-      [key]: normalizedValue,
-    });
   };
 
   const toggleBookingType = (bookingType: BookingType) => {
-    const newTypes = filters.bookingTypes.includes(bookingType)
-      ? filters.bookingTypes.filter(type => type !== bookingType)
-      : [...filters.bookingTypes, bookingType];
-
-    updateFilter('bookingTypes', newTypes);
+    const newTypes = bookingTypes.includes(bookingType)
+      ? bookingTypes.filter(type => type !== bookingType)
+      : [...bookingTypes, bookingType];
+    setBookingTypes(newTypes);
   };
 
   const removeFilter = (key: string, value?: string) => {
     if (key === 'bookingTypes' && value) {
       toggleBookingType(value as BookingType);
+      // 検索を実行して変更を反映
+      setTimeout(() => handleSearch(), 0);
     } else if (key === 'onlyAvailable') {
-      updateFilter('onlyAvailable', false);
+      setOnlyAvailable(false);
+      // 検索を実行して変更を反映
+      setTimeout(() => handleSearch(), 0);
     } else if (key === 'dateRange') {
-      updateFilter('dateFrom', '');
-      updateFilter('dateTo', '');
+      if (dateFromRef.current) dateFromRef.current.value = '';
+      if (dateToRef.current) dateToRef.current.value = '';
+      setTimeout(() => handleSearch(), 0);
     } else if (key === 'priceRange') {
-      updateFilter('priceMin', '');
-      updateFilter('priceMax', '');
+      if (priceMinRef.current) priceMinRef.current.value = '';
+      if (priceMaxRef.current) priceMaxRef.current.value = '';
+      setTimeout(() => handleSearch(), 0);
     } else if (key === 'participantsRange') {
-      updateFilter('participantsMin', '');
-      updateFilter('participantsMax', '');
+      if (participantsMinRef.current) participantsMinRef.current.value = '';
+      if (participantsMaxRef.current) participantsMaxRef.current.value = '';
+      setTimeout(() => handleSearch(), 0);
     } else {
-      updateFilter(key as keyof FilterState, '');
+      // キーワードや場所など
+      if (key === 'keyword' && keywordRef.current) {
+        keywordRef.current.value = '';
+      } else if (key === 'location' && locationRef.current) {
+        locationRef.current.value = '';
+      }
+      setTimeout(() => handleSearch(), 0);
     }
   };
 
@@ -249,7 +308,7 @@ export function CompactFilterBar({
   return (
     <div className={`space-y-3 ${className}`}>
       {/* メインフィルターバー - モバイル最適化 */}
-      <Card className="border border-gray-200 transition-all duration-200 shadow-sm">
+      <Card className="border-b transition-all duration-200 shadow-sm">
         <CardContent className="p-3 sm:p-4">
           {/* モバイル用コンパクトレイアウト */}
           <div className="flex items-center gap-2 sm:gap-3">
@@ -257,10 +316,10 @@ export function CompactFilterBar({
             <div className="flex-1 relative min-w-0">
               <Search className="absolute left-2.5 sm:left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-400" />
               <Input
+                ref={keywordRef}
                 placeholder="撮影会を検索..."
-                value={filters.keyword}
-                onChange={e => updateFilter('keyword', e.target.value)}
-                className="pl-8 sm:pl-10 text-sm sm:text-base border-0 shadow-none focus:ring-1 focus:ring-blue-500 focus:border-transparent bg-gray-50 transition-colors"
+                defaultValue={filters.keyword}
+                className="pl-8 sm:pl-10 text-sm sm:text-base border-0 shadow-none focus:ring-1 focus:ring-blue-500 focus:border-transparent transition-colors"
               />
             </div>
 
@@ -270,7 +329,7 @@ export function CompactFilterBar({
                 <Button
                   variant="outline"
                   size="sm"
-                  className="gap-1.5 sm:gap-2 relative flex-shrink-0 px-2.5 sm:px-3 h-9 sm:h-10 text-xs sm:text-sm border-gray-300"
+                  className="gap-1.5 sm:gap-2 relative flex-shrink-0 px-2.5 sm:px-3 h-9 sm:h-10 text-xs sm:text-sm border-b"
                 >
                   <SlidersHorizontal className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   <span className="hidden xs:inline">フィルター</span>
@@ -291,13 +350,36 @@ export function CompactFilterBar({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={onClearFilters}
+                onClick={handleClearFilters}
                 className="flex-shrink-0 px-2 sm:px-2.5 h-9 sm:h-10 text-xs sm:text-sm text-gray-500"
               >
                 <X className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 <span className="hidden sm:inline ml-1">クリア</span>
               </Button>
             )}
+          </div>
+
+          {/* 空きがある撮影会のみ表示チェックボックス */}
+          <div className="mt-3 pt-3 border-t border-gray-400">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="only-available-compact"
+                checked={onlyAvailable}
+                onCheckedChange={checked => {
+                  setOnlyAvailable(checked === true);
+                  // 空きがある撮影会のみ表示は例外で即座に検索実行
+                  setTimeout(() => handleSearch(), 0);
+                }}
+                className="w-4 h-4"
+              />
+              <Label
+                htmlFor="only-available-compact"
+                className="text-sm cursor-pointer flex items-center gap-2"
+              >
+                <Users className="h-4 w-4 text-emerald-600" />
+                空きがある撮影会のみ表示
+              </Label>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -350,9 +432,9 @@ export function CompactFilterBar({
                     場所
                   </Label>
                   <Input
+                    ref={locationRef}
                     placeholder="渋谷、新宿..."
-                    value={filters.location}
-                    onChange={e => updateFilter('location', e.target.value)}
+                    defaultValue={filters.location}
                     className="text-sm"
                   />
                 </div>
@@ -364,9 +446,9 @@ export function CompactFilterBar({
                     開始日
                   </Label>
                   <Input
+                    ref={dateFromRef}
                     type="date"
-                    value={filters.dateFrom}
-                    onChange={e => updateFilter('dateFrom', e.target.value)}
+                    defaultValue={filters.dateFrom}
                     className="text-sm"
                   />
                 </div>
@@ -377,9 +459,9 @@ export function CompactFilterBar({
                     終了日
                   </Label>
                   <Input
+                    ref={dateToRef}
                     type="date"
-                    value={filters.dateTo}
-                    onChange={e => updateFilter('dateTo', e.target.value)}
+                    defaultValue={filters.dateTo}
                     className="text-sm"
                   />
                 </div>
@@ -391,10 +473,10 @@ export function CompactFilterBar({
                     最低料金
                   </Label>
                   <Input
+                    ref={priceMinRef}
                     type="number"
                     placeholder="0"
-                    value={filters.priceMin}
-                    onChange={e => updateFilter('priceMin', e.target.value)}
+                    defaultValue={filters.priceMin}
                     className="text-sm"
                   />
                 </div>
@@ -405,10 +487,10 @@ export function CompactFilterBar({
                     最高料金
                   </Label>
                   <Input
+                    ref={priceMaxRef}
                     type="number"
                     placeholder="10000"
-                    value={filters.priceMax}
-                    onChange={e => updateFilter('priceMax', e.target.value)}
+                    defaultValue={filters.priceMax}
                     className="text-sm"
                   />
                 </div>
@@ -420,12 +502,10 @@ export function CompactFilterBar({
                     最少参加者
                   </Label>
                   <Input
+                    ref={participantsMinRef}
                     type="number"
                     placeholder="1"
-                    value={filters.participantsMin}
-                    onChange={e =>
-                      updateFilter('participantsMin', e.target.value)
-                    }
+                    defaultValue={filters.participantsMin}
                     className="text-sm"
                   />
                 </div>
@@ -436,12 +516,10 @@ export function CompactFilterBar({
                     最多参加者
                   </Label>
                   <Input
+                    ref={participantsMaxRef}
                     type="number"
                     placeholder="50"
-                    value={filters.participantsMax}
-                    onChange={e =>
-                      updateFilter('participantsMax', e.target.value)
-                    }
+                    defaultValue={filters.participantsMax}
                     className="text-sm"
                   />
                 </div>
@@ -456,7 +534,7 @@ export function CompactFilterBar({
                     {Object.entries(bookingTypeLabels).map(
                       ([key, typeInfo]) => {
                         const Icon = typeInfo.icon;
-                        const isChecked = filters.bookingTypes.includes(
+                        const isChecked = bookingTypes.includes(
                           key as BookingType
                         );
                         return (
@@ -487,51 +565,29 @@ export function CompactFilterBar({
                 </div>
               </div>
 
-              {/* その他オプション */}
+              {/* 検索実行ボタン */}
               <div className="mt-4 sm:mt-6 pt-4 border-t border-blue-200">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="only-available"
-                      checked={filters.onlyAvailable}
-                      onCheckedChange={checked =>
-                        updateFilter('onlyAvailable', checked)
-                      }
-                      className="w-4 h-4"
-                    />
-                    <Label
-                      htmlFor="only-available"
-                      className="text-sm cursor-pointer flex items-center gap-2"
-                    >
-                      <Users className="h-4 w-4 text-emerald-600" />
-                      空きがある撮影会のみ表示
-                    </Label>
-                  </div>
+                <div className="flex justify-center">
+                  <Button
+                    onClick={handleSearch}
+                    disabled={isSearchLoading}
+                    className="w-full sm:w-auto"
+                    size="sm"
+                    variant="navigation"
+                  >
+                    {isSearchLoading ? (
+                      <>
+                        <div className="animate-spin-slow rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        検索中...
+                      </>
+                    ) : (
+                      <>
+                        <Search className="h-4 w-4 mr-2" />
+                        検索
+                      </>
+                    )}
+                  </Button>
                 </div>
-                {/* 検索実行ボタン */}
-                {onSearch && (
-                  <div className="mt-4 flex justify-center">
-                    <Button
-                      onClick={onSearch}
-                      disabled={isSearchLoading}
-                      className="w-full sm:w-auto"
-                      size="sm"
-                      variant="navigation"
-                    >
-                      {isSearchLoading ? (
-                        <>
-                          <div className="animate-spin-slow rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                          検索中...
-                        </>
-                      ) : (
-                        <>
-                          <Search className="h-4 w-4 mr-2" />
-                          検索
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                )}
               </div>
             </CardContent>
           </Card>
