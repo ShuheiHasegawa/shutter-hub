@@ -75,32 +75,56 @@ export function ActionBar({
   useEffect(() => {
     if (!autoHide) return;
 
-    const sentinel = document.querySelector(
-      '[data-action-bar-sentinel="true"]'
-    );
-    if (!sentinel) {
-      logger.debug(
-        'ActionBar: autoHide enabled but no ActionBarSentinel found'
+    let observer: IntersectionObserver | null = null;
+    let pollTimer: number | null = null;
+
+    const startObserve = (el: Element) => {
+      observer = new IntersectionObserver(
+        ([entry]) => {
+          logger.debug('ActionBar: sentinel visible?', {
+            isIntersecting: entry.isIntersecting,
+            ratio: entry.intersectionRatio,
+          });
+          // Sentinelが見えている = ActionBar非表示
+          // Sentinelが隠れている = ActionBar表示
+          setIsVisible(!entry.isIntersecting);
+        },
+        {
+          root: null,
+          threshold: 0.05, // 5%でも検知
+          rootMargin: '0px 0px -96px 0px', // 下部オフセット（モバイルバー考慮）
+        }
       );
-      return;
+      observer.observe(el);
+      logger.debug('ActionBar: sentinel observed');
+    };
+
+    const pollForSentinel = () => {
+      const el = document.querySelector('[data-action-bar-sentinel="true"]');
+      if (el) {
+        if (pollTimer) window.clearInterval(pollTimer);
+        startObserve(el);
+      }
+    };
+
+    // 初回即時チェック + 500ms間隔で最大5回まで再試行
+    pollForSentinel();
+    let tries = 0;
+    if (!observer) {
+      pollTimer = window.setInterval(() => {
+        if (tries++ > 5) {
+          if (pollTimer) window.clearInterval(pollTimer);
+          logger.debug('ActionBar: sentinel not found after retries');
+          return;
+        }
+        pollForSentinel();
+      }, 500);
     }
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        // Sentinelが見えている = ActionBar非表示
-        // Sentinelが隠れている = ActionBar表示
-        setIsVisible(!entry.isIntersecting);
-      },
-      {
-        root: null,
-        threshold: 0.1, // 10%見えたら判定
-        rootMargin: '0px 0px -50px 0px', // 下部50px手前で切り替え（スムーズな体験）
-      }
-    );
-
-    observer.observe(sentinel);
-
-    return () => observer.disconnect();
+    return () => {
+      if (observer) observer.disconnect();
+      if (pollTimer) window.clearInterval(pollTimer);
+    };
   }, [autoHide]);
 
   // autoHide有効時はopacityとpointer-eventsで制御（フェード効果のため）
