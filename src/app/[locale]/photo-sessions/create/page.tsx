@@ -4,11 +4,7 @@ import { AuthenticatedLayout } from '@/components/layout/authenticated-layout';
 export default function CreatePhotoSessionPage() {
   return (
     <AuthenticatedLayout>
-      <div className="space-y-6">
-        <div className="max-w-2xl">
-          <PhotoSessionForm />
-        </div>
-      </div>
+      <PhotoSessionForm />
     </AuthenticatedLayout>
   );
 }

@@ -48,13 +48,14 @@ export default function PhotoSessionsPage() {
   useEffect(() => {
     setIsMounted(true);
 
-    // 画面サイズに応じた初期設定
+    // PC版（XL画面以上）ではサイドバーを常に開く
+    // モバイル版（XL画面未満）では閉じる（オーバーレイ表示のため）
     const handleResize = () => {
       if (window.innerWidth >= 1280) {
-        // XL画面以上：サイドバーを開く
+        // XL画面以上：サイドバーを常に開く（PC版では開閉不可）
         setSidebarOpen(true);
       } else {
-        // XL画面未満：サイドバーを閉じる
+        // XL画面未満：サイドバーを閉じる（モバイル版はオーバーレイで開閉可能）
         setSidebarOpen(false);
       }
     };
@@ -62,7 +63,7 @@ export default function PhotoSessionsPage() {
     // 初回設定
     handleResize();
 
-    // リサイズイベントリスナー
+    // リサイズイベントリスナー（モバイル→PC遷移時のみサイドバーを開く）
     window.addEventListener('resize', handleResize);
 
     return () => window.removeEventListener('resize', handleResize);
@@ -111,14 +112,14 @@ export default function PhotoSessionsPage() {
 
   return (
     <AuthenticatedLayout>
-      <div>
+      <div className="flex flex-col h-full">
         <PageTitleHeader
           title="撮影会一覧"
           icon={<CameraIcon className="h-6 w-6" />}
         />
 
         {/* スマホ・タブレット用コンパクトフィルター（XL画面未満のみ） */}
-        <div className="xl:hidden">
+        <div className="xl:hidden flex-shrink-0">
           <CompactFilterBar
             filters={filters}
             onFiltersChange={setFilters}
@@ -129,26 +130,19 @@ export default function PhotoSessionsPage() {
         </div>
 
         {/* メインコンテンツ */}
-        <div
-          className={`transition-all duration-500 ease-in-out ${
-            sidebarOpen ? 'xl:grid xl:grid-cols-[320px,1fr] xl:gap-6' : 'w-full'
-          }`}
-        >
-          {/* デスクトップサイドバー（XL画面以上のみ） */}
-          {sidebarOpen && (
-            <aside className="hidden xl:block">
-              <div className="sticky top-6">
-                {/* フィルターヘッダー */}
-                <PhotoSessionsSidebar
-                  filters={filters}
-                  onFiltersChange={setFilters}
-                  onClearFilters={clearFilters}
-                  onSearch={handleSearch}
-                  isSearchLoading={isSearchLoading}
-                />
-              </div>
-            </aside>
-          )}
+        <div className="flex-1 min-h-0 xl:grid xl:grid-cols-[320px,1fr] xl:gap-6">
+          {/* デスクトップサイドバー（XL画面以上：常に表示） */}
+          <aside className="hidden xl:block">
+            <div className="sticky top-6 max-h-[calc(100vh-3rem)] overflow-y-auto sidebar-scroll">
+              <PhotoSessionsSidebar
+                filters={filters}
+                onFiltersChange={setFilters}
+                onClearFilters={clearFilters}
+                onSearch={handleSearch}
+                isSearchLoading={isSearchLoading}
+              />
+            </div>
+          </aside>
 
           {/* モバイル・タブレットサイドバー（XL画面未満でのオーバーレイ） */}
           {sidebarOpen && (
@@ -187,15 +181,7 @@ export default function PhotoSessionsPage() {
           )}
 
           {/* メインコンテンツエリア */}
-          <main
-            className={`min-w-0 transition-all duration-500 ease-in-out ${
-              sidebarOpen &&
-              typeof window !== 'undefined' &&
-              window.innerWidth >= 1280
-                ? 'flex-1'
-                : 'w-full max-w-none'
-            }`}
-          >
+          <main className="min-w-0 flex flex-col flex-1 min-h-0 overflow-hidden">
             <Suspense
               fallback={
                 <div className="flex justify-center items-center h-32">
