@@ -11,7 +11,7 @@ import { UserProfileDisplay } from '@/components/ui/user-profile-display';
 import {
   ActionBar,
   ActionBarButton,
-  ActionBarSpacer,
+  ActionBarSentinel,
 } from '@/components/ui/action-bar';
 import {
   CalendarIcon,
@@ -345,9 +345,8 @@ export function PhotoSessionDetail({
                 {/* Googleカレンダー追加ボタン */}
                 <Button
                   variant="navigation"
-                  size="default"
                   onClick={handleAddToGoogleCalendar}
-                  className="flex items-center gap-2 px-4 py-2"
+                  className="flex items-center gap-2"
                 >
                   <CalendarPlus className="h-4 w-4" />
                   <span className="text-sm">カレンダーに追加</span>
@@ -366,9 +365,8 @@ export function PhotoSessionDetail({
                 {/* Googleカレンダー追加ボタン */}
                 <Button
                   variant="navigation"
-                  size="sm"
                   onClick={handleAddToGoogleCalendar}
-                  className="flex items-center gap-2 mr-2"
+                  className="flex items-center gap-2"
                 >
                   <CalendarPlus className="h-4 w-4" />
                   <span>カレンダーに追加</span>
@@ -499,9 +497,8 @@ export function PhotoSessionDetail({
                 {/* Googleカレンダー追加ボタン */}
                 <Button
                   variant="navigation"
-                  size="default"
                   onClick={handleAddToGoogleCalendar}
-                  className="flex items-center gap-2 px-4 py-2"
+                  className="flex items-center gap-2"
                 >
                   <CalendarPlus className="h-4 w-4" />
                   <span className="text-sm">カレンダーに追加</span>
@@ -520,9 +517,8 @@ export function PhotoSessionDetail({
                 {/* Googleカレンダー追加ボタン */}
                 <Button
                   variant="navigation"
-                  size="default"
                   onClick={handleAddToGoogleCalendar}
-                  className="flex items-center gap-2 px-4 py-2"
+                  className="flex items-center gap-2"
                 >
                   <CalendarPlus className="h-4 w-4" />
                   <span className="text-sm">カレンダーに追加</span>
@@ -821,8 +817,21 @@ export function PhotoSessionDetail({
         </>
       )}
 
-      {/* 固定フッターがある場合のスペーサー */}
-      {!isOrganizer && user && <ActionBarSpacer />}
+      {/* ページ下部のインラインCTA（最下部でのみ表示） */}
+      {hasSlots && !isOrganizer && user && (
+        <ActionBarSentinel className="pt-4">
+          <Button
+            variant="accent"
+            className="text-base font-medium w-full transition-colors"
+            onClick={() => {
+              router.push(`?step=select`, { scroll: false });
+            }}
+            disabled={bookingLoading || !canBook}
+          >
+            {bookingLoading ? '確認中...' : '時間枠を選択'}
+          </Button>
+        </ActionBarSentinel>
+      )}
 
       {/* 固定フッターアクションバー */}
       {!isOrganizer && user && (
@@ -830,6 +839,7 @@ export function PhotoSessionDetail({
           actions={getActionBarButtons()}
           maxColumns={1}
           background="blur"
+          autoHide={true}
         />
       )}
     </div>
