@@ -56,7 +56,7 @@ export function PageTitleHeader({
         {/* タイトル部分 */}
         <div className="flex-1">
           <h1 className="text-lg font-bold flex items-center">
-            {icon}
+            {icon}&nbsp;&nbsp;
             {title}
           </h1>
           {description && (
