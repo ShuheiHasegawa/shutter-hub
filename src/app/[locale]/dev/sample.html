@@ -1,0 +1,2110 @@
+<body
+  class="__variable_f367f3 __variable_6a169b font-sans antialiased"
+  cz-shortcut-listen="true"
+>
+  <script>
+    ((e, i, s, u, m, a, l, h) => {
+      let d = document.documentElement,
+        w = ['light', 'dark'];
+      function p(n) {
+        (Array.isArray(e) ? e : [e]).forEach(y => {
+          let k = y === 'class',
+            S = k && a ? m.map(f => a[f] || f) : m;
+          k
+            ? (d.classList.remove(...S), d.classList.add(a && a[n] ? a[n] : n))
+            : d.setAttribute(y, n);
+        }),
+          R(n);
+      }
+      function R(n) {
+        h && w.includes(n) && (d.style.colorScheme = n);
+      }
+      function c() {
+        return window.matchMedia('(prefers-color-scheme: dark)').matches
+          ? 'dark'
+          : 'light';
+      }
+      if (u) p(u);
+      else
+        try {
+          let n = localStorage.getItem(i) || s,
+            y = l && n === 'system' ? c() : n;
+          p(y);
+        } catch (n) {}
+    })('class', 'theme', 'system', null, ['light', 'dark'], null, true, true);
+  </script>
+  <div class="bg-background">
+    <div class="border-b bg-muted/50">
+      <div class="container">
+        <div class="flex items-center justify-between py-3">
+          <div class="flex items-center gap-4">
+            <a href="/ja"
+              ><button
+                class="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 hover:bg-accent hover:text-accent-foreground h-8 rounded-md px-3 text-xs"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="lucide lucide-house h-4 w-4 mr-2"
+                  aria-hidden="true"
+                >
+                  <path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"></path>
+                  <path
+                    d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
+                  ></path></svg
+                >ホーム
+              </button></a
+            ><a href="/ja/dev"
+              ><button
+                class="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 hover:bg-accent hover:text-accent-foreground h-8 rounded-md px-3 text-xs"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="lucide lucide-arrow-left h-4 w-4 mr-2"
+                  aria-hidden="true"
+                >
+                  <path d="m12 19-7-7 7-7"></path>
+                  <path d="M19 12H5"></path></svg
+                >開発ツール一覧
+              </button></a
+            >
+          </div>
+          <div class="flex items-center gap-2">
+            <div
+              class="inline-flex items-center rounded-md border px-2.5 py-0.5 font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 text-foreground text-xs"
+            >
+              開発ツール
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="min-h-screen flex flex-col">
+      <header
+        class="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+      >
+        <div class="container mx-auto px-4">
+          <div class="flex h-16 items-center justify-between">
+            <a
+              class="flex items-center gap-2 hover:opacity-80 transition-opacity"
+              href="/ja"
+              ><svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="lucide lucide-camera h-8 w-8 brand-primary"
+                aria-hidden="true"
+              >
+                <path
+                  d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"
+                ></path>
+                <circle cx="12" cy="13" r="3"></circle></svg
+              ><span class="text-xl font-bold brand-primary"
+                >ShutterHub</span
+              ></a
+            >
+            <nav class="hidden md:flex items-center gap-6">
+              <a
+                class="relative inline-flex items-center gap-2 duration-300 text-muted-foreground hover:text-foreground px-4 py-1 rounded-lg before:absolute before:left-1 before:top-1/2 before:-translate-y-1/2 before:w-0.5 before:h-4 before:bg-brand-primary before:transform before:scale-y-0 before:origin-center before:transition-transform before:duration-300 before:ease-out before:rounded-full hover:before:scale-y-100 hover:bg-muted/30 text-sm font-medium transition-colors"
+                href="/ja"
+                >ホーム</a
+              ><a
+                class="relative inline-flex items-center gap-2 duration-300 text-muted-foreground hover:text-foreground px-4 py-1 rounded-lg before:absolute before:left-1 before:top-1/2 before:-translate-y-1/2 before:w-0.5 before:h-4 before:bg-brand-primary before:transform before:scale-y-0 before:origin-center before:transition-transform before:duration-300 before:ease-out before:rounded-full hover:before:scale-y-100 hover:bg-muted/30 text-sm font-medium transition-colors"
+                href="/ja/instant"
+                >即座撮影</a
+              ><a
+                class="relative inline-flex items-center gap-2 duration-300 text-muted-foreground hover:text-foreground px-4 py-1 rounded-lg before:absolute before:left-1 before:top-1/2 before:-translate-y-1/2 before:w-0.5 before:h-4 before:bg-brand-primary before:transform before:scale-y-0 before:origin-center before:transition-transform before:duration-300 before:ease-out before:rounded-full hover:before:scale-y-100 hover:bg-muted/30 text-sm font-medium transition-colors"
+                href="/ja/dashboard"
+                >ダッシュボード</a
+              >
+            </nav>
+            <div class="flex items-center gap-2">
+              <button
+                class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 hover:bg-accent hover:text-accent-foreground h-9 w-9"
+                type="button"
+                id="radix-«r0»"
+                aria-haspopup="menu"
+                aria-expanded="false"
+                data-state="closed"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="lucide lucide-palette h-4 w-4"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z"
+                  ></path>
+                  <circle
+                    cx="13.5"
+                    cy="6.5"
+                    r=".5"
+                    fill="currentColor"
+                  ></circle>
+                  <circle
+                    cx="17.5"
+                    cy="10.5"
+                    r=".5"
+                    fill="currentColor"
+                  ></circle>
+                  <circle
+                    cx="6.5"
+                    cy="12.5"
+                    r=".5"
+                    fill="currentColor"
+                  ></circle>
+                  <circle
+                    cx="8.5"
+                    cy="7.5"
+                    r=".5"
+                    fill="currentColor"
+                  ></circle></svg
+                ><span class="sr-only">テーマ選択</span></button
+              ><button
+                class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-9 w-9"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="lucide lucide-sun h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"
+                  aria-hidden="true"
+                >
+                  <circle cx="12" cy="12" r="4"></circle>
+                  <path d="M12 2v2"></path>
+                  <path d="M12 20v2"></path>
+                  <path d="m4.93 4.93 1.41 1.41"></path>
+                  <path d="m17.66 17.66 1.41 1.41"></path>
+                  <path d="M2 12h2"></path>
+                  <path d="M20 12h2"></path>
+                  <path d="m6.34 17.66-1.41 1.41"></path>
+                  <path d="m19.07 4.93-1.41 1.41"></path></svg
+                ><svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="lucide lucide-moon absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100"
+                  aria-hidden="true"
+                >
+                  <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg
+                ><span class="sr-only">テーマを切り替え</span></button
+              ><button
+                class="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 hover:bg-accent hover:text-accent-foreground px-3 text-xs relative h-8 w-8 rounded-full ml-2"
+                type="button"
+                id="radix-«r2»"
+                aria-haspopup="menu"
+                aria-expanded="false"
+                data-state="closed"
+              >
+                <span
+                  class="relative flex shrink-0 overflow-hidden rounded-full h-8 w-8"
+                  ><img
+                    class="aspect-square h-full w-full"
+                    alt="小日向ゆか"
+                    src="https://qkzdiuqhnflporlvfnks.supabase.co/storage/v1/object/public/user-storage/bd4ddf07-8ca3-4df2-8b2d-849209daea22/profile/avatar.jpg"
+                /></span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+      <main class="flex-1">
+        <section class="py-24 surface-primary">
+          <div class="container">
+            <div class="text-center space-y-4">
+              <div class="flex items-center justify-center gap-3 mb-6">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="lucide lucide-star h-8 w-8"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"
+                  ></path>
+                </svg>
+                <h1 class="text-4xl md:text-5xl font-bold">
+                  レビューフォームモック
+                </h1>
+              </div>
+              <p class="text-xl opacity-80 max-w-2xl mx-auto">
+                3段階評価UI（良い、普通、悪い）の動作確認とデザイン検証
+              </p>
+            </div>
+          </div>
+        </section>
+        <section
+          class="py-8 bg-blue-50 dark:bg-blue-900/20 border-y border-blue-200 dark:border-blue-800"
+        >
+          <div class="container">
+            <div class="max-w-4xl mx-auto">
+              <div class="flex items-start gap-3">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="lucide lucide-star h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"
+                  ></path>
+                </svg>
+                <div>
+                  <h3
+                    class="font-semibold text-blue-800 dark:text-blue-200 mb-1"
+                  >
+                    レビューフォームモックについて
+                  </h3>
+                  <p class="text-sm text-blue-700 dark:text-blue-300">
+                    メルカリ風の3段階評価UI（良い👍、普通➖、悪い👎）の動作確認とデザイン検証を行います。
+                    総合評価は必須、詳細評価は任意として実装されています。
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section class="py-16 bg-background">
+          <div class="container max-w-4xl space-y-12">
+            <div
+              class="rounded-lg border bg-card text-card-foreground shadow-sm hover:shadow-lg transition-shadow duration-300"
+            >
+              <div class="flex flex-col space-y-1.5 p-6">
+                <div
+                  class="font-semibold leading-none tracking-tight flex items-center gap-2"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="lucide lucide-star h-5 w-5"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"
+                    ></path></svg
+                  >撮影会レビューフォーム
+                </div>
+              </div>
+              <div class="p-6 pt-0">
+                <form class="space-y-6">
+                  <div>
+                    <div class="space-y-2">
+                      <label class="text-sm font-medium"
+                        >総合評価<span class="text-red-500 ml-1">*</span></label
+                      >
+                      <div class="flex gap-3">
+                        <button
+                          type="button"
+                          class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-4 py-3 text-base border-2 border-border bg-background text-muted-foreground hover:bg-primary/5 hover:border-primary/50 hover:text-primary/80 dark:hover:bg-primary/10 dark:hover:border-primary/70"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="lucide lucide-thumbs-up h-5 w-5"
+                            aria-hidden="true"
+                          >
+                            <path d="M7 10v12"></path>
+                            <path
+                              d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"
+                            ></path></svg
+                          ><span>良い</span></button
+                        ><button
+                          type="button"
+                          class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-4 py-3 text-base border-2 border-border bg-background text-muted-foreground hover:bg-primary/5 hover:border-primary/50 hover:text-primary/80 dark:hover:bg-primary/10 dark:hover:border-primary/70"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="lucide lucide-minus h-5 w-5"
+                            aria-hidden="true"
+                          >
+                            <path d="M5 12h14"></path></svg
+                          ><span>普通</span></button
+                        ><button
+                          type="button"
+                          class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-4 py-3 text-base border-2 border-border bg-background text-muted-foreground hover:bg-primary/5 hover:border-primary/50 hover:text-primary/80 dark:hover:bg-primary/10 dark:hover:border-primary/70"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="lucide lucide-thumbs-down h-5 w-5"
+                            aria-hidden="true"
+                          >
+                            <path d="M17 14V2"></path>
+                            <path
+                              d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z"
+                            ></path></svg
+                          ><span>悪い</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    data-orientation="horizontal"
+                    role="none"
+                    class="shrink-0 bg-border h-[1px] w-full"
+                  ></div>
+                  <div class="space-y-4">
+                    <h3 class="text-lg font-medium">詳細評価（任意）</h3>
+                    <div class="space-y-4">
+                      <div class="space-y-2">
+                        <label class="text-sm font-medium">運営</label>
+                        <div class="flex gap-2">
+                          <button
+                            type="button"
+                            class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-3 py-2 text-sm border-2 border-border bg-background text-muted-foreground hover:bg-primary/5 hover:border-primary/50 hover:text-primary/80 dark:hover:bg-primary/10 dark:hover:border-primary/70"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              class="lucide lucide-thumbs-up h-4 w-4"
+                              aria-hidden="true"
+                            >
+                              <path d="M7 10v12"></path>
+                              <path
+                                d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"
+                              ></path></svg
+                            ><span>良い</span></button
+                          ><button
+                            type="button"
+                            class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-3 py-2 text-sm border-2 border-border bg-background text-muted-foreground hover:bg-primary/5 hover:border-primary/50 hover:text-primary/80 dark:hover:bg-primary/10 dark:hover:border-primary/70"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              class="lucide lucide-minus h-4 w-4"
+                              aria-hidden="true"
+                            >
+                              <path d="M5 12h14"></path></svg
+                            ><span>普通</span></button
+                          ><button
+                            type="button"
+                            class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-3 py-2 text-sm border-2 border-border bg-background text-muted-foreground hover:bg-primary/5 hover:border-primary/50 hover:text-primary/80 dark:hover:bg-primary/10 dark:hover:border-primary/70"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              class="lucide lucide-thumbs-down h-4 w-4"
+                              aria-hidden="true"
+                            >
+                              <path d="M17 14V2"></path>
+                              <path
+                                d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z"
+                              ></path></svg
+                            ><span>悪い</span>
+                          </button>
+                        </div>
+                      </div>
+                      <div class="space-y-2">
+                        <label class="text-sm font-medium"
+                          >コミュニケーション</label
+                        >
+                        <div class="flex gap-2">
+                          <button
+                            type="button"
+                            class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-3 py-2 text-sm border-2 border-border bg-background text-muted-foreground hover:bg-primary/5 hover:border-primary/50 hover:text-primary/80 dark:hover:bg-primary/10 dark:hover:border-primary/70"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              class="lucide lucide-thumbs-up h-4 w-4"
+                              aria-hidden="true"
+                            >
+                              <path d="M7 10v12"></path>
+                              <path
+                                d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"
+                              ></path></svg
+                            ><span>良い</span></button
+                          ><button
+                            type="button"
+                            class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-3 py-2 text-sm border-2 border-border bg-background text-muted-foreground hover:bg-primary/5 hover:border-primary/50 hover:text-primary/80 dark:hover:bg-primary/10 dark:hover:border-primary/70"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              class="lucide lucide-minus h-4 w-4"
+                              aria-hidden="true"
+                            >
+                              <path d="M5 12h14"></path></svg
+                            ><span>普通</span></button
+                          ><button
+                            type="button"
+                            class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-3 py-2 text-sm border-2 border-border bg-background text-muted-foreground hover:bg-primary/5 hover:border-primary/50 hover:text-primary/80 dark:hover:bg-primary/10 dark:hover:border-primary/70"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              class="lucide lucide-thumbs-down h-4 w-4"
+                              aria-hidden="true"
+                            >
+                              <path d="M17 14V2"></path>
+                              <path
+                                d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z"
+                              ></path></svg
+                            ><span>悪い</span>
+                          </button>
+                        </div>
+                      </div>
+                      <div class="space-y-2">
+                        <label class="text-sm font-medium"
+                          >コストパフォーマンス</label
+                        >
+                        <div class="flex gap-2">
+                          <button
+                            type="button"
+                            class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-3 py-2 text-sm border-2 border-border bg-background text-muted-foreground hover:bg-primary/5 hover:border-primary/50 hover:text-primary/80 dark:hover:bg-primary/10 dark:hover:border-primary/70"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              class="lucide lucide-thumbs-up h-4 w-4"
+                              aria-hidden="true"
+                            >
+                              <path d="M7 10v12"></path>
+                              <path
+                                d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"
+                              ></path></svg
+                            ><span>良い</span></button
+                          ><button
+                            type="button"
+                            class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-3 py-2 text-sm border-2 border-border bg-background text-muted-foreground hover:bg-primary/5 hover:border-primary/50 hover:text-primary/80 dark:hover:bg-primary/10 dark:hover:border-primary/70"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              class="lucide lucide-minus h-4 w-4"
+                              aria-hidden="true"
+                            >
+                              <path d="M5 12h14"></path></svg
+                            ><span>普通</span></button
+                          ><button
+                            type="button"
+                            class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-3 py-2 text-sm border-2 border-border bg-background text-muted-foreground hover:bg-primary/5 hover:border-primary/50 hover:text-primary/80 dark:hover:bg-primary/10 dark:hover:border-primary/70"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              class="lucide lucide-thumbs-down h-4 w-4"
+                              aria-hidden="true"
+                            >
+                              <path d="M17 14V2"></path>
+                              <path
+                                d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z"
+                              ></path></svg
+                            ><span>悪い</span>
+                          </button>
+                        </div>
+                      </div>
+                      <div class="space-y-2">
+                        <label class="text-sm font-medium">会場</label>
+                        <div class="flex gap-2">
+                          <button
+                            type="button"
+                            class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-3 py-2 text-sm border-2 border-border bg-background text-muted-foreground hover:bg-primary/5 hover:border-primary/50 hover:text-primary/80 dark:hover:bg-primary/10 dark:hover:border-primary/70"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              class="lucide lucide-thumbs-up h-4 w-4"
+                              aria-hidden="true"
+                            >
+                              <path d="M7 10v12"></path>
+                              <path
+                                d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"
+                              ></path></svg
+                            ><span>良い</span></button
+                          ><button
+                            type="button"
+                            class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-3 py-2 text-sm border-2 border-border bg-background text-muted-foreground hover:bg-primary/5 hover:border-primary/50 hover:text-primary/80 dark:hover:bg-primary/10 dark:hover:border-primary/70"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              class="lucide lucide-minus h-4 w-4"
+                              aria-hidden="true"
+                            >
+                              <path d="M5 12h14"></path></svg
+                            ><span>普通</span></button
+                          ><button
+                            type="button"
+                            class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-3 py-2 text-sm border-2 border-border bg-background text-muted-foreground hover:bg-primary/5 hover:border-primary/50 hover:text-primary/80 dark:hover:bg-primary/10 dark:hover:border-primary/70"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              class="lucide lucide-thumbs-down h-4 w-4"
+                              aria-hidden="true"
+                            >
+                              <path d="M17 14V2"></path>
+                              <path
+                                d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z"
+                              ></path></svg
+                            ><span>悪い</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    data-orientation="horizontal"
+                    role="none"
+                    class="shrink-0 bg-border h-[1px] w-full"
+                  ></div>
+                  <div class="space-y-4">
+                    <h3 class="text-lg font-medium">レビュー内容</h3>
+                    <div>
+                      <label class="block text-sm font-medium mb-2"
+                        >レビュー本文</label
+                      ><textarea
+                        class="flex min-h-[60px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                        placeholder="撮影会の感想を入力してください..."
+                        rows="4"
+                      ></textarea>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label class="block text-sm font-medium mb-2"
+                          >良い点</label
+                        ><textarea
+                          class="flex min-h-[60px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                          placeholder="良かった点を入力してください..."
+                          rows="3"
+                        ></textarea>
+                      </div>
+                      <div>
+                        <label class="block text-sm font-medium mb-2"
+                          >改善点</label
+                        ><textarea
+                          class="flex min-h-[60px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                          placeholder="改善してほしい点を入力してください..."
+                          rows="3"
+                        ></textarea>
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    data-orientation="horizontal"
+                    role="none"
+                    class="shrink-0 bg-border h-[1px] w-full"
+                  ></div>
+                  <div class="flex items-center space-x-2">
+                    <button
+                      type="button"
+                      role="checkbox"
+                      aria-checked="false"
+                      data-state="unchecked"
+                      value="on"
+                      class="peer h-4 w-4 shrink-0 rounded-sm border border-primary shadow focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+                      id="session-anonymous"
+                    ></button
+                    ><input
+                      type="checkbox"
+                      aria-hidden="true"
+                      tabindex="-1"
+                      style="
+                        position: absolute;
+                        pointer-events: none;
+                        opacity: 0;
+                        margin: 0px;
+                        transform: translateX(-100%);
+                        width: 16px;
+                        height: 16px;
+                      "
+                      value="on"
+                    /><label
+                      for="session-anonymous"
+                      class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >匿名でレビューを投稿する</label
+                    >
+                  </div>
+                  <div class="flex justify-end gap-2">
+                    <button
+                      class="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-8 rounded-md px-3 text-xs"
+                      type="button"
+                    >
+                      キャンセル</button
+                    ><button
+                      class="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 surface-accent hover:brightness-110 hover:scale-[1.02] h-8 rounded-md px-3 text-xs"
+                      type="submit"
+                      disabled=""
+                    >
+                      レビューを送信
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+            <div
+              class="rounded-lg border bg-card text-card-foreground shadow-sm hover:shadow-lg transition-shadow duration-300"
+            >
+              <div class="flex flex-col space-y-1.5 p-6">
+                <div
+                  class="font-semibold leading-none tracking-tight flex items-center gap-2"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="lucide lucide-user h-5 w-5"
+                    aria-hidden="true"
+                  >
+                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle></svg
+                  >ユーザーレビューフォーム
+                </div>
+              </div>
+              <div class="p-6 pt-0">
+                <form class="space-y-6">
+                  <div>
+                    <div class="space-y-2">
+                      <label class="text-sm font-medium"
+                        >総合評価<span class="text-red-500 ml-1">*</span></label
+                      >
+                      <div class="flex gap-3">
+                        <button
+                          type="button"
+                          class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-4 py-3 text-base border-2 border-border bg-background text-muted-foreground hover:bg-primary/5 hover:border-primary/50 hover:text-primary/80 dark:hover:bg-primary/10 dark:hover:border-primary/70"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="lucide lucide-thumbs-up h-5 w-5"
+                            aria-hidden="true"
+                          >
+                            <path d="M7 10v12"></path>
+                            <path
+                              d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"
+                            ></path></svg
+                          ><span>良い</span></button
+                        ><button
+                          type="button"
+                          class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-4 py-3 text-base border-2 border-border bg-background text-muted-foreground hover:bg-primary/5 hover:border-primary/50 hover:text-primary/80 dark:hover:bg-primary/10 dark:hover:border-primary/70"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="lucide lucide-minus h-5 w-5"
+                            aria-hidden="true"
+                          >
+                            <path d="M5 12h14"></path></svg
+                          ><span>普通</span></button
+                        ><button
+                          type="button"
+                          class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-4 py-3 text-base border-2 border-border bg-background text-muted-foreground hover:bg-primary/5 hover:border-primary/50 hover:text-primary/80 dark:hover:bg-primary/10 dark:hover:border-primary/70"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="lucide lucide-thumbs-down h-5 w-5"
+                            aria-hidden="true"
+                          >
+                            <path d="M17 14V2"></path>
+                            <path
+                              d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z"
+                            ></path></svg
+                          ><span>悪い</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    data-orientation="horizontal"
+                    role="none"
+                    class="shrink-0 bg-border h-[1px] w-full"
+                  ></div>
+                  <div class="space-y-4">
+                    <h3 class="text-lg font-medium">詳細評価（任意）</h3>
+                    <div class="space-y-4">
+                      <div class="space-y-2">
+                        <label class="text-sm font-medium">時間厳守</label>
+                        <div class="flex gap-2">
+                          <button
+                            type="button"
+                            class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-3 py-2 text-sm border-2 border-border bg-background text-muted-foreground hover:bg-primary/5 hover:border-primary/50 hover:text-primary/80 dark:hover:bg-primary/10 dark:hover:border-primary/70"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              class="lucide lucide-thumbs-up h-4 w-4"
+                              aria-hidden="true"
+                            >
+                              <path d="M7 10v12"></path>
+                              <path
+                                d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"
+                              ></path></svg
+                            ><span>良い</span></button
+                          ><button
+                            type="button"
+                            class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-3 py-2 text-sm border-2 border-border bg-background text-muted-foreground hover:bg-primary/5 hover:border-primary/50 hover:text-primary/80 dark:hover:bg-primary/10 dark:hover:border-primary/70"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              class="lucide lucide-minus h-4 w-4"
+                              aria-hidden="true"
+                            >
+                              <path d="M5 12h14"></path></svg
+                            ><span>普通</span></button
+                          ><button
+                            type="button"
+                            class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-3 py-2 text-sm border-2 border-border bg-background text-muted-foreground hover:bg-primary/5 hover:border-primary/50 hover:text-primary/80 dark:hover:bg-primary/10 dark:hover:border-primary/70"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              class="lucide lucide-thumbs-down h-4 w-4"
+                              aria-hidden="true"
+                            >
+                              <path d="M17 14V2"></path>
+                              <path
+                                d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z"
+                              ></path></svg
+                            ><span>悪い</span>
+                          </button>
+                        </div>
+                      </div>
+                      <div class="space-y-2">
+                        <label class="text-sm font-medium"
+                          >コミュニケーション</label
+                        >
+                        <div class="flex gap-2">
+                          <button
+                            type="button"
+                            class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-3 py-2 text-sm border-2 border-border bg-background text-muted-foreground hover:bg-primary/5 hover:border-primary/50 hover:text-primary/80 dark:hover:bg-primary/10 dark:hover:border-primary/70"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              class="lucide lucide-thumbs-up h-4 w-4"
+                              aria-hidden="true"
+                            >
+                              <path d="M7 10v12"></path>
+                              <path
+                                d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"
+                              ></path></svg
+                            ><span>良い</span></button
+                          ><button
+                            type="button"
+                            class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-3 py-2 text-sm border-2 border-border bg-background text-muted-foreground hover:bg-primary/5 hover:border-primary/50 hover:text-primary/80 dark:hover:bg-primary/10 dark:hover:border-primary/70"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              class="lucide lucide-minus h-4 w-4"
+                              aria-hidden="true"
+                            >
+                              <path d="M5 12h14"></path></svg
+                            ><span>普通</span></button
+                          ><button
+                            type="button"
+                            class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-3 py-2 text-sm border-2 border-border bg-background text-muted-foreground hover:bg-primary/5 hover:border-primary/50 hover:text-primary/80 dark:hover:bg-primary/10 dark:hover:border-primary/70"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              class="lucide lucide-thumbs-down h-4 w-4"
+                              aria-hidden="true"
+                            >
+                              <path d="M17 14V2"></path>
+                              <path
+                                d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z"
+                              ></path></svg
+                            ><span>悪い</span>
+                          </button>
+                        </div>
+                      </div>
+                      <div class="space-y-2">
+                        <label class="text-sm font-medium"
+                          >プロフェッショナル性</label
+                        >
+                        <div class="flex gap-2">
+                          <button
+                            type="button"
+                            class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-3 py-2 text-sm border-2 border-border bg-background text-muted-foreground hover:bg-primary/5 hover:border-primary/50 hover:text-primary/80 dark:hover:bg-primary/10 dark:hover:border-primary/70"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              class="lucide lucide-thumbs-up h-4 w-4"
+                              aria-hidden="true"
+                            >
+                              <path d="M7 10v12"></path>
+                              <path
+                                d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"
+                              ></path></svg
+                            ><span>良い</span></button
+                          ><button
+                            type="button"
+                            class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-3 py-2 text-sm border-2 border-border bg-background text-muted-foreground hover:bg-primary/5 hover:border-primary/50 hover:text-primary/80 dark:hover:bg-primary/10 dark:hover:border-primary/70"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              class="lucide lucide-minus h-4 w-4"
+                              aria-hidden="true"
+                            >
+                              <path d="M5 12h14"></path></svg
+                            ><span>普通</span></button
+                          ><button
+                            type="button"
+                            class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-3 py-2 text-sm border-2 border-border bg-background text-muted-foreground hover:bg-primary/5 hover:border-primary/50 hover:text-primary/80 dark:hover:bg-primary/10 dark:hover:border-primary/70"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              class="lucide lucide-thumbs-down h-4 w-4"
+                              aria-hidden="true"
+                            >
+                              <path d="M17 14V2"></path>
+                              <path
+                                d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z"
+                              ></path></svg
+                            ><span>悪い</span>
+                          </button>
+                        </div>
+                      </div>
+                      <div class="space-y-2">
+                        <label class="text-sm font-medium">協調性</label>
+                        <div class="flex gap-2">
+                          <button
+                            type="button"
+                            class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-3 py-2 text-sm border-2 border-border bg-background text-muted-foreground hover:bg-primary/5 hover:border-primary/50 hover:text-primary/80 dark:hover:bg-primary/10 dark:hover:border-primary/70"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              class="lucide lucide-thumbs-up h-4 w-4"
+                              aria-hidden="true"
+                            >
+                              <path d="M7 10v12"></path>
+                              <path
+                                d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"
+                              ></path></svg
+                            ><span>良い</span></button
+                          ><button
+                            type="button"
+                            class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-3 py-2 text-sm border-2 border-border bg-background text-muted-foreground hover:bg-primary/5 hover:border-primary/50 hover:text-primary/80 dark:hover:bg-primary/10 dark:hover:border-primary/70"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              class="lucide lucide-minus h-4 w-4"
+                              aria-hidden="true"
+                            >
+                              <path d="M5 12h14"></path></svg
+                            ><span>普通</span></button
+                          ><button
+                            type="button"
+                            class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-3 py-2 text-sm border-2 border-border bg-background text-muted-foreground hover:bg-primary/5 hover:border-primary/50 hover:text-primary/80 dark:hover:bg-primary/10 dark:hover:border-primary/70"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              class="lucide lucide-thumbs-down h-4 w-4"
+                              aria-hidden="true"
+                            >
+                              <path d="M17 14V2"></path>
+                              <path
+                                d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z"
+                              ></path></svg
+                            ><span>悪い</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    data-orientation="horizontal"
+                    role="none"
+                    class="shrink-0 bg-border h-[1px] w-full"
+                  ></div>
+                  <div class="space-y-4">
+                    <h3 class="text-lg font-medium">レビュー内容</h3>
+                    <div>
+                      <label class="block text-sm font-medium mb-2"
+                        >レビュー本文</label
+                      ><textarea
+                        class="flex min-h-[60px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                        placeholder="ユーザーについての感想を入力してください..."
+                        rows="4"
+                      ></textarea>
+                    </div>
+                  </div>
+                  <div
+                    data-orientation="horizontal"
+                    role="none"
+                    class="shrink-0 bg-border h-[1px] w-full"
+                  ></div>
+                  <div class="flex items-center space-x-2">
+                    <button
+                      type="button"
+                      role="checkbox"
+                      aria-checked="false"
+                      data-state="unchecked"
+                      value="on"
+                      class="peer h-4 w-4 shrink-0 rounded-sm border border-primary shadow focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+                      id="user-anonymous"
+                    ></button
+                    ><input
+                      type="checkbox"
+                      aria-hidden="true"
+                      tabindex="-1"
+                      style="
+                        position: absolute;
+                        pointer-events: none;
+                        opacity: 0;
+                        margin: 0px;
+                        transform: translateX(-100%);
+                        width: 16px;
+                        height: 16px;
+                      "
+                      value="on"
+                    /><label
+                      for="user-anonymous"
+                      class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >匿名でレビューを投稿する</label
+                    >
+                  </div>
+                  <div class="flex justify-end gap-2">
+                    <button
+                      class="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-8 rounded-md px-3 text-xs"
+                      type="button"
+                    >
+                      キャンセル</button
+                    ><button
+                      class="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 surface-accent hover:brightness-110 hover:scale-[1.02] h-8 rounded-md px-3 text-xs"
+                      type="submit"
+                      disabled=""
+                    >
+                      レビューを送信
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+            <div
+              class="rounded-lg border bg-card text-card-foreground shadow-sm hover:shadow-lg transition-shadow duration-300"
+            >
+              <div class="flex flex-col space-y-1.5 p-6">
+                <div class="font-semibold leading-none tracking-tight">
+                  状態パターン表示
+                </div>
+              </div>
+              <div class="p-6 pt-0 space-y-6">
+                <div>
+                  <h3 class="text-sm font-medium mb-3">未選択状態</h3>
+                  <div class="space-y-2">
+                    <label class="text-sm font-medium">評価（未選択）</label>
+                    <div class="flex gap-3">
+                      <button
+                        type="button"
+                        class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-4 py-3 text-base border-2 border-border bg-background text-muted-foreground hover:bg-primary/5 hover:border-primary/50 hover:text-primary/80 dark:hover:bg-primary/10 dark:hover:border-primary/70"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          class="lucide lucide-thumbs-up h-5 w-5"
+                          aria-hidden="true"
+                        >
+                          <path d="M7 10v12"></path>
+                          <path
+                            d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"
+                          ></path></svg
+                        ><span>良い</span></button
+                      ><button
+                        type="button"
+                        class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-4 py-3 text-base border-2 border-border bg-background text-muted-foreground hover:bg-primary/5 hover:border-primary/50 hover:text-primary/80 dark:hover:bg-primary/10 dark:hover:border-primary/70"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          class="lucide lucide-minus h-5 w-5"
+                          aria-hidden="true"
+                        >
+                          <path d="M5 12h14"></path></svg
+                        ><span>普通</span></button
+                      ><button
+                        type="button"
+                        class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-4 py-3 text-base border-2 border-border bg-background text-muted-foreground hover:bg-primary/5 hover:border-primary/50 hover:text-primary/80 dark:hover:bg-primary/10 dark:hover:border-primary/70"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          class="lucide lucide-thumbs-down h-5 w-5"
+                          aria-hidden="true"
+                        >
+                          <path d="M17 14V2"></path>
+                          <path
+                            d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z"
+                          ></path></svg
+                        ><span>悪い</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  data-orientation="horizontal"
+                  role="none"
+                  class="shrink-0 bg-border h-[1px] w-full"
+                ></div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <h3 class="text-sm font-medium mb-3">良い選択</h3>
+                    <div class="space-y-2">
+                      <label class="text-sm font-medium">評価</label>
+                      <div class="flex gap-3">
+                        <button
+                          type="button"
+                          class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-4 py-3 text-base bg-primary/10 border-primary border-[3px] text-primary dark:bg-primary/20 dark:border-primary dark:text-primary shadow-md ring-2 ring-primary/20 dark:ring-primary/30"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="lucide lucide-thumbs-up h-5 w-5"
+                            aria-hidden="true"
+                          >
+                            <path d="M7 10v12"></path>
+                            <path
+                              d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"
+                            ></path></svg
+                          ><span>良い</span></button
+                        ><button
+                          type="button"
+                          class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-4 py-3 text-base border-2 border-border bg-background text-muted-foreground hover:bg-primary/5 hover:border-primary/50 hover:text-primary/80 dark:hover:bg-primary/10 dark:hover:border-primary/70"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="lucide lucide-minus h-5 w-5"
+                            aria-hidden="true"
+                          >
+                            <path d="M5 12h14"></path></svg
+                          ><span>普通</span></button
+                        ><button
+                          type="button"
+                          class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-4 py-3 text-base border-2 border-border bg-background text-muted-foreground hover:bg-primary/5 hover:border-primary/50 hover:text-primary/80 dark:hover:bg-primary/10 dark:hover:border-primary/70"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="lucide lucide-thumbs-down h-5 w-5"
+                            aria-hidden="true"
+                          >
+                            <path d="M17 14V2"></path>
+                            <path
+                              d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z"
+                            ></path></svg
+                          ><span>悪い</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <h3 class="text-sm font-medium mb-3">普通選択</h3>
+                    <div class="space-y-2">
+                      <label class="text-sm font-medium">評価</label>
+                      <div class="flex gap-3">
+                        <button
+                          type="button"
+                          class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-4 py-3 text-base border-2 border-border bg-background text-muted-foreground hover:bg-primary/5 hover:border-primary/50 hover:text-primary/80 dark:hover:bg-primary/10 dark:hover:border-primary/70"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="lucide lucide-thumbs-up h-5 w-5"
+                            aria-hidden="true"
+                          >
+                            <path d="M7 10v12"></path>
+                            <path
+                              d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"
+                            ></path></svg
+                          ><span>良い</span></button
+                        ><button
+                          type="button"
+                          class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-4 py-3 text-base bg-primary/10 border-primary border-[3px] text-primary dark:bg-primary/20 dark:border-primary dark:text-primary shadow-md ring-2 ring-primary/20 dark:ring-primary/30"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="lucide lucide-minus h-5 w-5"
+                            aria-hidden="true"
+                          >
+                            <path d="M5 12h14"></path></svg
+                          ><span>普通</span></button
+                        ><button
+                          type="button"
+                          class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-4 py-3 text-base border-2 border-border bg-background text-muted-foreground hover:bg-primary/5 hover:border-primary/50 hover:text-primary/80 dark:hover:bg-primary/10 dark:hover:border-primary/70"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="lucide lucide-thumbs-down h-5 w-5"
+                            aria-hidden="true"
+                          >
+                            <path d="M17 14V2"></path>
+                            <path
+                              d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z"
+                            ></path></svg
+                          ><span>悪い</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <h3 class="text-sm font-medium mb-3">悪い選択</h3>
+                    <div class="space-y-2">
+                      <label class="text-sm font-medium">評価</label>
+                      <div class="flex gap-3">
+                        <button
+                          type="button"
+                          class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-4 py-3 text-base border-2 border-border bg-background text-muted-foreground hover:bg-primary/5 hover:border-primary/50 hover:text-primary/80 dark:hover:bg-primary/10 dark:hover:border-primary/70"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="lucide lucide-thumbs-up h-5 w-5"
+                            aria-hidden="true"
+                          >
+                            <path d="M7 10v12"></path>
+                            <path
+                              d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"
+                            ></path></svg
+                          ><span>良い</span></button
+                        ><button
+                          type="button"
+                          class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-4 py-3 text-base border-2 border-border bg-background text-muted-foreground hover:bg-primary/5 hover:border-primary/50 hover:text-primary/80 dark:hover:bg-primary/10 dark:hover:border-primary/70"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="lucide lucide-minus h-5 w-5"
+                            aria-hidden="true"
+                          >
+                            <path d="M5 12h14"></path></svg
+                          ><span>普通</span></button
+                        ><button
+                          type="button"
+                          class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-4 py-3 text-base bg-primary/10 border-primary border-[3px] text-primary dark:bg-primary/20 dark:border-primary dark:text-primary shadow-md ring-2 ring-primary/20 dark:ring-primary/30"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="lucide lucide-thumbs-down h-5 w-5"
+                            aria-hidden="true"
+                          >
+                            <path d="M17 14V2"></path>
+                            <path
+                              d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z"
+                            ></path></svg
+                          ><span>悪い</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  data-orientation="horizontal"
+                  role="none"
+                  class="shrink-0 bg-border h-[1px] w-full"
+                ></div>
+                <div>
+                  <h3 class="text-sm font-medium mb-3">サイズバリエーション</h3>
+                  <div class="space-y-4">
+                    <div class="space-y-2">
+                      <label class="text-sm font-medium">小サイズ</label>
+                      <div class="flex gap-2">
+                        <button
+                          type="button"
+                          class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-3 py-2 text-sm bg-primary/10 border-primary border-[3px] text-primary dark:bg-primary/20 dark:border-primary dark:text-primary shadow-md ring-2 ring-primary/20 dark:ring-primary/30"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="lucide lucide-thumbs-up h-4 w-4"
+                            aria-hidden="true"
+                          >
+                            <path d="M7 10v12"></path>
+                            <path
+                              d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"
+                            ></path></svg
+                          ><span>良い</span></button
+                        ><button
+                          type="button"
+                          class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-3 py-2 text-sm border-2 border-border bg-background text-muted-foreground hover:bg-primary/5 hover:border-primary/50 hover:text-primary/80 dark:hover:bg-primary/10 dark:hover:border-primary/70"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="lucide lucide-minus h-4 w-4"
+                            aria-hidden="true"
+                          >
+                            <path d="M5 12h14"></path></svg
+                          ><span>普通</span></button
+                        ><button
+                          type="button"
+                          class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-3 py-2 text-sm border-2 border-border bg-background text-muted-foreground hover:bg-primary/5 hover:border-primary/50 hover:text-primary/80 dark:hover:bg-primary/10 dark:hover:border-primary/70"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="lucide lucide-thumbs-down h-4 w-4"
+                            aria-hidden="true"
+                          >
+                            <path d="M17 14V2"></path>
+                            <path
+                              d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z"
+                            ></path></svg
+                          ><span>悪い</span>
+                        </button>
+                      </div>
+                    </div>
+                    <div class="space-y-2">
+                      <label class="text-sm font-medium"
+                        >中サイズ（デフォルト）</label
+                      >
+                      <div class="flex gap-3">
+                        <button
+                          type="button"
+                          class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-4 py-3 text-base border-2 border-border bg-background text-muted-foreground hover:bg-primary/5 hover:border-primary/50 hover:text-primary/80 dark:hover:bg-primary/10 dark:hover:border-primary/70"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="lucide lucide-thumbs-up h-5 w-5"
+                            aria-hidden="true"
+                          >
+                            <path d="M7 10v12"></path>
+                            <path
+                              d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"
+                            ></path></svg
+                          ><span>良い</span></button
+                        ><button
+                          type="button"
+                          class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-4 py-3 text-base bg-primary/10 border-primary border-[3px] text-primary dark:bg-primary/20 dark:border-primary dark:text-primary shadow-md ring-2 ring-primary/20 dark:ring-primary/30"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="lucide lucide-minus h-5 w-5"
+                            aria-hidden="true"
+                          >
+                            <path d="M5 12h14"></path></svg
+                          ><span>普通</span></button
+                        ><button
+                          type="button"
+                          class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-4 py-3 text-base border-2 border-border bg-background text-muted-foreground hover:bg-primary/5 hover:border-primary/50 hover:text-primary/80 dark:hover:bg-primary/10 dark:hover:border-primary/70"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="lucide lucide-thumbs-down h-5 w-5"
+                            aria-hidden="true"
+                          >
+                            <path d="M17 14V2"></path>
+                            <path
+                              d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z"
+                            ></path></svg
+                          ><span>悪い</span>
+                        </button>
+                      </div>
+                    </div>
+                    <div class="space-y-2">
+                      <label class="text-sm font-medium">大サイズ</label>
+                      <div class="flex gap-4">
+                        <button
+                          type="button"
+                          class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-6 py-4 text-lg border-2 border-border bg-background text-muted-foreground hover:bg-primary/5 hover:border-primary/50 hover:text-primary/80 dark:hover:bg-primary/10 dark:hover:border-primary/70"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="lucide lucide-thumbs-up h-6 w-6"
+                            aria-hidden="true"
+                          >
+                            <path d="M7 10v12"></path>
+                            <path
+                              d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"
+                            ></path></svg
+                          ><span>良い</span></button
+                        ><button
+                          type="button"
+                          class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-6 py-4 text-lg border-2 border-border bg-background text-muted-foreground hover:bg-primary/5 hover:border-primary/50 hover:text-primary/80 dark:hover:bg-primary/10 dark:hover:border-primary/70"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="lucide lucide-minus h-6 w-6"
+                            aria-hidden="true"
+                          >
+                            <path d="M5 12h14"></path></svg
+                          ><span>普通</span></button
+                        ><button
+                          type="button"
+                          class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-6 py-4 text-lg bg-primary/10 border-primary border-[3px] text-primary dark:bg-primary/20 dark:border-primary dark:text-primary shadow-md ring-2 ring-primary/20 dark:ring-primary/30"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="lucide lucide-thumbs-down h-6 w-6"
+                            aria-hidden="true"
+                          >
+                            <path d="M17 14V2"></path>
+                            <path
+                              d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z"
+                            ></path></svg
+                          ><span>悪い</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  data-orientation="horizontal"
+                  role="none"
+                  class="shrink-0 bg-border h-[1px] w-full"
+                ></div>
+                <div>
+                  <h3 class="text-sm font-medium mb-3">無効化状態</h3>
+                  <div class="space-y-2">
+                    <label class="text-sm font-medium">評価（無効化）</label>
+                    <div class="flex gap-3">
+                      <button
+                        type="button"
+                        disabled=""
+                        class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-4 py-3 text-base opacity-50 cursor-not-allowed bg-primary/10 border-primary border-[3px] text-primary dark:bg-primary/20 dark:border-primary dark:text-primary shadow-md ring-2 ring-primary/20 dark:ring-primary/30"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          class="lucide lucide-thumbs-up h-5 w-5"
+                          aria-hidden="true"
+                        >
+                          <path d="M7 10v12"></path>
+                          <path
+                            d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"
+                          ></path></svg
+                        ><span>良い</span></button
+                      ><button
+                        type="button"
+                        disabled=""
+                        class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-4 py-3 text-base opacity-50 cursor-not-allowed border-2 border-border bg-background text-muted-foreground"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          class="lucide lucide-minus h-5 w-5"
+                          aria-hidden="true"
+                        >
+                          <path d="M5 12h14"></path></svg
+                        ><span>普通</span></button
+                      ><button
+                        type="button"
+                        disabled=""
+                        class="flex-1 flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 px-4 py-3 text-base opacity-50 cursor-not-allowed border-2 border-border bg-background text-muted-foreground"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          class="lucide lucide-thumbs-down h-5 w-5"
+                          aria-hidden="true"
+                        >
+                          <path d="M17 14V2"></path>
+                          <path
+                            d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z"
+                          ></path></svg
+                        ><span>悪い</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+      <footer class="border-t bg-background">
+        <div class="container py-8 md:py-12">
+          <div class="grid grid-cols-1 gap-8 md:grid-cols-4">
+            <div class="space-y-4">
+              <a class="flex items-center space-x-2" href="/ja"
+                ><svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="lucide lucide-camera h-6 w-6 text-shutter-primary"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"
+                  ></path>
+                  <circle cx="12" cy="13" r="3"></circle></svg
+                ><span class="font-bold text-xl">ShutterHub</span></a
+              >
+              <p class="text-sm text-muted-foreground">
+                撮影業界をつなぐ統合型プラットフォーム
+              </p>
+            </div>
+            <div class="space-y-4">
+              <h3 class="text-sm font-semibold">サービス</h3>
+              <ul class="text-sm">
+                <li>
+                  <a
+                    class="relative inline-flex items-center gap-2 text-sm font-medium transition-all duration-300 text-muted-foreground hover:text-foreground px-4 py-1 rounded-lg before:absolute before:left-1 before:top-1/2 before:-translate-y-1/2 before:w-0.5 before:h-4 before:bg-brand-primary before:transform before:scale-y-0 before:origin-center before:transition-transform before:duration-300 before:ease-out before:rounded-full hover:before:scale-y-100 hover:bg-muted/30"
+                    href="/ja/photo-sessions"
+                    >撮影会を探す</a
+                  >
+                </li>
+                <li>
+                  <a
+                    class="relative inline-flex items-center gap-2 text-sm font-medium transition-all duration-300 text-muted-foreground hover:text-foreground px-4 py-1 rounded-lg before:absolute before:left-1 before:top-1/2 before:-translate-y-1/2 before:w-0.5 before:h-4 before:bg-brand-primary before:transform before:scale-y-0 before:origin-center before:transition-transform before:duration-300 before:ease-out before:rounded-full hover:before:scale-y-100 hover:bg-muted/30"
+                    href="/ja/photo-sessions/create"
+                    >撮影会を開催</a
+                  >
+                </li>
+                <li>
+                  <a
+                    class="relative inline-flex items-center gap-2 text-sm font-medium transition-all duration-300 text-muted-foreground hover:text-foreground px-4 py-1 rounded-lg before:absolute before:left-1 before:top-1/2 before:-translate-y-1/2 before:w-0.5 before:h-4 before:bg-brand-primary before:transform before:scale-y-0 before:origin-center before:transition-transform before:duration-300 before:ease-out before:rounded-full hover:before:scale-y-100 hover:bg-muted/30"
+                    href="/ja/instant"
+                    >即座撮影リクエスト</a
+                  >
+                </li>
+                <li>
+                  <a
+                    class="relative inline-flex items-center gap-2 text-sm font-medium transition-all duration-300 text-muted-foreground hover:text-foreground px-4 py-1 rounded-lg before:absolute before:left-1 before:top-1/2 before:-translate-y-1/2 before:w-0.5 before:h-4 before:bg-brand-primary before:transform before:scale-y-0 before:origin-center before:transition-transform before:duration-300 before:ease-out before:rounded-full hover:before:scale-y-100 hover:bg-muted/30"
+                    href="/ja/studios"
+                    >スタジオWiki</a
+                  >
+                </li>
+              </ul>
+            </div>
+            <div class="space-y-4">
+              <h3 class="text-sm font-semibold">サポート</h3>
+              <ul class="text-sm">
+                <li>
+                  <a
+                    class="relative inline-flex items-center gap-2 text-sm font-medium transition-all duration-300 text-muted-foreground hover:text-foreground px-4 py-1 rounded-lg before:absolute before:left-1 before:top-1/2 before:-translate-y-1/2 before:w-0.5 before:h-4 before:bg-brand-primary before:transform before:scale-y-0 before:origin-center before:transition-transform before:duration-300 before:ease-out before:rounded-full hover:before:scale-y-100 hover:bg-muted/30"
+                    href="/ja/help"
+                    >ヘルプセンター</a
+                  >
+                </li>
+                <li>
+                  <a
+                    class="relative inline-flex items-center gap-2 text-sm font-medium transition-all duration-300 text-muted-foreground hover:text-foreground px-4 py-1 rounded-lg before:absolute before:left-1 before:top-1/2 before:-translate-y-1/2 before:w-0.5 before:h-4 before:bg-brand-primary before:transform before:scale-y-0 before:origin-center before:transition-transform before:duration-300 before:ease-out before:rounded-full hover:before:scale-y-100 hover:bg-muted/30"
+                    href="/ja/contact"
+                    >お問い合わせ</a
+                  >
+                </li>
+                <li>
+                  <a
+                    class="relative inline-flex items-center gap-2 text-sm font-medium transition-all duration-300 text-muted-foreground hover:text-foreground px-4 py-1 rounded-lg before:absolute before:left-1 before:top-1/2 before:-translate-y-1/2 before:w-0.5 before:h-4 before:bg-brand-primary before:transform before:scale-y-0 before:origin-center before:transition-transform before:duration-300 before:ease-out before:rounded-full hover:before:scale-y-100 hover:bg-muted/30"
+                    href="/ja/faq"
+                    >よくある質問</a
+                  >
+                </li>
+              </ul>
+            </div>
+            <div class="space-y-4">
+              <h3 class="text-sm font-semibold">法的情報</h3>
+              <ul class="text-sm">
+                <li>
+                  <a
+                    class="relative inline-flex items-center gap-2 text-sm font-medium transition-all duration-300 text-muted-foreground hover:text-foreground px-4 py-1 rounded-lg before:absolute before:left-1 before:top-1/2 before:-translate-y-1/2 before:w-0.5 before:h-4 before:bg-brand-primary before:transform before:scale-y-0 before:origin-center before:transition-transform before:duration-300 before:ease-out before:rounded-full hover:before:scale-y-100 hover:bg-muted/30"
+                    href="/ja/terms"
+                    >利用規約</a
+                  >
+                </li>
+                <li>
+                  <a
+                    class="relative inline-flex items-center gap-2 text-sm font-medium transition-all duration-300 text-muted-foreground hover:text-foreground px-4 py-1 rounded-lg before:absolute before:left-1 before:top-1/2 before:-translate-y-1/2 before:w-0.5 before:h-4 before:bg-brand-primary before:transform before:scale-y-0 before:origin-center before:transition-transform before:duration-300 before:ease-out before:rounded-full hover:before:scale-y-100 hover:bg-muted/30"
+                    href="/ja/privacy"
+                    >プライバシーポリシー</a
+                  >
+                </li>
+                <li>
+                  <a
+                    class="relative inline-flex items-center gap-2 text-sm font-medium transition-all duration-300 text-muted-foreground hover:text-foreground px-4 py-1 rounded-lg before:absolute before:left-1 before:top-1/2 before:-translate-y-1/2 before:w-0.5 before:h-4 before:bg-brand-primary before:transform before:scale-y-0 before:origin-center before:transition-transform before:duration-300 before:ease-out before:rounded-full hover:before:scale-y-100 hover:bg-muted/30"
+                    href="/ja/cookies"
+                    >Cookie ポリシー</a
+                  >
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div
+            class="mt-8 border-t pt-8 text-center text-sm text-muted-foreground"
+          >
+            <p>© 2025 ShutterHub. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  </div>
+  <!--$--><!--/$--><!--$--><!--/$-->
+  <div
+    role="region"
+    aria-label="Notifications (F8)"
+    tabindex="-1"
+    style="pointer-events: none"
+  >
+    <ol
+      tabindex="-1"
+      class="fixed top-0 z-[100] flex max-h-screen w-full flex-col-reverse p-4 sm:bottom-0 sm:right-0 sm:top-auto sm:flex-col md:max-w-[420px]"
+    ></ol>
+  </div>
+  <div class="fixed bottom-4 right-4 z-50">
+    <button
+      class="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 rounded-md px-3 text-xs mb-2 shadow-lg"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="lucide lucide-activity h-4 w-4 mr-2"
+        aria-hidden="true"
+      >
+        <path
+          d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"
+        ></path></svg
+      >Performance
+      <div
+        class="inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80 ml-2"
+      >
+        0
+      </div>
+    </button>
+  </div>
+  <script
+    src="/_next/static/chunks/webpack.js?v=1762221810842"
+    async=""
+  ></script>
+  <script>
+    (self.__next_f = self.__next_f || []).push([0]);
+  </script>
+  <script>
+    self.__next_f.push([
+      1,
+      '3:"$Sreact.fragment"\n4:I["(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js",["app-pages-internals","static/chunks/app-pages-internals.js"],""]\n5:I["(app-pages-browser)/./node_modules/next/dist/client/components/render-from-template-context.js",["app-pages-internals","static/chunks/app-pages-internals.js"],""]\nb:I["(app-pages-browser)/./node_modules/next/dist/client/components/client-page.js",["app-pages-internals","static/chunks/app-pages-internals.js"],"ClientPageRoot"]\nc:I["(app-pages-browser)/./src/app/[locale]/dev/review-form-mock/page.tsx",["app/[locale]/dev/review-form-mock/page","static/chunks/app/%5Blocale%5D/dev/review-form-mock/page.js"],"default"]\n10:I["(app-pages-browser)/./node_modules/next/dist/client/components/metadata/metadata-boundary.js",["app-pages-internals","static/chunks/app-pages-internals.js"],"MetadataBoundary"]\n13:I["(app-pages-browser)/./node_modules/next/dist/client/components/metadata/metadata-boundary.js",["app-pages-internals","static/chunks/app-pages-internals.js"],"OutletBoundary"]\n1a:I["(app-pages-browser)/./node_modules/next/dist/client/components/metadata/async-metadata.js",["app-pages-internals","static/chunks/app-pages-internals.js"],"AsyncMetadataOutlet"]\n20:I["(app-pages-browser)/./node_modules/next/dist/client/components/metadata/metadata-boundary.js",["app-pages-internals","static/chunks/app-pages-internals.js"],"ViewportBoundary"]\n26:I["(app-pages-browser)/./src/app/global-error.tsx",["app/global-error","static/chunks/app/global-error.js"],"default"]\n27:"$Sreact.suspense"\n28:I["(app-pages-browser)/./node_modules/next/dist/client/components/metadata/async-metadata.js",["app-pages-internals","static/chunks/app-pages-internals.js"],"AsyncMetadata"]\n:HL["/_next/static/media/e4af272ccee01ff0-s.p.woff2","font",{"crossOrigin":"","type":"font/woff2"}]\n:HL["/_next/static/media/f2dba9fbcf2f771b-s.p.woff2","font",{"crossOrigin":"","type":"font/woff2"}]\n:HL["/_next/static/css/app/%5Blocale%5D/layout.css?v=1762221810842","style"]\n2:{"name":"Preloads","',
+    ]);
+  </script>
+  <script>
+    self.__next_f.push([
+      1,
+      'env":"Server","key":null,"owner":null,"stack":[],"props":{"preloadCallbacks":["$E(()=\u003e{ctx.componentMod.preloadFont(href,type,ctx.renderOpts.crossOrigin,ctx.nonce)})","$E(()=\u003e{ctx.componentMod.preloadFont(href,type,ctx.renderOpts.crossOrigin,ctx.nonce)})","$E(()=\u003e{ctx.componentMod.preloadStyle(fullHref,ctx.renderOpts.crossOrigin,ctx.nonce)})"]}}\n1:D"$2"\n1:null\n7:{"name":"NotFound","env":"Server","key":null,"owner":null,"stack":[],"props":{}}\n6:D"$7"\n8:{"name":"HTTPAccessErrorFallback","env":"Server","key":null,"owner":"$7","stack":[],"props":{"status":404,"message":"This page could not be found."}}\n6:D"$8"\n6:[["$","title",null,{"children":"404: This page could not be found."},"$8",[],1],["$","div",null,{"style":{"fontFamily":"system-ui,\\"Segoe UI\\",Roboto,Helvetica,Arial,sans-serif,\\"Apple Color Emoji\\",\\"Segoe UI Emoji\\"","height":"100vh","textAlign":"center","display":"flex","flexDirection":"column","alignItems":"center","justifyContent":"center"},"children":["$","div",null,{"children":[["$","style",null,{"dangerouslySetInnerHTML":{"__html":"body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){body{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}"}},"$8",[],1],["$","h1",null,{"className":"next-error-h1","style":{"display":"inline-block","margin":"0 20px 0 0","padding":"0 23px 0 0","fontSize":24,"fontWeight":500,"verticalAlign":"top","lineHeight":"49px"},"children":404},"$8",[],1],["$","div",null,{"style":{"display":"inline-block"},"children":["$","h2",null,{"style":{"fontSize":14,"fontWeight":400,"lineHeight":"49px","margin":0},"children":"This page could not be found."},"$8",[],1]},"$8",[],1]]},"$8",[],1]},"$8",[],1]]\na:{"name":"LocaleLayout","env":"Server","key":null,"owner":null,"stack":[],"props":{"children":["$","$L4",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$3",null,{"children":["$","$L5",null,{},null,[],',
+    ]);
+  </script>
+  <script>
+    self.__next_f.push([
+      1,
+      '1]},null,[],0],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$Y","forbidden":"$undefined","unauthorized":"$undefined"},null,[],1],"params":"$Y"}}\n9:D"$a"\ne:{"name":"","env":"Server","key":null,"owner":null,"stack":[],"props":{}}\nd:D"$e"\nf:{"name":"MetadataTree","env":"Server","key":null,"owner":null,"stack":[],"props":{}}\nd:D"$f"\n12:{"name":"__next_metadata_boundary__","env":"Server","key":null,"owner":"$f","stack":[],"props":{}}\n11:D"$12"\nd:["$","$L10",null,{"children":"$L11"},"$f",[],1]\n15:{"name":"__next_outlet_boundary__","env":"Server","key":null,"owner":null,"stack":[],"props":{"ready":"$E(async function getViewportReady() {\\n        await viewport();\\n        return undefined;\\n    })"}}\n14:D"$15"\n17:{"name":"__next_outlet_boundary__","env":"Server","key":null,"owner":null,"stack":[],"props":{"ready":"$E(async function getMetadataReady() {\\n        // Only warm up metadata() call when it\'s blocking metadata,\\n        // otherwise it will be fully managed by AsyncMetadata component.\\n        if (!serveStreamingMetadata) {\\n            await metadata();\\n        }\\n        return undefined;\\n    })"}}\n16:D"$17"\n19:{"name":"StreamingMetadataOutlet","env":"Server","key":null,"owner":null,"stack":[],"props":{}}\n18:D"$19"\n18:["$","$L1a",null,{"promise":"$@1b"},"$19",[],1]\n1d:{"name":"NonIndex","env":"Server","key":null,"owner":null,"stack":[],"props":{"pagePath":"/[locale]/dev/review-form-mock","statusCode":200,"isPossibleServerAction":false}}\n1c:D"$1d"\n1c:null\n1f:{"name":"ViewportTree","env":"Server","key":"fZ7jhj_3RQY0vsfKpi4GK","owner":null,"stack":[],"props":{}}\n1e:D"$1f"\n22:{"name":"__next_viewport_boundary__","env":"Server","key":null,"owner":"$1f","stack":[],"props":{}}\n21:D"$22"\n1e:["$","$3","fZ7jhj_3RQY0vsfKpi4GK",{"children":[["$","$L20",null,{"children":"$L21"},"$1f",[],1],["$","meta",null,{"name":"next-size-adjust","content":""},"$1f",[],1]]},null,null,0]\n24:{"name":"","env":"Server","key":null,"owner":null,"stack":[],"props":{}}\n23:D"$24"\n23:null\n25:[]\n',
+    ]);
+  </script>
+  <script>
+    self.__next_f.push([
+      1,
+      '0:{"P":"$1","b":"development","p":"","c":["","ja","dev","review-form-mock"],"i":false,"f":[[["",{"children":[["locale","ja","d"],{"children":["dev",{"children":["review-form-mock",{"children":["__PAGE__",{}]}]}]},"$undefined","$undefined",true]}],["",["$","$3","c",{"children":[null,["$","$L4",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L5",null,{},null,[],1],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":["$6",[]],"forbidden":"$undefined","unauthorized":"$undefined"},null,[],1]]},null,[],0],{"children":[["locale","ja","d"],["$","$3","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/_next/static/css/app/%5Blocale%5D/layout.css?v=1762221810842","precedence":"next_static/css/app/[locale]/layout.css","crossOrigin":"$undefined","nonce":"$undefined"},null,[],0]],"$L9"]},null,[],0],{"children":["dev",["$","$3","c",{"children":[null,["$","$L4",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L5",null,{},null,[],1],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","forbidden":"$undefined","unauthorized":"$undefined"},null,[],1]]},null,[],0],{"children":["review-form-mock",["$","$3","c",{"children":[null,["$","$L4",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L5",null,{},null,[],1],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","forbidden":"$undefined","unauthorized":"$undefined"},null,[],1]]},null,[],0],{"children":["__PAGE__",["$","$3","c",{"children":[["$","$Lb",null,{"Component":"$c","searchParams":{},"params":{"locale":"ja"}},null,[],1],"$d",null,["$","$L13",null,{"children":["$L14","$L16","$18"]},null,[],1]]},null,[],0],{},null,false]},null,false]},null,false]},null,false]},null,false],["$","$3","h",{"children":["$1c","$1e","$23"]},null,[],0],false]],"m":"$W25","G":["$26",[]],"s":false,"S":false}\n',
+    ]);
+  </script>
+  <script>
+    self.__next_f.push([
+      1,
+      '11:["$","$27",null,{"fallback":null,"children":["$","$L28",null,{"promise":"$@29"},"$12",[],1]},"$12",[],1]\n16:null\n21:[["$","meta","0",{"charSet":"utf-8"},"$15",[],0],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"},"$15",[],0]]\n14:null\n',
+    ]);
+  </script>
+  <script>
+    self.__next_f.push([
+      1,
+      ':W["info",[["Logger.info","webpack-internal:///(rsc)/./src/lib/utils/logger.ts",49,21],["enableQueryStatistics","webpack-internal:///(rsc)/./src/lib/supabase/query-wrapper.ts",213,63],["LocaleLayout","webpack-internal:///(rsc)/./src/app/[locale]/layout.tsx",128,91]],"$a","Server","[INFO] 2025-11-04T02:03:30.860Z - [QueryWrapper] Query statistics enabled - reporting every 30 seconds"]\n2b:{"name":"NextIntlClientProviderServer","env":"Server","key":null,"owner":"$a","stack":[["LocaleLayout","webpack-internal:///(rsc)/./src/app/[locale]/layout.tsx",136,98]],"props":{"messages":{"common":{"loading":"読み込み中...","error":"エラーが発生しました","success":"成功しました","cancel":"キャンセル","confirm":"確認","save":"保存","edit":"編集","delete":"削除","close":"閉じる","back":"戻る","next":"次へ","previous":"前へ","search":"検索","filter":"フィルター","sort":"並び替え","more":"もっと見る","priceInputPlaceholder":"料金を入力してください"},"dashboard":{"loading":"読み込み中...","mySessions":{"title":"自分の撮影会","description":"あなたが開催している撮影会の管理ができます"}},"navigation":{"home":"ホーム","dashboard":"ダッシュボード","search":"検索","bookings":"予約一覧","instant":"即座撮影","profile":"プロフィール","photoSessions":"撮影会","photobook":"フォトブック","photobookView":"フォトブック表示","photobookEdit":"フォトブック編集","subscription":"サブスクリプション","studios":"スタジオ","favorites":"お気に入り","settings":"設定","signin":"ログイン","signup":"新規登録","signout":"ログアウト"},"theme":{"light":"ライト","dark":"ダーク","system":"システム","toggle":"テーマを切り替え"},"home":{"hero":"$Y","features":"$Y","cta":"$Y"},"footer":"$Y","pages":"$Y","photobooks":"$Y","profile":"$Y","booking":"$Y","bookings":"$Y","photoSessions":"$Y","lottery":"$Y","social":"$Y","adminLottery":"$Y","adminLotteryManagement":"$Y","er',
+    ]);
+  </script>
+  <script>
+    self.__next_f.push([
+      1,
+      'rors":"$Y","success":"$Y","priority_booking":"$Y","priority_settings":"$Y","waitlist":"$Y","waitlist_settings":"$Y","search":"$Y","reviews":"$Y","photoConsent":"$Y","modelTag":"$Y","calendar":"$Y","photobook":"$Y","photoSessionSlotForm":"$Y","favorites":"$Y","subscription":"$Y"},"children":"$Y"}}\n2a:D"$2b"\n9:["$","html",null,{"lang":"ja","suppressHydrationWarning":true,"children":["$","body",null,{"className":"__variable_f367f3 __variable_6a169b font-sans antialiased","suppressHydrationWarning":true,"children":"$L2a"},"$a",[["LocaleLayout","webpack-internal:///(rsc)/./src/app/[locale]/layout.tsx",133,94]],1]},"$a",[["LocaleLayout","webpack-internal:///(rsc)/./src/app/[locale]/layout.tsx",130,87]],1]\n',
+    ]);
+  </script>
+  <script>
+    self.__next_f.push([
+      1,
+      '29:{"metadata":[["$","title","0",{"children":"ShutterHub - 撮影業界をつなぐプラットフォーム"},"$12",[],0],["$","meta","1",{"name":"description","content":"モデル、カメラマン、撮影会運営者をつなぐ統合型プラットフォーム。撮影会の予約から即座撮影リクエストまで、撮影業界のすべてがここに。"},"$12",[],0],["$","meta","2",{"name":"author","content":"ShutterHub Team"},"$12",[],0],["$","meta","3",{"name":"keywords","content":"撮影会,カメラマン,モデル,写真,ポートレート,撮影"},"$12",[],0],["$","meta","4",{"name":"creator","content":"ShutterHub"},"$12",[],0],["$","meta","5",{"name":"publisher","content":"ShutterHub"},"$12",[],0],["$","meta","6",{"name":"robots","content":"index, follow"},"$12",[],0],["$","meta","7",{"name":"googlebot","content":"index, follow, max-video-preview:-1, max-image-preview:large, max-snippet:-1"},"$12",[],0],["$","meta","8",{"name":"format-detection","content":"telephone=no, address=no, email=no"},"$12",[],0],["$","meta","9",{"name":"google-site-verification","content":"google-site-verification-code"},"$12",[],0],["$","meta","10",{"property":"og:title","content":"ShutterHub - 撮影業界をつなぐプラットフォーム"},"$12",[],0],["$","meta","11",{"property":"og:description","content":"モデル、カメラマン、撮影会運営者をつなぐ統合型プラットフォーム"},"$12",[],0],["$","meta","12",{"property":"og:url","content":"https://shutterhub.app"},"$12",[],0],["$","meta","13",{"property":"og:site_name","content":"ShutterHub"},"$12",[],0],["$","meta","14",{"property":"og:locale","content":"ja_JP"},"$12",[],0],["$","meta","15",{"property":"og:type","content":"website"},"$12",[],0],["$","meta","16",{"name":"twitter:card","content":"summary_large_image"},"$12",[],0],["$","meta","17",{"name":"twitter:creator","content":"@shutterhub"},"$12",[],0],["$","meta","18",{"name":"twitter:title","content":"ShutterHub - 撮影業界をつなぐプラットフォーム"},"$12",[],0],["$","meta","19",{"name":"twitter:description","content":"モデル、カメラマン、撮影会運営者をつなぐ統合型プラットフォーム"},"$12",[],0],["$","link","20",{"rel":"shortcut icon","href":"/favicon.ico"},"$12",[],0],["$","link","21",{"rel":"icon","href":"/favicon.ico","type":"image/x-icon","sizes":"16x16"},"$12",[],0],["$","link","22",{"rel":"icon","href":"/favicon.ico"},"$12",[],0],["$","link","23",{"rel":"apple-touch-icon","href":"/images/favicon/apple-touch-icon.png"},"$12",[],0],["$","link","24",{"rel":"icon","href":"/images/favicon/favicon-32x32.png","type":"image/png","sizes":"32x32"},"$12",[],0],["$","link","25",{"rel":"icon","href":"/images/favicon/favicon-16x16.png","type":"image/png","sizes":"16x16"},"$12",[],0]],"error":null,"digest":"$undefined"}\n',
+    ]);
+  </script>
+  <script>
+    self.__next_f.push([
+      1,
+      '1b:{"metadata":"$29:metadata","error":null,"digest":"$undefined"}\n',
+    ]);
+  </script>
+  <script>
+    self.__next_f.push([
+      1,
+      '2c:I["(app-pages-browser)/./node_modules/next-intl/dist/esm/development/shared/NextIntlClientProvider.js",["app/[locale]/layout","static/chunks/app/%5Blocale%5D/layout.js"],"default"]\n2d:I["(app-pages-browser)/./src/components/providers/swr-provider.tsx",["app/[locale]/layout","static/chunks/app/%5Blocale%5D/layout.js"],"SWRProvider"]\n2e:I["(app-pages-browser)/./src/components/providers/theme-provider.tsx",["app/[locale]/layout","static/chunks/app/%5Blocale%5D/layout.js"],"ThemeProvider"]\n2f:I["(app-pages-browser)/./src/app/[locale]/not-found.tsx",["app/[locale]/not-found","static/chunks/app/%5Blocale%5D/not-found.js"],"default"]\n30:I["(app-pages-browser)/./src/components/ui/toaster.tsx",["app/[locale]/layout","static/chunks/app/%5Blocale%5D/layout.js"],"Toaster"]\n31:I["(app-pages-browser)/./src/components/dev/performance-dashboard.tsx",["app/[locale]/layout","static/chunks/app/%5Blocale%5D/layout.js"],"PerformanceDashboard"]\n',
+    ]);
+  </script>
+  <script>
+    self.__next_f.push([
+      1,
+      '2a:["$","$L2c",null,{"formats":"$undefined","locale":"ja","messages":{"common":{"loading":"読み込み中...","error":"エラーが発生しました","success":"成功しました","cancel":"キャンセル","confirm":"確認","save":"保存","edit":"編集","delete":"削除","close":"閉じる","back":"戻る","next":"次へ","previous":"前へ","search":"検索","filter":"フィルター","sort":"並び替え","more":"もっと見る","priceInputPlaceholder":"料金を入力してください"},"dashboard":{"loading":"読み込み中...","mySessions":{"title":"自分の撮影会","description":"あなたが開催している撮影会の管理ができます"}},"navigation":{"home":"ホーム","dashboard":"ダッシュボード","search":"検索","bookings":"予約一覧","instant":"即座撮影","profile":"プロフィール","photoSessions":"撮影会","photobook":"フォトブック","photobookView":"フォトブック表示","photobookEdit":"フォトブック編集","subscription":"サブスクリプション","studios":"スタジオ","favorites":"お気に入り","settings":"設定","signin":"ログイン","signup":"新規登録","signout":"ログアウト"},"theme":{"light":"ライト","dark":"ダーク","system":"システム","toggle":"テーマを切り替え"},"home":{"hero":{"title":"撮影業界をつなぐ","titleHighlight":"統合プラットフォーム","subtitle":"モデル、カメラマン、運営者が出会う場所。","subtitleSecond":"撮影会の予約から即座撮影まで、すべてがここに。","findSessions":"撮影会を探す","requestInstant":"即座撮影を依頼"},"features":{"title":"ShutterHubの特徴","subtitle":"撮影業界のすべてのニーズに応える、包括的なプラットフォーム","booking":{"title":"撮影会予約システム","description":"先着順から抽選まで、多様な予約方式に対応","features":["リアルタイム在庫管理","公平な抽選システム","優先予約・キャンセル待ち"]},"instant":{"title":"即座撮影リクエスト","description":"撮影業界のUber - 今すぐ撮影したい時に","features":["位置ベースマッチング","15分から対応可能","透明な料金システム"]},"wiki":{"title":"StudioWiki","description":"コミュニティが作るスタジオ情報データベース","features":["詳細なスタジオ情報","実際の利用者レビュー","役割別評価システム"]},"platform":{"title":"三者統合プラットフォーム","description":"モデル・カメラマン・運営者が一つの場所で","features":["統一されたプロフィール","相互評価システム","安全な決済システム"]},"review":{"title":"評価・レビューシステム","description":"透明性の高い評価で信頼関係を構築","features":["5段階評価システム","詳細なレビュー機能","ユーザーランクシステム"]},"professional":{"title":"プロフェッショナル対応","description":"業界のプロフェッショナルニーズに特化","features":["高品質画像対応","著作権・肖像権管理","業界標準の機能"]}},"cta":{"title":"今すぐShutterHubを始めよう","subtitle":"撮影業界の新しいスタンダードを体験してください","getStarted":"無料で始める"}},"footer":{"brand":"撮影業界をつなぐ統合型プラットフォーム","services":{"title":"サービス","findSessions":"撮影会を探す","createSession":"撮影会を開催","instantRequest":"即座撮影リクエスト","studioWiki":"スタジオWiki"},"support":{"title":"サポート","helpCenter":"ヘルプセンター","contact":"お問い合わせ","faq":"よくある質問"},"legal":{"title":"法的情報","terms":"利用規約","privacy":"プライバシーポリシー","cookies":"Cookie ポリシー"},"copyright":"© 2025 ShutterHub. All rights reserved."},"pages":{"search":{"title":"撮影会を検索","description":"詳細な条件で撮影会を検索できます"},"bookings":{"title":"予約管理","placeholder":"予約管理機能は後のフェーズで実装予定です。"},"instant":{"title":"即座撮影リクエスト","placeholder":"即座撮影機能は後のフェーズで実装予定です。"}},"photobooks":{"quickPhotobooks":"クイックフォトブック","quickPhotobooksDescription":"シンプルで素早くフォトブックを作成","createNewQuick":"新しいクイックフォトブックを作成","quickPhotobookDescription":"画像をアップロードして順番を決めるだけの簡単操作","published":"公開中","draft":"下書き","createLimitReached":"作成上限に達しています","upgradePlan":"プランをアップグレード","viewAdvanced":"アドバンスド版を見る","pages":"ページ","images":"画像","orientation":{"portrait":"縦長","landscape":"横長","square":"正方形"},"actions":{"create":"作成","edit":"編集","delete":"削除","publish":"公開","unpublish":"非公開","preview":"プレビュー","save":"保存","upload":"アップロード","reorder":"順番変更"},"messages":{"created":"フォトブックが作成されました","updated":"フォトブックが更新されました","deleted":"フォトブックが削除されました","published":"フォトブックが公開されました","imageAdded":"画像が追加されました","imageRemoved":"画像が削除されました","orderChanged":"画像の順番が変更されました","limitReached":"ページ数の上限に達しています","uploadError":"画像のアップロードに失敗しました","saveError":"保存に失敗しました"},"placeholders":{"title":"例: 2024年 春の撮影会","description":"フォトブックの内容や思い出を簡単に説明してください","dragAndDrop":"画像をドラッグ\u0026ドロップまたはクリックして選択"}},"profile":{"title":"プロフィール","placeholder":"プロフィール機能は後のフェーズで実装予定です。","schedule":{"title":"スケジュール管理","calendar":"スケジュールカレンダー","availableTimes":"設定済み空き時間","noAvailability":"空き時間が設定されていません。","noAvailabilityOwn":"カレンダーから日付を選択して設定してください。","encourageSet":"空き時間を設定して撮影チャンスを増やしましょう","editTitle":"スケジュール編集","manageTitle":"空き時間管理","editSlot":"空き時間編集","addSlot":"新しい空き時間追加","thisDateSlots":"この日の設定済み空き時間","addButton":"空き時間を追加","copyButton":"他の日に複製","startTime":"開始時間","endTime":"終了時間","notes":"メモ（任意）","notesPlaceholder":"この時間帯に関するメモ...","commonTimes":"よく使う時間設定","update":"更新","add":"追加","readOnlyAccess":"他のユーザーのスケジュールは閲覧のみ可能です","layerControl":{"userTime":"自分の空き時間","organizerTime":"所属運営の空き時間","availableTime":"対応可能時間"},"requestPhotoAvailable":"リクエスト撮影対応可能","requestPhotoDescription":"所属運営との空き時間が一致しているため、リクエスト撮影に対応できます"}},"booking":{"reserve":"予約する","cancel":"キャンセル","confirm":"予約確認","confirmCancel":"予約キャンセル","loginRequired":"ログインが必要です","loginRequiredDescription":"予約するにはログインしてください。","pleaseLogin":"ログインしてください","sessionFull":"満席","availableSlots":"空きあり","fewSlotsLeft":"残りわずか","alreadyBooked":"既に予約済みです","sessionEnded":"この撮影会は既に開始または終了しています","notPublished":"この撮影会は公開されていません","cannotBook":"予約できません","cannotBookReasons":{"alreadyBooked":"既に予約済みです","sessionFull":"満席です","sessionEnded":"開始・終了済みです","notPublished":"非公開です","unknown":"予約できません"},"participateQuestion":"この撮影会に参加しますか？","bookingInProgress":"予約中...","cancelInProgress":"キャンセル中...","confirmBookingQuestion":"以下の撮影会を予約しますか？","confirmCancelQuestion":"本当に予約をキャンセルしますか？","organizer":"主催者","free":"無料","people":"人","notes":{"title":"注意事項:","firstCome":"予約は先着順です","cancelDeadline":"キャンセルは開始時刻の24時間前まで可能です","cancelFee":"当日のキャンセルはキャンセル料が発生する場合があります"},"cancelNotes":{"title":"キャンセルについて:","reBooking":"キャンセル後の再予約は先着順となります","lateCancelFee":"開始時刻まで24時間を切っている場合、キャンセル料が発生する可能性があります"},"actions":{"back":"戻る","cancel":"やめる","confirmBooking":"予約する","confirmCancel":"キャンセルする"},"confirmation":{"title":"予約確認","description":"以下の撮影会を予約しますか？","sessionTitle":"撮影会","dateTime":"日時","location":"場所","price":"料金","confirmButton":"予約する","cancelButton":"キャンセル","notes":{"title":"確認事項","item1":"予約後のキャンセルは条件があります","item2":"参加費は当日お支払いください","item3":"開始時刻の15分前には到着してください"}}},"bookings":{"title":"予約一覧","description":"予約済みの撮影会を確認・管理できます","refresh":"更新","participants":"名","perPerson":"/ 人","organizer":"主催者","bookedAt":"予約日時","viewDetails":"詳細を見る","cancel":"キャンセル","cancelling":"キャンセル中...","cancelSuccess":"キャンセル完了","cancelSuccessDescription":"予約をキャンセルしました","cancelError":"キャンセル失敗","cancelErrorDescription":"予約のキャンセルに失敗しました","cancelNote":"キャンセルポリシーに従って処理されます","detailsNote":"キャンセルや詳細な操作は詳細画面で行えます","loadError":"読み込みエラー","loadErrorDescription":"予約一覧の読み込みに失敗しました","noBookings":"予約がありません","status":{"confirmed":"確定","cancelled":"キャンセル済み","completed":"完了","ongoing":"開催中","upcoming":"予定","past":"過去","waitlist":"キャンセル待ち"},"stats":{"total":"総予約数","upcoming":"予定","confirmed":"確定","past":"過去","cancelled":"キャンセル","waitlist":"キャンセル待ち"},"filter":{"title":"フィルター","all":"すべて","upcoming":"予定","confirmed":"確定","past":"過去","cancelled":"キャンセル","waitlist":"キャンセル待ち","results":"件"},"filters":{"all":"すべて","upcoming":"予定","confirmed":"確定","past":"過去","cancelled":"キャンセル","waitlist":"キャンセル待ち"},"empty":{"title":"予約がありません","description":"まだ予約した撮影会がありません。撮影会を探してみましょう。","browseButton":"撮影会を探す"},"error":{"loadFailed":"読み込み失敗","unexpected":"予期しないエラーが発生しました"},"waitlistPosition":"待ち順位: {position}番目"},"photoSessions":{"title":"撮影会","calendar":"撮影会カレンダー","createSession":"撮影会を作成","editSession":"撮影会を編集","viewDetails":"詳細を見る","edit":"編集","status":{"upcoming":"予定","ongoing":"開催中","ended":"終了","unpublished":"非公開","firstCome":"先着順","lottery":"抽選","management":"管理抽選","priority":"優先予約","waitlist":"キャンセル待ち","full":"満席","cancelled":"キャンセル","unknown":"不明"},"availability":{"available":"空きあり","fewLeft":"残りわずか","full":"満員"},"form":{"createTitle":"撮影会作成","editTitle":"撮影会編集","createDescription":"新しい撮影会を企画・開催しましょう","editDescription":"撮影会の情報を編集してください","duplicateDescription":"既存の撮影会を元に新しい撮影会を作成します","editPageTitle":"撮影会を編集","editPageDescription":"撮影会の詳細を変更してください","editNotAllowed":"編集権限がありません","editNotAllowedDescription":"この撮影会を編集する権限がありません。","sessionNotFound":"撮影会が見つかりません","sessionNotFoundDescription":"指定された撮影会が見つかりませんでした。","loadingSession":"撮影会情報を読み込み中...","backToSessions":"撮影会一覧に戻る","viewSession":"撮影会詳細を見る","duplicateTitle":"撮影会複製","duplicatePageTitle":"撮影会を複製","duplicatePageDescription":"を元に新しい撮影会を作成します","duplicateNotAllowed":"複製権限がありません","duplicateNotAllowedDescription":"この撮影会を複製する権限がありません。","duplicateWarning":"複製された撮影会は新しい撮影会として作成されます。既存の参加者は引き継がれません。","basicInfo":"基本情報","titleLabel":"タイトル","titlePlaceholder":"撮影会のタイトルを入力してください","descriptionLabel":"説明","descriptionPlaceholder":"撮影会の詳細な説明を入力してください...","locationInfo":"場所情報","locationLabel":"場所","locationPlaceholder":"東京都渋谷区","addressLabel":"詳細住所","addressPlaceholder":"東京都渋谷区○○1-2-3","dateTimeInfo":"日時情報","startTimeLabel":"開始日時","endTimeLabel":"終了日時","participantInfo":"参加者・料金情報","maxParticipantsLabel":"最大参加者数","priceLabel":"参加費（1人あたり）","publishSettings":"公開設定","publishLabel":"撮影会を公開する","publishDescription":"公開すると他のユーザーが検索・予約できるようになります。","bookingSettings":"予約設定","slotSettings":"撮影枠設定","slotSettingsDescription":"時間枠を細分化して、枠ごとに料金・衣装・参加者数を設定できます。","allowMultipleBookings":"複数枠予約を許可する","allowMultipleBookingsDescription":"有効にすると、1人のユーザーが複数の時間枠を同時に予約できます","multipleBookingDisabled":"無効: 1人につき1つの時間枠のみ予約可能（デフォルト）","multipleBookingEnabled":"有効: 1人が複数の時間枠を予約可能（衣装チェンジ等に便利）","multipleBookingEnabledTitle":"複数予約が有効になりました","multipleBookingFeature1":"ユーザーは複数の時間枠を選択して一括予約できます","multipleBookingFeature2":"衣装チェンジや長時間撮影に適しています","multipleBookingFeature3":"各時間枠の料金が個別に適用されます","blockUsersWithBadRatings":"撮影会参加レビューが1つでも悪い評価を受けたユーザーの予約を受け付けない","blockUsersWithBadRatingsDescription":"この設定を有効にすると、過去に悪い評価を受けたユーザーはこの撮影会に予約できなくなります。","createButton":"撮影会を作成","updateButton":"撮影会を更新","creating":"作成中...","updating":"更新中...","required":"*","validation":{"titleRequired":"タイトルは必須です","locationRequired":"場所は必須です","dateTimeRequired":"開始日時と終了日時は必須です","startTimeInvalid":"開始日時は現在時刻より後である必要があります","endTimeInvalid":"終了日時は開始日時より後である必要があります"},"errors":{"ratingCheckFailed":"評価チェック中にエラーが発生しました","userHasBadRating":"この撮影会では、過去に悪い評価を受けたユーザーの予約を受け付けていません。"},"success":{"created":"撮影会を作成しました","updated":"撮影会を更新しました"},"error":{"saveFailed":"撮影会の保存に失敗しました"}},"list":{"title":"撮影会一覧","description":"開催予定の撮影会を検索・予約できます","loading":"読み込み中...","searchFilter":"検索・フィルター","keywordPlaceholder":"キーワード検索...","locationPlaceholder":"場所で絞り込み...","sortBy":"並び順","sortByStartTime":"開始日時順","sortByPrice":"料金順","sortByCreatedAt":"作成日順","reset":"リセット","noResults":"検索条件に一致する撮影会が見つかりませんでした。","noSessions":"撮影会がまだありません。","createFirst":"最初の撮影会を作成","loadMore":"さらに読み込む","activeFilters":"フィルター適用中","clearFilters":"クリア"},"sidebar":{"dateRange":"開催日","dateFrom":"開始日","dateTo":"終了日","priceRange":"参加費","priceMin":"最低料金","priceMax":"最高料金","participantsRange":"参加者数","participantsMin":"最少人数","participantsMax":"最多人数","options":"その他のオプション","onlyAvailable":"空きがある撮影会のみ","filters":"フィルター","closeFilters":"フィルターを閉じる","openFilters":"フィルターを開く"},"card":{"labels":{"dateTime":"日時","location":"場所","participants":"参加者","price":"料金"}},"bookingType":{"title":"予約方式","description":"撮影会の予約方式を選択してください","selected":"選択中","first_come":{"title":"先着順予約","description":"予約開始と同時に先着順で受付","badge":"スタンダード","feature1":"リアルタイム在庫管理","feature2":"即座に予約確定","feature3":"シンプルで分かりやすい"},"firstCome":{"title":"先着順予約","description":"予約開始と同時に先着順で受付","badge":"スタンダード","feature1":"リアルタイム在庫管理","feature2":"即座に予約確定","feature3":"シンプルで分かりやすい"},"lottery":{"title":"抽選予約","description":"エントリー期間後に公平な抽選で決定","badge":"公平","feature1":"公平なランダム抽選","feature2":"エントリー期間設定可能","feature3":"人気撮影会に最適"},"admin_lottery":{"title":"管理抽選","description":"開催者が応募者から手動で選出","badge":"選考","feature1":"開催者による手動選出","feature2":"選出基準を自由設定","feature3":"質重視の撮影会向け"},"adminLottery":{"title":"管理抽選","description":"開催者が応募者から手動で選出","badge":"選考","feature1":"開催者による手動選出","feature2":"選出基準を自由設定","feature3":"質重視の撮影会向け"},"priority":{"title":"優先予約","description":"ランクやチケットによる段階的予約","badge":"プレミアム","feature1":"ユーザーランク別優先","feature2":"優先チケット対応","feature3":"リピーター優遇"},"waitlist":{"title":"キャンセル待ち","description":"満席時にキャンセル待ちで登録","badge":"待機","feature1":"自動繰り上げ通知","feature2":"公平な先着順","feature3":"人気撮影会に便利"}},"bookingSettings":{"title":"予約設定","description":"選択した予約方式に応じた詳細設定を行います","firstCome":{"title":"先着順予約設定","bookingStartTime":"予約開始時刻","bookingStartTimeHelp":"この時刻から予約受付を開始します","enableWaitlist":"キャンセル待ちを有効にする","enableWaitlistHelp":"満席時にキャンセル待ち登録を受け付けます","maxWaitlistSize":"最大キャンセル待ち数"},"lottery":{"title":"抽選予約設定","applicationStartTime":"応募開始時刻","applicationEndTime":"応募終了時刻","lotteryDateTime":"抽選実行日時","lotteryDateTimeHelp":"この日時に自動で抽選が実行されます","autoLottery":"自動抽選を有効にする","autoLotteryHelp":"指定日時に自動で抽選を実行します"},"adminLottery":{"title":"管理抽選設定","applicationStartTime":"応募開始時刻","applicationEndTime":"応募終了時刻","selectionCriteria":"選出基準","selectionCriteriaPlaceholder":"選出時に重視する基準を記載してください...","selectionCriteriaHelp":"応募者に表示される選出基準です","applicationMessage":"応募時メッセージ","applicationMessagePlaceholder":"応募者に求めるメッセージの内容を記載してください..."},"priority":{"title":"優先予約設定","bookingStartTime":"予約開始時刻","vipSlots":"VIP枠数","platinumSlots":"プラチナ枠数","goldSlots":"ゴールド枠数","enableGeneralBooking":"一般予約を有効にする","enableGeneralBookingHelp":"優先枠終了後に一般ユーザーも予約可能にします","generalBookingStartTime":"一般予約開始時刻"},"note":{"title":"注意","description":"設定は撮影会作成後も変更可能ですが、既存の予約に影響する場合があります。"}},"imageUpload":{"title":"画像をアップロード","description":"撮影会のイメージ画像をアップロードしてください","selectFiles":"ファイルを選択","orDragAndDrop":"またはドラッグ\u0026ドロップ","uploading":"アップロード中...","maxSize":"最大サイズ","supportedFormats":"対応形式","maxImages":"最大枚数","preview":"プレビュー","mainImage":"メイン画像","firstIsMain":"最初がメイン","main":"メイン","tips":{"title":"ヒント","firstImageMain":"最初の画像がメイン画像として表示されます","dragToReorder":"ドラッグで順序を変更できます","highQuality":"高品質な画像を使用することをお勧めします"},"success":{"uploaded":"画像をアップロードしました","removed":"画像を削除しました"},"error":{"maxImagesReached":"最大枚数に達しました","maxImagesReachedDescription":"最大{max}枚まで選択できます","fileTooLarge":"ファイルサイズが大きすぎます","fileTooLargeDescription":"ファイルサイズは10MB以下にしてください","invalidFileType":"対応していないファイル形式です","invalidFileTypeDescription":"JPEG、PNG、WebP、GIFファイルのみ対応しています","uploadFailed":"アップロードに失敗しました","uploadFailedDescription":"画像のアップロードに失敗しました。再度お試しください。"},"selectImages":"画像を選択","uploadProgress":"アップロード進行状況","uploadSuccess":"{count}枚の画像をアップロードしました","uploadPartialFailure":"{failed}枚の画像のアップロードに失敗しました","uploadError":"画像のアップロードに失敗しました","deleteSuccess":"画像を削除しました","deleteError":"画像の削除に失敗しました","maxImagesExceeded":"最大{max}枚まで選択できます","imageAlt":"画像 {index}","noImages":"画像がアップロードされていません","maxFileSize":"最大ファイルサイズ: 10MB","firstImageIsMain":"最初の画像がメイン画像として表示されます"},"groupChat":{"photoSessionGroupChat":"撮影会グループチャット","noGroupChatYet":"まだグループチャットがありません","groupChatDescription":"撮影会参加者専用のグループチャットを作成して、事前の打ち合わせや当日の連絡に活用できます。","createGroupChat":"グループチャットを作成","waitForOrganizerToCreate":"主催者がグループチャットを作成するまでお待ちください。","creating":"作成中...","openChat":"チャットを開く","addParticipants":"参加者を追加","backToInfo":"情報に戻る","sessionInfo":"撮影会情報","organizer":"主催者","quickActions":"クイックアクション","shareLocation":"位置情報を共有","setReminder":"リマインダーを設定","sharePhotos":"写真を共有","addToCalendar":"カレンダーに追加","addToGoogleCalendar":"Googleカレンダーに追加","calendarEventCreated":"カレンダーイベントが作成されました","photoSharing":"写真共有","photoSharingComingSoon":"撮影後の写真共有機能は近日公開予定です。","accessDenied":"このグループチャットにアクセスする権限がありません。","groupChatCreated":"グループチャットを作成しました","errorCreatingGroupChat":"グループチャットの作成に失敗しました","noNewParticipants":"追加する新しい参加者がいません","newParticipantsAdded":"{count}名の参加者を追加しました","errorAddingParticipants":"参加者の追加に失敗しました"},"documents":{"title":"ドキュメント管理","description":"撮影会に関する同意書、契約書、ガイドラインなどの重要書類を管理します。","tabs":{"documents":"書類一覧","signatures":"署名状況","manage":"書類管理"},"noDocuments":"まだ書類がありません","createFirstDocument":"最初の書類を作成してください。","required":"必須","signed":"署名済み","pending":"未署名","viewDocument":"書類を確認","signDocument":"署名する","signing":"署名中...","agreeAndSign":"内容に同意して署名する","sendReminders":"リマインダー送信","noSignatures":"まだ署名がありません","createDocument":"書類を作成","createDocumentDescription":"新しい書類を作成して参加者に署名を求めることができます。","documentTitle":"書類タイトル","documentTitlePlaceholder":"例：撮影会参加同意書","documentType":"書類種別","documentContent":"書類内容","documentContentPlaceholder":"書類の詳細な内容を記載してください...","markAsRequired":"必須書類として設定","documentTemplates":"書類テンプレート","documentTemplatesDescription":"よく使用される書類のテンプレートから選択できます。","types":{"consent":"参加同意書","contract":"契約書","portraitRights":"肖像権使用許可書","guidelines":"撮影ガイドライン","other":"その他"},"templates":{"basicConsent":"基本参加同意書","basicConsentDescription":"撮影会参加に関する基本的な同意書","portraitRights":"肖像権使用許可書","portraitRightsDescription":"撮影した写真の使用に関する許可書","shootingGuidelines":"撮影ガイドライン","shootingGuidelinesDescription":"撮影時の注意事項とルール","participationContract":"参加契約書","participationContractDescription":"撮影会参加に関する詳細な契約書"},"fillRequiredFields":"必須項目を入力してください","documentCreated":"書類を作成しました","errorCreatingDocument":"書類の作成に失敗しました","documentSigned":"書類に署名しました","errorSigningDocument":"署名に失敗しました","remindersSent":"{count}名にリマインダーを送信しました","errorSendingReminders":"リマインダーの送信に失敗しました","errorLoadingDocuments":"書類の読み込みに失敗しました"}},"lottery":{"title":"抽選撮影会","organizer":"主催者","free":"無料","winnersCount":"当選者数: {count}名","sessionNotFound":"抽選撮影会が見つかりません","loginRequired":"ログインが必要です","loginRequiredDescription":"抽選に参加するにはログインしてください。","pleaseLogin":"ログインしてください","status":{"upcoming":"開始前","accepting":"エントリー受付中","closed":"エントリー終了","completed":"抽選完了"},"entryStatus":{"entered":"エントリー済み","won":"当選","lost":"落選"},"schedule":{"title":"抽選スケジュール","entryPeriod":"エントリー期間","lotteryDate":"抽選日時"},"applicationMessage":"応募メッセージ","optional":"任意","applicationMessagePlaceholder":"参加への意気込みや自己紹介をお書きください...","enterLottery":"抽選に参加する","entryInProgress":"エントリー中...","entryCompleted":"エントリーが完了しました。抽選結果をお待ちください。","congratulations":"おめでとうございます！当選しました！","winnerInstructions":"撮影会への参加が確定しました。詳細は別途ご連絡いたします。","betterLuckNextTime":"残念ながら落選となりました。次回もぜひご参加ください。","yourMessage":"あなたのメッセージ","entryNotStarted":"エントリー期間はまだ開始されていません","entryEnded":"エントリー期間は終了しました","entryNotAccepting":"現在エントリーを受け付けていません","notes":{"title":"注意事項","fairLottery":"抽選は公平にランダムで行われます","resultNotification":"抽選結果は抽選日時後に通知されます","winnerBooking":"当選者は自動的に撮影会に予約されます","noRefund":"エントリー後のキャンセルはできません"}},"social":{"follow":{"follow":"フォロー","unfollow":"フォロー解除","pending":"承認待ち","mutualFollow":"相互フォロー","processing":"処理中...","error":"エラーが発生しました","followers":"フォロワー","following":"フォロー中","mutualFollows":"相互フォロー","block":"ブロック","unblock":"ブロック解除","blocked":"ブロック中","followRequests":"フォローリクエスト","approve":"承認","reject":"拒否","searchUsers":"ユーザーを検索","noUsersFound":"ユーザーが見つかりません","stats":{"followers":"{count} フォロワー","following":"{count} フォロー中","mutualFollows":"{count} 相互フォロー"},"settings":{"privacy":"プライバシー設定","followApproval":"フォロー承認制","followApprovalDescription":"他のユーザーがあなたをフォローする際に承認が必要になります","messagePermissions":"メッセージ許可設定","allowFromFollowers":"フォロワーからのメッセージを許可","allowFromFollowing":"フォロー中のユーザーからのメッセージを許可","allowFromStrangers":"未フォローユーザーからのメッセージを許可","readStatus":"既読表示設定","showReadStatus":"メッセージの既読状態を表示","showOnlineStatus":"オンライン状態を表示","notifications":"通知設定","notifyNewFollower":"新しいフォロワーの通知","notifyFollowRequest":"フォローリクエストの通知","profileVisibility":"プロフィール表示設定","public":"公開","followersOnly":"フォロワーのみ","private":"非公開"}},"messaging":{"title":"メッセージ","searchPlaceholder":"メッセージを検索...","loading":"読み込み中...","noConversations":"メッセージがありません","noSearchResults":"検索結果が見つかりません","startNewConversation":"新しい会話を開始","tabs":{"all":"すべて","followers":"フォロワー","following":"フォロー中"},"unknownUser":"不明なユーザー","noMessages":"メッセージがありません","lastSeen":"最終接続時刻","yesterday":"昨日","edited":"編集済み","typeMessage":"メッセージを入力...","loadingMessages":"メッセージを読み込み中...","startConversation":"最初のメッセージを送信しましょう","goToPhotoSession":"撮影会ページに移動","errorLoadingMessages":"メッセージの読み込みに失敗しました","errorSendingMessage":"メッセージの送信に失敗しました","createGroup":"グループを作成","createGroupDescription":"新しいグループ会話を作成します","groupName":"グループ名","groupNamePlaceholder":"グループ名を入力","groupNameRequired":"グループ名は必須です","groupDescription":"グループ説明","groupDescriptionPlaceholder":"グループの説明を入力（任意）","groupImage":"グループ画像","groupImagePlaceholder":"画像URLを入力","optional":"任意","selectedMembers":"選択されたメンバー","selectMembers":"メンバーを選択","searchUsers":"ユーザーを検索","noUsers":"ユーザーが見つかりません","creating":"作成中...","createGroupError":"グループの作成に失敗しました","groupSettings":"グループ設定","groupSettingsDescription":"グループの名前や説明を変更できます","addMembers":"メンバーを追加","members":"メンバー","admin":"管理者","moderator":"モデレーター","you":"あなた","makeModeratorAction":"モデレーターにする","removeMember":"メンバーを削除","leaveGroup":"グループを退出","confirmLeaveGroup":"グループを退出しますか？","leaveGroupWarning":"退出後は招待されるまで再参加できません。","noDescription":"説明がありません","saveChanges":"変更を保存","loadMembersError":"メンバーの読み込みに失敗しました","updateSettingsError":"設定の更新に失敗しました","addMembersError":"メンバーの追加に失敗しました","removeMemberError":"メンバーの削除に失敗しました","leaveGroupError":"グループの退出に失敗しました","attachFile":"ファイルを添付","removeFile":"ファイルを削除","fileSizeError":"ファイルサイズが制限を超えています","fileTypeError":"サポートされていないファイル形式です","fileUploadError":"ファイルのアップロードに失敗しました"}},"adminLottery":{"title":"管理抽選撮影会","organizer":"主催者","free":"無料","winnersCount":"選出予定数: {count}名","sessionNotFound":"管理抽選撮影会が見つかりません","loginRequired":"ログインが必要です","loginRequiredDescription":"応募するにはログインしてください。","pleaseLogin":"ログインしてください","status":{"upcoming":"開始前","accepting":"応募受付中","selecting":"選出中","completed":"選出完了"},"entryStatus":{"applied":"応募済み","selected":"選出","rejected":"非選出"},"schedule":{"title":"応募スケジュール","applicationPeriod":"応募期間","selectionDeadline":"選出期限"},"applicationMessage":"応募メッセージ","optional":"任意","applicationMessagePlaceholder":"参加への意気込みや自己紹介、過去の経験などをお書きください...","applicationMessageHint":"開催者が選出の参考にします。丁寧にご記入ください。","applyToAdminLottery":"応募する","applicationInProgress":"応募中...","applicationCompleted":"応募が完了しました。","awaitingSelection":"開催者による選出をお待ちください。","congratulations":"おめでとうございます！選出されました！","selectedInstructions":"撮影会への参加が確定しました。詳細は別途ご連絡いたします。","notSelectedThisTime":"今回は選出されませんでした。次回もぜひご応募ください。","yourApplicationMessage":"あなたの応募メッセージ","selectionReason":"選出理由","applicationNotStarted":"応募期間はまだ開始されていません","applicationEnded":"応募期間は終了しました","applicationNotAccepting":"現在応募を受け付けていません","notes":{"title":"注意事項","organizerSelection":"開催者が応募者の中から手動で選出します","selectionCriteria":"選出基準は撮影会の詳細をご確認ください","resultNotification":"選出結果は選出期限後に通知されます","fairSelection":"選出は公平に行われますが、応募者全員が選出されるとは限りません","noRefund":"応募後のキャンセルはできません"}},"adminLotteryManagement":{"selectionOverview":"選出状況","totalApplications":"総応募数","selectedWinners":"選出済み","maxWinners":"最大選出数","remainingSlots":"残り枠","filterAndSort":"フィルター・並び替え","search":"検索","searchPlaceholder":"名前、メール、メッセージで検索...","statusFilter":"ステータス","allStatuses":"すべて","sortBy":"並び順","applicationDate":"応募日時","userName":"ユーザー名","bulkSelection":"一括選出","selectionReason":"選出理由","selectionReasonPlaceholder":"選出理由を記入してください（応募者に表示されます）","selectWinners":"選出する","clearSelection":"選択をクリア","confirmSelection":"選出確認","confirmSelectionDescription":"{count}名を選出しますか？","selecting":"選出中...","confirm":"確認","applicantsList":"応募者一覧","noApplicants":"応募者がいません","appliedAt":"応募日時","applicationMessage":"応募メッセージ","undoSelection":"選出取り消し","sessionStatus":"セッション状態","startAccepting":"応募受付開始","startSelecting":"選出開始","completeSelection":"選出完了","status":{"title":"ステータス","applied":"応募済み","selected":"選出","rejected":"非選出"},"noEntriesSelected":"応募者が選択されていません","pleaseSelectEntries":"選出する応募者を選択してください","exceedsMaxWinners":"最大選出数を超えています","exceedsMaxWinnersDescription":"最大{max}名まで選出可能です（現在{current}名選出済み、{selected}名選択中）","winnersSelected":"{count}名を選出しました","selectionUndone":"選出を取り消しました","statusUpdated":"ステータスを更新しました"},"errors":{"title":"エラー","bookingFailed":"予約に失敗しました","cancelFailed":"キャンセルに失敗しました","unexpectedError":"予期しないエラーが発生しました","sessionNotFound":"撮影会が見つかりません","sessionFull":"申し訳ございません。この撮影会は満席です。","alreadyBooked":"この撮影会は既に予約済みです。","sessionEnded":"この撮影会は既に終了しています。","unauthorized":"権限がありません","entryFailed":"抽選エントリーに失敗しました","lotteryFailed":"抽選の実行に失敗しました","selectionFailed":"選出に失敗しました"},"success":{"title":"成功","bookingCompleted":"予約完了！","bookingCompletedDescription":"撮影会の予約が完了しました。","cancelCompleted":"キャンセル完了","cancelCompletedDescription":"予約をキャンセルしました。","entryCompleted":"エントリー完了！","entryCompletedDescription":"抽選エントリーが完了しました。","lotteryCompleted":"抽選完了","lotteryCompletedDescription":"抽選が正常に実行されました。","selectionStarted":"選出開始","selectionStartedDescription":"選出フェーズが開始されました。","selectionCompleted":"選出完了","selectionCompletedDescription":"{count}名の選出が完了しました。"},"priority_booking":{"title":"優先予約","description":"ランクや優先チケットによる予約システム","user_rank":{"title":"あなたのランク","bronze":"ブロンズ","silver":"シルバー","gold":"ゴールド","platinum":"プラチナ","vip":"VIP","points":"{points}ポイント","participation_count":"参加回数","total_bookings":"総予約数"},"booking_status":{"title":"予約状況","available":"予約可能","unavailable":"予約不可","available_from":"予約開始"},"booking_type":{"ticket_priority":"チケット優先","rank_priority":"ランク優先","general":"一般予約"},"button":{"book_now":"今すぐ予約","booking":"予約中...","unavailable":"予約不可"},"notice":{"ticket_will_be_used":"※ 優先チケットが使用されます"},"error":{"load_failed":"データの取得に失敗しました","booking_failed":"予約に失敗しました","unexpected":"予期しないエラーが発生しました","no_eligibility":"予約可能性を確認できませんでした"},"success":{"booking_created":"予約が完了しました"}},"priority_settings":{"title":"優先予約設定","description":"チケット優先やランク優先の設定を管理します","general_booking":{"title":"一般予約開始時間","description":"すべてのユーザーが予約可能になる時間"},"ticket_priority":{"title":"優先チケット機能","description":"特定のユーザーに発行した優先チケットによる早期予約","start_time":"開始時間","end_time":"終了時間"},"rank_priority":{"title":"ランク優先機能","description":"ユーザーランクに基づく段階的な予約開始","vip":"VIPランク","platinum":"プラチナランク","gold":"ゴールドランク","silver":"シルバーランク","start_time":"開始時間","end_time":"終了時間"},"button":{"save_settings":"設定を保存","saving":"保存中..."},"error":{"load_failed":"設定の取得に失敗しました","save_failed":"設定の保存に失敗しました","unexpected":"予期しないエラーが発生しました"},"success":{"settings_saved":"設定が保存されました"}},"waitlist":{"form":{"title":"キャンセル待ち登録","description":"満員の撮影会にキャンセル待ちで登録できます","message_label":"メッセージ（任意）","message_placeholder":"参加への意気込みやメッセージをお書きください","message_optional":"メッセージは任意です。主催者への参考情報として使用されます。","notice":{"title":"キャンセル待ちについて","auto_promote":"空きが発生した場合、自動的に繰り上げ当選します","deadline":"繰り上げ当選後は期限内に予約を確定してください","notification":"繰り上げ当選時にはメールで通知されます"}},"waiting":{"title":"キャンセル待ち中","description":"現在キャンセル待ちに登録されています","position":"待ち順位","position_value":"{position}番目","joined_at":"登録日","your_message":"あなたのメッセージ","notice":"空きが発生次第、自動的に繰り上げ当選の通知をお送りします。"},"promotion":{"title":"繰り上げ当選","description":"おめでとうございます！繰り上げ当選しました","reason":"繰り上げ理由","default_reason":"空きが発生したため","deadline":"予約確定期限","expired":"期限切れ","expired_notice":"期限が過ぎたため、この繰り上げ当選は無効になりました。"},"button":{"join_waitlist":"キャンセル待ちに登録","joining":"登録中...","cancel_waitlist":"キャンセル待ちを取り消す","cancelling":"取り消し中...","confirm_booking":"予約を確定する","confirming":"確定中...","decline":"辞退する"},"success":{"joined":"キャンセル待ちに登録しました","cancelled":"キャンセル待ちを取り消しました","booking_confirmed":"予約を確定しました"},"error":{"load_failed":"キャンセル待ち状況の取得に失敗しました","join_failed":"キャンセル待ちの登録に失敗しました","cancel_failed":"キャンセル待ちの取り消しに失敗しました","confirm_failed":"予約の確定に失敗しました","unexpected":"予期しないエラーが発生しました"}},"waitlist_settings":{"title":"キャンセル待ち設定","description":"撮影会のキャンセル待ち機能を設定します","basic":{"enabled":"キャンセル待ちを有効にする","enabled_description":"参加者がキャンセル待ちに登録できるようになります","max_size":"最大キャンセル待ち数","max_size_description":"キャンセル待ちに登録できる最大人数を設定します"},"auto_promote":{"enabled":"自動繰り上げを有効にする","enabled_description":"空きが発生した際に自動的にキャンセル待ちから繰り上げます","deadline_hours":"繰り上げ確定期限（時間）","deadline_hours_description":"繰り上げ当選者が予約を確定するまでの期限を設定します"},"notifications":{"title":"通知設定","description":"キャンセル待ちに関する通知方法を設定します","email":"メール通知","push":"プッシュ通知"},"button":{"save_settings":"設定を保存","saving":"保存中..."},"success":{"settings_saved":"設定を保存しました"},"error":{"load_failed":"設定の取得に失敗しました","save_failed":"設定の保存に失敗しました","unexpected":"予期しないエラーが発生しました"}},"search":{"filters":{"title":"検索フィルター","keyword":"キーワード","keywordPlaceholder":"撮影会のタイトルや説明で検索...","location":"場所","locationPlaceholder":"東京都、渋谷区など...","dateRange":"開催日","dateFrom":"開始日","dateTo":"終了日","selectDate":"日付を選択","priceRange":"参加費","priceMin":"最低料金","priceMax":"最高料金","participantsRange":"参加者数","participantsMin":"最少人数","participantsMax":"最多人数","bookingTypes":"予約方式","options":"その他のオプション","onlyAvailable":"空きがある撮影会のみ","sortBy":"並び順","sortByStartTime":"開始日時順","sortByPrice":"料金順","sortByCreatedAt":"作成日順","sortByParticipants":"参加者数順","ascending":"昇順","descending":"降順"},"search":"検索","searching":"検索中...","reset":"リセット","results":{"title":"検索結果","count":"件","noResults":"検索条件に一致する撮影会が見つかりませんでした","tryDifferentFilters":"検索条件を変更してお試しください"},"error":{"searchFailed":"検索に失敗しました","unexpectedError":"予期しないエラーが発生しました"}},"reviews":{"form":{"title":"レビューを投稿","overallRating":"総合評価","detailedRatings":"詳細評価","organizationRating":"運営・進行","communicationRating":"コミュニケーション","valueRating":"コストパフォーマンス","venueRating":"会場・環境","reviewContent":"レビュー内容","reviewTitle":"タイトル","reviewTitlePlaceholder":"レビューのタイトルを入力してください","reviewContentPlaceholder":"撮影会の感想や詳細なレビューを記入してください","pros":"良かった点","prosPlaceholder":"特に良かった点があれば記入してください","cons":"改善点","consPlaceholder":"改善してほしい点があれば記入してください","options":"オプション","postAnonymously":"匿名で投稿する","anonymousDescription":"匿名で投稿すると、あなたの名前は表示されません","submitReview":"レビューを投稿","submitting":"投稿中...","notRated":"未評価","guidelines":{"title":"レビューガイドライン","honest":"正直で建設的なレビューを心がけてください","respectful":"他の参加者や主催者を尊重してください","constructive":"改善点は具体的で建設的に記載してください","noPersonalInfo":"個人情報や連絡先は記載しないでください","editPolicy":"投稿後の編集はできませんのでご注意ください"}},"display":{"anonymousUser":"匿名ユーザー","verified":"参加確認済み","detailedRatings":"詳細評価","helpfulCount":"{count}人が参考になったと評価"},"actions":{"helpful":"参考になった","notHelpful":"参考にならない","report":"報告する"},"validation":{"overallRatingRequired":"総合評価は必須です","pleaseSelectRating":"1〜5の評価を選択してください","reportReasonRequired":"報告理由を選択してください","pleaseSelectReason":"報告理由を選択してください"},"success":{"reviewSubmitted":"レビューを投稿しました","voteSubmitted":"評価を送信しました","reportSubmitted":"報告を送信しました"},"error":{"submitFailed":"投稿に失敗しました","voteFailed":"評価の送信に失敗しました","reportFailed":"報告の送信に失敗しました","unexpectedError":"予期しないエラーが発生しました"},"report":{"title":"レビューを報告","description":"不適切なレビューを報告してください。報告内容は運営チームが確認します。","reason":"報告理由","reasons":{"spam":"スパム・宣伝","inappropriate":"不適切な内容","fake":"虚偽の情報","harassment":"嫌がらせ・誹謗中傷","other":"その他"},"additionalInfo":"追加情報（任意）","additionalInfoPlaceholder":"詳細な説明があれば記入してください","submit":"報告する","submitting":"送信中..."},"stats":{"title":"評価統計","reviewCount":"{count}件のレビュー"},"list":{"title":"レビュー","writeReview":"レビューを書く","writeFirstReview":"最初のレビューを書く","noReviews":"まだレビューがありません","noReviewsDescription":"この撮影会のレビューはまだ投稿されていません。","noReviewsWithFilter":"条件に一致するレビューがありません","filters":{"allRatings":"すべての評価","stars":"つ星"},"sort":{"newest":"新しい順","oldest":"古い順","highest":"評価の高い順","lowest":"評価の低い順","helpful":"参考になった順"}}},"photoConsent":{"title":"写真公開合意管理","description":"Tinder風スワイプで効率的に合意管理","swipeInstructions":{"approve":"右スワイプ: 承認","reject":"左スワイプ: 拒否","discuss":"上スワイプ: 要相談"},"status":{"pending":"確認待ち","approved":"承認済み","rejected":"拒否済み","requiresDiscussion":"要相談"},"buttons":{"approve":"承認","reject":"拒否","discuss":"要相談","preview":"プレビュー","batchMode":"一括操作","swipeMode":"スワイプモード"},"photographer":"カメラマン","model":"モデル","session":"撮影会","requestMessage":"リクエストメッセージ","responseMessage":"返信メッセージ","usageScope":"使用用途","usageScopes":{"web":"Web","sns":"SNS","print":"印刷","commercial":"商用"},"batchActions":{"selectAll":"全て選択","deselectAll":"選択解除","selectedCount":"{count}件選択中","approveSelected":"選択項目を承認","rejectSelected":"選択項目を拒否"},"preview":{"zoomIn":"拡大","zoomOut":"縮小","metadata":"撮影情報","location":"撮影場所","date":"撮影日","close":"閉じる"},"messages":{"noRequests":"新しい合意リクエストはありません","requestsCount":"{count}件の確認待ち","updateSuccess":"更新が完了しました","updateError":"更新に失敗しました","batchUpdateSuccess":"{count}件の更新が完了しました"},"legal":{"gdprNotice":"※ すべての合意は法的証跡として記録され、GDPR準拠の下で管理されます","dataRetention":"データ保持期間: 7年間（法的要件）","rightsInfo":"お客様には、データの削除・修正・エクスポートの権利があります"}},"modelTag":{"placeholder":"@ユーザー名を入力してモデルをタグ付け...","noResults":"に一致するユーザーが見つかりません","add":"追加","remove":"削除","following":"フォロー中","follower":"フォロワー","maxTagsReached":"タグ付け上限に達しました","tagAdded":"モデルをタグ付けしました","tagRemoved":"タグを削除しました"},"calendar":{"addToCalendar":"カレンダーに追加","addToGoogleCalendar":"Googleカレンダーに追加","calendarEventCreated":"カレンダーイベントが作成されました"},"photobook":{"title":"フォトブック","spreadView":"見開き表示","pageView":"ページ表示","loading":"読み込み中...","error":"エラーが発生しました","noPhotos":"写真がありません","noLayoutSet":"レイアウトが設定されていません","addPhoto":"写真を追加","fullscreen":"フルスクリーン","exitFullscreen":"フルスクリーン終了","zoomIn":"拡大","zoomOut":"縮小","previousPage":"前のページ","nextPage":"次のページ","pageCounter":"{current} / {total}","layoutSelector":{"title":"レイアウトを選択","description":"写真のレイアウトを選択してください","categories":{"single":"シングル","collage":"コラージュ","magazine":"マガジン","artistic":"アーティスティック"},"templates":{"single":"1枚レイアウト","twoVertical":"2枚縦並び","twoHorizontal":"2枚横並び","threeGrid":"3枚グリッド","fourGrid":"4枚グリッド","magazine":"マガジン風","artistic":"アーティスティック"},"premium":"プレミアム","premiumRequired":"このレイアウトはプレミアム機能です","select":"選択","cancel":"キャンセル"}},"photoSessionSlotForm":{"title":"撮影枠設定","addSlot":"枠を追加","slotNumber":"撮影枠","startTime":"開始時刻","shootingDuration":"撮影時間（分）","breakDuration":"休憩時間（分）","endTime":"終了時刻","pricePerPerson":"1人あたりの料金（円）","maxParticipants":"最大参加者数","costumeImage":"衣装画像","costumeDescription":"衣装の説明","discountType":"割引タイプ","discountValue":"割引値","discountCondition":"割引条件","notes":"メモ","delete":"削除","autoFill":"自動入力","copyFromAbove":"上の設定をコピー","uploadImage":"画像をアップロード","uploading":"アップロード中...","originalPrice":"元の料金","discountedPrice":"割引後料金","none":"なし","percentage":"パーセンテージ","fixedAmount":"固定金額","participants":"参加者","available":"空きあり","full":"満席","save":"保存","autoFillSuccess":"次の撮影枠に時間を自動入力しました","copySuccess":"上の撮影枠の設定をコピーしました","deleteSuccess":"撮影枠を削除しました","imageUploadSuccess":"画像をアップロードしました","imageUploadError":"画像のアップロードに失敗しました","sameImageDetected":"同じ画像が検出されました（容量節約）","calculated":"自動計算","priceInputPlaceholder":"例: 5000","participantsInputPlaceholder":"例: 2","durationInputPlaceholder":"例: 50","breakInputPlaceholder":"例: 10"},"favorites":{"pageTitle":"お気に入り | ShutterHub","pageDescription":"あなたのお気に入りのスタジオと撮影会を管理できます","title":"お気に入り","subtitle":"気に入ったスタジオや撮影会をまとめて管理","stats":{"total":"合計","studios":"スタジオ","photoSessions":"撮影会"},"tabs":{"all":"すべて","studios":"スタジオ","photoSessions":"撮影会"},"search":{"placeholder":"お気に入りを検索...","noResults":"検索結果が見つかりません","noResultsDescription":"「{term}」に一致するお気に入りが見つかりませんでした","suggestions":{"checkSpelling":"スペルや入力内容を確認してください","tryDifferentTerms":"別のキーワードで試してください","browseAll":"すべてのお気に入りを確認してみてください"}},"sort":{"placeholder":"並び替え","newest":"新しい順","oldest":"古い順","name":"名前順"},"empty":{"all":"まだお気に入りがありません","studios":"お気に入りのスタジオがありません","photoSessions":"お気に入りの撮影会がありません","allTitle":"お気に入りを見つけましょう","allDescription":"気に入ったスタジオや撮影会にハートボタンを押して、ここでまとめて管理できます。","studiosTitle":"お気に入りのスタジオを見つけましょう","studiosDescription":"素敵なスタジオを見つけて、お気に入りに追加しましょう。","photoSessionsTitle":"お気に入りの撮影会を見つけましょう","photoSessionsDescription":"興味のある撮影会を見つけて、お気に入りに追加しましょう。","browseAll":"今すぐ探す","browseStudios":"スタジオを探す","browsePhotoSessions":"撮影会を探す"},"actions":{"exploreStudios":"スタジオを探す","explorePhotoSessions":"撮影会を探す"},"howTo":{"title":"お気に入り機能の使い方","step1":{"title":"ハートボタンを押す","description":"スタジオや撮影会のカードの右上にあるハートボタンを押してお気に入りに追加"},"step2":{"title":"お気に入りに追加","description":"お気に入りに追加されたアイテムは、このページで一覧表示されます"},"step3":{"title":"簡単にアクセス","description":"お気に入り一覧から簡単に目的のスタジオや撮影会にアクセスできます"}}},"subscription":{"pageTitle":"サブスクリプション管理","pageDescription":"ShutterHubのサブスクリプションプランを管理します","currentPlan":"現在のプラン","selectPlan":"プランを選択","freePlan":"フリープラン","basicPlan":"ベーシックプラン","premiumPlan":"プレミアムプラン","proPlan":"プロプラン","businessPlan":"ビジネスプラン","standardPlan":"スタンダードプラン","professionalPlan":"プロフェッショナルプラン","monthly":"月額","free":"無料","popular":"人気","current":"現在のプラン","features":"機能","selectThisPlan":"このプランを選択","changeToPlan":"このプランに変更","processing":"処理中...","status":{"active":"アクティブ","cancelled":"キャンセル済み","pastDue":"支払い遅延","trialing":"トライアル中"},"nextBilling":"次回請求日","cancelPlan":"プランをキャンセル","cancelling":"キャンセル中...","phase1Notice":"Phase 1: 基本機能実装中","paymentTitle":"決済情報入力","paymentDescription":"サブスクリプション決済を完了してください","paymentProcessing":"決済処理中...","paymentSuccess":"決済が完了しました","paymentFailed":"決済に失敗しました","securePayment":"安全な決済処理"}},"now":"$undefined","timeZone":"Asia/Tokyo","children":["$","$L2d",null,{"children":["$","$L2e",null,{"attribute":"class","defaultTheme":"system","enableSystem":true,"disableTransitionOnChange":true,"children":[["$","$L4",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L5",null,{},null,[],1],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":[["$","$L2f",null,{},null,[],1],[]],"forbidden":"$undefined","unauthorized":"$undefined"},null,[],1],["$","$L30",null,{},"$a",[["LocaleLayout","webpack-internal:///(rsc)/./src/app/[locale]/layout.tsx",146,104]],1],["$","$L31",null,{},"$a",[["LocaleLayout","webpack-internal:///(rsc)/./src/app/[locale]/layout.tsx",151,104]],1]]},"$a",[["LocaleLayout","webpack-internal:///(rsc)/./src/app/[locale]/layout.tsx",139,106]],1]},"$a",[["LocaleLayout","webpack-internal:///(rsc)/./src/app/[locale]/layout.tsx",138,102]],1]},"$2b",[],1]\n',
+    ]);
+  </script>
+  <deepl-input-controller translate="no"></deepl-input-controller
+  ><next-route-announcer style="position: absolute"></next-route-announcer
+  ><nextjs-portal></nextjs-portal>
+</body>

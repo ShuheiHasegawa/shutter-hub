@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { PublicLayout } from '@/components/layout/public-layout';
+import { PublicHeader } from '@/components/layout/public-header';
+import { Footer } from '@/components/layout/footer';
 import {
   Card,
   CardContent,
@@ -22,6 +23,8 @@ import {
   LogIn,
   TestTube,
   Code,
+  Star,
+  PlayCircle,
 } from 'lucide-react';
 
 interface DevTool {
@@ -98,6 +101,23 @@ const devTools: DevTool[] = [
     status: 'beta',
     category: 'ui',
   },
+  {
+    title: 'レビューフォームモック',
+    description: '3段階評価UI（良い、普通、悪い）の動作確認とデザイン検証',
+    path: '/dev/review-form-mock',
+    icon: <Star className="h-5 w-5" />,
+    status: 'experimental',
+    category: 'ui',
+  },
+  {
+    title: '撮影会テストフロー',
+    description:
+      '撮影会作成→予約→レビューまでのフローを効率的にテスト（過去日時で自動作成）',
+    path: '/dev/photo-session-test-flow',
+    icon: <PlayCircle className="h-5 w-5" />,
+    status: 'beta',
+    category: 'testing',
+  },
 ];
 
 const categoryLabels = {
@@ -128,139 +148,148 @@ export default function DevToolsPage() {
   >;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="flex flex-col h-screen overflow-hidden">
       <DevToolsNavigation />
-      <PublicLayout>
-        {/* ヘッダーセクション */}
-        <section className="py-24 surface-primary">
-          <div className="container">
-            <div className="text-center space-y-4">
-              <div className="flex items-center justify-center gap-3 mb-6">
-                <Code className="h-8 w-8" />
-                <h1 className="text-4xl md:text-5xl font-bold">開発ツール</h1>
-              </div>
-              <p className="text-xl opacity-80 max-w-2xl mx-auto">
-                ShutterHub の開発・テスト・デバッグ用ツール集
-              </p>
-              <div className="flex justify-center gap-2 mt-6">
-                <Badge variant="outline" className="bg-background/20">
-                  {devTools.length} ツール
-                </Badge>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* 説明セクション */}
-        <section className="py-8 bg-blue-50 border-y border-blue-200">
-          <div className="container">
-            <div className="max-w-4xl mx-auto">
-              <div className="flex items-start gap-3">
-                <TestTube className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                <div>
-                  <h3 className="font-semibold text-blue-800 mb-1">
-                    💡 開発ツールについて
-                  </h3>
-                  <p className="text-sm text-blue-700">
-                    ShutterHub の各機能をテスト・確認するためのツール集です。
-                    UI確認、決済テスト、認証テストなどが行えます。
+      <div className="flex-1 min-h-0 overflow-hidden">
+        <div className="h-full overflow-y-auto">
+          <PublicHeader />
+          <main>
+            {/* ヘッダーセクション */}
+            <section className="py-24 surface-primary">
+              <div className="container">
+                <div className="text-center space-y-4">
+                  <div className="flex items-center justify-center gap-3 mb-6">
+                    <Code className="h-8 w-8" />
+                    <h1 className="text-4xl md:text-5xl font-bold">
+                      開発ツール
+                    </h1>
+                  </div>
+                  <p className="text-xl opacity-80 max-w-2xl mx-auto">
+                    ShutterHub の開発・テスト・デバッグ用ツール集
                   </p>
+                  <div className="flex justify-center gap-2 mt-6">
+                    <Badge variant="outline" className="bg-background/20">
+                      {devTools.length} ツール
+                    </Badge>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
-        </section>
+            </section>
 
-        {/* ツール一覧 */}
-        <section className="py-16 bg-background">
-          <div className="container">
-            <div className="max-w-6xl mx-auto">
-              {categories.map(category => {
-                const categoryTools = devTools.filter(
-                  tool => tool.category === category
-                );
-                if (categoryTools.length === 0) return null;
-
-                return (
-                  <div key={category} className="mb-12">
-                    <div className="flex items-center gap-3 mb-6">
-                      <h2 className="text-2xl font-bold">
-                        {categoryLabels[category]}
-                      </h2>
-                      <Badge variant="secondary">
-                        {categoryTools.length} ツール
-                      </Badge>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {categoryTools.map(tool => (
-                        <Card
-                          key={tool.path}
-                          className="hover:shadow-lg transition-shadow"
-                        >
-                          <CardHeader>
-                            <div className="flex items-start justify-between">
-                              <div className="flex items-center gap-3">
-                                {tool.icon}
-                                <CardTitle className="text-lg">
-                                  {tool.title}
-                                </CardTitle>
-                              </div>
-                              <Badge
-                                variant="outline"
-                                className={statusColors[tool.status]}
-                              >
-                                {tool.status}
-                              </Badge>
-                            </div>
-                            <CardDescription className="text-sm">
-                              {tool.description}
-                            </CardDescription>
-                          </CardHeader>
-                          <CardContent>
-                            <Link href={tool.path}>
-                              <Button className="w-full" variant="outline">
-                                ツールを開く
-                              </Button>
-                            </Link>
-                          </CardContent>
-                        </Card>
-                      ))}
+            {/* 説明セクション */}
+            <section className="py-8 bg-blue-50 border-y border-blue-200">
+              <div className="container">
+                <div className="max-w-4xl mx-auto">
+                  <div className="flex items-start gap-3">
+                    <TestTube className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <h3 className="font-semibold text-blue-800 mb-1">
+                        💡 開発ツールについて
+                      </h3>
+                      <p className="text-sm text-blue-700">
+                        ShutterHub
+                        の各機能をテスト・確認するためのツール集です。
+                        UI確認、決済テスト、認証テストなどが行えます。
+                      </p>
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-
-        {/* フッター情報 */}
-        <section className="py-12 surface-neutral">
-          <div className="container">
-            <div className="max-w-4xl mx-auto text-center space-y-4">
-              <h3 className="text-xl font-semibold">開発情報</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
-                <div>
-                  <h4 className="font-medium mb-2">技術スタック</h4>
-                  <p className="opacity-80">
-                    Next.js 14 + TypeScript
-                    <br />
-                    Supabase + Stripe
-                  </p>
-                </div>
-                <div>
-                  <h4 className="font-medium mb-2">更新</h4>
-                  <p className="opacity-80">
-                    最終更新: {today || '—'}
-                    <br />
-                    バージョン: v2.0
-                  </p>
                 </div>
               </div>
-            </div>
-          </div>
-        </section>
-      </PublicLayout>
+            </section>
+
+            {/* ツール一覧 */}
+            <section className="py-16 bg-background">
+              <div className="container">
+                <div className="max-w-6xl mx-auto">
+                  {categories.map(category => {
+                    const categoryTools = devTools.filter(
+                      tool => tool.category === category
+                    );
+                    if (categoryTools.length === 0) return null;
+
+                    return (
+                      <div key={category} className="mb-12">
+                        <div className="flex items-center gap-3 mb-6">
+                          <h2 className="text-2xl font-bold">
+                            {categoryLabels[category]}
+                          </h2>
+                          <Badge variant="secondary">
+                            {categoryTools.length} ツール
+                          </Badge>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                          {categoryTools.map(tool => (
+                            <Card
+                              key={tool.path}
+                              className="hover:shadow-lg transition-shadow"
+                            >
+                              <CardHeader>
+                                <div className="flex items-start justify-between">
+                                  <div className="flex items-center gap-3">
+                                    {tool.icon}
+                                    <CardTitle className="text-lg">
+                                      {tool.title}
+                                    </CardTitle>
+                                  </div>
+                                  <Badge
+                                    variant="outline"
+                                    className={statusColors[tool.status]}
+                                  >
+                                    {tool.status}
+                                  </Badge>
+                                </div>
+                                <CardDescription className="text-sm">
+                                  {tool.description}
+                                </CardDescription>
+                              </CardHeader>
+                              <CardContent>
+                                <Link href={tool.path}>
+                                  <Button className="w-full" variant="outline">
+                                    ツールを開く
+                                  </Button>
+                                </Link>
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </section>
+
+            {/* フッター情報 */}
+            <section className="py-12 surface-neutral">
+              <div className="container">
+                <div className="max-w-4xl mx-auto text-center space-y-4">
+                  <h3 className="text-xl font-semibold">開発情報</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+                    <div>
+                      <h4 className="font-medium mb-2">技術スタック</h4>
+                      <p className="opacity-80">
+                        Next.js 14 + TypeScript
+                        <br />
+                        Supabase + Stripe
+                      </p>
+                    </div>
+                    <div>
+                      <h4 className="font-medium mb-2">更新</h4>
+                      <p className="opacity-80">
+                        最終更新: {today || '—'}
+                        <br />
+                        バージョン: v2.0
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </main>
+          <Footer />
+        </div>
+      </div>
     </div>
   );
 }
