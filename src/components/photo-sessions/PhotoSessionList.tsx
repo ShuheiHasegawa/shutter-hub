@@ -199,9 +199,20 @@ export function PhotoSessionList({
           type: 'photo_session' as const,
           id: session.id,
         }));
+
+        logger.debug('[PhotoSessionList] 一括お気に入り状態取得開始', {
+          itemsCount: favoriteItems.length,
+          sessionIds: favoriteItems.map(item => item.id),
+        });
+
         getBulkFavoriteStatusAction(favoriteItems)
           .then(favoriteResult => {
             if (favoriteResult && favoriteResult.success) {
+              logger.debug('[PhotoSessionList] 一括お気に入り状態取得成功', {
+                statesCount: Object.keys(favoriteResult.favoriteStates).length,
+                isPendingReset: pendingResetRef.current,
+              });
+
               if (pendingResetRef.current) {
                 setFavoriteStates(favoriteResult.favoriteStates);
               } else {
