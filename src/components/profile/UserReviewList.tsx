@@ -10,7 +10,15 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ReviewCard } from '@/components/reviews/ReviewCard';
 import { getUserReviews } from '@/app/actions/reviews';
-import { Star, Users, Camera, MessageSquare } from 'lucide-react';
+import {
+  Star,
+  Users,
+  Camera,
+  MessageSquare,
+  ThumbsUp,
+  ThumbsDown,
+  Minus,
+} from 'lucide-react';
 
 interface UserReviewListProps {
   userId: string;
@@ -18,7 +26,7 @@ interface UserReviewListProps {
 
 interface UserReview {
   id: string;
-  overall_rating: number;
+  overall_rating: number; // 1 (bad), 3 (normal), 5 (good) のみ
   punctuality_rating?: number;
   communication_rating?: number;
   professionalism_rating?: number;
@@ -44,7 +52,7 @@ interface UserReview {
 
 interface PhotoSessionReview {
   id: string;
-  overall_rating: number;
+  overall_rating: number; // 1 (bad), 3 (normal), 5 (good) のみ
   organization_rating?: number;
   communication_rating?: number;
   value_rating?: number;
@@ -66,6 +74,27 @@ interface PhotoSessionReview {
 
 export function UserReviewList({ userId }: UserReviewListProps) {
   const tCommon = useTranslations('common');
+  const t = useTranslations('reviews');
+
+  // overall_ratingから評価ラベルを取得（1=bad, 3=normal, 5=good）
+  const getRatingLevel = (
+    review: UserReview | PhotoSessionReview
+  ): 'good' | 'normal' | 'bad' => {
+    if (review.overall_rating === 5) return 'good';
+    if (review.overall_rating === 3) return 'normal';
+    return 'bad'; // 1 or その他
+  };
+
+  const ratingLabels = {
+    good: t('form.ratingLabels.good') || '良い',
+    normal: t('form.ratingLabels.normal') || '普通',
+    bad: t('form.ratingLabels.bad') || '悪い',
+  };
+  const ratingBadgeVariants = {
+    good: 'default',
+    normal: 'secondary',
+    bad: 'destructive',
+  } as const;
 
   const [userReviews, setUserReviews] = useState<UserReview[]>([]);
   const [sessionReviews, setSessionReviews] = useState<PhotoSessionReview[]>(
@@ -209,21 +238,25 @@ export function UserReviewList({ userId }: UserReviewListProps) {
                             </div>
 
                             {/* 評価 */}
-                            <div className="flex items-center gap-2">
-                              <div className="flex items-center">
-                                {[1, 2, 3, 4, 5].map(star => (
-                                  <Star
-                                    key={star}
-                                    className={`h-4 w-4 ${
-                                      star <= review.overall_rating
-                                        ? 'text-shutter-warning fill-current'
-                                        : 'text-muted'
-                                    }`}
-                                  />
-                                ))}
-                              </div>
-                              <span className="font-medium">
-                                {review.overall_rating}/5
+                            <div className="flex items-center gap-3">
+                              <Badge
+                                variant={
+                                  ratingBadgeVariants[getRatingLevel(review)]
+                                }
+                              >
+                                {getRatingLevel(review) === 'good' && (
+                                  <ThumbsUp className="h-3 w-3 mr-1" />
+                                )}
+                                {getRatingLevel(review) === 'normal' && (
+                                  <Minus className="h-3 w-3 mr-1" />
+                                )}
+                                {getRatingLevel(review) === 'bad' && (
+                                  <ThumbsDown className="h-3 w-3 mr-1" />
+                                )}
+                                {ratingLabels[getRatingLevel(review)]}
+                              </Badge>
+                              <span className="text-sm text-muted-foreground">
+                                ({review.overall_rating}/5)
                               </span>
                             </div>
 

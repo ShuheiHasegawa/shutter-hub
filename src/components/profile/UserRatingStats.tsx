@@ -3,7 +3,16 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Star, TrendingUp, Users, Camera } from 'lucide-react';
+import {
+  Star,
+  TrendingUp,
+  Users,
+  Camera,
+  ThumbsUp,
+  ThumbsDown,
+  Minus,
+} from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface UserRatingStatsProps {
   stats: {
@@ -25,28 +34,51 @@ interface UserRatingStatsProps {
 }
 
 export function UserRatingStats({ stats }: UserRatingStatsProps) {
-  const StarRating = ({ rating, label }: { rating: number; label: string }) => (
-    <div className="flex items-center justify-between">
-      <span className="text-sm text-muted-foreground">{label}</span>
-      <div className="flex items-center gap-1">
-        <div className="flex items-center">
-          {[1, 2, 3, 4, 5].map(star => (
-            <Star
-              key={star}
-              className={`h-3 w-3 ${
-                star <= rating
-                  ? 'text-yellow-500 fill-current'
-                  : 'text-gray-300'
-              }`}
-            />
-          ))}
+  const t = useTranslations('reviews');
+
+  // 数値評価をrating_levelに変換
+  const numberToRatingLevel = (rating: number): 'good' | 'normal' | 'bad' => {
+    if (rating >= 4) return 'good';
+    if (rating === 3) return 'normal';
+    return 'bad';
+  };
+
+  const ratingLabels = {
+    good: t('form.ratingLabels.good') || '良い',
+    normal: t('form.ratingLabels.normal') || '普通',
+    bad: t('form.ratingLabels.bad') || '悪い',
+  };
+  const ratingBadgeVariants = {
+    good: 'default',
+    normal: 'secondary',
+    bad: 'destructive',
+  } as const;
+
+  const RatingLevelDisplay = ({
+    rating,
+    label,
+  }: {
+    rating: number;
+    label: string;
+  }) => {
+    const level = numberToRatingLevel(rating);
+    return (
+      <div className="flex items-center justify-between">
+        <span className="text-sm text-muted-foreground">{label}</span>
+        <div className="flex items-center gap-2">
+          <Badge variant={ratingBadgeVariants[level]} className="text-xs">
+            {level === 'good' && <ThumbsUp className="h-3 w-3 mr-1" />}
+            {level === 'normal' && <Minus className="h-3 w-3 mr-1" />}
+            {level === 'bad' && <ThumbsDown className="h-3 w-3 mr-1" />}
+            {ratingLabels[level]}
+          </Badge>
+          <span className="text-sm font-medium text-muted-foreground">
+            ({rating > 0 ? rating.toFixed(1) : '-'})
+          </span>
         </div>
-        <span className="text-sm font-medium ml-1">
-          {rating > 0 ? rating.toFixed(1) : '-'}
-        </span>
       </div>
-    </div>
-  );
+    );
+  };
 
   const hasOrganizerStats = stats.organizer_review_count > 0;
   const hasParticipantStats = stats.participant_review_count > 0;
@@ -96,21 +128,28 @@ export function UserRatingStats({ stats }: UserRatingStatsProps) {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">総合評価</span>
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center">
-                    {[1, 2, 3, 4, 5].map(star => (
-                      <Star
-                        key={star}
-                        className={`h-4 w-4 ${
-                          star <= stats.organizer_avg_rating
-                            ? 'text-yellow-500 fill-current'
-                            : 'text-gray-300'
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  <span className="font-bold">
-                    {stats.organizer_avg_rating.toFixed(1)}
+                <div className="flex items-center gap-3">
+                  <Badge
+                    variant={
+                      ratingBadgeVariants[
+                        numberToRatingLevel(stats.organizer_avg_rating)
+                      ]
+                    }
+                  >
+                    {numberToRatingLevel(stats.organizer_avg_rating) ===
+                      'good' && <ThumbsUp className="h-3 w-3 mr-1" />}
+                    {numberToRatingLevel(stats.organizer_avg_rating) ===
+                      'normal' && <Minus className="h-3 w-3 mr-1" />}
+                    {numberToRatingLevel(stats.organizer_avg_rating) ===
+                      'bad' && <ThumbsDown className="h-3 w-3 mr-1" />}
+                    {
+                      ratingLabels[
+                        numberToRatingLevel(stats.organizer_avg_rating)
+                      ]
+                    }
+                  </Badge>
+                  <span className="text-sm font-medium text-muted-foreground">
+                    ({stats.organizer_avg_rating.toFixed(1)})
                   </span>
                 </div>
               </div>
@@ -119,25 +158,25 @@ export function UserRatingStats({ stats }: UserRatingStatsProps) {
 
               <div className="space-y-2">
                 {stats.organizer_avg_organization > 0 && (
-                  <StarRating
+                  <RatingLevelDisplay
                     rating={stats.organizer_avg_organization}
                     label="運営・進行"
                   />
                 )}
                 {stats.organizer_avg_communication > 0 && (
-                  <StarRating
+                  <RatingLevelDisplay
                     rating={stats.organizer_avg_communication}
                     label="コミュニケーション"
                   />
                 )}
                 {stats.organizer_avg_value > 0 && (
-                  <StarRating
+                  <RatingLevelDisplay
                     rating={stats.organizer_avg_value}
                     label="コストパフォーマンス"
                   />
                 )}
                 {stats.organizer_avg_venue > 0 && (
-                  <StarRating
+                  <RatingLevelDisplay
                     rating={stats.organizer_avg_venue}
                     label="会場・環境"
                   />
@@ -163,21 +202,28 @@ export function UserRatingStats({ stats }: UserRatingStatsProps) {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">総合評価</span>
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center">
-                    {[1, 2, 3, 4, 5].map(star => (
-                      <Star
-                        key={star}
-                        className={`h-4 w-4 ${
-                          star <= stats.participant_avg_rating
-                            ? 'text-yellow-500 fill-current'
-                            : 'text-gray-300'
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  <span className="font-bold">
-                    {stats.participant_avg_rating.toFixed(1)}
+                <div className="flex items-center gap-3">
+                  <Badge
+                    variant={
+                      ratingBadgeVariants[
+                        numberToRatingLevel(stats.participant_avg_rating)
+                      ]
+                    }
+                  >
+                    {numberToRatingLevel(stats.participant_avg_rating) ===
+                      'good' && <ThumbsUp className="h-3 w-3 mr-1" />}
+                    {numberToRatingLevel(stats.participant_avg_rating) ===
+                      'normal' && <Minus className="h-3 w-3 mr-1" />}
+                    {numberToRatingLevel(stats.participant_avg_rating) ===
+                      'bad' && <ThumbsDown className="h-3 w-3 mr-1" />}
+                    {
+                      ratingLabels[
+                        numberToRatingLevel(stats.participant_avg_rating)
+                      ]
+                    }
+                  </Badge>
+                  <span className="text-sm font-medium text-muted-foreground">
+                    ({stats.participant_avg_rating.toFixed(1)})
                   </span>
                 </div>
               </div>
@@ -186,25 +232,25 @@ export function UserRatingStats({ stats }: UserRatingStatsProps) {
 
               <div className="space-y-2">
                 {stats.participant_avg_punctuality > 0 && (
-                  <StarRating
+                  <RatingLevelDisplay
                     rating={stats.participant_avg_punctuality}
                     label="時間厳守"
                   />
                 )}
                 {stats.participant_avg_communication > 0 && (
-                  <StarRating
+                  <RatingLevelDisplay
                     rating={stats.participant_avg_communication}
                     label="コミュニケーション"
                   />
                 )}
                 {stats.participant_avg_professionalism > 0 && (
-                  <StarRating
+                  <RatingLevelDisplay
                     rating={stats.participant_avg_professionalism}
                     label="プロ意識"
                   />
                 )}
                 {stats.participant_avg_cooperation > 0 && (
-                  <StarRating
+                  <RatingLevelDisplay
                     rating={stats.participant_avg_cooperation}
                     label="協調性"
                   />

@@ -14,7 +14,6 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { voteReviewHelpful, reportReview } from '@/app/actions/reviews';
 import {
-  Star,
   ThumbsUp,
   ThumbsDown,
   Flag,
@@ -22,6 +21,7 @@ import {
   Calendar,
   MoreHorizontal,
   CheckCircle,
+  Minus,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -43,7 +43,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 interface ReviewCardProps {
   review: {
     id: string;
-    overall_rating: number;
+    overall_rating: number; // 1 (bad), 3 (normal), 5 (good) のみ
     organization_rating?: number;
     communication_rating?: number;
     value_rating?: number;
@@ -169,30 +169,35 @@ export function ReviewCard({
     }
   };
 
-  const StarDisplay = ({
+  // 数値評価をrating_levelに変換
+  const numberToRatingLevel = (rating: number): 'good' | 'normal' | 'bad' => {
+    if (rating >= 4) return 'good';
+    if (rating === 3) return 'normal';
+    return 'bad';
+  };
+
+  const RatingLevelDisplay = ({
     rating,
     label,
   }: {
     rating: number;
     label: string;
-  }) => (
-    <div className="flex items-center gap-2">
-      <span className="text-sm text-muted-foreground min-w-0 flex-1">
-        {label}
-      </span>
-      <div className="flex items-center gap-1">
-        {[1, 2, 3, 4, 5].map(star => (
-          <Star
-            key={star}
-            className={`h-4 w-4 ${
-              star <= rating ? 'text-yellow-500 fill-current' : 'text-gray-300'
-            }`}
-          />
-        ))}
-        <span className="text-sm font-medium ml-1">{rating}</span>
+  }) => {
+    const level = numberToRatingLevel(rating);
+    return (
+      <div className="flex items-center gap-2">
+        <span className="text-sm text-muted-foreground min-w-0 flex-1">
+          {label}
+        </span>
+        <Badge variant={ratingBadgeVariants[level]} className="text-xs">
+          {level === 'good' && <ThumbsUp className="h-3 w-3 mr-1" />}
+          {level === 'normal' && <Minus className="h-3 w-3 mr-1" />}
+          {level === 'bad' && <ThumbsDown className="h-3 w-3 mr-1" />}
+          {ratingLabels[level]}
+        </Badge>
       </div>
-    </div>
-  );
+    );
+  };
 
   const formatDate = (dateString: string) => {
     return format(new Date(dateString), 'PPP', { locale: dateLocale });
@@ -206,6 +211,25 @@ export function ReviewCard({
       .toUpperCase()
       .slice(0, 2);
   };
+
+  // overall_ratingから評価ラベルを取得（1=bad, 3=normal, 5=good）
+  const getRatingLevel = (): 'good' | 'normal' | 'bad' => {
+    if (review.overall_rating === 5) return 'good';
+    if (review.overall_rating === 3) return 'normal';
+    return 'bad'; // 1 or その他
+  };
+
+  const ratingLevel = getRatingLevel();
+  const ratingLabels = {
+    good: t('form.ratingLabels.good') || '良い',
+    normal: t('form.ratingLabels.normal') || '普通',
+    bad: t('form.ratingLabels.bad') || '悪い',
+  };
+  const ratingBadgeVariants = {
+    good: 'default',
+    normal: 'secondary',
+    bad: 'destructive',
+  } as const;
 
   return (
     <>
@@ -239,7 +263,7 @@ export function ReviewCard({
                   {review.is_verified && (
                     <Badge variant="secondary" className="text-xs">
                       <CheckCircle className="h-3 w-3 mr-1" />
-                      {t('display.verified')}aaa
+                      {t('display.verified')}
                     </Badge>
                   )}
                 </div>
@@ -268,20 +292,16 @@ export function ReviewCard({
           </div>
 
           {/* 総合評価 */}
-          <div className="flex items-center gap-2">
-            <div className="flex items-center">
-              {[1, 2, 3, 4, 5].map(star => (
-                <Star
-                  key={star}
-                  className={`h-5 w-5 ${
-                    star <= review.overall_rating
-                      ? 'text-yellow-500 fill-current'
-                      : 'text-gray-300'
-                  }`}
-                />
-              ))}
-            </div>
-            <span className="font-medium">{review.overall_rating}/5</span>
+          <div className="flex items-center gap-3">
+            <Badge variant={ratingBadgeVariants[ratingLevel]}>
+              {ratingLevel === 'good' && <ThumbsUp className="h-3 w-3 mr-1" />}
+              {ratingLevel === 'normal' && <Minus className="h-3 w-3 mr-1" />}
+              {ratingLevel === 'bad' && <ThumbsDown className="h-3 w-3 mr-1" />}
+              {ratingLabels[ratingLevel]}
+            </Badge>
+            <span className="text-sm text-muted-foreground">
+              ({review.overall_rating}/5)
+            </span>
           </div>
 
           {/* タイトル */}
@@ -302,25 +322,25 @@ export function ReviewCard({
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
                 {review.organization_rating && (
-                  <StarDisplay
+                  <RatingLevelDisplay
                     rating={review.organization_rating}
                     label={t('form.organizationRating')}
                   />
                 )}
                 {review.communication_rating && (
-                  <StarDisplay
+                  <RatingLevelDisplay
                     rating={review.communication_rating}
                     label={t('form.communicationRating')}
                   />
                 )}
                 {review.value_rating && (
-                  <StarDisplay
+                  <RatingLevelDisplay
                     rating={review.value_rating}
                     label={t('form.valueRating')}
                   />
                 )}
                 {review.venue_rating && (
-                  <StarDisplay
+                  <RatingLevelDisplay
                     rating={review.venue_rating}
                     label={t('form.venueRating')}
                   />

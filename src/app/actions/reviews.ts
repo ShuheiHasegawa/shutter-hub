@@ -9,7 +9,7 @@ import { revalidatePath } from 'next/cache';
 export interface CreatePhotoSessionReviewData {
   photo_session_id: string;
   booking_id: string;
-  overall_rating: number;
+  overall_rating: number; // 1 (bad), 3 (normal), 5 (good) のみ
   organization_rating?: number;
   communication_rating?: number;
   value_rating?: number;
@@ -25,7 +25,7 @@ export interface CreateUserReviewData {
   photo_session_id: string;
   reviewee_id: string;
   booking_id: string;
-  overall_rating: number;
+  overall_rating: number; // 1 (bad), 3 (normal), 5 (good) のみ
   punctuality_rating?: number;
   communication_rating?: number;
   professionalism_rating?: number;
@@ -48,6 +48,20 @@ export interface ReviewReportData {
   review_type: 'photo_session' | 'user';
   reason: 'spam' | 'inappropriate' | 'fake' | 'harassment' | 'other';
   description?: string;
+}
+
+export interface UpdatePhotoSessionReviewData {
+  review_id: string;
+  overall_rating: number; // 1 (bad), 3 (normal), 5 (good) のみ
+  organization_rating?: number;
+  communication_rating?: number;
+  value_rating?: number;
+  venue_rating?: number;
+  title?: string;
+  content?: string;
+  pros?: string;
+  cons?: string;
+  is_anonymous?: boolean;
 }
 
 // 撮影会レビューを作成
@@ -514,6 +528,97 @@ export async function getPhotoSessionRatingStats(photoSessionId: string) {
     }
 
     return { data: stats };
+  } catch (error) {
+    logger.error('予期しないエラー:', error);
+    return { error: 'Unexpected error occurred' };
+  }
+}
+
+// ユーザーの既存レビューを取得（撮影会レビュー）
+export async function getPhotoSessionReviewByUser(
+  photoSessionId: string,
+  userId: string
+) {
+  try {
+    const supabase = await createClient();
+
+    const { data: review, error } = await supabase
+      .from('photo_session_reviews')
+      .select('*')
+      .eq('photo_session_id', photoSessionId)
+      .eq('reviewer_id', userId)
+      .maybeSingle();
+
+    if (error && error.code !== 'PGRST116') {
+      logger.error('レビュー取得エラー:', error);
+      return { error: 'Failed to fetch review' };
+    }
+
+    return { data: review };
+  } catch (error) {
+    logger.error('予期しないエラー:', error);
+    return { error: 'Unexpected error occurred' };
+  }
+}
+
+// 撮影会レビューを更新
+export async function updatePhotoSessionReview(
+  data: UpdatePhotoSessionReviewData
+) {
+  try {
+    const supabase = await createClient();
+
+    // 認証チェック
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return { error: 'Authentication required' };
+    }
+
+    // 既存レビューの確認（自分のレビューかチェック）
+    const { data: existingReview, error: reviewError } = await supabase
+      .from('photo_session_reviews')
+      .select('id, reviewer_id')
+      .eq('id', data.review_id)
+      .single();
+
+    if (reviewError || !existingReview) {
+      return { error: 'Review not found' };
+    }
+
+    if (existingReview.reviewer_id !== user.id) {
+      return { error: 'Not authorized to update this review' };
+    }
+
+    // レビュー更新
+    const { data: review, error: updateError } = await supabase
+      .from('photo_session_reviews')
+      .update({
+        overall_rating: data.overall_rating,
+        organization_rating: data.organization_rating,
+        communication_rating: data.communication_rating,
+        value_rating: data.value_rating,
+        venue_rating: data.venue_rating,
+        title: data.title,
+        content: data.content,
+        pros: data.pros,
+        cons: data.cons,
+        is_anonymous: data.is_anonymous ?? false,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', data.review_id)
+      .select()
+      .single();
+
+    if (updateError) {
+      logger.error('レビュー更新エラー:', updateError);
+      return { error: 'Failed to update review' };
+    }
+
+    revalidatePath('/photo-sessions');
+    return { data: review };
   } catch (error) {
     logger.error('予期しないエラー:', error);
     return { error: 'Unexpected error occurred' };
