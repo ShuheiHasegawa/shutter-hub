@@ -241,14 +241,13 @@ export default function PhotoSessionSlotForm({
   return (
     <div className="space-y-4">
       {/* ヘッダー */}
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-medium">{t('title')}</h3>
+      <div className="flex items-center justify-end">
         <Button
           type="button"
-          size="sm"
           onClick={addSlot}
           className="flex items-center gap-2"
           data-testid="add-slot-button"
+          variant="navigation"
         >
           <Plus className="h-4 w-4" />
           {t('addSlot')}
