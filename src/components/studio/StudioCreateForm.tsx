@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -25,6 +25,11 @@ import { Info } from 'lucide-react';
 import { PREFECTURES } from '@/constants/japan';
 import { VALIDATION } from '@/constants/common';
 import dynamic from 'next/dynamic';
+import {
+  ActionBar,
+  ActionBarButton,
+  ActionBarSentinel,
+} from '@/components/ui/action-bar';
 
 // SSRエラー回避のため動的インポート
 const MapPicker = dynamic(
@@ -124,16 +129,13 @@ const formSchema = z.object({
 
 interface StudioCreateFormProps {
   onSuccess?: (studioId: string) => void;
-  onCancel?: () => void;
 }
 
-export function StudioCreateForm({
-  onSuccess,
-  onCancel,
-}: StudioCreateFormProps) {
+export function StudioCreateForm({ onSuccess }: StudioCreateFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
+  const formRef = useRef<HTMLFormElement>(null);
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -154,6 +156,12 @@ export function StudioCreateForm({
     },
   });
 
+  const handleSaveClick = () => {
+    if (formRef.current) {
+      formRef.current.requestSubmit();
+    }
+  };
+
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
     try {
@@ -166,6 +174,7 @@ export function StudioCreateForm({
         form.setError('hourly_rate_max', {
           message: '最高料金は最低料金以上である必要があります',
         });
+        setIsSubmitting(false);
         return;
       }
 
@@ -201,307 +210,335 @@ export function StudioCreateForm({
     }
   };
 
+  const actionBarActions: ActionBarButton[] = [
+    {
+      id: 'save',
+      label: '保存',
+      variant: 'cta',
+      onClick: handleSaveClick,
+      loading: isSubmitting,
+      disabled: isSubmitting,
+    },
+  ];
+
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-      {/* 基本情報 */}
-      <Card>
-        <CardHeader>
-          <CardTitle>基本情報</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <Label htmlFor="name">スタジオ名 *</Label>
-            <Input
-              id="name"
-              {...form.register('name')}
-              placeholder="○○スタジオ"
-            />
-            {form.formState.errors.name && (
-              <p className="text-red-500 text-sm mt-1">
-                {form.formState.errors.name.message}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <Label htmlFor="description">説明</Label>
-            <Textarea
-              id="description"
-              {...form.register('description')}
-              placeholder="スタジオの特徴や設備について説明してください"
-              rows={3}
-            />
-            {form.formState.errors.description && (
-              <p className="text-red-500 text-sm mt-1">
-                {form.formState.errors.description.message}
-              </p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* 所在地情報 */}
-      <Card>
-        <CardHeader>
-          <CardTitle>所在地情報</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <>
+      <form
+        ref={formRef}
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="space-y-6"
+      >
+        {/* 基本情報 */}
+        <Card>
+          <CardHeader>
+            <CardTitle>基本情報</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="prefecture">都道府県 *</Label>
-              <Select
-                onValueChange={value => form.setValue('prefecture', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="都道府県を選択" />
-                </SelectTrigger>
-                <SelectContent>
-                  {PREFECTURES.map(prefecture => (
-                    <SelectItem key={prefecture} value={prefecture}>
-                      {prefecture}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {form.formState.errors.prefecture && (
-                <p className="text-red-500 text-sm mt-1">
-                  {form.formState.errors.prefecture.message}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <Label htmlFor="city">市区町村 *</Label>
+              <Label htmlFor="name">スタジオ名 *</Label>
               <Input
-                id="city"
-                {...form.register('city')}
-                placeholder="渋谷区"
+                id="name"
+                {...form.register('name')}
+                placeholder="○○スタジオ"
               />
-              {form.formState.errors.city && (
+              {form.formState.errors.name && (
                 <p className="text-red-500 text-sm mt-1">
-                  {form.formState.errors.city.message}
-                </p>
-              )}
-            </div>
-          </div>
-
-          <div>
-            <Label htmlFor="address">住所 *</Label>
-            <Input
-              id="address"
-              {...form.register('address')}
-              placeholder="渋谷1-1-1 渋谷ビル3F"
-            />
-            {form.formState.errors.address && (
-              <p className="text-red-500 text-sm mt-1">
-                {form.formState.errors.address.message}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <Label htmlFor="access_info">アクセス情報</Label>
-            <Textarea
-              id="access_info"
-              {...form.register('access_info')}
-              placeholder="JR渋谷駅より徒歩3分"
-              rows={2}
-            />
-            {form.formState.errors.access_info && (
-              <p className="text-red-500 text-sm mt-1">
-                {form.formState.errors.access_info.message}
-              </p>
-            )}
-          </div>
-
-          {/* 地図選択 */}
-          <div>
-            <MapPicker
-              address={form.watch('address')}
-              prefecture={form.watch('prefecture')}
-              city={form.watch('city')}
-              onAddressChange={address => {
-                form.setValue('address', address, { shouldValidate: true });
-              }}
-              onCoordinatesChange={(lat, lng) => {
-                form.setValue('latitude', lat);
-                form.setValue('longitude', lng);
-              }}
-              height="300px"
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* 連絡先情報 */}
-      <Card>
-        <CardHeader>
-          <CardTitle>連絡先情報</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="phone">電話番号</Label>
-              <Input
-                id="phone"
-                {...form.register('phone')}
-                placeholder="03-1234-5678"
-              />
-              {form.formState.errors.phone && (
-                <p className="text-red-500 text-sm mt-1">
-                  {form.formState.errors.phone.message}
+                  {form.formState.errors.name.message}
                 </p>
               )}
             </div>
 
             <div>
-              <Label htmlFor="email">メールアドレス</Label>
-              <Input
-                id="email"
-                type="email"
-                {...form.register('email')}
-                placeholder="info@studio.com"
+              <Label htmlFor="description">説明</Label>
+              <Textarea
+                id="description"
+                {...form.register('description')}
+                placeholder="スタジオの特徴や設備について説明してください"
+                rows={3}
               />
-              {form.formState.errors.email && (
+              {form.formState.errors.description && (
                 <p className="text-red-500 text-sm mt-1">
-                  {form.formState.errors.email.message}
+                  {form.formState.errors.description.message}
                 </p>
               )}
             </div>
-          </div>
+          </CardContent>
+        </Card>
 
-          <div>
-            <Label htmlFor="website_url">ウェブサイトURL</Label>
-            <Input
-              id="website_url"
-              {...form.register('website_url')}
-              placeholder="https://studio.com"
-            />
-            {form.formState.errors.website_url && (
-              <p className="text-red-500 text-sm mt-1">
-                {form.formState.errors.website_url.message}
-              </p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+        {/* 所在地情報 */}
+        <Card>
+          <CardHeader>
+            <CardTitle>所在地情報</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="prefecture">都道府県 *</Label>
+                <Select
+                  onValueChange={value => form.setValue('prefecture', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="都道府県を選択" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PREFECTURES.map(prefecture => (
+                      <SelectItem key={prefecture} value={prefecture}>
+                        {prefecture}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {form.formState.errors.prefecture && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {form.formState.errors.prefecture.message}
+                  </p>
+                )}
+              </div>
 
-      {/* 施設情報 */}
-      <Card>
-        <CardHeader>
-          <CardTitle>施設情報</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="total_area">総面積 (㎡)</Label>
-              <Input
-                id="total_area"
-                type="number"
-                {...form.register('total_area')}
-                placeholder="50"
-              />
-              {form.formState.errors.total_area && (
-                <p className="text-red-500 text-sm mt-1">
-                  {form.formState.errors.total_area.message}
-                </p>
-              )}
+              <div>
+                <Label htmlFor="city">市区町村 *</Label>
+                <Input
+                  id="city"
+                  {...form.register('city')}
+                  placeholder="渋谷区"
+                />
+                {form.formState.errors.city && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {form.formState.errors.city.message}
+                  </p>
+                )}
+              </div>
             </div>
 
             <div>
-              <Label htmlFor="max_capacity">最大収容人数</Label>
+              <Label htmlFor="address">住所 *</Label>
               <Input
-                id="max_capacity"
-                type="number"
-                {...form.register('max_capacity')}
-                placeholder="10"
+                id="address"
+                {...form.register('address')}
+                placeholder="渋谷1-1-1 渋谷ビル3F"
               />
-              {form.formState.errors.max_capacity && (
+              {form.formState.errors.address && (
                 <p className="text-red-500 text-sm mt-1">
-                  {form.formState.errors.max_capacity.message}
-                </p>
-              )}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="hourly_rate_min">最低時間料金 (円)</Label>
-              <Input
-                id="hourly_rate_min"
-                type="number"
-                {...form.register('hourly_rate_min')}
-                placeholder="3000"
-              />
-              {form.formState.errors.hourly_rate_min && (
-                <p className="text-red-500 text-sm mt-1">
-                  {form.formState.errors.hourly_rate_min.message}
+                  {form.formState.errors.address.message}
                 </p>
               )}
             </div>
 
             <div>
-              <Label htmlFor="hourly_rate_max">最高時間料金 (円)</Label>
-              <Input
-                id="hourly_rate_max"
-                type="number"
-                {...form.register('hourly_rate_max')}
-                placeholder="8000"
+              <Label htmlFor="access_info">アクセス情報</Label>
+              <Textarea
+                id="access_info"
+                {...form.register('access_info')}
+                placeholder="JR渋谷駅より徒歩3分"
+                rows={2}
               />
-              {form.formState.errors.hourly_rate_max && (
+              {form.formState.errors.access_info && (
                 <p className="text-red-500 text-sm mt-1">
-                  {form.formState.errors.hourly_rate_max.message}
+                  {form.formState.errors.access_info.message}
                 </p>
               )}
             </div>
-          </div>
 
-          <div className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="parking_available"
-                checked={form.watch('parking_available')}
-                onCheckedChange={checked =>
-                  form.setValue('parking_available', checked)
-                }
+            {/* 地図選択 */}
+            <div>
+              <MapPicker
+                address={form.watch('address')}
+                prefecture={form.watch('prefecture')}
+                city={form.watch('city')}
+                onAddressChange={address => {
+                  form.setValue('address', address, { shouldValidate: true });
+                }}
+                onCoordinatesChange={(lat, lng) => {
+                  form.setValue('latitude', lat);
+                  form.setValue('longitude', lng);
+                }}
+                height="300px"
               />
-              <Label htmlFor="parking_available">駐車場あり</Label>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* 連絡先情報 */}
+        <Card>
+          <CardHeader>
+            <CardTitle>連絡先情報</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="phone">電話番号</Label>
+                <Input
+                  id="phone"
+                  {...form.register('phone')}
+                  placeholder="03-1234-5678"
+                />
+                {form.formState.errors.phone && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {form.formState.errors.phone.message}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <Label htmlFor="email">メールアドレス</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  {...form.register('email')}
+                  placeholder="info@studio.com"
+                />
+                {form.formState.errors.email && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {form.formState.errors.email.message}
+                  </p>
+                )}
+              </div>
             </div>
 
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="wifi_available"
-                checked={form.watch('wifi_available')}
-                onCheckedChange={checked =>
-                  form.setValue('wifi_available', checked)
-                }
+            <div>
+              <Label htmlFor="website_url">ウェブサイトURL</Label>
+              <Input
+                id="website_url"
+                {...form.register('website_url')}
+                placeholder="https://studio.com"
               />
-              <Label htmlFor="wifi_available">Wi-Fi利用可能</Label>
+              {form.formState.errors.website_url && (
+                <p className="text-red-500 text-sm mt-1">
+                  {form.formState.errors.website_url.message}
+                </p>
+              )}
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
 
-      {/* 注意事項 */}
-      <Alert>
-        <Info className="h-4 w-4" />
-        <AlertDescription>
-          作成されたスタジオ情報は管理者による承認後に公開されます。
-          承認には1-3営業日かかる場合があります。
-        </AlertDescription>
-      </Alert>
+        {/* 施設情報 */}
+        <Card>
+          <CardHeader>
+            <CardTitle>施設情報</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="total_area">総面積 (㎡)</Label>
+                <Input
+                  id="total_area"
+                  type="number"
+                  {...form.register('total_area')}
+                  placeholder="50"
+                />
+                {form.formState.errors.total_area && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {form.formState.errors.total_area.message}
+                  </p>
+                )}
+              </div>
 
-      {/* アクションボタン */}
-      <div className="flex gap-4 justify-end">
-        {onCancel && (
-          <Button type="button" variant="navigation" onClick={onCancel}>
-            キャンセル
+              <div>
+                <Label htmlFor="max_capacity">最大収容人数</Label>
+                <Input
+                  id="max_capacity"
+                  type="number"
+                  {...form.register('max_capacity')}
+                  placeholder="10"
+                />
+                {form.formState.errors.max_capacity && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {form.formState.errors.max_capacity.message}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="hourly_rate_min">最低時間料金 (円)</Label>
+                <Input
+                  id="hourly_rate_min"
+                  type="number"
+                  {...form.register('hourly_rate_min')}
+                  placeholder="3000"
+                />
+                {form.formState.errors.hourly_rate_min && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {form.formState.errors.hourly_rate_min.message}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <Label htmlFor="hourly_rate_max">最高時間料金 (円)</Label>
+                <Input
+                  id="hourly_rate_max"
+                  type="number"
+                  {...form.register('hourly_rate_max')}
+                  placeholder="8000"
+                />
+                {form.formState.errors.hourly_rate_max && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {form.formState.errors.hourly_rate_max.message}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="parking_available"
+                  checked={form.watch('parking_available')}
+                  onCheckedChange={checked =>
+                    form.setValue('parking_available', checked)
+                  }
+                />
+                <Label htmlFor="parking_available">駐車場あり</Label>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="wifi_available"
+                  checked={form.watch('wifi_available')}
+                  onCheckedChange={checked =>
+                    form.setValue('wifi_available', checked)
+                  }
+                />
+                <Label htmlFor="wifi_available">Wi-Fi利用可能</Label>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* 注意事項 */}
+        <Alert>
+          <Info className="h-4 w-4" />
+          <AlertDescription>
+            作成されたスタジオ情報は管理者による承認後に公開されます。
+            承認には1-3営業日かかる場合があります。
+          </AlertDescription>
+        </Alert>
+
+        {/* ページ下部の保存ボタン（ActionBar自動制御） */}
+        <ActionBarSentinel className="pt-4">
+          <Button
+            type="button"
+            variant="cta"
+            size="sm"
+            onClick={handleSaveClick}
+            disabled={isSubmitting}
+            className="text-base font-medium w-full transition-colors"
+          >
+            {isSubmitting ? '保存中…' : '保存'}
           </Button>
-        )}
-        <Button type="submit" disabled={isSubmitting} variant="cta">
-          {isSubmitting ? '作成中...' : 'スタジオを作成'}
-        </Button>
-      </div>
-    </form>
+        </ActionBarSentinel>
+      </form>
+
+      {/* 固定フッターアクションバー */}
+      <ActionBar
+        actions={actionBarActions}
+        maxColumns={1}
+        background="blur"
+        sticky={true}
+        autoHide={true}
+      />
+    </>
   );
 }

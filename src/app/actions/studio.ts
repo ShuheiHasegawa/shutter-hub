@@ -165,6 +165,120 @@ export async function getStudiosAction(
 }
 
 /**
+ * スタジオ選択用の軽量な一覧を取得する（id, nameのみ）
+ */
+export async function getStudioListForSelectAction(query?: string): Promise<{
+  success: boolean;
+  studios?: Array<{ id: string; name: string }>;
+  error?: string;
+}> {
+  try {
+    Logger.info('getStudioListForSelectAction called', { query });
+    const supabase = await createClient();
+
+    let supabaseQuery = supabase
+      .from('studios')
+      .select('id, name')
+      .eq('verification_status', 'verified')
+      .order('name', { ascending: true })
+      .limit(100);
+
+    // 検索クエリがある場合はフィルタリング
+    if (query && query.trim()) {
+      supabaseQuery = supabaseQuery.ilike('name', `%${query.trim()}%`);
+    }
+
+    const { data, error } = await supabaseQuery;
+
+    if (error) {
+      Logger.error('スタジオ選択用一覧取得エラー:', error);
+      return {
+        success: false,
+        error: 'スタジオ一覧の取得に失敗しました',
+      };
+    }
+
+    Logger.info('getStudioListForSelectAction success', {
+      studiosCount: data?.length || 0,
+    });
+
+    return {
+      success: true,
+      studios: data || [],
+    };
+  } catch (error) {
+    Logger.error('スタジオ選択用一覧取得失敗:', error);
+    return {
+      success: false,
+      error: 'スタジオ一覧の取得中にエラーが発生しました',
+    };
+  }
+}
+
+/**
+ * スタジオIDから詳細情報を取得する（自動入力用）
+ */
+export async function getStudioForAutoFillAction(studioId: string): Promise<{
+  success: boolean;
+  studio?: {
+    id: string;
+    name: string;
+    address: string;
+    prefecture?: string;
+    city?: string;
+    access_info?: string;
+  };
+  error?: string;
+}> {
+  try {
+    Logger.info('getStudioForAutoFillAction called', { studioId });
+    const supabase = await createClient();
+
+    const { data, error } = await supabase
+      .from('studios')
+      .select('id, name, address, prefecture, city, access_info')
+      .eq('id', studioId)
+      .eq('verification_status', 'verified')
+      .single();
+
+    if (error) {
+      Logger.error('スタジオ詳細取得エラー:', error);
+      return {
+        success: false,
+        error: 'スタジオ情報の取得に失敗しました',
+      };
+    }
+
+    if (!data) {
+      return {
+        success: false,
+        error: 'スタジオが見つかりませんでした',
+      };
+    }
+
+    Logger.info('getStudioForAutoFillAction success');
+
+    return {
+      success: true,
+      studio: {
+        id: data.id,
+        name: data.name,
+        address: data.address,
+        prefecture: data.prefecture,
+        city: data.city,
+        access_info: data.access_info || undefined,
+      },
+    };
+  } catch (error) {
+    Logger.error('スタジオ詳細取得失敗:', error);
+    return {
+      success: false,
+      error: 'スタジオ情報の取得中にエラーが発生しました',
+    };
+  }
+}
+
+/**
  * スタジオ詳細を取得する
  */
 export async function getStudioDetailAction(studioId: string): Promise<{

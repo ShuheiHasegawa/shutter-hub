@@ -22,6 +22,7 @@ import {
   Calendar,
   ShieldCheckIcon,
   CalendarPlus,
+  Star,
 } from 'lucide-react';
 import { PhotoSessionWithOrganizer } from '@/types/database';
 import { PhotoSessionSlot } from '@/types/photo-session';
@@ -37,9 +38,14 @@ import {
   type PhotoSessionParticipant,
 } from '@/app/actions/photo-session-participants';
 import { usePhotoSessionBooking } from '@/hooks/usePhotoSessionBooking';
+import { checkUserHasBadRating } from '@/app/actions/rating-block';
+import { useToast } from '@/hooks/use-toast';
+import { useTranslations, useLocale } from 'next-intl';
 
 import { SlotBookingFlow } from './SlotBookingFlow';
 import { BackButton } from '../ui/back-button';
+import { ReviewList } from '@/components/reviews/ReviewList';
+import { createClient } from '@/lib/supabase/client';
 
 interface PhotoSessionDetailProps {
   session: PhotoSessionWithOrganizer;
@@ -77,6 +83,9 @@ export function PhotoSessionDetail({
   const { user } = useAuth();
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { toast } = useToast();
+  const t = useTranslations('photoSessions');
+  const locale = useLocale();
 
   const [participants, setParticipants] = useState<PhotoSessionParticipant[]>(
     []
@@ -84,10 +93,14 @@ export function PhotoSessionDetail({
   const [isParticipant, setIsParticipant] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isLoadingData, setIsLoadingData] = useState(false);
+  const [hasExistingReview, setHasExistingReview] = useState(false);
 
   // 予約状態を管理するhook
-  const { canBook: canBookFromHook, isLoading: bookingLoading } =
-    usePhotoSessionBooking(session);
+  const {
+    canBook: canBookFromHook,
+    isLoading: bookingLoading,
+    userBooking,
+  } = usePhotoSessionBooking(session);
 
   const startDate = new Date(session.start_time);
   const endDate = new Date(session.end_time);
@@ -243,10 +256,107 @@ export function PhotoSessionDetail({
     }
   };
 
+  // 評価チェック処理
+  const handleRatingCheck = async (): Promise<boolean> => {
+    if (!session.block_users_with_bad_ratings || !user) {
+      return true; // チェック不要の場合は通過
+    }
+
+    try {
+      const result = await checkUserHasBadRating(user.id, session.id);
+      if (!result.success) {
+        logger.error('評価チェックエラー:', result.error);
+        toast({
+          title: 'エラー',
+          description: '評価チェックに失敗しました',
+          variant: 'destructive',
+        });
+        return false;
+      }
+
+      if (result.hasBadRating) {
+        toast({
+          title: t('form.errors.userHasBadRating'),
+          variant: 'destructive',
+        });
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      logger.error('評価チェック実行エラー:', error);
+      toast({
+        title: t('form.errors.ratingCheckFailed'),
+        variant: 'destructive',
+      });
+      return false;
+    }
+  };
+
+  // レビュー可能かチェック（予約済みで撮影会終了後）
+  const canReview = !!userBooking && isPast;
+
+  // 既存レビューのチェック
+  useEffect(() => {
+    const checkExistingReview = async () => {
+      if (!user || !canReview) {
+        setHasExistingReview(false);
+        return;
+      }
+
+      try {
+        const supabase = createClient();
+        const { data: existingReview } = await supabase
+          .from('photo_session_reviews')
+          .select('id')
+          .eq('photo_session_id', session.id)
+          .eq('reviewer_id', user.id)
+          .maybeSingle();
+
+        setHasExistingReview(!!existingReview);
+      } catch (error) {
+        logger.error('既存レビューチェックエラー:', error);
+        setHasExistingReview(false);
+      }
+    };
+
+    checkExistingReview();
+  }, [user, session.id, canReview]);
+
   // アクションバーのボタン設定
   const getActionBarButtons = (): ActionBarButton[] => {
     if (isOrganizer || !user) {
       return [];
+    }
+
+    // レビュー可能な場合はレビューボタンを表示
+    if (canReview) {
+      // 既存レビューがある場合は「レビュー修正」、ない場合は「レビューを書く」
+      if (hasExistingReview) {
+        return [
+          {
+            id: 'edit-review',
+            label: 'レビュー修正',
+            variant: 'cta',
+            onClick: () => {
+              router.push(`/${locale}/photo-sessions/${session.id}/reviews`);
+            },
+            icon: <Star className="h-4 w-4" />,
+          },
+        ];
+      } else {
+        return [
+          {
+            id: 'write-review',
+            label: 'レビューを書く',
+            variant: 'cta',
+            onClick: () => {
+              router.push(`/${locale}/photo-sessions/${session.id}/reviews`);
+            },
+            icon: <Star className="h-4 w-4" />,
+          },
+        ];
+      }
     }
 
     // 予約できない場合は無効化されたボタンを表示
@@ -269,8 +379,11 @@ export function PhotoSessionDetail({
           id: 'select-slot',
           label: bookingLoading ? '確認中...' : '時間枠を選択',
           variant: 'accent',
-          onClick: () => {
-            router.push(`?step=select`, { scroll: false });
+          onClick: async () => {
+            const canProceed = await handleRatingCheck();
+            if (canProceed) {
+              router.push(`?step=select`, { scroll: false });
+            }
           },
           disabled: bookingLoading,
           icon: <Calendar className="h-4 w-4" />,
@@ -286,8 +399,11 @@ export function PhotoSessionDetail({
               ? 'キャンセル待ち'
               : '予約する',
           variant: isFull ? 'accent' : 'primary',
-          onClick: () => {
-            router.push(`?step=select`, { scroll: false });
+          onClick: async () => {
+            const canProceed = await handleRatingCheck();
+            if (canProceed) {
+              router.push(`?step=select`, { scroll: false });
+            }
           },
           disabled: bookingLoading,
           icon: <CreditCard className="h-4 w-4" />,
@@ -763,6 +879,35 @@ export function PhotoSessionDetail({
           participants={participants}
         />
       )}
+
+      {/* レビューセクション */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Star className="h-5 w-5" />
+              レビュー
+            </CardTitle>
+            {canReview && userBooking && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  router.push(
+                    `/${locale}/photo-sessions/${session.id}/reviews`
+                  );
+                }}
+              >
+                <Star className="h-4 w-4 mr-2" />
+                {hasExistingReview ? 'レビュー修正' : 'レビューを書く'}
+              </Button>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent>
+          <ReviewList photoSessionId={session.id} showAddReviewButton={false} />
+        </CardContent>
+      </Card>
 
       {/* 注意事項（主催者以外のみ表示） */}
       {!isOrganizer && (

@@ -16,10 +16,6 @@ export default function CreateStudioPage() {
     router.push(`/studios/${studioId}`);
   };
 
-  const handleCancel = () => {
-    router.back();
-  };
-
   return (
     <AuthenticatedLayout>
       <div>
@@ -54,10 +50,7 @@ export default function CreateStudioPage() {
                 // ErrorBoundary fallback will handle the error display
               }}
             >
-              <StudioCreateForm
-                onSuccess={handleSuccess}
-                onCancel={handleCancel}
-              />
+              <StudioCreateForm onSuccess={handleSuccess} />
             </ErrorBoundary>
           </CardContent>
         </Card>

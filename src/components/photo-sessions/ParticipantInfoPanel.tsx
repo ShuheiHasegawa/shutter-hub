@@ -128,7 +128,7 @@ export function ParticipantInfoPanel({
 
               {isPast && (
                 <Button
-                  variant="outline"
+                  variant="navigation"
                   className="h-auto p-4 flex-col gap-2"
                   onClick={() => logger.debug('レビュー投稿機能は開発中です')}
                 >
