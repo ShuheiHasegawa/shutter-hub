@@ -130,6 +130,9 @@ export async function createBulkPhotoSessionsAction(
         ),
         p_booking_type: data.booking_type,
         p_allow_multiple_bookings: data.allow_multiple_bookings,
+        p_block_users_with_bad_ratings:
+          data.block_users_with_bad_ratings || false,
+        p_payment_timing: data.payment_timing || 'prepaid',
         p_booking_settings: data.booking_settings,
         p_is_published: data.is_published,
         p_image_urls: data.image_urls,

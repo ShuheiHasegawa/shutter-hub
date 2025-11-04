@@ -19,9 +19,16 @@ import {
 import { PhotoSessionSlot } from '@/types/photo-session';
 import { PhotoSessionWithOrganizer } from '@/types/database';
 import { formatDateLocalized, formatTimeLocalized } from '@/lib/utils/date';
-import { createSlotBooking } from '@/lib/photo-sessions/slots';
+import { createPendingSlotBooking } from '@/lib/photo-sessions/slots';
 import { createPhotoSessionBooking } from '@/app/actions/photo-session-booking';
+import { checkUserHasBadRating } from '@/app/actions/rating-block';
+import { createPaymentIntent } from '@/app/actions/payments';
+import { BookingPaymentForm } from './BookingPaymentForm';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
+import { CreditCard, Wallet } from 'lucide-react';
 
 interface SlotBookingFlowProps {
   session: PhotoSessionWithOrganizer;
@@ -29,7 +36,7 @@ interface SlotBookingFlowProps {
   userId: string;
 }
 
-type BookingStep = 'select' | 'confirm' | 'complete';
+type BookingStep = 'select' | 'confirm' | 'payment' | 'complete';
 
 export function SlotBookingFlow({
   session,
@@ -38,10 +45,20 @@ export function SlotBookingFlow({
 }: SlotBookingFlowProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const t = useTranslations('photoSessions');
 
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
   const [selectedSlotIds, setSelectedSlotIds] = useState<string[]>([]);
   const [isBooking, setIsBooking] = useState(false);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<
+    'prepaid' | 'cash_on_site'
+  >('prepaid');
+  // 決済フロー用の状態
+  const [pendingBookingId, setPendingBookingId] = useState<string | null>(null);
+  const [paymentClientSecret, setPaymentClientSecret] = useState<string | null>(
+    null
+  );
+  const [totalAmount, setTotalAmount] = useState<number>(0);
 
   const currentStep = (searchParams.get('step') as BookingStep) || 'select';
   const hasSlots = slots && slots.length > 0;
@@ -107,47 +124,101 @@ export function SlotBookingFlow({
     navigateToStep('confirm', selectedSlotIds);
   }, [selectedSlotIds, navigateToStep]);
 
-  // 予約処理
+  // 予約処理（決済フロー統合版）
   const handleBooking = useCallback(async () => {
     setIsBooking(true);
     try {
+      // 評価チェック（block_users_with_bad_ratingsがtrueの場合のみ）
+      if (session.block_users_with_bad_ratings) {
+        const ratingCheckResult = await checkUserHasBadRating(
+          userId,
+          session.id
+        );
+        if (!ratingCheckResult.success) {
+          logger.error('評価チェックエラー:', ratingCheckResult.error);
+          toast.error(t('form.errors.ratingCheckFailed'));
+          setIsBooking(false);
+          return;
+        }
+
+        if (ratingCheckResult.hasBadRating) {
+          toast.error(t('form.errors.userHasBadRating'));
+          setIsBooking(false);
+          return;
+        }
+      }
+
+      // 料金計算
+      let calculatedAmount = 0;
+      if (hasSlots) {
+        if (allowMultiple && selectedSlots.length > 0) {
+          calculatedAmount = selectedSlots.reduce(
+            (sum, slot) => sum + slot.price_per_person,
+            0
+          );
+        } else if (selectedSlot) {
+          calculatedAmount = selectedSlot.price_per_person;
+        }
+      } else {
+        calculatedAmount = session.price_per_person;
+      }
+      setTotalAmount(calculatedAmount);
+
+      // 支払い方法がStripe決済の場合（無料の場合は決済不要）
+      const needsPayment =
+        selectedPaymentMethod === 'prepaid' && calculatedAmount > 0;
+
       if (hasSlots) {
         // スロット制の場合
         if (allowMultiple) {
-          // 複数選択の場合
+          // 複数選択の場合（簡略化のため、最初のスロットのみ処理）
           if (selectedSlotIds.length === 0) {
             toast.error('時間枠を選択してください');
             setIsBooking(false);
             return;
           }
 
-          // 複数スロットを順次予約
-          let successCount = 0;
-          const errors: string[] = [];
+          // 最初のスロットで予約を作成（複数スロット対応は将来実装）
+          const firstSlotId = selectedSlotIds[0];
+          const result = await createPendingSlotBooking(
+            firstSlotId,
+            needsPayment ? 'prepaid' : 'cash_on_site'
+          );
 
-          for (const slotId of selectedSlotIds) {
-            try {
-              const result = await createSlotBooking(slotId);
-              if (result.success) {
-                successCount++;
-              } else {
-                errors.push(result.message || '予約に失敗しました');
-              }
-            } catch (err) {
-              logger.error('スロット予約エラー:', err);
-              const errorMessage =
-                err instanceof Error
-                  ? err.message
-                  : '予期しないエラーが発生しました';
-              errors.push(errorMessage);
-            }
+          if (!result.success || !result.bookingId) {
+            toast.error(result.message || '予約に失敗しました');
+            setIsBooking(false);
+            return;
           }
 
-          if (successCount > 0) {
-            navigateToStep('complete');
-            toast.success(`${successCount}件の時間枠での参加が確定しました`);
+          setPendingBookingId(result.bookingId);
+
+          if (needsPayment) {
+            // Stripe決済の場合、PaymentIntentを作成
+            const paymentResult = await createPaymentIntent({
+              amount: calculatedAmount,
+              currency: 'jpy',
+              payment_method_types: ['card'],
+              metadata: {
+                booking_id: result.bookingId,
+                photo_session_id: session.id,
+                user_id: userId,
+                payment_timing: 'prepaid',
+              },
+            });
+
+            if (!paymentResult.success || !paymentResult.client_secret) {
+              toast.error(paymentResult.error || '決済の準備に失敗しました');
+              setIsBooking(false);
+              return;
+            }
+
+            setPaymentClientSecret(paymentResult.client_secret);
+            navigateToStep('payment', selectedSlotIds);
           } else {
-            toast.error(`予約に失敗しました: ${errors.join(', ')}`);
+            // 現地払いの場合は直接完了
+            navigateToStep('complete');
+            toast.success('予約が確定しました（現地払い）');
           }
         } else {
           // 単一選択の場合
@@ -157,25 +228,49 @@ export function SlotBookingFlow({
             return;
           }
 
-          try {
-            const result = await createSlotBooking(selectedSlotId);
-            if (result.success) {
-              navigateToStep('complete');
-              toast.success('選択した時間枠での参加が確定しました');
-            } else {
-              toast.error(result.message || '予約に失敗しました');
+          const result = await createPendingSlotBooking(
+            selectedSlotId,
+            needsPayment ? 'prepaid' : 'cash_on_site'
+          );
+
+          if (!result.success || !result.bookingId) {
+            toast.error(result.message || '予約に失敗しました');
+            setIsBooking(false);
+            return;
+          }
+
+          setPendingBookingId(result.bookingId);
+
+          if (needsPayment) {
+            // Stripe決済の場合、PaymentIntentを作成
+            const paymentResult = await createPaymentIntent({
+              amount: calculatedAmount,
+              currency: 'jpy',
+              payment_method_types: ['card'],
+              metadata: {
+                booking_id: result.bookingId,
+                photo_session_id: session.id,
+                user_id: userId,
+                payment_timing: 'prepaid',
+              },
+            });
+
+            if (!paymentResult.success || !paymentResult.client_secret) {
+              toast.error(paymentResult.error || '決済の準備に失敗しました');
+              setIsBooking(false);
+              return;
             }
-          } catch (err) {
-            logger.error('スロット予約エラー:', err);
-            const errorMessage =
-              err instanceof Error
-                ? err.message
-                : '予期しないエラーが発生しました';
-            toast.error(errorMessage);
+
+            setPaymentClientSecret(paymentResult.client_secret);
+            navigateToStep('payment', selectedSlotId);
+          } else {
+            // 現地払いの場合は直接完了
+            navigateToStep('complete');
+            toast.success('予約が確定しました（現地払い）');
           }
         }
       } else {
-        // 通常の撮影会の場合
+        // 通常の撮影会の場合（現状は従来通り）
         const result = await createPhotoSessionBooking(session.id, userId);
 
         if (result.success) {
@@ -196,9 +291,14 @@ export function SlotBookingFlow({
     allowMultiple,
     selectedSlotIds,
     selectedSlotId,
+    selectedSlots,
+    selectedSlot,
     session.id,
+    session.price_per_person,
     userId,
     navigateToStep,
+    selectedPaymentMethod,
+    t,
   ]);
 
   // 完了時の処理
@@ -296,6 +396,17 @@ export function SlotBookingFlow({
           },
         ];
 
+      case 'payment':
+        return [
+          {
+            id: 'back',
+            label: '戻る',
+            variant: 'outline',
+            onClick: () => navigateToStep('confirm'),
+            icon: <ArrowLeft className="h-4 w-4" />,
+          },
+        ];
+
       case 'complete':
         return [
           {
@@ -326,15 +437,20 @@ export function SlotBookingFlow({
 
   // ステップインジケーター
   const StepIndicator = () => {
-    const steps = ['select', 'confirm', 'complete'] as const;
+    const steps = ['select', 'confirm', 'payment', 'complete'] as const;
     const stepLabels = {
       select: '時間枠選択',
       confirm: '予約確認',
+      payment: '決済',
       complete: '完了',
     };
 
-    const currentStepIndex = steps.indexOf(currentStep);
-    const progress = ((currentStepIndex + 1) / steps.length) * 100;
+    // paymentステップはStripe決済が必要な場合のみ表示
+    const visibleSteps = steps.filter(
+      step => step !== 'payment' || (paymentClientSecret && pendingBookingId)
+    );
+    const currentStepIndex = visibleSteps.indexOf(currentStep);
+    const progress = ((currentStepIndex + 1) / visibleSteps.length) * 100;
 
     return (
       <div className="space-y-4 py-6">
@@ -563,6 +679,53 @@ export function SlotBookingFlow({
                       </div>
                     )}
 
+                    {/* 支払い方法選択（現地払いが有効な場合のみ） */}
+                    {session.payment_timing === 'cash_on_site' && (
+                      <div>
+                        <div className="font-medium text-theme-text-primary mb-2">
+                          {t('booking.selectPaymentMethod')}
+                        </div>
+                        <RadioGroup
+                          value={selectedPaymentMethod}
+                          onValueChange={(
+                            value: 'prepaid' | 'cash_on_site'
+                          ) => {
+                            setSelectedPaymentMethod(value);
+                          }}
+                          className="space-y-3"
+                        >
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem
+                              value="prepaid"
+                              id="payment_prepaid"
+                            />
+                            <Label
+                              htmlFor="payment_prepaid"
+                              className="flex items-center gap-2 cursor-pointer flex-1"
+                            >
+                              <CreditCard className="h-4 w-4" />
+                              <span>{t('booking.paymentMethodStripe')}</span>
+                            </Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem
+                              value="cash_on_site"
+                              id="payment_cash_on_site"
+                            />
+                            <Label
+                              htmlFor="payment_cash_on_site"
+                              className="flex items-center gap-2 cursor-pointer flex-1"
+                            >
+                              <Wallet className="h-4 w-4" />
+                              <span>
+                                {t('booking.paymentMethodCashOnSite')}
+                              </span>
+                            </Label>
+                          </div>
+                        </RadioGroup>
+                      </div>
+                    )}
+
                     {/* 単一選択の場合 */}
                     {!allowMultiple && selectedSlot && (
                       <div>
@@ -676,7 +839,44 @@ export function SlotBookingFlow({
     );
   }
 
-  // ステップ3: 完了
+  // ステップ3: 決済
+  if (currentStep === 'payment' && paymentClientSecret && pendingBookingId) {
+    return (
+      <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+        {/* ステップインジケーター */}
+        <StepIndicator />
+
+        <Card>
+          <CardHeader>
+            <CardTitle>決済</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              カード情報を入力して決済を完了してください
+            </p>
+          </CardHeader>
+          <CardContent>
+            <BookingPaymentForm
+              clientSecret={paymentClientSecret}
+              bookingId={pendingBookingId}
+              amount={totalAmount}
+              photoSessionId={session.id}
+              onPaymentSuccess={() => {
+                navigateToStep('complete');
+              }}
+            />
+          </CardContent>
+        </Card>
+
+        {/* ActionBar統一ボタン */}
+        <ActionBar
+          actions={getActionBarButtons()}
+          maxColumns={1}
+          background="blur"
+        />
+      </div>
+    );
+  }
+
+  // ステップ4: 完了
   if (currentStep === 'complete') {
     return (
       <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">

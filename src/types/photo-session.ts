@@ -119,6 +119,7 @@ export interface SelectedModel {
 
 // 一括撮影会作成データ
 export interface BulkPhotoSessionData {
+  block_users_with_bad_ratings?: boolean;
   // 基本情報
   title: string;
   description?: string;
@@ -129,6 +130,7 @@ export interface BulkPhotoSessionData {
   // max_participants はスロットから自動計算されるため削除
   booking_type: string;
   allow_multiple_bookings: boolean;
+  payment_timing?: 'prepaid' | 'cash_on_site';
   booking_settings: Record<string, unknown>;
   is_published: boolean;
   image_urls: string[];
