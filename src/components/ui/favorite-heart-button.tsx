@@ -46,11 +46,17 @@ export function FavoriteHeartButton({
   onToggle,
   initialState,
 }: FavoriteHeartButtonProps) {
-  const [isFavorited, setIsFavorited] = useState(false);
-  const [favoriteCount, setFavoriteCount] = useState(0);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [isFavorited, setIsFavorited] = useState(
+    initialState?.isFavorited || false
+  );
+  const [favoriteCount, setFavoriteCount] = useState(
+    initialState?.favoriteCount || 0
+  );
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(
+    initialState?.isAuthenticated ?? null
+  );
   const [isPending, startTransition] = useTransition();
-  const [isInitialized, setIsInitialized] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(!!initialState);
 
   // サイズの設定
   const sizeClasses = {
@@ -76,55 +82,116 @@ export function FavoriteHeartButton({
 
   // 初期状態を設定（一度だけ実行）
   useEffect(() => {
-    if (isInitialized) return; // 既に初期化済みの場合はスキップ
+    // initialStateがある場合は既に初期化済み
+    if (initialState || isInitialized) return;
 
-    if (initialState) {
-      // 一括データがある場合は即座に設定
-      setIsFavorited(initialState.isFavorited);
-      setFavoriteCount(initialState.favoriteCount);
-      setIsAuthenticated(initialState.isAuthenticated);
-      setIsInitialized(true);
-    } else {
-      // 一括データがない場合は個別に取得（フォールバック）
-      async function fetchInitialState() {
-        try {
-          const result = await checkFavoriteStatusAction(
-            favoriteType,
-            favoriteId
-          );
+    Logger.debug('[FavoriteHeartButton] useEffect実行 - 個別取得開始', {
+      favoriteType,
+      favoriteId,
+    });
 
-          // resultがundefinedでないことを確認
-          if (result && result.success) {
-            setIsFavorited(result.isFavorited || false);
-            setFavoriteCount(result.favoriteCount || 0);
-            setIsAuthenticated(result.isAuthenticated || false);
+    // 一括データがない場合は個別に取得（フォールバック）
+    async function fetchInitialState() {
+      try {
+        Logger.debug('[FavoriteHeartButton] お気に入り状態取得開始', {
+          favoriteType,
+          favoriteId,
+          timestamp: new Date().toISOString(),
+        });
+
+        const result = await checkFavoriteStatusAction(
+          favoriteType,
+          favoriteId
+        );
+
+        Logger.debug('[FavoriteHeartButton] Server Actionレスポンス受信', {
+          result,
+          resultType: typeof result,
+          isUndefined: result === undefined,
+          isNull: result === null,
+          hasSuccess: result && 'success' in result,
+          favoriteType,
+          favoriteId,
+        });
+
+        // resultがundefinedでないことを確認
+        if (
+          result &&
+          typeof result === 'object' &&
+          'success' in result &&
+          result.success
+        ) {
+          Logger.debug('[FavoriteHeartButton] 有効なレスポンス - 状態を設定', {
+            isFavorited: result.isFavorited,
+            favoriteCount: result.favoriteCount,
+            isAuthenticated: result.isAuthenticated,
+          });
+          setIsFavorited(result.isFavorited || false);
+          setFavoriteCount(result.favoriteCount || 0);
+          setIsAuthenticated(result.isAuthenticated || false);
+        } else {
+          // resultがundefinedまたは無効な形式の場合
+          if (result === undefined) {
+            Logger.error(
+              '[FavoriteHeartButton] お気に入り状態取得失敗 - Server Actionがundefinedを返しました',
+              {
+                favoriteType,
+                favoriteId,
+                callStack: new Error().stack,
+              }
+            );
+          } else if (result === null) {
+            Logger.error(
+              '[FavoriteHeartButton] お気に入り状態取得失敗 - Server Actionがnullを返しました',
+              {
+                favoriteType,
+                favoriteId,
+              }
+            );
           } else {
             Logger.error(
               '[FavoriteHeartButton] お気に入り状態取得失敗 - レスポンスが無効:',
-              result
+              {
+                result,
+                resultType: typeof result,
+                resultKeys:
+                  result && typeof result === 'object'
+                    ? Object.keys(result)
+                    : [],
+                favoriteType,
+                favoriteId,
+              }
             );
-            // デフォルト値を設定
-            setIsFavorited(false);
-            setFavoriteCount(0);
-            setIsAuthenticated(false);
           }
-        } catch (error) {
-          Logger.error(
-            '[FavoriteHeartButton] お気に入り状態取得エラー:',
-            error
-          );
-          // エラー時もデフォルト値を設定
+          // デフォルト値を設定
           setIsFavorited(false);
           setFavoriteCount(0);
           setIsAuthenticated(false);
-        } finally {
-          setIsInitialized(true);
         }
+      } catch (error) {
+        Logger.error('[FavoriteHeartButton] お気に入り状態取得エラー:', {
+          error,
+          errorMessage: error instanceof Error ? error.message : String(error),
+          errorStack: error instanceof Error ? error.stack : undefined,
+          favoriteType,
+          favoriteId,
+        });
+        // エラー時もデフォルト値を設定
+        setIsFavorited(false);
+        setFavoriteCount(0);
+        setIsAuthenticated(false);
+      } finally {
+        Logger.debug('[FavoriteHeartButton] 初期化完了', {
+          favoriteType,
+          favoriteId,
+        });
+        setIsInitialized(true);
       }
-
-      fetchInitialState();
     }
-  }, [favoriteType, favoriteId, initialState, isInitialized]);
+
+    fetchInitialState();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // お気に入りのトグル処理
   const handleToggle = async (e: React.MouseEvent) => {

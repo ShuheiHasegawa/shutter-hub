@@ -70,20 +70,78 @@ export async function checkFavoriteStatusAction(
   favoriteId: string
 ) {
   try {
+    Logger.debug('[checkFavoriteStatusAction] 呼び出し開始', {
+      favoriteType,
+      favoriteId,
+      timestamp: new Date().toISOString(),
+    });
+
+    // パラメータ検証
+    if (!favoriteType || !favoriteId) {
+      Logger.error('checkFavoriteStatusAction: 無効なパラメータ', {
+        favoriteType,
+        favoriteId,
+      });
+      const errorResponse = {
+        success: false,
+        error: '無効なパラメータです',
+        isAuthenticated: false,
+        isFavorited: false,
+        favoriteCount: 0,
+      };
+      Logger.debug(
+        '[checkFavoriteStatusAction] エラーレスポンス返却（無効パラメータ）',
+        errorResponse
+      );
+      return errorResponse;
+    }
+
     const supabase = await createClient();
+
+    if (!supabase) {
+      Logger.error(
+        'checkFavoriteStatusAction: Supabaseクライアントの作成に失敗'
+      );
+      const errorResponse = {
+        success: false,
+        error: 'データベース接続に失敗しました',
+        isAuthenticated: false,
+        isFavorited: false,
+        favoriteCount: 0,
+      };
+      Logger.debug(
+        '[checkFavoriteStatusAction] エラーレスポンス返却（Supabase接続失敗）',
+        errorResponse
+      );
+      return errorResponse;
+    }
+
+    Logger.debug('[checkFavoriteStatusAction] Supabaseクライアント作成成功');
 
     // 認証確認
     const {
       data: { user },
       error: authError,
     } = await supabase.auth.getUser();
+
+    Logger.debug('[checkFavoriteStatusAction] 認証チェック結果', {
+      hasUser: !!user,
+      userId: user?.id,
+      authError: authError?.message,
+    });
+
     if (authError || !user) {
-      return {
+      const unauthResponse = {
         success: true,
         isFavorited: false,
         favoriteCount: 0,
         isAuthenticated: false,
       };
+      Logger.debug(
+        '[checkFavoriteStatusAction] 未認証レスポンス返却',
+        unauthResponse
+      );
+      return unauthResponse;
     }
 
     // お気に入り状態を確認
@@ -96,11 +154,18 @@ export async function checkFavoriteStatusAction(
       .maybeSingle();
 
     if (favoriteError && favoriteError.code !== 'PGRST116') {
-      Logger.error('Check favorite status error:', favoriteError);
+      Logger.error('Check favorite status error:', {
+        error: favoriteError,
+        favoriteType,
+        favoriteId,
+        userId: user.id,
+      });
       return {
         success: false,
         error: 'お気に入り状態の確認に失敗しました',
         isAuthenticated: true,
+        isFavorited: false,
+        favoriteCount: 0,
       };
     }
 
@@ -113,22 +178,49 @@ export async function checkFavoriteStatusAction(
       .maybeSingle();
 
     if (countError && countError.code !== 'PGRST116') {
-      Logger.error('Get favorite count error:', countError);
+      Logger.error('Get favorite count error:', {
+        error: countError,
+        favoriteType,
+        favoriteId,
+      });
+      // エラーでもカウントは0として扱う
     }
 
-    return {
+    const result = {
       success: true,
       isFavorited: !!favoriteData,
       favoriteCount: countData?.total_favorites || 0,
       isAuthenticated: true,
     };
+
+    Logger.debug('[checkFavoriteStatusAction] 正常レスポンス返却', {
+      result,
+      favoriteType,
+      favoriteId,
+    });
+
+    return result;
   } catch (error) {
-    Logger.error('Unexpected error in checkFavoriteStatusAction:', error);
-    return {
+    Logger.error('Unexpected error in checkFavoriteStatusAction:', {
+      error,
+      errorMessage: error instanceof Error ? error.message : String(error),
+      errorStack: error instanceof Error ? error.stack : undefined,
+      favoriteType,
+      favoriteId,
+    });
+    // 必ず有効なオブジェクトを返す
+    const errorResponse = {
       success: false,
       error: 'システムエラーが発生しました',
-      isAuthenticated: true,
+      isAuthenticated: false,
+      isFavorited: false,
+      favoriteCount: 0,
     };
+    Logger.debug(
+      '[checkFavoriteStatusAction] エラーレスポンス返却（catch）',
+      errorResponse
+    );
+    return errorResponse;
   }
 }
 
