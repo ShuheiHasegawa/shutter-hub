@@ -12,7 +12,16 @@ import {
   getPhotoSessionReviews,
   getPhotoSessionRatingStats,
 } from '@/app/actions/reviews';
-import { Star, TrendingUp, Users, Filter } from 'lucide-react';
+import {
+  Star,
+  TrendingUp,
+  Users,
+  Filter,
+  ThumbsUp,
+  Minus,
+  ThumbsDown,
+} from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -29,7 +38,7 @@ interface ReviewListProps {
 
 interface Review {
   id: string;
-  overall_rating: number;
+  overall_rating: number; // 1 (bad), 3 (normal), 5 (good) のみ
   organization_rating?: number;
   communication_rating?: number;
   value_rating?: number;
@@ -135,33 +144,56 @@ export function ReviewList({
   const RatingDistribution = () => {
     if (!stats || stats.review_count === 0) return null;
 
+    const ratingLabels = {
+      good: t('form.ratingLabels.good') || '良い',
+      normal: t('form.ratingLabels.normal') || '普通',
+      bad: t('form.ratingLabels.bad') || '悪い',
+    };
+
+    // 3段階評価のみ（5=良い、3=普通、1=悪い）
     const ratings = [
-      { stars: 5, count: stats.rating_5_count },
-      { stars: 4, count: stats.rating_4_count },
-      { stars: 3, count: stats.rating_3_count },
-      { stars: 2, count: stats.rating_2_count },
-      { stars: 1, count: stats.rating_1_count },
+      {
+        level: 'good' as const,
+        value: 5,
+        count: stats.rating_5_count,
+        icon: <ThumbsUp className="h-3 w-3" />,
+        label: ratingLabels.good,
+      },
+      {
+        level: 'normal' as const,
+        value: 3,
+        count: stats.rating_3_count,
+        icon: <Minus className="h-3 w-3" />,
+        label: ratingLabels.normal,
+      },
+      {
+        level: 'bad' as const,
+        value: 1,
+        count: stats.rating_1_count,
+        icon: <ThumbsDown className="h-3 w-3" />,
+        label: ratingLabels.bad,
+      },
     ];
 
     return (
       <div className="space-y-2">
-        {ratings.map(({ stars, count }) => {
+        {ratings.map(({ level, count, icon, label }) => {
           const percentage =
             stats.review_count > 0 ? (count / stats.review_count) * 100 : 0;
 
           return (
-            <div key={stars} className="flex items-center gap-2 text-sm">
+            <div key={level} className="flex items-center gap-2 text-sm">
               <div className="flex items-center gap-1 min-w-0 flex-shrink-0">
-                <span>{stars}</span>
-                <Star className="h-3 w-3 text-yellow-500 fill-current" />
+                {icon}
+                <span className="text-xs">{label}</span>
               </div>
               <div className="flex-1 bg-muted rounded-full h-2 overflow-hidden">
                 <div
-                  className="h-full bg-yellow-500 transition-all duration-300"
+                  className="h-full bg-primary transition-all duration-300"
                   style={{ width: `${percentage}%` }}
                 />
               </div>
-              <span className="text-muted-foreground min-w-0 flex-shrink-0">
+              <span className="text-muted-foreground min-w-0 flex-shrink-0 text-xs">
                 {count}
               </span>
             </div>
@@ -173,6 +205,24 @@ export function ReviewList({
 
   const DetailedRatings = () => {
     if (!stats || stats.review_count === 0) return null;
+
+    const ratingLabels = {
+      good: t('form.ratingLabels.good') || '良い',
+      normal: t('form.ratingLabels.normal') || '普通',
+      bad: t('form.ratingLabels.bad') || '悪い',
+    };
+    const ratingBadgeVariants = {
+      good: 'default' as const,
+      normal: 'secondary' as const,
+      bad: 'destructive' as const,
+    };
+
+    // 数値評価を3段階評価レベルに変換
+    const numberToRatingLevel = (rating: number): 'good' | 'normal' | 'bad' => {
+      if (rating >= 4.5) return 'good'; // 4.5以上は良い
+      if (rating >= 2.5) return 'normal'; // 2.5以上は普通
+      return 'bad'; // それ以下は悪い
+    };
 
     const detailedRatings = [
       {
@@ -193,28 +243,28 @@ export function ReviewList({
       <div className="space-y-3">
         <h4 className="text-sm font-medium">{t('display.detailedRatings')}</h4>
         <div className="space-y-2">
-          {detailedRatings.map(({ label, value }) => (
-            <div key={label} className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">{label}</span>
-              <div className="flex items-center gap-1">
-                <div className="flex items-center">
-                  {[1, 2, 3, 4, 5].map(star => (
-                    <Star
-                      key={star}
-                      className={`h-3 w-3 ${
-                        star <= value
-                          ? 'text-yellow-500 fill-current'
-                          : 'text-gray-300'
-                      }`}
-                    />
-                  ))}
+          {detailedRatings.map(({ label, value }) => {
+            const level = numberToRatingLevel(value);
+            return (
+              <div key={label} className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">{label}</span>
+                <div className="flex items-center gap-2">
+                  <Badge
+                    variant={ratingBadgeVariants[level]}
+                    className="text-xs"
+                  >
+                    {level === 'good' && <ThumbsUp className="h-3 w-3 mr-1" />}
+                    {level === 'normal' && <Minus className="h-3 w-3 mr-1" />}
+                    {level === 'bad' && <ThumbsDown className="h-3 w-3 mr-1" />}
+                    {ratingLabels[level]}
+                  </Badge>
+                  <span className="text-sm font-medium text-muted-foreground">
+                    ({value.toFixed(1)})
+                  </span>
                 </div>
-                <span className="text-sm font-medium ml-1">
-                  {value.toFixed(1)}
-                </span>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     );
@@ -250,18 +300,6 @@ export function ReviewList({
               <div className="text-center">
                 <div className="text-3xl font-bold">
                   {stats.avg_overall_rating.toFixed(1)}
-                </div>
-                <div className="flex items-center justify-center mt-1">
-                  {[1, 2, 3, 4, 5].map(star => (
-                    <Star
-                      key={star}
-                      className={`h-4 w-4 ${
-                        star <= stats.avg_overall_rating
-                          ? 'text-yellow-500 fill-current'
-                          : 'text-gray-300'
-                      }`}
-                    />
-                  ))}
                 </div>
                 <div className="text-sm text-muted-foreground mt-1">
                   {t('stats.reviewCount', { count: stats.review_count })}
@@ -314,19 +352,22 @@ export function ReviewList({
                       {t('list.filters.allRatings')}
                     </SelectItem>
                     <SelectItem value="5">
-                      5 {t('list.filters.stars')}
-                    </SelectItem>
-                    <SelectItem value="4">
-                      4 {t('list.filters.stars')}
+                      <div className="flex items-center gap-1">
+                        <ThumbsUp className="h-3 w-3" />
+                        {t('form.ratingLabels.good')}
+                      </div>
                     </SelectItem>
                     <SelectItem value="3">
-                      3 {t('list.filters.stars')}
-                    </SelectItem>
-                    <SelectItem value="2">
-                      2 {t('list.filters.stars')}
+                      <div className="flex items-center gap-1">
+                        <Minus className="h-3 w-3" />
+                        {t('form.ratingLabels.normal')}
+                      </div>
                     </SelectItem>
                     <SelectItem value="1">
-                      1 {t('list.filters.stars')}
+                      <div className="flex items-center gap-1">
+                        <ThumbsDown className="h-3 w-3" />
+                        {t('form.ratingLabels.bad')}
+                      </div>
                     </SelectItem>
                   </SelectContent>
                 </Select>

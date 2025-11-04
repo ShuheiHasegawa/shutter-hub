@@ -10,22 +10,42 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { createPhotoSessionReview } from '@/app/actions/reviews';
+import {
+  createPhotoSessionReview,
+  updatePhotoSessionReview,
+} from '@/app/actions/reviews';
 import { Star, Send } from 'lucide-react';
+import {
+  ThreeLevelRating,
+  type RatingLevel,
+} from '@/components/reviews/ThreeLevelRating';
 
 interface PhotoSessionReviewFormProps {
   photoSessionId: string;
-  bookingId: string;
+  bookingId?: string;
+  existingReview?: {
+    id: string;
+    overall_rating: number;
+    organization_rating?: number | null;
+    communication_rating?: number | null;
+    value_rating?: number | null;
+    venue_rating?: number | null;
+    title?: string | null;
+    content?: string | null;
+    pros?: string | null;
+    cons?: string | null;
+    is_anonymous?: boolean;
+  };
   onSuccess?: () => void;
   onCancel?: () => void;
 }
 
 interface ReviewFormData {
-  overall_rating: number;
-  organization_rating: number;
-  communication_rating: number;
-  value_rating: number;
-  venue_rating: number;
+  overall_rating: RatingLevel;
+  organization_rating: RatingLevel;
+  communication_rating: RatingLevel;
+  value_rating: RatingLevel;
+  venue_rating: RatingLevel;
   title: string;
   content: string;
   pros: string;
@@ -36,6 +56,7 @@ interface ReviewFormData {
 export function PhotoSessionReviewForm({
   photoSessionId,
   bookingId,
+  existingReview,
   onSuccess,
   onCancel,
 }: PhotoSessionReviewFormProps) {
@@ -43,29 +64,60 @@ export function PhotoSessionReviewForm({
   const t = useTranslations('reviews');
   const tCommon = useTranslations('common');
 
+  // 数値からRatingLevelに変換
+  const numberToRatingLevel = (
+    rating: number | null | undefined
+  ): RatingLevel => {
+    if (!rating) return null;
+    if (rating >= 5) return 'good';
+    if (rating >= 3) return 'normal';
+    return 'bad';
+  };
+
   const [formData, setFormData] = useState<ReviewFormData>({
-    overall_rating: 0,
-    organization_rating: 0,
-    communication_rating: 0,
-    value_rating: 0,
-    venue_rating: 0,
-    title: '',
-    content: '',
-    pros: '',
-    cons: '',
-    is_anonymous: false,
+    overall_rating: existingReview
+      ? numberToRatingLevel(existingReview.overall_rating)
+      : null,
+    organization_rating: existingReview
+      ? numberToRatingLevel(existingReview.organization_rating)
+      : null,
+    communication_rating: existingReview
+      ? numberToRatingLevel(existingReview.communication_rating)
+      : null,
+    value_rating: existingReview
+      ? numberToRatingLevel(existingReview.value_rating)
+      : null,
+    venue_rating: existingReview
+      ? numberToRatingLevel(existingReview.venue_rating)
+      : null,
+    title: existingReview?.title || '',
+    content: existingReview?.content || '',
+    pros: existingReview?.pros || '',
+    cons: existingReview?.cons || '',
+    is_anonymous: existingReview?.is_anonymous || false,
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleRatingChange = (field: keyof ReviewFormData, rating: number) => {
+  const handleRatingChange = (
+    field: keyof ReviewFormData,
+    rating: RatingLevel
+  ) => {
     setFormData(prev => ({ ...prev, [field]: rating }));
+  };
+
+  // rating_levelをoverall_rating（数値）に変換
+  const ratingLevelToNumber = (rating: RatingLevel): number => {
+    if (rating === 'good') return 5;
+    if (rating === 'normal') return 3;
+    if (rating === 'bad') return 1;
+    return 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (formData.overall_rating === 0) {
+    if (!formData.overall_rating) {
       toast({
         title: t('validation.overallRatingRequired'),
         description: t('validation.pleaseSelectRating'),
@@ -77,36 +129,94 @@ export function PhotoSessionReviewForm({
     setIsSubmitting(true);
 
     try {
-      const result = await createPhotoSessionReview({
-        photo_session_id: photoSessionId,
-        booking_id: bookingId,
-        overall_rating: formData.overall_rating,
-        organization_rating: formData.organization_rating || undefined,
-        communication_rating: formData.communication_rating || undefined,
-        value_rating: formData.value_rating || undefined,
-        venue_rating: formData.venue_rating || undefined,
-        title: formData.title || undefined,
-        content: formData.content || undefined,
-        pros: formData.pros || undefined,
-        cons: formData.cons || undefined,
-        is_anonymous: formData.is_anonymous,
-      });
-
-      if (result.error) {
-        toast({
-          title: t('error.submitFailed'),
-          description: result.error,
-          variant: 'destructive',
+      // 既存レビューがある場合は更新、ない場合は新規作成
+      if (existingReview) {
+        const result = await updatePhotoSessionReview({
+          review_id: existingReview.id,
+          overall_rating: ratingLevelToNumber(formData.overall_rating),
+          organization_rating: formData.organization_rating
+            ? ratingLevelToNumber(formData.organization_rating)
+            : undefined,
+          communication_rating: formData.communication_rating
+            ? ratingLevelToNumber(formData.communication_rating)
+            : undefined,
+          value_rating: formData.value_rating
+            ? ratingLevelToNumber(formData.value_rating)
+            : undefined,
+          venue_rating: formData.venue_rating
+            ? ratingLevelToNumber(formData.venue_rating)
+            : undefined,
+          title: formData.title || undefined,
+          content: formData.content || undefined,
+          pros: formData.pros || undefined,
+          cons: formData.cons || undefined,
+          is_anonymous: formData.is_anonymous,
         });
-        return;
+
+        if (result.error) {
+          toast({
+            title: t('error.submitFailed'),
+            description: result.error,
+            variant: 'destructive',
+          });
+          return;
+        }
+
+        toast({
+          title: tCommon('success'),
+          description: 'レビューを更新しました',
+        });
+
+        onSuccess?.();
+      } else {
+        if (!bookingId) {
+          toast({
+            title: t('error.submitFailed'),
+            description: '予約情報が見つかりません',
+            variant: 'destructive',
+          });
+          return;
+        }
+
+        const result = await createPhotoSessionReview({
+          photo_session_id: photoSessionId,
+          booking_id: bookingId,
+          overall_rating: ratingLevelToNumber(formData.overall_rating),
+          organization_rating: formData.organization_rating
+            ? ratingLevelToNumber(formData.organization_rating)
+            : undefined,
+          communication_rating: formData.communication_rating
+            ? ratingLevelToNumber(formData.communication_rating)
+            : undefined,
+          value_rating: formData.value_rating
+            ? ratingLevelToNumber(formData.value_rating)
+            : undefined,
+          venue_rating: formData.venue_rating
+            ? ratingLevelToNumber(formData.venue_rating)
+            : undefined,
+          title: formData.title || undefined,
+          content: formData.content || undefined,
+          pros: formData.pros || undefined,
+          cons: formData.cons || undefined,
+          is_anonymous: formData.is_anonymous,
+        });
+
+        if (result.error) {
+          toast({
+            title: t('error.submitFailed'),
+            description: result.error,
+            variant: 'destructive',
+          });
+          return;
+        }
+
+        toast({
+          title: tCommon('success'),
+          description: t('success.reviewSubmitted'),
+        });
+
+        onSuccess?.();
       }
-
-      toast({
-        title: tCommon('success'),
-        description: t('success.reviewSubmitted'),
-      });
-
-      onSuccess?.();
     } catch (error) {
       logger.error('レビュー投稿エラー:', error);
       toast({
@@ -119,39 +229,6 @@ export function PhotoSessionReviewForm({
     }
   };
 
-  const StarRating = ({
-    rating,
-    onRatingChange,
-    label,
-  }: {
-    rating: number;
-    onRatingChange: (rating: number) => void;
-    label: string;
-  }) => (
-    <div className="space-y-2">
-      <label className="text-sm font-medium">{label}</label>
-      <div className="flex gap-1">
-        {[1, 2, 3, 4, 5].map(star => (
-          <button
-            key={star}
-            type="button"
-            onClick={() => onRatingChange(star)}
-            className={`p-1 rounded transition-colors ${
-              star <= rating
-                ? 'text-yellow-500 hover:text-yellow-600'
-                : 'text-gray-300 hover:text-gray-400'
-            }`}
-          >
-            <Star className="h-6 w-6 fill-current" />
-          </button>
-        ))}
-        <span className="ml-2 text-sm text-muted-foreground">
-          {rating > 0 ? `${rating}/5` : t('form.notRated')}
-        </span>
-      </div>
-    </div>
-  );
-
   return (
     <Card data-review-form>
       <CardHeader>
@@ -162,50 +239,50 @@ export function PhotoSessionReviewForm({
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* 総合評価 */}
+          {/* 総合評価（必須） */}
           <div>
-            <StarRating
-              rating={formData.overall_rating}
-              onRatingChange={rating =>
-                handleRatingChange('overall_rating', rating)
-              }
-              label={`${t('form.overallRating')} *`}
+            <ThreeLevelRating
+              value={formData.overall_rating}
+              onChange={rating => handleRatingChange('overall_rating', rating)}
+              label={t('form.overallRating')}
+              required
+              size="md"
             />
           </div>
 
           <Separator />
 
-          {/* 詳細評価 */}
+          {/* 詳細評価（任意） */}
           <div className="space-y-4">
             <h3 className="text-lg font-medium">{t('form.detailedRatings')}</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <StarRating
-                rating={formData.organization_rating}
-                onRatingChange={rating =>
+            <div className="space-y-4">
+              <ThreeLevelRating
+                value={formData.organization_rating}
+                onChange={rating =>
                   handleRatingChange('organization_rating', rating)
                 }
                 label={t('form.organizationRating')}
+                size="sm"
               />
-              <StarRating
-                rating={formData.communication_rating}
-                onRatingChange={rating =>
+              <ThreeLevelRating
+                value={formData.communication_rating}
+                onChange={rating =>
                   handleRatingChange('communication_rating', rating)
                 }
                 label={t('form.communicationRating')}
+                size="sm"
               />
-              <StarRating
-                rating={formData.value_rating}
-                onRatingChange={rating =>
-                  handleRatingChange('value_rating', rating)
-                }
+              <ThreeLevelRating
+                value={formData.value_rating}
+                onChange={rating => handleRatingChange('value_rating', rating)}
                 label={t('form.valueRating')}
+                size="sm"
               />
-              <StarRating
-                rating={formData.venue_rating}
-                onRatingChange={rating =>
-                  handleRatingChange('venue_rating', rating)
-                }
+              <ThreeLevelRating
+                value={formData.venue_rating}
+                onChange={rating => handleRatingChange('venue_rating', rating)}
                 label={t('form.venueRating')}
+                size="sm"
               />
             </div>
           </div>
@@ -322,18 +399,18 @@ export function PhotoSessionReviewForm({
           <div className="flex gap-2 pt-4">
             <Button
               type="submit"
-              disabled={isSubmitting || formData.overall_rating === 0}
+              disabled={isSubmitting || !formData.overall_rating}
               className="flex-1"
             >
               {isSubmitting ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                  {t('form.submitting')}
+                  {existingReview ? '更新中...' : t('form.submitting')}
                 </>
               ) : (
                 <>
                   <Send className="mr-2 h-4 w-4" />
-                  {t('form.submitReview')}
+                  {existingReview ? 'レビューを更新' : t('form.submitReview')}
                 </>
               )}
             </Button>
