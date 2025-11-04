@@ -266,6 +266,10 @@
     "organizer": "主催者",
     "free": "無料",
     "people": "人",
+    "selectPaymentMethod": "支払い方法を選択",
+    "paymentMethodStripe": "Stripe決済",
+    "paymentMethodCashOnSite": "現地決済",
+    "notAvailable": "予約不可",
     "notes": {
       "title": "注意事項:",
       "firstCome": "予約は先着順です",
@@ -432,8 +436,9 @@
       "publishSettings": "公開設定",
       "publishLabel": "撮影会を公開する",
       "publishDescription": "公開すると他のユーザーが検索・予約できるようになります。",
-      "multipleBookingSettings": "複数予約設定",
-      "multipleBookingDescription": "1人のユーザーが複数の時間枠を予約できるかどうかを設定します",
+      "bookingSettings": "予約設定",
+      "slotSettings": "撮影枠設定",
+      "slotSettingsDescription": "時間枠を細分化して、枠ごとに料金・衣装・参加者数を設定できます。",
       "allowMultipleBookings": "複数枠予約を許可する",
       "allowMultipleBookingsDescription": "有効にすると、1人のユーザーが複数の時間枠を同時に予約できます",
       "multipleBookingDisabled": "無効: 1人につき1つの時間枠のみ予約可能（デフォルト）",
@@ -442,6 +447,13 @@
       "multipleBookingFeature1": "ユーザーは複数の時間枠を選択して一括予約できます",
       "multipleBookingFeature2": "衣装チェンジや長時間撮影に適しています",
       "multipleBookingFeature3": "各時間枠の料金が個別に適用されます",
+      "blockUsersWithBadRatings": "撮影会参加レビューが1つでも悪い評価を受けたユーザーの予約を受け付けない",
+      "blockUsersWithBadRatingsDescription": "この設定を有効にすると、過去に悪い評価を受けたユーザーはこの撮影会に予約できなくなります。",
+      "paymentTiming": "支払い方法設定",
+      "paymentTimingDescription": "参加者の支払い方法を選択してください。",
+      "paymentTimingPrepaid": "Stripe決済（事前決済）",
+      "paymentTimingCashOnSite": "現地払い",
+      "cashOnSiteRequiresSubscription": "現地払いには有料サブスクリプションが必要です",
       "createButton": "撮影会を作成",
       "updateButton": "撮影会を更新",
       "creating": "作成中...",
@@ -453,6 +465,10 @@
         "dateTimeRequired": "開始日時と終了日時は必須です",
         "startTimeInvalid": "開始日時は現在時刻より後である必要があります",
         "endTimeInvalid": "終了日時は開始日時より後である必要があります"
+      },
+      "errors": {
+        "ratingCheckFailed": "評価チェック中にエラーが発生しました",
+        "userHasBadRating": "この撮影会では、過去に悪い評価を受けたユーザーの予約を受け付けていません。"
       },
       "success": {
         "created": "撮影会を作成しました",
@@ -1239,6 +1255,11 @@
       "communicationRating": "コミュニケーション",
       "valueRating": "コストパフォーマンス",
       "venueRating": "会場・環境",
+      "userReviewTitle": "ユーザーレビューを投稿",
+      "punctualityRating": "時間厳守",
+      "professionalismRating": "プロフェッショナル性",
+      "cooperationRating": "協調性",
+      "userReviewContentPlaceholder": "ユーザーについての感想を入力してください",
       "reviewContent": "レビュー内容",
       "reviewTitle": "タイトル",
       "reviewTitlePlaceholder": "レビューのタイトルを入力してください",
@@ -1253,6 +1274,11 @@
       "submitReview": "レビューを投稿",
       "submitting": "投稿中...",
       "notRated": "未評価",
+      "ratingLabels": {
+        "good": "良い",
+        "normal": "普通",
+        "bad": "悪い"
+      },
       "guidelines": {
         "title": "レビューガイドライン",
         "honest": "正直で建設的なレビューを心がけてください",
@@ -1275,7 +1301,7 @@
     },
     "validation": {
       "overallRatingRequired": "総合評価は必須です",
-      "pleaseSelectRating": "1〜5の評価を選択してください",
+      "pleaseSelectRating": "評価を選択してください",
       "reportReasonRequired": "報告理由を選択してください",
       "pleaseSelectReason": "報告理由を選択してください"
     },

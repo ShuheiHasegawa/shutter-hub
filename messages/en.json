@@ -143,7 +143,7 @@
       "privacy": "Privacy Policy",
       "cookies": "Cookie Policy"
     },
-    "copyright": "© 2024 ShutterHub. All rights reserved."
+    "copyright": "© 2025 ShutterHub. All rights reserved."
   },
   "pages": {
     "search": {
@@ -200,7 +200,7 @@
       "saveError": "Failed to save"
     },
     "placeholders": {
-      "title": "e.g. Spring 2024 Photo Session",
+      "title": "e.g. Spring 2025 Photo Session",
       "description": "Describe the contents or memories of this photobook",
       "dragAndDrop": "Drag & drop images or click to select"
     }
@@ -239,6 +239,10 @@
     "organizer": "Organizer",
     "free": "Free",
     "people": "people",
+    "selectPaymentMethod": "Select Payment Method",
+    "paymentMethodStripe": "Stripe Payment",
+    "paymentMethodCashOnSite": "Cash on Site",
+    "notAvailable": "Booking Not Available",
     "notes": {
       "title": "Notes:",
       "firstCome": "Reservations are first-come, first-served",
@@ -405,8 +409,9 @@
       "publishSettings": "Publish Settings",
       "publishLabel": "Publish Photo Session",
       "publishDescription": "When published, other users can search and book this session.",
-      "multipleBookingSettings": "Multiple Booking Settings",
-      "multipleBookingDescription": "Configure whether a single user can book multiple time slots",
+      "bookingSettings": "Booking Settings",
+      "slotSettings": "Slot Settings",
+      "slotSettingsDescription": "Divide time slots into smaller units and set prices, costumes, and participant numbers for each slot",
       "allowMultipleBookings": "Allow Multiple Slot Bookings",
       "allowMultipleBookingsDescription": "When enabled, a single user can book multiple time slots simultaneously",
       "multipleBookingDisabled": "Disabled: One time slot per user only (Default)",
@@ -415,6 +420,13 @@
       "multipleBookingFeature1": "Users can select and book multiple time slots at once",
       "multipleBookingFeature2": "Suitable for costume changes and extended shooting sessions",
       "multipleBookingFeature3": "Individual pricing applies to each time slot",
+      "blockUsersWithBadRatings": "Block bookings from users with any bad photo session reviews",
+      "blockUsersWithBadRatingsDescription": "When enabled, users who have received bad reviews in the past will not be able to book this photo session.",
+      "paymentTiming": "Payment Method Settings",
+      "paymentTimingDescription": "Select the payment method for participants.",
+      "paymentTimingPrepaid": "Stripe Payment (Prepaid)",
+      "paymentTimingCashOnSite": "Cash on Site",
+      "cashOnSiteRequiresSubscription": "Cash on site requires a paid subscription",
       "createButton": "Create Photo Session",
       "updateButton": "Update Photo Session",
       "creating": "Creating...",
@@ -426,6 +438,10 @@
         "dateTimeRequired": "Start time and end time are required",
         "startTimeInvalid": "Start time must be after current time",
         "endTimeInvalid": "End time must be after start time"
+      },
+      "errors": {
+        "ratingCheckFailed": "An error occurred while checking ratings",
+        "userHasBadRating": "This photo session does not accept bookings from users who have received bad reviews in the past."
       },
       "success": {
         "created": "Photo session created successfully",
@@ -1106,6 +1122,11 @@
       "communicationRating": "Communication",
       "valueRating": "Value for Money",
       "venueRating": "Venue & Environment",
+      "userReviewTitle": "Write a User Review",
+      "punctualityRating": "Punctuality",
+      "professionalismRating": "Professionalism",
+      "cooperationRating": "Cooperation",
+      "userReviewContentPlaceholder": "Share your thoughts about this user",
       "reviewContent": "Review Content",
       "reviewTitle": "Title",
       "reviewTitlePlaceholder": "Enter a title for your review",
@@ -1120,6 +1141,11 @@
       "submitReview": "Submit Review",
       "submitting": "Submitting...",
       "notRated": "Not rated",
+      "ratingLabels": {
+        "good": "Good",
+        "normal": "Normal",
+        "bad": "Bad"
+      },
       "guidelines": {
         "title": "Review Guidelines",
         "honest": "Please provide honest and constructive feedback",
@@ -1142,7 +1168,7 @@
     },
     "validation": {
       "overallRatingRequired": "Overall rating is required",
-      "pleaseSelectRating": "Please select a rating from 1 to 5",
+      "pleaseSelectRating": "Please select a rating",
       "reportReasonRequired": "Report reason is required",
       "pleaseSelectReason": "Please select a reason for reporting"
     },

@@ -48,6 +48,8 @@ export interface PhotoSession {
   image_urls: string[] | null;
   booking_type: BookingType;
   allow_multiple_bookings: boolean;
+  block_users_with_bad_ratings: boolean;
+  payment_timing?: 'prepaid' | 'cash_on_site';
   is_published: boolean;
   created_at: string;
   updated_at: string;

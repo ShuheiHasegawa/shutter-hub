@@ -6,7 +6,8 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -40,6 +41,12 @@ import {
   ActionBarButton,
   ActionBarSentinel,
 } from '@/components/ui/action-bar';
+import { StudioSelectWithClear } from '@/components/studio/StudioSelectCombobox';
+import { getStudioForAutoFillAction } from '@/app/actions/studio';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { useSubscription } from '@/hooks/useSubscription';
+import { checkCanEnableCashOnSite } from '@/app/actions/photo-session-slots';
+import { CreditCard, Wallet } from 'lucide-react';
 interface PhotoSessionFormProps {
   initialData?: PhotoSessionWithOrganizer;
   isEditing?: boolean;
@@ -78,15 +85,41 @@ export function PhotoSessionForm({
       : '',
     booking_type: (initialData?.booking_type as BookingType) || 'first_come',
     allow_multiple_bookings: initialData?.allow_multiple_bookings || false,
+    block_users_with_bad_ratings:
+      initialData?.block_users_with_bad_ratings || false,
+    payment_timing:
+      (initialData?.payment_timing as 'prepaid' | 'cash_on_site') || 'prepaid',
     is_published: isDuplicating ? false : initialData?.is_published || false,
     image_urls: isDuplicating ? [] : initialData?.image_urls || [],
   });
+
+  // スタジオ選択状態（編集時は初期値から取得する必要があるが、現時点ではphoto_sessionsテーブルにstudio_idがないため空）
+  const [selectedStudioId, setSelectedStudioId] = useState<string | null>(null);
 
   const [bookingSettings, setBookingSettings] = useState<BookingSettings>({});
   const [photoSessionSlots, setPhotoSessionSlots] = useState<
     PhotoSessionSlot[]
   >([]);
   const [selectedModels, setSelectedModels] = useState<SelectedModel[]>([]);
+
+  // サブスクリプション状態を取得（将来の拡張用）
+  const {
+    currentSubscription: _currentSubscription,
+    isLoading: _isSubscriptionLoading,
+  } = useSubscription();
+
+  // 現地払いが有効化可能かチェック
+  const [canEnableCashOnSite, setCanEnableCashOnSite] = useState(false);
+  const [currentPlanName, setCurrentPlanName] = useState<string | undefined>();
+
+  useEffect(() => {
+    if (user?.id) {
+      checkCanEnableCashOnSite(user.id).then(result => {
+        setCanEnableCashOnSite(result.canEnable);
+        setCurrentPlanName(result.currentPlan);
+      });
+    }
+  }, [user?.id]);
 
   // 運営アカウントかどうかの判定
   const isOrganizer = profile?.user_type === 'organizer';
@@ -100,6 +133,50 @@ export function PhotoSessionForm({
       ...prev,
       [name]: type === 'number' ? parseInt(value) || 0 : value,
     }));
+    // 手動入力時はスタジオ選択を解除
+    if ((name === 'location' || name === 'address') && selectedStudioId) {
+      setSelectedStudioId(null);
+    }
+  };
+
+  // スタジオ選択時の処理
+  const handleStudioSelect = async (studioId: string | null) => {
+    setSelectedStudioId(studioId);
+
+    if (!studioId) {
+      // スタジオ選択解除時はフォームデータをクリア
+      setFormData(prev => ({
+        ...prev,
+        location: '',
+        address: '',
+      }));
+      return;
+    }
+
+    // スタジオ情報を取得して自動入力
+    try {
+      const result = await getStudioForAutoFillAction(studioId);
+      if (result.success && result.studio) {
+        setFormData(prev => ({
+          ...prev,
+          location: result.studio!.name,
+          address: result.studio!.address,
+        }));
+      } else {
+        toast({
+          title: 'エラー',
+          description: result.error || 'スタジオ情報の取得に失敗しました',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      logger.error('スタジオ情報取得エラー:', error);
+      toast({
+        title: 'エラー',
+        description: 'スタジオ情報の取得中にエラーが発生しました',
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleSwitchChange = (name: string, checked: boolean) => {
@@ -180,10 +257,11 @@ export function PhotoSessionForm({
       return;
     }
 
-    if (!formData.location.trim()) {
+    // スタジオ選択または場所情報入力のどちらか必須
+    if (!selectedStudioId && !formData.location.trim()) {
       toast({
         title: tErrors('title'),
-        description: t('form.validation.locationRequired'),
+        description: 'スタジオを選択するか、場所情報を入力してください',
         variant: 'destructive',
       });
       return;
@@ -258,6 +336,8 @@ export function PhotoSessionForm({
           end_time: endTime.toISOString(),
           booking_type: formData.booking_type,
           allow_multiple_bookings: formData.allow_multiple_bookings,
+          block_users_with_bad_ratings: formData.block_users_with_bad_ratings,
+          payment_timing: formData.payment_timing,
           booking_settings: bookingSettings as Record<string, unknown>,
           is_published: formData.is_published,
           image_urls: formData.image_urls,
@@ -314,6 +394,7 @@ export function PhotoSessionForm({
         end_time: endTime.toISOString(),
         booking_type: formData.booking_type,
         allow_multiple_bookings: formData.allow_multiple_bookings,
+        payment_timing: formData.payment_timing,
         booking_settings: bookingSettings as Record<string, unknown>,
         is_published: formData.is_published,
         image_urls: formData.image_urls,
@@ -461,38 +542,80 @@ export function PhotoSessionForm({
             <div className="space-y-4">
               <h3 className="text-lg font-medium">{t('form.locationInfo')}</h3>
 
+              {/* スタジオ選択 */}
               <div>
-                <label
-                  htmlFor="location"
-                  className="block text-sm font-medium mb-2"
-                >
-                  {t('form.locationLabel')} {t('form.required')}
+                <label className="block text-sm font-medium mb-2">
+                  スタジオを選択
+                  <span className="text-xs text-muted-foreground ml-2">
+                    （任意）
+                  </span>
                 </label>
-                <Input
-                  id="location"
-                  name="location"
-                  value={formData.location}
-                  onChange={handleInputChange}
-                  placeholder={t('form.locationPlaceholder')}
-                  required
+                <StudioSelectWithClear
+                  value={selectedStudioId || undefined}
+                  onSelect={handleStudioSelect}
+                  onClear={() => handleStudioSelect(null)}
+                  placeholder="スタジオを検索..."
                 />
+                <p className="text-xs text-muted-foreground mt-1">
+                  スタジオを選択すると、場所情報が自動入力されます
+                </p>
               </div>
 
-              <div>
-                <label
-                  htmlFor="address"
-                  className="block text-sm font-medium mb-2"
-                >
-                  {t('form.addressLabel')}
-                </label>
-                <Input
-                  id="address"
-                  name="address"
-                  value={formData.address}
-                  onChange={handleInputChange}
-                  placeholder={t('form.addressPlaceholder')}
-                />
-              </div>
+              {/* 手動入力（スタジオ未選択時のみ表示） */}
+              {!selectedStudioId && (
+                <>
+                  <div>
+                    <label
+                      htmlFor="location"
+                      className="block text-sm font-medium mb-2"
+                    >
+                      {t('form.locationLabel')} {t('form.required')}
+                    </label>
+                    <Input
+                      id="location"
+                      name="location"
+                      value={formData.location}
+                      onChange={handleInputChange}
+                      placeholder={t('form.locationPlaceholder')}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="address"
+                      className="block text-sm font-medium mb-2"
+                    >
+                      {t('form.addressLabel')}
+                    </label>
+                    <Input
+                      id="address"
+                      name="address"
+                      value={formData.address}
+                      onChange={handleInputChange}
+                      placeholder={t('form.addressPlaceholder')}
+                    />
+                  </div>
+                </>
+              )}
+
+              {/* スタジオ選択時の読み取り専用表示 */}
+              {selectedStudioId && (
+                <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg space-y-2">
+                  <div>
+                    <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
+                      場所: {formData.location}
+                    </span>
+                  </div>
+                  {formData.address && (
+                    <div>
+                      <span className="text-sm text-blue-600 dark:text-blue-400">
+                        住所: {formData.address}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* 日時情報 */}
@@ -622,11 +745,8 @@ export function PhotoSessionForm({
             {/* 複数予約許可設定 */}
             <div className="space-y-4">
               <h3 className="text-lg font-medium">
-                {t('form.multipleBookingSettings')}
+                {t('form.bookingSettings')}
               </h3>
-              <p className="text-sm text-muted-foreground">
-                {t('form.multipleBookingDescription')}
-              </p>
 
               <div className="flex items-center justify-between rounded-lg border p-4">
                 <div className="space-y-0.5">
@@ -669,13 +789,36 @@ export function PhotoSessionForm({
                   </div>
                 </div>
               )}
+
+              {/* 悪い評価ユーザーのブロック設定 */}
+              <div className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="flex-1">
+                  <label
+                    htmlFor="block_users_with_bad_ratings"
+                    className="text-sm font-medium cursor-pointer"
+                  >
+                    {t('form.blockUsersWithBadRatings')}
+                  </label>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    {t('form.blockUsersWithBadRatingsDescription')}
+                  </p>
+                </div>
+                <Switch
+                  id="block_users_with_bad_ratings"
+                  checked={formData.block_users_with_bad_ratings}
+                  onCheckedChange={checked =>
+                    handleSwitchChange('block_users_with_bad_ratings', checked)
+                  }
+                  disabled={isLoading}
+                />
+              </div>
             </div>
 
             {/* 撮影枠設定 */}
             <div className="space-y-4">
-              <h3 className="text-lg font-medium">撮影枠設定</h3>
+              <h3 className="text-lg font-medium">{t('form.slotSettings')}</h3>
               <p className="text-sm text-muted-foreground">
-                時間枠を細分化して、枠ごとに料金・衣装・参加者数を設定できます
+                {t('form.slotSettingsDescription')}
               </p>
 
               <PhotoSessionSlotForm
@@ -756,6 +899,129 @@ export function PhotoSessionForm({
                 </div>
               </div>
             )}
+
+            {/* 支払い方法設定 */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">{t('form.paymentTiming')}</h3>
+              <p className="text-sm text-muted-foreground">
+                {t('form.paymentTimingDescription')}
+              </p>
+
+              <RadioGroup
+                value={formData.payment_timing}
+                onValueChange={(value: 'prepaid' | 'cash_on_site') => {
+                  setFormData(prev => ({ ...prev, payment_timing: value }));
+                }}
+                disabled={isLoading}
+                className="space-y-4"
+              >
+                {/* Stripe決済（事前決済） */}
+                <div className="relative">
+                  <RadioGroupItem
+                    value="prepaid"
+                    id="payment_prepaid"
+                    className="sr-only"
+                  />
+                  <Label
+                    htmlFor="payment_prepaid"
+                    className="block cursor-pointer transition-all duration-200"
+                  >
+                    <Card
+                      className={`transition-all duration-200 hover:shadow-md ${
+                        formData.payment_timing === 'prepaid'
+                          ? 'ring-2 ring-primary shadow-md'
+                          : 'hover:border-muted-foreground/20'
+                      }`}
+                    >
+                      <CardHeader className="pb-3">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-blue-100 text-blue-800 border-blue-200">
+                              <CreditCard className="h-5 w-5" />
+                            </div>
+                            <div>
+                              <CardTitle className="text-base">
+                                {t('form.paymentTimingPrepaid')}
+                              </CardTitle>
+                              <p className="text-sm text-muted-foreground mt-1">
+                                予約時にStripe決済を完了していただきます
+                              </p>
+                            </div>
+                          </div>
+                          {formData.payment_timing === 'prepaid' && (
+                            <Badge variant="default" className="ml-2">
+                              選択中
+                            </Badge>
+                          )}
+                        </div>
+                      </CardHeader>
+                    </Card>
+                  </Label>
+                </div>
+
+                {/* 現地払い */}
+                <div className="relative">
+                  <RadioGroupItem
+                    value="cash_on_site"
+                    id="payment_cash_on_site"
+                    className="sr-only"
+                    disabled={!canEnableCashOnSite}
+                  />
+                  <Label
+                    htmlFor="payment_cash_on_site"
+                    className={`block transition-all duration-200 ${
+                      !canEnableCashOnSite
+                        ? 'opacity-50 cursor-not-allowed'
+                        : 'cursor-pointer'
+                    }`}
+                  >
+                    <Card
+                      className={`transition-all duration-200 ${
+                        !canEnableCashOnSite
+                          ? 'opacity-50'
+                          : formData.payment_timing === 'cash_on_site'
+                            ? 'ring-2 ring-primary shadow-md'
+                            : 'hover:border-muted-foreground/20 hover:shadow-md'
+                      }`}
+                    >
+                      <CardHeader className="pb-3">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-green-100 text-green-800 border-green-200">
+                              <Wallet className="h-5 w-5" />
+                            </div>
+                            <div>
+                              <CardTitle className="text-base">
+                                {t('form.paymentTimingCashOnSite')}
+                              </CardTitle>
+                              <p className="text-sm text-muted-foreground mt-1">
+                                撮影当日に現地でお支払いいただきます
+                              </p>
+                              {!canEnableCashOnSite && (
+                                <p className="text-xs text-orange-600 dark:text-orange-400 mt-2">
+                                  {t('form.cashOnSiteRequiresSubscription')}
+                                  {currentPlanName && (
+                                    <span className="ml-1">
+                                      （現在のプラン: {currentPlanName}）
+                                    </span>
+                                  )}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          {formData.payment_timing === 'cash_on_site' &&
+                            canEnableCashOnSite && (
+                              <Badge variant="default" className="ml-2">
+                                選択中
+                              </Badge>
+                            )}
+                        </div>
+                      </CardHeader>
+                    </Card>
+                  </Label>
+                </div>
+              </RadioGroup>
+            </div>
 
             {/* 公開設定 */}
             <div className="space-y-4">

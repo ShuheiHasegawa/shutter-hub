@@ -152,17 +152,96 @@ export async function confirmPayment(
 
     // 決済成功時は予約ステータスも更新
     if (paymentIntent.status === 'succeeded') {
-      await supabase
+      // 予約を取得してスロット情報を確認
+      const { data: booking, error: bookingError } = await supabase
         .from('bookings')
-        .update({
-          status: 'confirmed',
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', payment.booking_id);
+        .select('slot_id, photo_session_id')
+        .eq('id', payment.booking_id)
+        .single();
+
+      if (!bookingError && booking) {
+        // 予約ステータスを更新
+        await supabase
+          .from('bookings')
+          .update({
+            status: 'confirmed',
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', payment.booking_id);
+
+        // スロットがある場合、スロットと撮影会の参加者数を更新
+        if (booking.slot_id) {
+          // スロットの現在の参加者数を取得して更新
+          const { data: slot } = await supabase
+            .from('photo_session_slots')
+            .select('current_participants')
+            .eq('id', booking.slot_id)
+            .single();
+
+          if (slot) {
+            await supabase
+              .from('photo_session_slots')
+              .update({
+                current_participants: slot.current_participants + 1,
+              })
+              .eq('id', booking.slot_id);
+          }
+
+          // 撮影会の現在の参加者数を取得して更新
+          if (booking.photo_session_id) {
+            const { data: session } = await supabase
+              .from('photo_sessions')
+              .select('current_participants')
+              .eq('id', booking.photo_session_id)
+              .single();
+
+            if (session) {
+              await supabase
+                .from('photo_sessions')
+                .update({
+                  current_participants: session.current_participants + 1,
+                })
+                .eq('id', booking.photo_session_id);
+            }
+          }
+        } else {
+          // スロットがない場合（通常の撮影会）、撮影会の参加者数のみ更新
+          if (booking.photo_session_id) {
+            const { data: session } = await supabase
+              .from('photo_sessions')
+              .select('current_participants')
+              .eq('id', booking.photo_session_id)
+              .single();
+
+            if (session) {
+              await supabase
+                .from('photo_sessions')
+                .update({
+                  current_participants: session.current_participants + 1,
+                })
+                .eq('id', booking.photo_session_id);
+            }
+          }
+        }
+      }
+    }
+
+    // 予約が存在する場合は、撮影会詳細ページも再検証
+    if (payment?.booking_id) {
+      const { data: booking } = await supabase
+        .from('bookings')
+        .select('photo_session_id')
+        .eq('id', payment.booking_id)
+        .single();
+
+      if (booking?.photo_session_id) {
+        revalidatePath(`/photo-sessions/${booking.photo_session_id}`);
+      }
     }
 
     revalidatePath('/bookings');
     revalidatePath('/dashboard');
+    revalidatePath('/photo-sessions');
 
     return {
       success: true,

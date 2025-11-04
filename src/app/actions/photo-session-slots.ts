@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/utils/logger';
 import { revalidatePath } from 'next/cache';
 import { CreatePhotoSessionSlotData } from '@/types/photo-session';
+import { getCurrentSubscription } from '@/app/actions/subscription-management';
 
 export interface PhotoSessionWithSlotsData {
   title: string;
@@ -15,6 +16,8 @@ export interface PhotoSessionWithSlotsData {
   // max_participants と price_per_person はスロットから自動計算
   booking_type?: string;
   allow_multiple_bookings?: boolean;
+  block_users_with_bad_ratings?: boolean;
+  payment_timing?: 'prepaid' | 'cash_on_site';
   booking_settings?: Record<string, unknown>;
   is_published: boolean;
   image_urls?: string[];
@@ -62,6 +65,9 @@ export async function createPhotoSessionWithSlotsAction(
         price_per_person: avgPricePerPerson,
         booking_type: data.booking_type || 'first_come',
         allow_multiple_bookings: data.allow_multiple_bookings || false,
+        block_users_with_bad_ratings:
+          data.block_users_with_bad_ratings || false,
+        payment_timing: data.payment_timing || 'prepaid',
         booking_settings: data.booking_settings || {},
         is_published: data.is_published,
         image_urls: data.image_urls || [],
@@ -158,6 +164,9 @@ export async function updatePhotoSessionWithSlotsAction(
         price_per_person: avgPricePerPerson,
         booking_type: data.booking_type || 'first_come',
         allow_multiple_bookings: data.allow_multiple_bookings || false,
+        block_users_with_bad_ratings:
+          data.block_users_with_bad_ratings || false,
+        payment_timing: data.payment_timing || 'prepaid',
         booking_settings: data.booking_settings || {},
         is_published: data.is_published,
         image_urls: data.image_urls || [],
@@ -202,5 +211,41 @@ export async function updatePhotoSessionWithSlotsAction(
   } catch (error) {
     logger.error('撮影会更新エラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
+  }
+}
+
+/**
+ * 現地払いを有効化できるかチェック
+ * フリープラン以外のサブスクリプション契約済みの場合のみ有効
+ */
+export async function checkCanEnableCashOnSite(userId: string): Promise<{
+  canEnable: boolean;
+  currentPlan?: string;
+}> {
+  try {
+    const subscription = await getCurrentSubscription(userId);
+
+    if (!subscription || !subscription.plan) {
+      return { canEnable: false };
+    }
+
+    // フリープランの場合は現地払い不可
+    const isFreePlan =
+      subscription.plan.tier === 'free' || subscription.plan.price === 0;
+
+    if (isFreePlan) {
+      return {
+        canEnable: false,
+        currentPlan: subscription.plan.name || 'フリープラン',
+      };
+    }
+
+    return {
+      canEnable: true,
+      currentPlan: subscription.plan.name || '有料プラン',
+    };
+  } catch (error) {
+    logger.error('現地払い有効化チェックエラー:', error);
+    return { canEnable: false };
   }
 }

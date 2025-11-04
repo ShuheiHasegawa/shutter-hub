@@ -167,6 +167,141 @@ export async function createSlotBooking(
   return data[0];
 }
 
+/**
+ * 決済フロー統合用: pending状態で予約を作成する
+ * Stripe決済が必要な場合はpending、現地払いの場合はconfirmedで作成
+ */
+export async function createPendingSlotBooking(
+  slotId: string,
+  paymentMethod: 'prepaid' | 'cash_on_site' = 'prepaid'
+): Promise<{ success: boolean; bookingId?: string; message?: string }> {
+  const supabase = createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return { success: false, message: 'ログインが必要です' };
+  }
+
+  // スロット情報を取得
+  const { data: slotData, error: slotError } = await supabase
+    .from('photo_session_slots')
+    .select(
+      `
+      *,
+      photo_session:photo_sessions!inner(
+        id,
+        allow_multiple_bookings,
+        title,
+        payment_timing
+      )
+    `
+    )
+    .eq('id', slotId)
+    .single();
+
+  if (slotError || !slotData) {
+    logger.error('Error fetching slot data:', slotError);
+    return { success: false, message: 'スロット情報の取得に失敗しました' };
+  }
+
+  // 複数予約が許可されていない場合、既存の予約をチェック
+  if (!slotData.photo_session.allow_multiple_bookings) {
+    const { data: existingBookings, error: checkError } = await supabase
+      .from('bookings')
+      .select('id')
+      .eq('photo_session_id', slotData.photo_session_id)
+      .eq('user_id', user.id)
+      .in('status', ['confirmed', 'pending']); // pendingも含める
+
+    if (checkError) {
+      logger.error('Error checking existing bookings:', checkError);
+      return { success: false, message: '既存予約の確認に失敗しました' };
+    }
+
+    if (existingBookings && existingBookings.length > 0) {
+      return {
+        success: false,
+        message: `この撮影会「${slotData.photo_session.title}」には既に予約済みです。複数枠の予約は許可されていません。`,
+      };
+    }
+  }
+
+  // 予約ステータスを決定: Stripe決済の場合はpending、現地払いの場合はconfirmed
+  const bookingStatus: 'pending' | 'confirmed' =
+    paymentMethod === 'prepaid' ? 'pending' : 'confirmed';
+
+  // 予約を直接作成
+  const { data: booking, error: bookingError } = await supabase
+    .from('bookings')
+    .insert({
+      photo_session_id: slotData.photo_session_id,
+      user_id: user.id,
+      slot_id: slotId,
+      status: bookingStatus,
+    })
+    .select()
+    .single();
+
+  if (bookingError) {
+    logger.error('Error creating pending booking:', bookingError);
+    // 一意制約違反エラーの場合
+    if (
+      bookingError.code === '23505' &&
+      bookingError.message?.includes('bookings_photo_session_id_user_id_key')
+    ) {
+      return {
+        success: false,
+        message:
+          'この撮影会には既に予約済みです。複数枠の予約は許可されていません。',
+      };
+    }
+    return { success: false, message: '予約の作成に失敗しました' };
+  }
+
+  // 予約がconfirmedの場合のみ、スロットと撮影会の参加者数を更新
+  if (bookingStatus === 'confirmed') {
+    // スロットの現在の参加者数を取得して更新
+    const { data: slot } = await supabase
+      .from('photo_session_slots')
+      .select('current_participants')
+      .eq('id', slotId)
+      .single();
+
+    if (slot) {
+      await supabase
+        .from('photo_session_slots')
+        .update({
+          current_participants: slot.current_participants + 1,
+        })
+        .eq('id', slotId);
+    }
+
+    // 撮影会の現在の参加者数を取得して更新
+    const { data: session } = await supabase
+      .from('photo_sessions')
+      .select('current_participants')
+      .eq('id', slotData.photo_session_id)
+      .single();
+
+    if (session) {
+      await supabase
+        .from('photo_sessions')
+        .update({
+          current_participants: session.current_participants + 1,
+        })
+        .eq('id', slotData.photo_session_id);
+    }
+  }
+
+  return {
+    success: true,
+    bookingId: booking.id,
+    message: '予約を作成しました',
+  };
+}
+
 export async function cancelSlotBooking(
   bookingId: string
 ): Promise<{ success: boolean; message: string }> {
