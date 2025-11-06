@@ -562,11 +562,14 @@ export async function updateSubscription(
       updateParams
     );
 
+    // Stripe SDKは Response<Subscription> を返すため、型アクセス用に明示キャストする
+    const updatedSub = updatedSubscription as unknown as Stripe.Subscription;
+
     // 日割り計算額を取得（proration_invoice_itemsから）
     let prorationAmount = 0;
-    if (updatedSubscription.latest_invoice) {
+    if (updatedSub.latest_invoice) {
       const invoice = await stripe.invoices.retrieve(
-        updatedSubscription.latest_invoice as string,
+        updatedSub.latest_invoice as string,
         {
           expand: ['lines.data.price.product'],
         }
@@ -589,11 +592,11 @@ export async function updateSubscription(
       .from('user_subscriptions')
       .update({
         plan_id: newPlanId,
-        status: updatedSubscription.status,
-        current_period_start: updatedSubscription.current_period_start
+        status: updatedSub.status,
+        current_period_start: updatedSub.current_period_start
           ? new Date(updatedSubscription.current_period_start * 1000).toISOString()
           : null,
-        current_period_end: updatedSubscription.current_period_end
+        current_period_end: updatedSub.current_period_end
           ? new Date(updatedSubscription.current_period_end * 1000).toISOString()
           : null,
         updated_at: new Date().toISOString(),
@@ -631,7 +634,7 @@ export async function updateSubscription(
     }
 
     logger.info('Subscription updated successfully', {
-      subscriptionId: updatedSubscription.id,
+      subscriptionId: updatedSub.id,
       userId,
       oldPlanId: currentSubscription.plan_id,
       newPlanId,
@@ -641,7 +644,7 @@ export async function updateSubscription(
 
     return {
       success: true,
-      subscriptionId: updatedSubscription.id,
+      subscriptionId: updatedSub.id,
       prorationAmount: prorationAmount / 100, // セント単位から円単位に変換
     };
   } catch (error) {
