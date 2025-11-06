@@ -86,3 +86,18 @@
 - フリープランの場合は現地払いオプションを無効化（disabled）し、説明文を表示
 - 予約フローでは、`session.payment_timing === 'cash_on_site'`の場合のみ支払い方法選択を表示
 - 既存の撮影会データは全て`payment_timing = 'prepaid'`として扱う
+
+## 環境変数による制御（実装済み）
+
+### 環境変数
+
+- `NEXT_PUBLIC_ENABLE_CASH_ON_SITE`: 現地払い機能の有効/無効化（デフォルト: false）
+- `NEXT_PUBLIC_CASH_ON_SITE_REQUIRES_SUBSCRIPTION`: サブスクリプションチェックの有無（デフォルト: true）
+
+### 設定パターン
+
+1. **リリース時（Stripe決済のみ）**: `NEXT_PUBLIC_ENABLE_CASH_ON_SITE=false`
+2. **サブスクリプションチェックあり**: `NEXT_PUBLIC_ENABLE_CASH_ON_SITE=true`, `NEXT_PUBLIC_CASH_ON_SITE_REQUIRES_SUBSCRIPTION=true`
+3. **全員に選択可能**: `NEXT_PUBLIC_ENABLE_CASH_ON_SITE=true`, `NEXT_PUBLIC_CASH_ON_SITE_REQUIRES_SUBSCRIPTION=false`
+
+詳細は `README.md` の「環境変数設定」セクションを参照してください。
