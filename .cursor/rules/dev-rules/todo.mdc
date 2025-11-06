@@ -102,6 +102,29 @@
 - **依存関係**: Phase 6実装完了（完了済み）
 - **完成判定**: 全テストケース正常実行、UIセレクター調整完了
 
+### **💰 t0-049: サブスクリプションシステム実装（Phase 4完了）**
+
+- [x] **Phase 1**: データベース基盤構築（subscription_plans, user_subscriptions等）✅
+- [x] **Phase 2**: Stripe連携強化（createSubscription, updateSubscription, cancelSubscription, Webhook処理）✅
+- [x] **Phase 3**: UI実装（PlanSelector, SubscriptionStatus, StripePaymentForm）✅
+- [x] **Phase 4**: 機能制限実装（フォトブック制限チェック移行、ユーザータイプ別機能制限フック、FeatureGateコンポーネント）✅
+- [ ] **Phase 5**: E2Eテスト実装（サブスクリプション作成・プラン変更・機能制限チェック）← **次期実装タスク**
+- **優先度**: 🟡 重要（サブスクリプションシステムの品質保証）
+- **見積時間**: 1-2週間（詳細実装後に実施）
+- **実装時間**: Phase 1-4完了（2025年11月6日完了）
+- **依存関係**: サブスクリプションシステム詳細実装完了後
+- **完成判定**: 全E2Eテストケース正常実行、主要フローの動作確認完了
+- **技術成果**:
+  - **✅ Phase 1-4完了**: データベース基盤、Stripe連携、UI実装、機能制限実装完了
+  - **✅ フォトブック制限チェック移行**: サブスクリプションプランベースの制限チェックに移行完了
+  - **✅ ユーザータイプ別機能制限フック実装**: useModelFeatures, usePhotographerFeatures, useOrganizerFeatures
+  - **✅ FeatureGateコンポーネント実装**: 機能制限UI表示コンポーネント
+  - **📋 E2Eテスト計画作成**: `docs/subscription-system/e2e-test-plan.md`に詳細テスト項目を記載
+- **次のステップ**:
+  - サブスクリプションシステムの詳細実装完了後にE2Eテスト実装を開始
+  - 優先度1テスト項目から段階的に実装（新規作成、プラン変更、機能制限チェック等）
+  - 詳細は `docs/subscription-system/e2e-test-plan.md` を参照
+
 ### **✅ アーカイブ済み完了タスクについて**
 
 **2024年11月〜2025年7月の完了済みタスク（49項目）**は、ファイルサイズ最適化のため[todo-archive.mdc](.cursor/rules/dev-rules/todo-archive.mdc)に移動しました。
