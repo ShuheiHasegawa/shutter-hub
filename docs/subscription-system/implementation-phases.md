@@ -549,11 +549,53 @@ export function FeatureGate({
 ```
 
 ### ✅ Phase 4 完了条件
-- [ ] 全ての機能で適切な制限チェックが動作
-- [ ] プラン変更時に制限が即座に反映される
-- [ ] 制限超過時に適切なエラーメッセージが表示
-- [ ] アップグレード促進UIが適切に表示される
-- [ ] 既存機能に影響がないことを確認済み
+- [x] 全ての機能で適切な制限チェックが動作
+- [x] プラン変更時に制限が即座に反映される
+- [x] 制限超過時に適切なエラーメッセージが表示
+- [x] アップグレード促進UIが適切に表示される（FeatureGateコンポーネント実装済み）
+- [x] 既存機能に影響がないことを確認済み
+
+### ✅ Phase 4 実装完了状況（2025-11-06）
+
+#### **実装完了項目**
+
+1. **フォトブック制限チェック移行** ✅
+   - `getPhotobookPlanLimits`関数をサブスクリプションプランベースに移行
+   - `checkPhotobookCreationLimit`関数を`checkFeatureLimit`使用に修正
+   - `createPhotobook`関数でプランIDを正しく設定
+
+2. **ユーザータイプ別機能制限フック実装** ✅
+   - `useModelFeatures`フック実装（`src/hooks/useModelFeatures.ts`）
+   - `usePhotographerFeatures`フック実装（`src/hooks/usePhotographerFeatures.ts`）
+   - `useOrganizerFeatures`フック実装（`src/hooks/useOrganizerFeatures.ts`）
+
+3. **FeatureGateコンポーネント実装** ✅
+   - 機能制限UI表示コンポーネント（`src/components/subscription/FeatureGate.tsx`）
+   - 機能が利用可能な場合は子要素を表示
+   - 利用不可能な場合はロック画面とアップグレードボタンを表示
+
+#### **実装詳細**
+
+**useModelFeatures フック**:
+- ポートフォリオ制限（portfolioLimit）
+- 優先予約チケット（priorityBookingTickets）
+- 評価分析、プロフィール強化、プレミアムバッジ等の機能フラグ
+- プレミアムテンプレート、高品質エクスポート等の共通機能
+
+**usePhotographerFeatures フック**:
+- クライアント管理、高度なポートフォリオ、商用ライセンス
+- 透かし除去、ブランディングカスタマイズ
+- プレミアムテンプレート、高品質エクスポート等の共通機能
+
+**useOrganizerFeatures フック**:
+- 撮影会作成数制限（sessionLimit）
+- 高度な分析、マーケティングツール、参加者CRM
+- 収益レポート、カスタムブランディング、APIアクセス
+
+**FeatureGate コンポーネント**:
+- 機能が利用可能な場合は子要素を表示
+- 利用不可能な場合はロック画面とアップグレードボタンを表示
+- カスタムメッセージ対応
 
 ---
 

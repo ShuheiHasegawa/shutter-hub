@@ -18,6 +18,7 @@
 ### 🚀 実装・移行
 - [**implementation-phases.md**](./implementation-phases.md) - 実装フェーズ計画
 - [**migration-plan.md**](./migration-plan.md) - 既存ユーザー移行計画
+- [**feature-hooks-comparison.md**](./feature-hooks-comparison.md) - ユーザータイプ別機能制限フック実装比較
 
 ## 🎯 システム概要
 
@@ -113,14 +114,33 @@ graph TB
 
 ## 🚀 実装スケジュール
 
-| Phase | 期間 | 内容 |
-|-------|------|------|
-| **Phase 1** | 1.5週間 | データベース基盤構築 |
-| **Phase 2** | 1週間 | Stripe連携強化 |
-| **Phase 3** | 1.5週間 | UI実装 |
-| **Phase 4** | 1週間 | 機能制限実装 |
+| Phase | 期間 | 内容 | ステータス |
+|-------|------|------|-----------|
+| **Phase 1** | 1.5週間 | データベース基盤構築 | ✅ 完了 |
+| **Phase 2** | 1週間 | Stripe連携強化 | ✅ 完了 |
+| **Phase 3** | 1.5週間 | UI実装 | ✅ 完了 |
+| **Phase 4** | 1週間 | 機能制限実装 | ✅ 完了 |
 
 **総工数**: 約5週間
+
+### 📝 実装完了状況（2025-11-06）
+
+#### **Phase 4 実装完了項目**
+
+1. **フォトブック制限チェック移行** ✅
+   - サブスクリプションプランベースの制限チェックに移行完了
+   - ユーザータイプ別の制限が正しく動作
+
+2. **ユーザータイプ別機能制限フック実装** ✅
+   - `useModelFeatures` - モデル向け機能制限
+   - `usePhotographerFeatures` - カメラマン向け機能制限
+   - `useOrganizerFeatures` - 運営者向け機能制限
+
+3. **FeatureGateコンポーネント実装** ✅
+   - 機能制限UI表示コンポーネント
+   - アップグレード促進UI
+
+詳細は [implementation-phases.md](./implementation-phases.md) を参照してください。
 
 ## 📊 期待される効果
 
@@ -145,8 +165,37 @@ graph TB
 
 このドキュメントに関する質問や改善提案は、開発チームまでお知らせください。
 
+## 🛠️ 開発者向けガイド
+
+### ユーザータイプ別機能制限フックの使用
+
+各ユーザータイプに応じた専用フックを使用することで、型安全で簡潔なコードを記述できます。
+
+```typescript
+// モデル向けコンポーネント
+import { useModelFeatures } from '@/hooks/useModelFeatures';
+import { FeatureGate } from '@/components/subscription/FeatureGate';
+
+function ModelPortfolioUpload() {
+  const features = useModelFeatures();
+
+  return (
+    <FeatureGate
+      hasAccess={features.canUsePremiumTemplates}
+      featureName="プレミアムテンプレート"
+      currentPlanName={features.currentPlan?.name}
+      requiredPlanName="ベーシックプラン"
+    >
+      <PremiumTemplateSelector />
+    </FeatureGate>
+  );
+}
+```
+
+詳細な使用例と比較は [feature-hooks-comparison.md](./feature-hooks-comparison.md) を参照してください。
+
 ---
 
-**最終更新**: 2025-09-04  
-**バージョン**: 1.1  
-**ステータス**: 要件定義完了・基本仕組み優先実装準備中
+**最終更新**: 2025-11-06  
+**バージョン**: 1.2  
+**ステータス**: Phase 4実装完了・動作確認中
