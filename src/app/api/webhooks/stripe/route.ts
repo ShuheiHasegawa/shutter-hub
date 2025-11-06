@@ -244,35 +244,52 @@ export async function POST(request: NextRequest) {
       case 'customer.subscription.updated': {
         const subscription = event.data.object as Stripe.Subscription;
 
+        // 更新データの準備
+        const updateData: {
+          status: string;
+          current_period_start: string | null;
+          current_period_end: string | null;
+          cancel_at_period_end: boolean;
+          updated_at: string;
+          plan_id?: string;
+        } = {
+          status: subscription.status,
+          current_period_start: (
+            subscription as unknown as { current_period_start?: number }
+          ).current_period_start
+            ? new Date(
+                (subscription as unknown as { current_period_start: number })
+                  .current_period_start * 1000
+              ).toISOString()
+            : null,
+          current_period_end: (
+            subscription as unknown as { current_period_end?: number }
+          ).current_period_end
+            ? new Date(
+                (subscription as unknown as { current_period_end: number })
+                  .current_period_end * 1000
+              ).toISOString()
+            : null,
+          cancel_at_period_end: subscription.cancel_at_period_end || false,
+          updated_at: new Date().toISOString(),
+        };
+
+        // metadataからplan_idを取得して更新（プラン変更の場合）
+        if (subscription.metadata?.plan_id) {
+          updateData.plan_id = subscription.metadata.plan_id;
+        }
+
         // サブスクリプション状態を更新
         await supabase
           .from('user_subscriptions')
-          .update({
-            status: subscription.status,
-            current_period_start: (
-              subscription as unknown as { current_period_start?: number }
-            ).current_period_start
-              ? new Date(
-                  (subscription as unknown as { current_period_start: number })
-                    .current_period_start * 1000
-                ).toISOString()
-              : null,
-            current_period_end: (
-              subscription as unknown as { current_period_end?: number }
-            ).current_period_end
-              ? new Date(
-                  (subscription as unknown as { current_period_end: number })
-                    .current_period_end * 1000
-                ).toISOString()
-              : null,
-            cancel_at_period_end: subscription.cancel_at_period_end || false,
-            updated_at: new Date().toISOString(),
-          })
+          .update(updateData)
           .eq('stripe_subscription_id', subscription.id);
 
         logger.info('✅ Subscription updated via webhook', {
           subscriptionId: subscription.id,
           status: subscription.status,
+          planId: subscription.metadata?.plan_id,
+          previousPlanId: subscription.metadata?.previous_plan_id,
         });
         break;
       }

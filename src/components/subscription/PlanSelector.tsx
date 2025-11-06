@@ -15,6 +15,7 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { useAuth } from '@/hooks/useAuth';
 import {
   createSubscription,
+  updateSubscription,
   getPlansForUserType,
   type SubscriptionPlan,
 } from '@/app/actions/subscription-management';
@@ -120,66 +121,142 @@ export function PlanSelector({ userType }: PlanSelectorProps) {
     setConfirmDialogOpen(false);
 
     try {
-      logger.info('Creating subscription', {
+      // 既存のサブスクリプションがあるかチェック
+      const hasExistingSubscription =
+        currentSubscription && currentSubscription.status === 'active';
+
+      logger.info('Plan change initiated', {
         userId: user.id,
         planId: plan.id,
+        hasExistingSubscription,
+        currentPlanId: currentSubscription?.plan_id,
       });
 
       // フリープランの場合の簡易処理
       if (plan.tier === 'free') {
-        toast({
-          title: 'プラン変更完了',
-          description: 'フリープランに変更しました',
-        });
+        if (hasExistingSubscription) {
+          // 既存サブスクリプションをキャンセル
+          // TODO: フリープランへのダウングレード処理を実装
+          toast({
+            title: 'プラン変更完了',
+            description: 'フリープランに変更しました',
+          });
+        } else {
+          toast({
+            title: 'プラン変更完了',
+            description: 'フリープランに変更しました',
+          });
+        }
         return;
       }
 
-      // 有料プランの場合はStripe決済が必要
-      const result = await createSubscription(user.id, plan.id);
+      // 既存のサブスクリプションがある場合は更新、ない場合は新規作成
+      if (hasExistingSubscription) {
+        logger.info('Updating existing subscription', {
+          userId: user.id,
+          currentPlanId: currentSubscription.plan_id,
+          newPlanId: plan.id,
+        });
 
-      // 詳細ログでresultの内容を確認
-      logger.info('Subscription creation result', {
-        success: result.success,
-        hasClientSecret: !!result.clientSecret,
-        subscriptionId: result.subscriptionId,
-        error: result.error,
-        result,
-      });
+        // 既存サブスクリプションを更新（プラン変更）
+        const result = await updateSubscription(
+          user.id,
+          plan.id,
+          'create_prorations'
+        );
 
-      if (result.success) {
-        if (result.clientSecret) {
-          // Phase 1: Stripe決済ページにリダイレクト
-          logger.info('Redirecting to payment page', {
-            clientSecret: result.clientSecret,
-            planId: plan.id,
-          });
+        // 詳細ログでresultの内容を確認
+        logger.info('Subscription update result', {
+          success: result.success,
+          subscriptionId: result.subscriptionId,
+          prorationAmount: result.prorationAmount,
+          error: result.error,
+        });
 
-          // 決済ページにリダイレクト
-          window.location.href = `/subscription/payment?client_secret=${result.clientSecret}&plan_id=${plan.id}`;
-        } else {
-          // clientSecretがない場合（フリープラン等）
+        if (result.success) {
+          const prorationMessage =
+            result.prorationAmount !== undefined
+              ? result.prorationAmount > 0
+                ? `追加請求額: ¥${Math.abs(result.prorationAmount).toLocaleString()}`
+                : result.prorationAmount < 0
+                  ? `返金額: ¥${Math.abs(result.prorationAmount).toLocaleString()}`
+                  : ''
+              : '';
+
           toast({
             title: 'プラン変更完了',
-            description: `${plan.name}に変更しました`,
+            description: `${plan.name}に変更しました${prorationMessage ? `（${prorationMessage}）` : ''}`,
           });
 
           // ページをリロードして最新状態を反映
           setTimeout(() => {
             window.location.reload();
-          }, 1000);
+          }, 1500);
+        } else {
+          logger.error('Subscription update failed', {
+            error: result.error,
+            planId: plan.id,
+            userId: user.id,
+          });
+
+          toast({
+            title: 'エラー',
+            description: result.error || 'プラン変更に失敗しました',
+            variant: 'destructive',
+          });
         }
       } else {
-        logger.error('Subscription creation failed', {
-          error: result.error,
-          planId: plan.id,
+        logger.info('Creating new subscription', {
           userId: user.id,
+          planId: plan.id,
         });
 
-        toast({
-          title: 'エラー',
-          description: result.error || 'プラン変更に失敗しました',
-          variant: 'destructive',
+        // 新規サブスクリプション作成
+        const result = await createSubscription(user.id, plan.id);
+
+        // 詳細ログでresultの内容を確認
+        logger.info('Subscription creation result', {
+          success: result.success,
+          hasClientSecret: !!result.clientSecret,
+          subscriptionId: result.subscriptionId,
+          error: result.error,
         });
+
+        if (result.success) {
+          if (result.clientSecret) {
+            // Stripe決済ページにリダイレクト
+            logger.info('Redirecting to payment page', {
+              clientSecret: result.clientSecret,
+              planId: plan.id,
+            });
+
+            // 決済ページにリダイレクト
+            window.location.href = `/subscription/payment?client_secret=${result.clientSecret}&plan_id=${plan.id}`;
+          } else {
+            // clientSecretがない場合（フリープラン等）
+            toast({
+              title: 'プラン変更完了',
+              description: `${plan.name}に変更しました`,
+            });
+
+            // ページをリロードして最新状態を反映
+            setTimeout(() => {
+              window.location.reload();
+            }, 1000);
+          }
+        } else {
+          logger.error('Subscription creation failed', {
+            error: result.error,
+            planId: plan.id,
+            userId: user.id,
+          });
+
+          toast({
+            title: 'エラー',
+            description: result.error || 'プラン変更に失敗しました',
+            variant: 'destructive',
+          });
+        }
       }
     } catch (error) {
       logger.error('Error in plan change:', error);
