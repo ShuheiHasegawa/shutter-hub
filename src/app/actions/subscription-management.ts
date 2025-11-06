@@ -562,8 +562,15 @@ export async function updateSubscription(
       updateParams
     );
 
-    // Stripe SDKは Response<Subscription> を返すため、型アクセス用に明示キャストする
-    const updatedSub = updatedSubscription as unknown as Stripe.Subscription;
+    // Stripe SDKの型差異に対応するため、安全なアクセス用の緩い型を用意する
+    const updatedSub = updatedSubscription as unknown as {
+      id: string;
+      status?: string;
+      latest_invoice?: string | object;
+      current_period_start?: number | null;
+      current_period_end?: number | null;
+      metadata?: Record<string, string>;
+    };
 
     // 日割り計算額を取得（proration_invoice_itemsから）
     let prorationAmount = 0;
@@ -592,12 +599,12 @@ export async function updateSubscription(
       .from('user_subscriptions')
       .update({
         plan_id: newPlanId,
-        status: updatedSub.status,
+        status: updatedSub.status || null,
         current_period_start: updatedSub.current_period_start
-          ? new Date(updatedSubscription.current_period_start * 1000).toISOString()
+          ? new Date((updatedSub.current_period_start as number) * 1000).toISOString()
           : null,
         current_period_end: updatedSub.current_period_end
-          ? new Date(updatedSubscription.current_period_end * 1000).toISOString()
+          ? new Date((updatedSub.current_period_end as number) * 1000).toISOString()
           : null,
         updated_at: new Date().toISOString(),
       })
