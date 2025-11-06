@@ -108,18 +108,38 @@ export function PhotoSessionForm({
     isLoading: _isSubscriptionLoading,
   } = useSubscription();
 
+  // 環境変数で現地払い機能を制御
+  const ENABLE_CASH_ON_SITE =
+    process.env.NEXT_PUBLIC_ENABLE_CASH_ON_SITE === 'true';
+  const CASH_ON_SITE_REQUIRES_SUBSCRIPTION =
+    process.env.NEXT_PUBLIC_CASH_ON_SITE_REQUIRES_SUBSCRIPTION !== 'false'; // デフォルトtrue
+
   // 現地払いが有効化可能かチェック
   const [canEnableCashOnSite, setCanEnableCashOnSite] = useState(false);
   const [currentPlanName, setCurrentPlanName] = useState<string | undefined>();
 
   useEffect(() => {
+    // 環境変数で現地払い機能が無効化されている場合は、常にfalse
+    if (!ENABLE_CASH_ON_SITE) {
+      setCanEnableCashOnSite(false);
+      return;
+    }
+
+    // サブスクリプションチェックが不要な場合は、常に有効化
+    if (!CASH_ON_SITE_REQUIRES_SUBSCRIPTION) {
+      setCanEnableCashOnSite(true);
+      setCurrentPlanName(undefined);
+      return;
+    }
+
+    // 通常のサブスクリプションチェック
     if (user?.id) {
       checkCanEnableCashOnSite(user.id).then(result => {
         setCanEnableCashOnSite(result.canEnable);
         setCurrentPlanName(result.currentPlan);
       });
     }
-  }, [user?.id]);
+  }, [user?.id, ENABLE_CASH_ON_SITE, CASH_ON_SITE_REQUIRES_SUBSCRIPTION]);
 
   // 運営アカウントかどうかの判定
   const isOrganizer = profile?.user_type === 'organizer';
@@ -910,6 +930,15 @@ export function PhotoSessionForm({
               <RadioGroup
                 value={formData.payment_timing}
                 onValueChange={(value: 'prepaid' | 'cash_on_site') => {
+                  // 環境変数で現地払いが無効化されている場合は、強制的にprepaidに戻す
+                  if (value === 'cash_on_site' && !ENABLE_CASH_ON_SITE) {
+                    setFormData(prev => ({ ...prev, payment_timing: 'prepaid' }));
+                    toast({
+                      title: '現地払い機能は現在無効化されています',
+                      variant: 'default',
+                    });
+                    return;
+                  }
                   setFormData(prev => ({ ...prev, payment_timing: value }));
                 }}
                 disabled={isLoading}
@@ -959,67 +988,71 @@ export function PhotoSessionForm({
                   </Label>
                 </div>
 
-                {/* 現地払い */}
-                <div className="relative">
-                  <RadioGroupItem
-                    value="cash_on_site"
-                    id="payment_cash_on_site"
-                    className="sr-only"
-                    disabled={!canEnableCashOnSite}
-                  />
-                  <Label
-                    htmlFor="payment_cash_on_site"
-                    className={`block transition-all duration-200 ${
-                      !canEnableCashOnSite
-                        ? 'opacity-50 cursor-not-allowed'
-                        : 'cursor-pointer'
-                    }`}
-                  >
-                    <Card
-                      className={`transition-all duration-200 ${
+                {/* 現地払い（環境変数で制御） */}
+                {ENABLE_CASH_ON_SITE && (
+                  <div className="relative">
+                    <RadioGroupItem
+                      value="cash_on_site"
+                      id="payment_cash_on_site"
+                      className="sr-only"
+                      disabled={!canEnableCashOnSite}
+                    />
+                    <Label
+                      htmlFor="payment_cash_on_site"
+                      className={`block transition-all duration-200 ${
                         !canEnableCashOnSite
-                          ? 'opacity-50'
-                          : formData.payment_timing === 'cash_on_site'
-                            ? 'ring-2 ring-primary shadow-md'
-                            : 'hover:border-muted-foreground/20 hover:shadow-md'
+                          ? 'opacity-50 cursor-not-allowed'
+                          : 'cursor-pointer'
                       }`}
                     >
-                      <CardHeader className="pb-3">
-                        <div className="flex items-start justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-lg bg-green-100 text-green-800 border-green-200">
-                              <Wallet className="h-5 w-5" />
-                            </div>
-                            <div>
-                              <CardTitle className="text-base">
-                                {t('form.paymentTimingCashOnSite')}
-                              </CardTitle>
-                              <p className="text-sm text-muted-foreground mt-1">
-                                撮影当日に現地でお支払いいただきます
-                              </p>
-                              {!canEnableCashOnSite && (
-                                <p className="text-xs text-orange-600 dark:text-orange-400 mt-2">
-                                  {t('form.cashOnSiteRequiresSubscription')}
-                                  {currentPlanName && (
-                                    <span className="ml-1">
-                                      （現在のプラン: {currentPlanName}）
-                                    </span>
-                                  )}
+                      <Card
+                        className={`transition-all duration-200 ${
+                          !canEnableCashOnSite
+                            ? 'opacity-50'
+                            : formData.payment_timing === 'cash_on_site'
+                              ? 'ring-2 ring-primary shadow-md'
+                              : 'hover:border-muted-foreground/20 hover:shadow-md'
+                        }`}
+                      >
+                        <CardHeader className="pb-3">
+                          <div className="flex items-start justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 rounded-lg bg-green-100 text-green-800 border-green-200">
+                                <Wallet className="h-5 w-5" />
+                              </div>
+                              <div>
+                                <CardTitle className="text-base">
+                                  {t('form.paymentTimingCashOnSite')}
+                                </CardTitle>
+                                <p className="text-sm text-muted-foreground mt-1">
+                                  撮影当日に現地でお支払いいただきます
                                 </p>
-                              )}
+                                {/* サブスクリプションチェックが必要な場合のみ警告を表示 */}
+                                {CASH_ON_SITE_REQUIRES_SUBSCRIPTION &&
+                                  !canEnableCashOnSite && (
+                                    <p className="text-xs text-orange-600 dark:text-orange-400 mt-2">
+                                      {t('form.cashOnSiteRequiresSubscription')}
+                                      {currentPlanName && (
+                                        <span className="ml-1">
+                                          （現在のプラン: {currentPlanName}）
+                                        </span>
+                                      )}
+                                    </p>
+                                  )}
+                              </div>
                             </div>
+                            {formData.payment_timing === 'cash_on_site' &&
+                              canEnableCashOnSite && (
+                                <Badge variant="default" className="ml-2">
+                                  選択中
+                                </Badge>
+                              )}
                           </div>
-                          {formData.payment_timing === 'cash_on_site' &&
-                            canEnableCashOnSite && (
-                              <Badge variant="default" className="ml-2">
-                                選択中
-                              </Badge>
-                            )}
-                        </div>
-                      </CardHeader>
-                    </Card>
-                  </Label>
-                </div>
+                        </CardHeader>
+                      </Card>
+                    </Label>
+                  </div>
+                )}
               </RadioGroup>
             </div>
 
