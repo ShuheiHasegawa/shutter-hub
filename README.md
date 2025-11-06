@@ -269,6 +269,67 @@ cp .env.example .env.local
 npm run dev
 ```
 
+### 環境変数設定
+
+#### 現地払い機能の制御
+
+撮影会の支払い方法として「現地払い」を有効化するかどうかを環境変数で制御できます。
+
+```bash
+# .env.local に追加
+
+# 現地払い機能の有効/無効化
+# true: 現地払い機能を有効化（デフォルト: false）
+NEXT_PUBLIC_ENABLE_CASH_ON_SITE=true
+
+# サブスクリプションチェックの有無
+# false: 全ユーザーに現地払いを選択可能
+# true: 有料サブスクリプション会員のみ選択可能（デフォルト: true）
+NEXT_PUBLIC_CASH_ON_SITE_REQUIRES_SUBSCRIPTION=false
+```
+
+#### 設定パターン
+
+**パターン1: 現地払い完全無効化（リリース時推奨）**
+```bash
+# 環境変数を設定しない、または false に設定
+NEXT_PUBLIC_ENABLE_CASH_ON_SITE=false
+```
+- すべてのユーザーでStripe決済のみ
+- 現地払い選択UIは表示されない
+
+**パターン2: サブスクリプションチェックあり（現行仕様）**
+```bash
+NEXT_PUBLIC_ENABLE_CASH_ON_SITE=true
+NEXT_PUBLIC_CASH_ON_SITE_REQUIRES_SUBSCRIPTION=true
+```
+- 有料サブスクリプション会員のみ現地払いを選択可能
+- フリープラン会員は現地払いを選択できない
+
+**パターン3: 全員に選択可能**
+```bash
+NEXT_PUBLIC_ENABLE_CASH_ON_SITE=true
+NEXT_PUBLIC_CASH_ON_SITE_REQUIRES_SUBSCRIPTION=false
+```
+- すべてのユーザーが現地払いを選択可能
+- サブスクリプションチェックなし
+
+#### その他の環境変数
+
+```bash
+# Supabase設定
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+# Stripe設定
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
+STRIPE_SECRET_KEY=your_stripe_secret_key
+
+# デバッグログ設定
+NEXT_PUBLIC_ENABLE_DEBUG_LOGGING=true
+NEXT_PUBLIC_LOG_LEVEL=3
+```
+
 ### Supabase MCP連携のトラブルシューティング
 
 (https://supabase.com/docs/guides/getting-started/mcp?queryGroups=os&os=mac)
