@@ -13,9 +13,13 @@ import {
   PhotobookType,
 } from '@/types/quick-photobook';
 import { logger } from '@/lib/utils/logger';
+import {
+  getCurrentSubscription,
+  type SubscriptionPlan,
+} from '@/app/actions/subscription-management';
 
 /**
- * シンプルなプラン制限設定を取得する
+ * サブスクリプションプランからフォトブック制限を取得する
  */
 export async function getPhotobookPlanLimits(
   userId: string
@@ -23,74 +27,118 @@ export async function getPhotobookPlanLimits(
   try {
     const supabase = await createClient();
 
-    // プロフィールから直接ユーザータイプとロールを取得
-    const { data: profile, error } = await supabase
+    // プロフィールからユーザータイプを取得
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('user_type, role')
+      .select('user_type')
       .eq('id', userId)
       .single();
 
-    if (error || !profile) {
-      logger.warn('Profile not found, using free plan limits:', error);
-      return {
-        quick: {
-          maxPages: 5,
-          maxPhotobooks: 3,
-        },
-        advanced: {
-          maxPages: 10,
-          maxPhotobooks: 1,
-        },
-        allowedTypes: ['quick'],
-      };
+    if (profileError || !profile) {
+      logger.warn('Profile not found, using free plan limits:', profileError);
+      return getDefaultFreePlanLimits();
     }
 
-    // シンプルな制限判定（管理者は高制限、一般ユーザーは基本制限）
-    if (profile.role === 'admin' || profile.role === 'super_admin') {
-      return {
-        quick: {
-          maxPages: 15,
-          maxPhotobooks: 10,
-        },
-        advanced: {
-          maxPages: 30,
-          maxPhotobooks: 5,
-        },
-        allowedTypes: ['quick', 'advanced'],
-      };
-    } else {
-      // 一般ユーザーは統一制限
-      return {
-        quick: {
-          maxPages: 5,
-          maxPhotobooks: 3,
-        },
-        advanced: {
-          maxPages: 10,
-          maxPhotobooks: 1,
-        },
-        allowedTypes: ['quick'],
-      };
+    // 現在のサブスクリプションを取得
+    const subscription = await getCurrentSubscription(userId);
+
+    // サブスクリプションがない場合はフリープラン
+    if (!subscription || !subscription.plan) {
+      logger.info('No active subscription, using free plan limits', {
+        userId,
+        userType: profile.user_type,
+      });
+      return getDefaultFreePlanLimits(profile.user_type);
     }
+
+    const plan = subscription.plan as SubscriptionPlan;
+
+    // プランの機能設定を取得
+    const baseFeatures = plan.base_features || {};
+    const typeSpecificFeatures = plan.type_specific_features || {};
+    const allFeatures = { ...baseFeatures, ...typeSpecificFeatures };
+
+    // photobookLimitを取得（-1は無制限）
+    const photobookLimit =
+      typeof allFeatures.photobookLimit === 'number'
+        ? allFeatures.photobookLimit
+        : 0;
+
+    // premiumTemplatesがtrueの場合はadvancedタイプも利用可能
+    const hasPremiumTemplates =
+      allFeatures.premiumTemplates === true ||
+      allFeatures.premiumTemplates === 'true';
+
+    // ページ数制限（プランに応じて設定）
+    // Phase 1: 基本的な制限のみ（将来的にプラン別に拡張可能）
+    const maxPagesQuick = hasPremiumTemplates ? 15 : 5;
+    const maxPagesAdvanced = hasPremiumTemplates ? 30 : 10;
+
+    // 無制限の場合は大きな値を設定
+    const maxPhotobooks = photobookLimit === -1 ? 999999 : photobookLimit;
+
+    logger.info('Photobook plan limits retrieved', {
+      userId,
+      planId: plan.id,
+      planName: plan.name,
+      photobookLimit,
+      hasPremiumTemplates,
+      maxPhotobooks,
+    });
+
+    return {
+      quick: {
+        maxPages: maxPagesQuick,
+        maxPhotobooks: maxPhotobooks,
+      },
+      advanced: {
+        maxPages: maxPagesAdvanced,
+        maxPhotobooks: hasPremiumTemplates ? maxPhotobooks : 0, // advancedはpremiumTemplatesが必要
+      },
+      allowedTypes: hasPremiumTemplates
+        ? (['quick', 'advanced'] as PhotobookType[])
+        : (['quick'] as PhotobookType[]),
+    };
   } catch (error) {
     logger.error('Error getting photobook plan limits:', error);
     // エラー時はフリープラン制限
-    return {
-      quick: {
-        maxPages: 5,
-        maxPhotobooks: 3,
-      },
-      advanced: {
-        maxPages: 10,
-        maxPhotobooks: 1,
-      },
-      allowedTypes: ['quick'],
-    };
+    return getDefaultFreePlanLimits();
   }
 }
 
 /**
- * フォトブック作成制限をチェックする（タイプ別）
+ * フリープランのデフォルト制限を取得する
+ */
+function getDefaultFreePlanLimits(
+  userType?: 'model' | 'photographer' | 'organizer'
+): PhotobookPlanLimits {
+  // ユーザータイプ別のフリープラン制限
+  const freePlanLimits: Record<
+    'model' | 'photographer' | 'organizer',
+    { maxPhotobooks: number }
+  > = {
+    model: { maxPhotobooks: 2 },
+    photographer: { maxPhotobooks: 3 },
+    organizer: { maxPhotobooks: 3 },
+  };
+
+  const userLimit = userType ? freePlanLimits[userType] : { maxPhotobooks: 3 }; // デフォルト
+
+  return {
+    quick: {
+      maxPages: 5,
+      maxPhotobooks: userLimit.maxPhotobooks,
+    },
+    advanced: {
+      maxPages: 10,
+      maxPhotobooks: 0, // フリープランではadvanced不可
+    },
+    allowedTypes: ['quick'],
+  };
+}
+
+/**
+ * フォトブック作成制限をチェックする（タイプ別・サブスクリプションプランベース）
  */
 export async function checkPhotobookCreationLimit(
   userId: string,
@@ -100,14 +148,14 @@ export async function checkPhotobookCreationLimit(
     const supabase = await createClient();
 
     // 現在のフォトブック数を取得（タイプ別）
-    const { count, error } = await supabase
+    const { count, error: countError } = await supabase
       .from('photobooks')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', userId)
       .eq('photobook_type', type);
 
-    if (error) {
-      logger.error('Error counting photobooks:', error);
+    if (countError) {
+      logger.error('Error counting photobooks:', countError);
       // エラー時は安全な制限を適用
       return {
         allowed: false,
@@ -120,28 +168,51 @@ export async function checkPhotobookCreationLimit(
 
     const currentCount = count || 0;
 
-    // プラン制限を取得
+    // サブスクリプションプランベースの制限チェック
+    const { checkFeatureLimit } = await import(
+      '@/app/actions/subscription-management'
+    );
+    const limitCheck = await checkFeatureLimit(
+      userId,
+      'photobookLimit',
+      currentCount
+    );
+
+    // プラン制限を取得（タイプ別の詳細制限確認用）
     const planLimits = await getPhotobookPlanLimits(userId);
-    const typeLimit = type === 'quick' ? planLimits.quick : planLimits.advanced;
 
-    // プラン名を決定
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', userId)
-      .single();
-
-    let planName = 'フリープラン';
-    if (profile?.role === 'admin' || profile?.role === 'super_admin') {
-      planName = '管理者プラン';
+    // advancedタイプの場合は、premiumTemplatesが必要
+    if (type === 'advanced' && !planLimits.allowedTypes.includes('advanced')) {
+      return {
+        allowed: false,
+        current_usage: currentCount,
+        limit: 0,
+        remaining: 0,
+        plan_name: limitCheck.plan_name,
+        upgrade_required: true,
+      };
     }
 
+    // タイプ別の制限も考慮（quick/advancedで異なる制限がある場合）
+    // 現在はphotobookLimitが共通なので、limitCheckの結果を使用
+    // 将来的にタイプ別制限が必要な場合は、planLimits.quick/advanced.maxPhotobooksを使用
+
+    logger.info('Photobook creation limit checked', {
+      userId,
+      type,
+      currentCount,
+      limit: limitCheck.limit,
+      allowed: limitCheck.allowed,
+      planName: limitCheck.plan_name,
+    });
+
     return {
-      allowed: currentCount < typeLimit.maxPhotobooks,
-      current_usage: currentCount,
-      limit: typeLimit.maxPhotobooks,
-      remaining: Math.max(0, typeLimit.maxPhotobooks - currentCount),
-      plan_name: `${planName} (${type === 'quick' ? 'クイック' : 'アドバンスド'})`,
+      allowed: limitCheck.allowed,
+      current_usage: limitCheck.current_usage,
+      limit: limitCheck.limit,
+      remaining: limitCheck.remaining,
+      plan_name: limitCheck.plan_name,
+      upgrade_required: !limitCheck.allowed && limitCheck.limit > 0,
     };
   } catch (error) {
     logger.error('Error checking photobook creation limit:', error);
@@ -238,7 +309,11 @@ export async function createPhotobook(
 
     const supabase = await createClient();
 
-    // subscription_planフィールドを明示的に設定
+    // 現在のサブスクリプションプランIDを取得
+    const subscription = await getCurrentSubscription(userId);
+    const planId = subscription?.plan_id || 'free';
+
+    // subscription_planフィールドを実際のプランIDに設定
     const { data: photobook, error } = await supabase
       .from('photobooks')
       .insert({
@@ -253,7 +328,7 @@ export async function createPhotobook(
             : limits.advanced.maxPages
         ),
         is_published: data.is_published || false,
-        subscription_plan: 'free', // 明示的にフリープランを設定
+        subscription_plan: planId, // 実際のプランIDを設定
       })
       .select()
       .single();
