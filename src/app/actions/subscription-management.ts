@@ -429,6 +429,229 @@ export async function createSubscription(
 }
 
 /**
+ * サブスクリプション更新（プラン変更・金額変更対応）
+ */
+export async function updateSubscription(
+  userId: string,
+  newPlanId: string,
+  prorationBehavior: 'create_prorations' | 'none' | 'always_invoice' = 'create_prorations'
+): Promise<{
+  success: boolean;
+  subscriptionId?: string;
+  prorationAmount?: number;
+  error?: string;
+}> {
+  try {
+    if (!stripe) {
+      throw new Error('Stripe not initialized');
+    }
+
+    const supabase = await createClient();
+
+    // 現在のサブスクリプション取得
+    const { data: currentSubscription, error: subError } = await supabase
+      .from('user_subscriptions')
+      .select('*, plan:subscription_plans(*)')
+      .eq('user_id', userId)
+      .eq('status', 'active')
+      .single();
+
+    if (subError || !currentSubscription) {
+      logger.error('Active subscription not found:', {
+        userId,
+        error: subError,
+      });
+      return {
+        success: false,
+        error: 'アクティブなサブスクリプションが見つかりません',
+      };
+    }
+
+    if (!currentSubscription.stripe_subscription_id) {
+      logger.error('No Stripe subscription ID:', {
+        userId,
+        subscriptionId: currentSubscription.id,
+      });
+      return { success: false, error: 'Stripe連携情報が見つかりません' };
+    }
+
+    // 新しいプラン情報取得
+    const { data: newPlan, error: planError } = await supabase
+      .from('subscription_plans')
+      .select('*')
+      .eq('id', newPlanId)
+      .single();
+
+    if (planError || !newPlan) {
+      logger.error('New plan not found:', { newPlanId, error: planError });
+      return { success: false, error: '新しいプランが見つかりません' };
+    }
+
+    if (!newPlan.stripe_price_id) {
+      logger.error('No Stripe price ID for new plan:', { newPlanId });
+      return { success: false, error: 'このプランは決済対象外です' };
+    }
+
+    // 同じプランの場合は何もしない
+    if (currentSubscription.plan_id === newPlanId) {
+      logger.info('Same plan selected, no update needed', {
+        userId,
+        planId: newPlanId,
+      });
+      return {
+        success: true,
+        subscriptionId: currentSubscription.stripe_subscription_id,
+      };
+    }
+
+    // ユーザータイプとプランの整合性チェック
+    const { data: userProfile } = await supabase
+      .from('profiles')
+      .select('user_type')
+      .eq('id', userId)
+      .single();
+
+    if (userProfile && userProfile.user_type !== newPlan.user_type) {
+      logger.error('Plan type mismatch:', {
+        userType: userProfile.user_type,
+        planType: newPlan.user_type,
+      });
+      return {
+        success: false,
+        error: 'このプランはあなたのユーザータイプに対応していません',
+      };
+    }
+
+    // Stripe Subscriptionを取得
+    const stripeSubscription = await stripe.subscriptions.retrieve(
+      currentSubscription.stripe_subscription_id,
+      {
+        expand: ['items.data.price.product'],
+      }
+    );
+
+    // Subscription Item IDを取得
+    const subscriptionItemId = stripeSubscription.items.data[0]?.id;
+    if (!subscriptionItemId) {
+      logger.error('Subscription item not found:', {
+        subscriptionId: stripeSubscription.id,
+      });
+      return { success: false, error: 'サブスクリプションアイテムが見つかりません' };
+    }
+
+    // Stripe Subscriptionを更新
+    const updateParams: Stripe.SubscriptionUpdateParams = {
+      items: [
+        {
+          id: subscriptionItemId,
+          price: newPlan.stripe_price_id,
+        },
+      ],
+      proration_behavior: prorationBehavior,
+      metadata: {
+        ...stripeSubscription.metadata,
+        plan_id: newPlanId,
+        previous_plan_id: currentSubscription.plan_id,
+        updated_at: new Date().toISOString(),
+        user_id: userId,
+      },
+    };
+
+    const updatedSubscription = await stripe.subscriptions.update(
+      currentSubscription.stripe_subscription_id,
+      updateParams
+    );
+
+    // 日割り計算額を取得（proration_invoice_itemsから）
+    let prorationAmount = 0;
+    if (updatedSubscription.latest_invoice) {
+      const invoice = await stripe.invoices.retrieve(
+        updatedSubscription.latest_invoice as string,
+        {
+          expand: ['lines.data.price.product'],
+        }
+      );
+
+      // 日割り計算額を計算（負の値は返金、正の値は追加請求）
+      const prorationLineItems = invoice.lines.data.filter(
+        line => line.proration
+      );
+      prorationAmount = prorationLineItems.reduce(
+        (sum, line) => sum + (line.amount || 0),
+        0
+      );
+    }
+
+    // データベース更新
+    const { error: updateError } = await supabase
+      .from('user_subscriptions')
+      .update({
+        plan_id: newPlanId,
+        status: updatedSubscription.status,
+        current_period_start: updatedSubscription.current_period_start
+          ? new Date(updatedSubscription.current_period_start * 1000).toISOString()
+          : null,
+        current_period_end: updatedSubscription.current_period_end
+          ? new Date(updatedSubscription.current_period_end * 1000).toISOString()
+          : null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', currentSubscription.id);
+
+    if (updateError) {
+      logger.error('Error updating subscription in database:', updateError);
+      return { success: false, error: 'データベース更新に失敗しました' };
+    }
+
+    // 変更履歴を記録（データベース関数が自動的に記録するが、明示的に記録）
+    const changeType =
+      newPlan.price > (currentSubscription.plan?.price || 0)
+        ? 'upgrade'
+        : newPlan.price < (currentSubscription.plan?.price || 0)
+          ? 'downgrade'
+          : 'plan_switch';
+
+    const { error: historyError } = await supabase
+      .from('subscription_changes')
+      .insert({
+        user_id: userId,
+        subscription_id: currentSubscription.id,
+        change_type: changeType,
+        from_plan_id: currentSubscription.plan_id,
+        to_plan_id: newPlanId,
+        proration_amount: prorationAmount,
+        effective_date: new Date().toISOString(),
+      });
+
+    if (historyError) {
+      logger.warn('Error recording subscription change history:', historyError);
+      // 履歴記録の失敗は致命的ではないため、続行
+    }
+
+    logger.info('Subscription updated successfully', {
+      subscriptionId: updatedSubscription.id,
+      userId,
+      oldPlanId: currentSubscription.plan_id,
+      newPlanId,
+      prorationAmount,
+      changeType,
+    });
+
+    return {
+      success: true,
+      subscriptionId: updatedSubscription.id,
+      prorationAmount: prorationAmount / 100, // セント単位から円単位に変換
+    };
+  } catch (error) {
+    logger.error('Error updating subscription:', error);
+    return {
+      success: false,
+      error: 'サブスクリプションの更新に失敗しました',
+    };
+  }
+}
+
+/**
  * サブスクリプションキャンセル
  */
 export async function cancelSubscription(
