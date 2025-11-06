@@ -573,9 +573,11 @@ export async function updateSubscription(
       );
 
       // 日割り計算額を計算（負の値は返金、正の値は追加請求）
-      const prorationLineItems = invoice.lines.data.filter(
-        line => line.proration
-      );
+      // Stripeの型定義によっては line.proration が存在しない場合があるため安全に判定する
+      const prorationLineItems = invoice.lines.data.filter(line => {
+        const anyLine = line as unknown as { proration?: boolean; proration_details?: unknown };
+        return Boolean(anyLine.proration) || Boolean(anyLine.proration_details);
+      });
       prorationAmount = prorationLineItems.reduce(
         (sum, line) => sum + (line.amount || 0),
         0
