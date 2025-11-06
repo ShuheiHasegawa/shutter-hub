@@ -64,6 +64,21 @@ export function SlotBookingFlow({
   const hasSlots = slots && slots.length > 0;
   const allowMultiple = session.allow_multiple_bookings && hasSlots;
 
+  // 選択されたスロットの取得
+  const selectedSlot = useMemo(
+    () => (selectedSlotId ? slots.find(s => s.id === selectedSlotId) : null),
+    [selectedSlotId, slots]
+  );
+
+  // 選択されたスロットリストの取得（複数選択用）
+  const selectedSlots = useMemo(
+    () =>
+      selectedSlotIds
+        .map(id => slots.find(s => s.id === id))
+        .filter(Boolean) as PhotoSessionSlot[],
+    [selectedSlotIds, slots]
+  );
+
   // URLパラメータからselectedSlotId(s)を復元
   useEffect(() => {
     if (allowMultiple) {
@@ -307,20 +322,7 @@ export function SlotBookingFlow({
     window.location.href = window.location.pathname;
   }, []);
 
-  // 選択されたスロットの取得
-  const selectedSlot = useMemo(
-    () => (selectedSlotId ? slots.find(s => s.id === selectedSlotId) : null),
-    [selectedSlotId, slots]
-  );
-
-  // 選択されたスロットリストの取得（複数選択用）
-  const selectedSlots = useMemo(
-    () =>
-      selectedSlotIds
-        .map(id => slots.find(s => s.id === id))
-        .filter(Boolean) as PhotoSessionSlot[],
-    [selectedSlotIds, slots]
-  );
+  
 
   // ActionBarボタンの取得
   const getActionBarButtons = useCallback((): ActionBarButton[] => {
