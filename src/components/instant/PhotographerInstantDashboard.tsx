@@ -65,19 +65,38 @@ export function PhotographerInstantDashboard({
 
   // リクエスト一覧を読み込み
   const loadRequests = async () => {
+    logger.info('リクエスト一覧読み込み開始');
     setRequestsLoading(true);
     try {
       const result = await getPhotographerRequests();
+      logger.info('リクエスト一覧取得結果:', {
+        success: result.success,
+        count: result.data?.length || 0,
+        error: result.error,
+      });
+
       if (result.success && result.data) {
+        logger.info('リクエスト一覧を更新:', {
+          count: result.data.length,
+          statuses: result.data.map(r => ({
+            id: r.id,
+            status: r.status,
+            matched_photographer_id: r.matched_photographer_id,
+          })),
+        });
         setRequests(result.data);
+        setError(''); // エラー状態をクリア
       } else {
-        setError(result.error || 'リクエストの取得に失敗しました');
+        const errorMessage = result.error || 'リクエストの取得に失敗しました';
+        logger.error('リクエスト取得失敗:', errorMessage);
+        setError(errorMessage);
       }
     } catch (error) {
-      logger.error('リクエスト取得エラー:', error);
+      logger.error('リクエスト取得エラー（例外）:', error);
       setError('予期しないエラーが発生しました');
     } finally {
       setRequestsLoading(false);
+      logger.info('リクエスト一覧読み込み完了');
     }
   };
 
@@ -121,6 +140,13 @@ export function PhotographerInstantDashboard({
     declineReason?: string,
     estimatedArrivalTime?: number
   ) => {
+    logger.info('リクエスト応答開始:', {
+      requestId,
+      responseType,
+      declineReason,
+      estimatedArrivalTime,
+    });
+
     try {
       const result = await respondToRequest(
         requestId,
@@ -128,14 +154,37 @@ export function PhotographerInstantDashboard({
         declineReason,
         estimatedArrivalTime
       );
+
+      logger.info('リクエスト応答結果:', {
+        success: result.success,
+        error: result.error,
+        requestId,
+        responseType,
+      });
+
       if (result.success) {
+        // 成功メッセージを表示
+        logger.info('リクエスト応答成功、一覧を更新します', {
+          requestId,
+          responseType,
+        });
         // リクエスト一覧を更新
-        loadRequests();
+        await loadRequests();
+        // エラー状態をクリア
+        setError('');
       } else {
-        setError(result.error || '応答の送信に失敗しました');
+        const errorMessage = result.error || '応答の送信に失敗しました';
+        logger.error('リクエスト応答失敗:', {
+          error: errorMessage,
+          requestId,
+          responseType,
+          declineReason,
+          estimatedArrivalTime,
+        });
+        setError(errorMessage);
       }
     } catch (error) {
-      logger.error('応答エラー:', error);
+      logger.error('応答エラー（例外）:', error);
       setError('予期しないエラーが発生しました');
     }
   };
@@ -321,39 +370,46 @@ export function PhotographerInstantDashboard({
               {requests.map(request => (
                 <Card key={request.id} className="border-l-4 border-blue-500">
                   <CardContent className="p-4">
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <h4 className="font-medium text-lg">
-                          {request.guest_name}さん
-                        </h4>
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                    {/* ヘッダーセクション: 名前、ステータス、価格 */}
+                    <div className="flex items-start justify-between gap-4 pb-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-2">
+                          <h4 className="font-medium text-lg truncate">
+                            {request.guest_name}さん
+                          </h4>
                           <Badge
                             variant={
                               request.status === 'pending'
                                 ? 'default'
-                                : request.status === 'matched'
-                                  ? 'secondary'
-                                  : request.status === 'in_progress'
-                                    ? 'default'
-                                    : request.status === 'completed'
-                                      ? 'secondary'
-                                      : 'destructive'
+                                : request.status === 'photographer_accepted'
+                                  ? 'default'
+                                  : request.status === 'matched'
+                                    ? 'secondary'
+                                    : request.status === 'in_progress'
+                                      ? 'default'
+                                      : request.status === 'completed'
+                                        ? 'secondary'
+                                        : 'destructive'
                             }
+                            className="shrink-0"
                           >
                             {request.status === 'pending' && '受付中'}
+                            {request.status === 'photographer_accepted' &&
+                              request.pending_photographer_id === userId &&
+                              '承認待ち'}
                             {request.status === 'matched' && 'マッチ済み'}
                             {request.status === 'in_progress' && '撮影中'}
                             {request.status === 'completed' && '撮影完了'}
                             {request.status === 'cancelled' && 'キャンセル'}
                             {request.status === 'expired' && '期限切れ'}
                           </Badge>
-                          <span>
-                            {new Date(request.created_at).toLocaleTimeString()}
-                          </span>
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {new Date(request.created_at).toLocaleTimeString()}
                         </div>
                       </div>
 
-                      <div className="text-right">
+                      <div className="text-right shrink-0">
                         <div className="text-lg font-medium text-success">
                           ¥{request.budget.toLocaleString()}
                         </div>
@@ -363,23 +419,24 @@ export function PhotographerInstantDashboard({
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4 text-sm mb-4">
-                      <div className="space-y-1">
+                    {/* 詳細情報セクション */}
+                    <div className="grid grid-cols-2 gap-4 text-sm pt-4 border-t">
+                      <div className="flex flex-col gap-2">
                         <div className="flex items-center gap-2">
-                          <MapPin className="h-4 w-4" />
-                          <span>
+                          <MapPin className="h-4 w-4 shrink-0" />
+                          <span className="truncate">
                             {request.location_address || '位置情報あり'}
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Users className="h-4 w-4" />
+                          <Users className="h-4 w-4 shrink-0" />
                           <span>{request.party_size}名</span>
                         </div>
                       </div>
 
-                      <div className="space-y-1">
+                      <div className="flex flex-col gap-2">
                         <div className="flex items-center gap-2">
-                          <Camera className="h-4 w-4" />
+                          <Camera className="h-4 w-4 shrink-0" />
                           <span>
                             {request.request_type === 'portrait' &&
                               'ポートレート'}
@@ -390,7 +447,7 @@ export function PhotographerInstantDashboard({
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Clock className="h-4 w-4" />
+                          <Clock className="h-4 w-4 shrink-0" />
                           <span>
                             {request.urgency === 'now' && '今すぐ'}
                             {request.urgency === 'within_30min' && '30分以内'}
@@ -400,36 +457,40 @@ export function PhotographerInstantDashboard({
                       </div>
                     </div>
 
+                    {/* 特別リクエストセクション */}
                     {request.special_requests && (
-                      <div className="bg-muted p-3 rounded mb-4">
-                        <h5 className="font-medium text-sm mb-1">
+                      <div className="bg-muted/50 rounded-lg p-4 mt-4">
+                        <h5 className="font-medium text-sm mb-2">
                           特別なリクエスト
                         </h5>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-muted-foreground leading-relaxed">
                           {request.special_requests}
                         </p>
                       </div>
                     )}
 
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+                    {/* 連絡先セクション */}
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground pt-4 border-t">
                       {['matched', 'in_progress', 'completed'].includes(
                         request.status
                       ) && request.matched_photographer_id === userId ? (
                         // マッチング成立後：連絡先を表示
                         <>
-                          <Phone className="h-4 w-4" />
+                          <Phone className="h-4 w-4 shrink-0" />
                           <span>{request.guest_phone}</span>
                           {request.guest_email && (
                             <>
-                              <Mail className="h-4 w-4 ml-2" />
-                              <span>{request.guest_email}</span>
+                              <Mail className="h-4 w-4 ml-2 shrink-0" />
+                              <span className="truncate">
+                                {request.guest_email}
+                              </span>
                             </>
                           )}
                         </>
                       ) : (
                         // マッチング前：プライバシー保護メッセージ
                         <>
-                          <Phone className="h-4 w-4" />
+                          <Phone className="h-4 w-4 shrink-0" />
                           <span className="text-muted-foreground/60">
                             連絡先は受注後に表示されます
                           </span>
@@ -437,20 +498,12 @@ export function PhotographerInstantDashboard({
                       )}
                     </div>
 
-                    <div className="flex flex-col gap-2">
+                    {/* アクションボタンセクション */}
+                    <div className="flex gap-2 pt-4">
                       {request.status === 'pending' && (
                         <>
                           <Button
-                            onClick={() =>
-                              handleRespond(request.id, 'accept', undefined, 15)
-                            }
-                            className="flex-1"
-                          >
-                            <CheckCircle className="h-4 w-4 mr-2" />
-                            受諾する
-                          </Button>
-                          <Button
-                            variant="outline"
+                            variant="neutral"
                             onClick={() =>
                               handleRespond(
                                 request.id,
@@ -463,8 +516,25 @@ export function PhotographerInstantDashboard({
                             <XCircle className="h-4 w-4 mr-2" />
                             辞退する
                           </Button>
+                          <Button
+                            onClick={() =>
+                              handleRespond(request.id, 'accept', undefined, 15)
+                            }
+                            className="flex-1"
+                            variant="cta"
+                          >
+                            <CheckCircle className="h-4 w-4 mr-2" />
+                            受諾する
+                          </Button>
                         </>
                       )}
+
+                      {request.status === 'photographer_accepted' &&
+                        request.pending_photographer_id === userId && (
+                          <div className="w-full text-center text-sm text-muted-foreground">
+                            ゲストの承認をお待ちください
+                          </div>
+                        )}
 
                       {request.status === 'matched' &&
                         request.matched_photographer_id === userId && (
@@ -492,88 +562,74 @@ export function PhotographerInstantDashboard({
 
                       {request.status === 'completed' &&
                         request.matched_photographer_id === userId && (
-                          <>
-                            {/* 1行目: 撮影完了メッセージ */}
-                            <div className="flex gap-2 w-full">
-                              <div className="flex-1 bg-success/10 border border-success/20 rounded-lg p-3">
-                                {/* 撮影完了メッセージ */}
-                                <div className="flex items-center gap-2 text-success">
-                                  <CheckCircle className="h-4 w-4" />
-                                  <span className="font-medium">撮影完了</span>
-                                </div>
-                                <p className="text-sm text-success/80 mt-1">
-                                  写真を配信して収益を受け取りましょう
-                                </p>
+                          <div className="flex flex-col gap-4">
+                            {/* 撮影完了メッセージ */}
+                            <div className="bg-success/10 border border-success/20 rounded-lg p-4">
+                              <div className="flex items-center gap-2 text-success mb-2">
+                                <CheckCircle className="h-4 w-4" />
+                                <span className="font-medium">撮影完了</span>
                               </div>
+                              <p className="text-sm text-success/80">
+                                写真を配信して収益を受け取りましょう
+                              </p>
                             </div>
 
-                            {/* 2行目: 写真配信ボタン */}
-                            <div className="flex gap-2 w-full mt-4">
-                              <Button
-                                onClick={() =>
-                                  handleProceedToDelivery(request.id)
-                                }
-                                className="w-full"
-                              >
-                                <Upload className="h-4 w-4 mr-2" />
-                                写真配信
-                                <ArrowRight className="h-4 w-4 ml-2" />
-                              </Button>
-                            </div>
-                          </>
+                            {/* 写真配信ボタン */}
+                            <Button
+                              onClick={() =>
+                                handleProceedToDelivery(request.id)
+                              }
+                              className="w-full"
+                            >
+                              <Upload className="h-4 w-4 mr-2" />
+                              写真配信
+                              <ArrowRight className="h-4 w-4 ml-2" />
+                            </Button>
+                          </div>
                         )}
 
                       {request.status === 'delivered' &&
                         request.matched_photographer_id === userId && (
-                          <>
-                            {/* 1行目: 撮影完了メッセージ */}
-                            <div className="flex gap-2 w-full">
-                              <div className="flex-1 bg-success/10 border border-success/20 rounded-lg p-3">
-                                <div className="flex items-center gap-2 text-success">
-                                  <CheckCircle className="h-4 w-4" />
-                                  <span className="font-medium">撮影完了</span>
-                                </div>
-                                <p className="text-sm text-success/80 mt-1">
-                                  撮影が完了しました
-                                </p>
+                          <div className="flex flex-col gap-4">
+                            {/* 撮影完了メッセージ */}
+                            <div className="bg-success/10 border border-success/20 rounded-lg p-4">
+                              <div className="flex items-center gap-2 text-success mb-2">
+                                <CheckCircle className="h-4 w-4" />
+                                <span className="font-medium">撮影完了</span>
                               </div>
+                              <p className="text-sm text-success/80">
+                                撮影が完了しました
+                              </p>
                             </div>
 
-                            {/* 2行目: 配信完了メッセージ */}
-                            <div className="flex gap-2 w-full mt-3">
-                              <div className="flex-1 bg-blue-50 border border-blue-200 rounded-lg p-3">
-                                <div className="flex items-center gap-2 text-blue-600">
-                                  <Send className="h-4 w-4" />
-                                  <span className="font-medium">
-                                    写真配信済み
-                                  </span>
-                                  <Badge
-                                    variant="secondary"
-                                    className="text-xs"
-                                  >
-                                    配信完了
-                                  </Badge>
-                                </div>
-                                <p className="text-sm text-blue-700 mt-1">
-                                  配信完了しました。ゲストの受取確認をお待ちください
-                                </p>
+                            {/* 配信完了メッセージ */}
+                            <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                              <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 mb-2">
+                                <Send className="h-4 w-4" />
+                                <span className="font-medium">
+                                  写真配信済み
+                                </span>
+                                <Badge variant="secondary" className="text-xs">
+                                  配信完了
+                                </Badge>
                               </div>
+                              <p className="text-sm text-blue-700 dark:text-blue-300">
+                                配信完了しました。ゲストの受取確認をお待ちください
+                              </p>
                             </div>
 
-                            {/* 3行目: 再配信ボタン */}
-                            <div className="flex gap-2 w-full mt-4">
-                              <Button
-                                onClick={() =>
-                                  handleProceedToDelivery(request.id)
-                                }
-                                variant="outline"
-                                className="w-full"
-                              >
-                                <Upload className="h-4 w-4 mr-2" />
-                                再配信（上書き）
-                              </Button>
-                            </div>
-                          </>
+                            {/* 再配信ボタン */}
+                            <Button
+                              onClick={() =>
+                                handleProceedToDelivery(request.id)
+                              }
+                              variant="outline"
+                              className="w-full"
+                            >
+                              <Upload className="h-4 w-4 mr-2" />
+                              再配信（上書き）
+                            </Button>
+                          </div>
                         )}
                     </div>
                   </CardContent>

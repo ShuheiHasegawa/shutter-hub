@@ -1,13 +1,10 @@
 import { test, expect } from '@playwright/test';
-import { createTestUser, loginTestUser } from '../helpers/auth-helpers';
+import { authenticateTestUser } from './utils/photo-session-helpers';
 
 test.describe('クイックフォトブック機能', () => {
-  let testUserId: string;
-
   test.beforeEach(async ({ page }) => {
-    // テストユーザー作成・ログイン
-    testUserId = await createTestUser(page, 'model');
-    await loginTestUser(page, testUserId);
+    // テストユーザー認証（モデル）
+    await authenticateTestUser(page, 'model');
   });
 
   test('フォトブック一覧ページの表示', async ({ page }) => {

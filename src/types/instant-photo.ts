@@ -19,6 +19,8 @@ export type RequestType =
 export type RequestUrgency = 'now' | 'within_30min' | 'within_1hour' | 'normal';
 export type RequestStatus =
   | 'pending'
+  | 'photographer_accepted' // 新規追加：フォトグラファーが受諾
+  | 'guest_approved' // 新規追加：ゲストが承認
   | 'matched'
   | 'in_progress'
   | 'completed'
@@ -53,12 +55,16 @@ export interface InstantPhotoRequest {
   // マッチング・ステータス
   status: RequestStatus;
   matched_photographer_id?: string;
+  pending_photographer_id?: string; // 新規追加：受諾したフォトグラファーのID（ゲスト承認待ち）
 
   // タイムスタンプ
   created_at: string;
   expires_at: string;
   matched_at?: string;
   completed_at?: string;
+  photographer_accepted_at?: string; // 新規追加：フォトグラファーが受諾した時刻
+  guest_approved_at?: string; // 新規追加：ゲストが承認した時刻
+  photographer_timeout_at?: string; // 新規追加：フォトグラファー受諾のタイムアウト時刻（10分後）
 }
 
 export interface CreateInstantPhotoRequestData {
