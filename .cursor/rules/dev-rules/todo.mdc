@@ -122,18 +122,7 @@
   - **✅ リアルタイム更新**: `InstantRequestDetailClient`コンポーネント（Supabase Realtime、定期的なタイムアウトチェック）
   - **✅ 開発用テストツール**: `/dev/instant-test`（ランダムリクエスト作成、既存フォトグラファー選択）
   - **✅ 位置情報ユーティリティ**: `src/lib/utils/location.ts`（都道府県抽出、距離計算）
-- **技術成果**:
-  - **✅ データベーススキーマ拡張**: pending_photographer_id, photographer_accepted_at, guest_approved_at, photographer_timeout_at追加
-  - **✅ 受諾資格チェック改善**: is_online, accepting_requests, 距離ベースフィルタリング実装
-  - **✅ 2段階マッチングフロー**: pending → photographer_accepted → guest_approved → matched
-  - **✅ タイムアウト処理**: 10分以内にゲストが承認しない場合、自動的にpendingに戻す
   - **✅ 再受諾防止**: 同じフォトグラファーは再度受諾できない（1回限り）
-  - **✅ リアルタイム監視**: ゲスト向けリクエスト詳細ページでリアルタイム更新
-  - **✅ UI実装**: GuestApprovalPanel, InstantRequestDetailClientコンポーネント作成
-- **次のステップ**:
-  - 動作確認（フォトグラファー受諾 → ゲスト承認フロー）
-  - タイムアウト処理の動作確認
-  - 同県フィルタリング機能の追加（将来的に実装）
 
 ### **💰 t0-049: サブスクリプションシステム実装（Phase 4完了）**
 
