@@ -407,27 +407,190 @@ export async function getPhotographerRequests(): Promise<
       error: authError,
     } = await supabase.auth.getUser();
     if (authError || !user) {
+      logger.warn('認証エラー:', authError);
       return { success: false, error: '認証が必要です' };
     }
 
-    // カメラマンに関連するリクエストを取得
-    // 1. 近くのリクエスト（pending状態）
-    // 2. 自分がマッチしたリクエスト
-    const { data, error } = await supabase
+    logger.info('フォトグラファーリクエスト取得開始:', { userId: user.id });
+
+    // 1. フォトグラファーの位置情報とオンライン状態を取得
+    const { data: photographerLocation, error: locationError } = await supabase
+      .from('photographer_locations')
+      .select('*')
+      .eq('photographer_id', user.id)
+      .single();
+
+    if (locationError) {
+      logger.warn('フォトグラファー位置情報取得エラー:', locationError);
+      // 位置情報がない場合は、自分がマッチング済みのリクエストのみ返す
+      const { data: matchedRequests, error: matchedError } = await supabase
+        .from('instant_photo_requests')
+        .select('*')
+        .or(
+          `matched_photographer_id.eq.${user.id},pending_photographer_id.eq.${user.id}`
+        )
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      if (matchedError) {
+        logger.error('マッチング済みリクエスト取得エラー:', matchedError);
+        return { success: false, error: 'リクエストの取得に失敗しました' };
+      }
+
+      return { success: true, data: matchedRequests || [] };
+    }
+
+    // 2. オンライン状態と受諾可能状態をチェック
+    const isOnline = photographerLocation?.is_online === true;
+    const acceptingRequests =
+      photographerLocation?.accepting_requests !== false; // デフォルトtrue
+
+    if (!isOnline || !acceptingRequests) {
+      logger.info('フォトグラファーはオフラインまたは受諾不可:', {
+        isOnline,
+        acceptingRequests,
+      });
+      // オフラインでも、自分がマッチング済みのリクエストは表示
+      const { data: matchedRequests, error: matchedError } = await supabase
+        .from('instant_photo_requests')
+        .select('*')
+        .or(
+          `matched_photographer_id.eq.${user.id},pending_photographer_id.eq.${user.id}`
+        )
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      if (matchedError) {
+        logger.error('マッチング済みリクエスト取得エラー:', matchedError);
+        return { success: false, error: 'リクエストの取得に失敗しました' };
+      }
+
+      return { success: true, data: matchedRequests || [] };
+    }
+
+    // 3. 位置情報ベースのフィルタリング
+    // まず、pending状態のリクエストを取得
+    const { data: pendingRequests, error: pendingError } = await supabase
       .from('instant_photo_requests')
       .select('*')
-      .or(`status.eq.pending,matched_photographer_id.eq.${user.id}`)
+      .eq('status', 'pending')
       .order('created_at', { ascending: false })
-      .limit(20);
+      .limit(50); // 多めに取得してからフィルタリング
 
-    if (error) {
-      logger.error('リクエスト取得エラー:', error);
+    if (pendingError) {
+      logger.error('pendingリクエスト取得エラー:', pendingError);
       return { success: false, error: 'リクエストの取得に失敗しました' };
     }
 
-    return { success: true, data: data || [] };
+    // 4. 位置情報によるフィルタリング（距離ベース）
+    const { calculateDistance } = await import('@/lib/utils/location');
+    const photographerLat = photographerLocation.latitude;
+    const photographerLng = photographerLocation.longitude;
+    const responseRadius = photographerLocation.response_radius || 10000; // デフォルト10km
+
+    // 注: 同県フィルタリングは将来的に実装予定
+
+    // 距離と都道府県でフィルタリング
+    const filteredRequests = (pendingRequests || []).filter(request => {
+      // 他のフォトグラファーが受諾済みのリクエストは除外
+      if (
+        request.status === 'photographer_accepted' &&
+        request.pending_photographer_id &&
+        request.pending_photographer_id !== user.id
+      ) {
+        return false;
+      }
+
+      // 過去に辞退したリクエストは除外（後でチェック）
+
+      // 距離チェック
+      const distance = calculateDistance(
+        photographerLat,
+        photographerLng,
+        request.location_lat,
+        request.location_lng
+      );
+
+      if (distance > responseRadius) {
+        return false;
+      }
+
+      // 同県フィルタリング（将来的に実装）
+      // if (photographerPrefecture && request.location_address) {
+      //   const requestPrefecture = extractPrefecture(request.location_address);
+      //   // 同県の場合は優先（距離が近い順にソートされる）
+      // }
+
+      return true;
+    });
+
+    // 5. 過去に辞退したリクエストを除外
+    const { data: declinedResponses, error: responseError } = await supabase
+      .from('photographer_request_responses')
+      .select('request_id')
+      .eq('photographer_id', user.id)
+      .eq('response_type', 'decline');
+
+    if (responseError) {
+      logger.warn('辞退履歴取得エラー:', responseError);
+    }
+
+    const declinedRequestIds = new Set(
+      (declinedResponses || []).map(r => r.request_id)
+    );
+
+    const availableRequests = filteredRequests.filter(
+      request => !declinedRequestIds.has(request.id)
+    );
+
+    // 6. 自分がマッチング済みのリクエストも取得
+    const { data: matchedRequests, error: matchedError } = await supabase
+      .from('instant_photo_requests')
+      .select('*')
+      .or(
+        `matched_photographer_id.eq.${user.id},pending_photographer_id.eq.${user.id}`
+      )
+      .order('created_at', { ascending: false })
+      .limit(20);
+
+    if (matchedError) {
+      logger.warn('マッチング済みリクエスト取得エラー:', matchedError);
+    }
+
+    // 7. 結果をマージして重複を除去
+    const allRequests = [
+      ...availableRequests.slice(0, 20), // 新規リクエスト（最大20件）
+      ...(matchedRequests || []), // マッチング済みリクエスト
+    ];
+
+    // IDで重複除去
+    const uniqueRequests = Array.from(
+      new Map(allRequests.map(r => [r.id, r])).values()
+    );
+
+    // 作成日時でソート
+    uniqueRequests.sort((a, b) => {
+      const dateA = new Date(a.created_at).getTime();
+      const dateB = new Date(b.created_at).getTime();
+      return dateB - dateA;
+    });
+
+    logger.info('取得したリクエスト:', {
+      count: uniqueRequests.length,
+      pending: availableRequests.length,
+      matched: matchedRequests?.length || 0,
+      requests: uniqueRequests.map(r => ({
+        id: r.id,
+        status: r.status,
+        matched_photographer_id: r.matched_photographer_id,
+        pending_photographer_id: r.pending_photographer_id,
+        guest_name: r.guest_name,
+      })),
+    });
+
+    return { success: true, data: uniqueRequests.slice(0, 20) };
   } catch (error) {
-    logger.error('リクエスト取得エラー:', error);
+    logger.error('リクエスト取得エラー（例外）:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -454,31 +617,322 @@ export async function respondToRequest(
     }
 
     if (responseType === 'accept') {
-      // リクエストを受諾する
-      const { error } = await supabase.rpc('accept_instant_photo_request', {
-        p_request_id: requestId,
-        p_photographer_id: user.id,
-        p_estimated_arrival_time: estimatedArrivalTime || 15,
+      // リクエスト情報を取得
+      const { data: request, error: requestError } = await supabase
+        .from('instant_photo_requests')
+        .select('*')
+        .eq('id', requestId)
+        .single();
+
+      if (requestError || !request) {
+        logger.error('リクエスト取得エラー:', requestError);
+        return { success: false, error: 'リクエストが見つかりません' };
+      }
+
+      // 既にマッチング済みかチェック
+      if (request.status === 'matched' && request.matched_photographer_id) {
+        return {
+          success: false,
+          error: 'このリクエストは既に他のカメラマンにマッチングされています',
+        };
+      }
+
+      // 他のフォトグラファーが受諾済みかチェック
+      if (
+        request.status === 'photographer_accepted' &&
+        request.pending_photographer_id &&
+        request.pending_photographer_id !== user.id
+      ) {
+        return {
+          success: false,
+          error: 'このリクエストは既に他のカメラマンが受諾しています',
+        };
+      }
+
+      // 同じフォトグラファーの再受諾防止チェック
+      const { data: existingResponse } = await supabase
+        .from('photographer_request_responses')
+        .select('id, response_type')
+        .eq('request_id', requestId)
+        .eq('photographer_id', user.id)
+        .single();
+
+      if (existingResponse) {
+        // 過去に応答したことがある場合、再度受諾できない
+        logger.warn('同じフォトグラファーが再度受諾しようとしています:', {
+          requestId,
+          photographerId: user.id,
+          previousResponseType: existingResponse.response_type,
+        });
+        return {
+          success: false,
+          error:
+            'このリクエストには既に応答済みです。再度受諾することはできません。',
+        };
+      }
+
+      // リクエストのステータスを更新（photographer_accepted状態に）
+      logger.info('リクエストステータス更新開始:', {
+        requestId,
+        photographerId: user.id,
+        currentStatus: request.status,
       });
 
-      if (error) {
-        logger.error('リクエスト受諾エラー:', error);
-        return { success: false, error: 'リクエストの受諾に失敗しました' };
+      const timeoutAt = new Date();
+      timeoutAt.setMinutes(timeoutAt.getMinutes() + 10); // 10分後
+
+      const { error: updateError, data: updatedRequests } = await supabase
+        .from('instant_photo_requests')
+        .update({
+          status: 'photographer_accepted',
+          pending_photographer_id: user.id,
+          photographer_accepted_at: new Date().toISOString(),
+          photographer_timeout_at: timeoutAt.toISOString(),
+          // matched_photographer_idはまだ設定しない（ゲスト承認後に設定）
+        })
+        .eq('id', requestId)
+        .eq('status', 'pending') // pending状態のもののみ更新
+        .select();
+
+      if (updateError) {
+        logger.error('リクエストステータス更新エラー:', {
+          error: updateError,
+          code: updateError.code,
+          message: updateError.message,
+          details: updateError.details,
+          hint: updateError.hint,
+          requestId,
+          photographerId: user.id,
+          currentStatus: request.status,
+        });
+        return {
+          success: false,
+          error: `リクエストの受諾に失敗しました: ${updateError.message || 'データベースエラー'}`,
+        };
       }
-    } else {
-      // 応答を記録（辞退）
-      const { error } = await supabase
+
+      // 更新された行数を確認
+      if (!updatedRequests || updatedRequests.length === 0) {
+        logger.warn('リクエストステータス更新: 更新された行が0件', {
+          requestId,
+          currentStatus: request.status,
+        });
+        // 既にマッチング済みか、ステータスが変更されている可能性
+        // 最新の状態を再取得
+        const { data: currentRequest, error: fetchError } = await supabase
+          .from('instant_photo_requests')
+          .select('*')
+          .eq('id', requestId)
+          .single();
+
+        if (fetchError) {
+          logger.error('リクエスト再取得エラー:', fetchError);
+          return { success: false, error: 'リクエストの受諾に失敗しました' };
+        }
+
+        if (!currentRequest) {
+          logger.error('リクエストが見つかりません:', { requestId });
+          return { success: false, error: 'リクエストが見つかりません' };
+        }
+
+        logger.info('リクエスト最新状態:', {
+          requestId,
+          status: currentRequest.status,
+          matched_photographer_id: currentRequest.matched_photographer_id,
+          userId: user.id,
+        });
+
+        if (
+          (currentRequest.status === 'matched' &&
+            currentRequest.matched_photographer_id === user.id) ||
+          (currentRequest.status === 'photographer_accepted' &&
+            currentRequest.pending_photographer_id === user.id)
+        ) {
+          logger.info(
+            'リクエストは既に受諾済みです、予約レコードと応答記録を確認します'
+          );
+          // 既に受諾済みの場合は成功として扱う（処理を続行）
+        } else if (
+          (currentRequest.status === 'matched' &&
+            currentRequest.matched_photographer_id !== user.id) ||
+          (currentRequest.status === 'photographer_accepted' &&
+            currentRequest.pending_photographer_id !== user.id)
+        ) {
+          logger.warn('リクエストは既に他のカメラマンに受諾されています', {
+            status: currentRequest.status,
+            matched_photographer_id: currentRequest.matched_photographer_id,
+            pending_photographer_id: currentRequest.pending_photographer_id,
+            current_user_id: user.id,
+          });
+          return {
+            success: false,
+            error: 'このリクエストは既に他のカメラマンが受諾しています',
+          };
+        } else if (currentRequest.status === 'pending') {
+          // まだpending状態の場合、強制的に更新を試みる（楽観的ロック回避）
+          logger.warn('リクエストはまだpending状態です、強制更新を試みます', {
+            requestId,
+            currentStatus: currentRequest.status,
+          });
+          // 強制更新: status条件を外して更新を試みる
+          logger.info('強制更新: status条件なしで更新を試みます', {
+            requestId,
+            photographerId: user.id,
+          });
+          const timeoutAt = new Date();
+          timeoutAt.setMinutes(timeoutAt.getMinutes() + 10); // 10分後
+
+          const {
+            error: forceUpdateError,
+            data: forceUpdatedArray,
+            count,
+          } = await supabase
+            .from('instant_photo_requests')
+            .update({
+              status: 'photographer_accepted',
+              pending_photographer_id: user.id,
+              photographer_accepted_at: new Date().toISOString(),
+              photographer_timeout_at: timeoutAt.toISOString(),
+            })
+            .eq('id', requestId)
+            .select();
+
+          logger.info('強制更新結果:', {
+            error: forceUpdateError,
+            updatedCount: forceUpdatedArray?.length || 0,
+            count,
+            requestId,
+          });
+
+          if (forceUpdateError) {
+            logger.error('強制更新エラー:', {
+              error: forceUpdateError,
+              code: forceUpdateError.code,
+              message: forceUpdateError.message,
+              details: forceUpdateError.details,
+              hint: forceUpdateError.hint,
+            });
+            return {
+              success: false,
+              error: `リクエストの受諾に失敗しました: ${forceUpdateError.message || 'データベースエラー'}`,
+            };
+          }
+
+          if (!forceUpdatedArray || forceUpdatedArray.length === 0) {
+            logger.error('強制更新: 更新されたデータが取得できませんでした', {
+              requestId,
+              currentStatus: currentRequest.status,
+            });
+            // 最終確認：リクエストが存在するか、別の状態になっていないか確認
+            const { data: finalCheck } = await supabase
+              .from('instant_photo_requests')
+              .select('*')
+              .eq('id', requestId)
+              .single();
+
+            if (
+              (finalCheck?.status === 'matched' &&
+                finalCheck?.matched_photographer_id === user.id) ||
+              (finalCheck?.status === 'photographer_accepted' &&
+                finalCheck?.pending_photographer_id === user.id)
+            ) {
+              logger.info('強制更新: 既に受諾済みでした', { requestId });
+              // 既に受諾済み（処理を続行）
+            } else {
+              return {
+                success: false,
+                error: 'リクエストの受諾に失敗しました: 更新データの取得に失敗',
+              };
+            }
+          } else {
+            logger.info('強制更新成功:', {
+              requestId,
+              newStatus: forceUpdatedArray[0]?.status,
+              pendingPhotographerId:
+                forceUpdatedArray[0]?.pending_photographer_id,
+            });
+            // 強制更新成功（処理を続行）
+          }
+        } else {
+          logger.warn('リクエストのステータスが予期しない状態です', {
+            currentStatus: currentRequest.status,
+            requestId,
+          });
+          return { success: false, error: 'リクエストの受諾に失敗しました' };
+        }
+      } else {
+        logger.info('リクエストステータス更新成功:', {
+          requestId,
+          newStatus: updatedRequests[0]?.status,
+          pendingPhotographerId: updatedRequests[0]?.pending_photographer_id,
+        });
+      }
+
+      // 注: 予約レコード（instant_bookings）は、ゲストが承認した後に作成する
+      // フォトグラファーが受諾した時点では作成しない
+
+      // 応答記録を作成（既にチェック済みなので、必ず存在しない）
+      const { error: responseError } = await supabase
         .from('photographer_request_responses')
         .insert({
           request_id: requestId,
           photographer_id: user.id,
-          response_type: 'decline',
-          decline_reason: declineReason,
+          response_type: 'accept',
+          estimated_arrival_time: estimatedArrivalTime || 15,
         });
 
-      if (error) {
-        logger.error('応答記録エラー:', error);
-        return { success: false, error: '応答の記録に失敗しました' };
+      if (responseError) {
+        logger.warn('応答記録エラー:', responseError);
+        // 応答記録は失敗しても受諾処理は完了しているので警告のみ
+      }
+    } else {
+      // 応答を記録（辞退）
+      logger.info('辞退処理開始:', {
+        requestId,
+        photographerId: user.id,
+        declineReason,
+      });
+
+      // 既存の応答記録をチェック
+      const { data: existingResponse } = await supabase
+        .from('photographer_request_responses')
+        .select('id')
+        .eq('request_id', requestId)
+        .eq('photographer_id', user.id)
+        .single();
+
+      if (!existingResponse) {
+        // 応答記録が存在しない場合のみ作成
+        const { error } = await supabase
+          .from('photographer_request_responses')
+          .insert({
+            request_id: requestId,
+            photographer_id: user.id,
+            response_type: 'decline',
+            decline_reason: declineReason,
+          });
+
+        if (error) {
+          logger.error('応答記録エラー（辞退）:', error);
+          return { success: false, error: '応答の記録に失敗しました' };
+        }
+        logger.info('辞退応答記録を作成しました');
+      } else {
+        // 既存の応答記録を更新（declineに変更）
+        const { error: updateError } = await supabase
+          .from('photographer_request_responses')
+          .update({
+            response_type: 'decline',
+            decline_reason: declineReason,
+          })
+          .eq('request_id', requestId)
+          .eq('photographer_id', user.id);
+
+        if (updateError) {
+          logger.error('応答記録更新エラー（辞退）:', updateError);
+          return { success: false, error: '応答の記録に失敗しました' };
+        }
+        logger.info('辞退応答記録を更新しました');
       }
     }
 
@@ -566,6 +1020,307 @@ export async function updateRequestStatus(
     return { success: true, data: undefined };
   } catch (error) {
     logger.error('ステータス更新エラー:', error);
+    return { success: false, error: '予期しないエラーが発生しました' };
+  }
+}
+
+/**
+ * ゲストがフォトグラファーを承認する
+ */
+export async function approvePhotographer(
+  requestId: string,
+  photographerId: string
+): Promise<ActionResult<{ bookingId: string | null }>> {
+  try {
+    const supabase = await createClient();
+
+    // リクエスト情報を取得
+    const { data: request, error: requestError } = await supabase
+      .from('instant_photo_requests')
+      .select('*')
+      .eq('id', requestId)
+      .single();
+
+    if (requestError || !request) {
+      logger.error('リクエスト取得エラー:', requestError);
+      return { success: false, error: 'リクエストが見つかりません' };
+    }
+
+    // ステータスとpending_photographer_idを確認
+    if (
+      request.status !== 'photographer_accepted' ||
+      request.pending_photographer_id !== photographerId
+    ) {
+      logger.warn('承認できないリクエスト:', {
+        requestId,
+        status: request.status,
+        pending_photographer_id: request.pending_photographer_id,
+        requested_photographer_id: photographerId,
+      });
+      return {
+        success: false,
+        error: 'このフォトグラファーは受諾していないか、既に承認済みです',
+      };
+    }
+
+    // タイムアウトチェック
+    if (request.photographer_timeout_at) {
+      const timeoutAt = new Date(request.photographer_timeout_at);
+      if (timeoutAt < new Date()) {
+        logger.warn('タイムアウト済みのリクエスト:', {
+          requestId,
+          timeoutAt: request.photographer_timeout_at,
+        });
+        // タイムアウト処理を実行
+        await checkPhotographerTimeout(requestId);
+        return {
+          success: false,
+          error: '承認期限が過ぎています。リクエストは再度オープンされました。',
+        };
+      }
+    }
+
+    // ステータスを'guest_approved' → 'matched'に変更
+    const { error: updateError } = await supabase
+      .from('instant_photo_requests')
+      .update({
+        status: 'matched',
+        matched_photographer_id: photographerId,
+        guest_approved_at: new Date().toISOString(),
+        matched_at: new Date().toISOString(),
+        // pending_photographer_idはそのまま（履歴として保持）
+      })
+      .eq('id', requestId)
+      .eq('status', 'photographer_accepted')
+      .eq('pending_photographer_id', photographerId);
+
+    if (updateError) {
+      logger.error('承認処理エラー:', updateError);
+      return { success: false, error: '承認処理に失敗しました' };
+    }
+
+    // 予約レコード（instant_bookings）を作成
+    const platformFeeRate = 0.1; // 10%のプラットフォーム手数料
+    const platformFee = Math.floor(request.budget * platformFeeRate);
+    const photographerEarnings = request.budget - platformFee;
+
+    const { data: booking, error: bookingError } = await supabase
+      .from('instant_bookings')
+      .insert({
+        request_id: requestId,
+        photographer_id: photographerId,
+        total_amount: request.budget,
+        platform_fee: platformFee,
+        photographer_earnings: photographerEarnings,
+        payment_status: 'pending',
+      })
+      .select('id')
+      .single();
+
+    if (bookingError) {
+      logger.error('予約レコード作成エラー:', bookingError);
+      // ステータス更新は成功しているので、警告として処理
+      logger.warn('予約レコードの作成に失敗しましたが、承認処理は完了しました');
+      return {
+        success: true,
+        data: { bookingId: null } as { bookingId: string | null },
+      };
+    }
+
+    logger.info('フォトグラファー承認成功:', {
+      requestId,
+      photographerId,
+      bookingId: booking?.id,
+    });
+
+    return { success: true, data: { bookingId: booking?.id || null } };
+  } catch (error) {
+    logger.error('承認処理エラー（例外）:', error);
+    return { success: false, error: '予期しないエラーが発生しました' };
+  }
+}
+
+/**
+ * ゲストがフォトグラファーを拒否する
+ */
+export async function rejectPhotographer(
+  requestId: string,
+  photographerId: string
+): Promise<ActionResult<void>> {
+  try {
+    const supabase = await createClient();
+
+    // リクエスト情報を取得
+    const { data: request, error: requestError } = await supabase
+      .from('instant_photo_requests')
+      .select('*')
+      .eq('id', requestId)
+      .single();
+
+    if (requestError || !request) {
+      logger.error('リクエスト取得エラー:', requestError);
+      return { success: false, error: 'リクエストが見つかりません' };
+    }
+
+    // ステータスとpending_photographer_idを確認
+    if (
+      request.status !== 'photographer_accepted' ||
+      request.pending_photographer_id !== photographerId
+    ) {
+      logger.warn('拒否できないリクエスト:', {
+        requestId,
+        status: request.status,
+        pending_photographer_id: request.pending_photographer_id,
+        requested_photographer_id: photographerId,
+      });
+      return {
+        success: false,
+        error: 'このフォトグラファーは受諾していないか、既に承認済みです',
+      };
+    }
+
+    // ステータスを'pending'に戻す
+    const { error: updateError } = await supabase
+      .from('instant_photo_requests')
+      .update({
+        status: 'pending',
+        pending_photographer_id: null,
+        photographer_accepted_at: null,
+        photographer_timeout_at: null,
+      })
+      .eq('id', requestId)
+      .eq('status', 'photographer_accepted')
+      .eq('pending_photographer_id', photographerId);
+
+    if (updateError) {
+      logger.error('拒否処理エラー:', updateError);
+      return { success: false, error: '拒否処理に失敗しました' };
+    }
+
+    // フォトグラファーの応答記録を'decline'に更新
+    const { error: responseError } = await supabase
+      .from('photographer_request_responses')
+      .update({
+        response_type: 'decline',
+        decline_reason: 'ゲストが拒否しました',
+      })
+      .eq('request_id', requestId)
+      .eq('photographer_id', photographerId);
+
+    if (responseError) {
+      logger.warn('応答記録更新エラー:', responseError);
+      // 応答記録の更新は失敗しても拒否処理は完了しているので警告のみ
+    }
+
+    logger.info('フォトグラファー拒否成功:', {
+      requestId,
+      photographerId,
+    });
+
+    return { success: true, data: undefined };
+  } catch (error) {
+    logger.error('拒否処理エラー（例外）:', error);
+    return { success: false, error: '予期しないエラーが発生しました' };
+  }
+}
+
+/**
+ * フォトグラファー受諾のタイムアウトをチェックして処理する
+ */
+export async function checkPhotographerTimeout(
+  requestId?: string
+): Promise<ActionResult<number>> {
+  try {
+    const supabase = await createClient();
+
+    // 特定のリクエストIDが指定されている場合
+    if (requestId) {
+      const { data: request, error: requestError } = await supabase
+        .from('instant_photo_requests')
+        .select('*')
+        .eq('id', requestId)
+        .single();
+
+      if (requestError || !request) {
+        logger.error('リクエスト取得エラー:', requestError);
+        return { success: false, error: 'リクエストが見つかりません' };
+      }
+
+      // タイムアウトチェック
+      if (
+        request.status === 'photographer_accepted' &&
+        request.photographer_timeout_at
+      ) {
+        const timeoutAt = new Date(request.photographer_timeout_at);
+        if (timeoutAt < new Date()) {
+          // タイムアウト処理
+          const { error: updateError } = await supabase
+            .from('instant_photo_requests')
+            .update({
+              status: 'pending',
+              pending_photographer_id: null,
+              photographer_accepted_at: null,
+              photographer_timeout_at: null,
+            })
+            .eq('id', requestId)
+            .eq('status', 'photographer_accepted');
+
+          if (updateError) {
+            logger.error('タイムアウト処理エラー:', updateError);
+            return { success: false, error: 'タイムアウト処理に失敗しました' };
+          }
+
+          logger.info('タイムアウト処理成功:', { requestId });
+          return { success: true, data: 1 };
+        }
+      }
+
+      return { success: true, data: 0 };
+    }
+
+    // 全リクエストのタイムアウトチェック
+    const now = new Date().toISOString();
+    const { data: timeoutRequests, error: fetchError } = await supabase
+      .from('instant_photo_requests')
+      .select('id')
+      .eq('status', 'photographer_accepted')
+      .not('photographer_timeout_at', 'is', null)
+      .lt('photographer_timeout_at', now);
+
+    if (fetchError) {
+      logger.error('タイムアウトリクエスト取得エラー:', fetchError);
+      return { success: false, error: 'タイムアウトチェックに失敗しました' };
+    }
+
+    if (!timeoutRequests || timeoutRequests.length === 0) {
+      return { success: true, data: 0 };
+    }
+
+    // タイムアウト処理
+    const { error: updateError } = await supabase
+      .from('instant_photo_requests')
+      .update({
+        status: 'pending',
+        pending_photographer_id: null,
+        photographer_accepted_at: null,
+        photographer_timeout_at: null,
+      })
+      .eq('status', 'photographer_accepted')
+      .not('photographer_timeout_at', 'is', null)
+      .lt('photographer_timeout_at', now);
+
+    if (updateError) {
+      logger.error('タイムアウト一括処理エラー:', updateError);
+      return { success: false, error: 'タイムアウト処理に失敗しました' };
+    }
+
+    logger.info('タイムアウト一括処理成功:', {
+      count: timeoutRequests.length,
+    });
+
+    return { success: true, data: timeoutRequests.length };
+  } catch (error) {
+    logger.error('タイムアウトチェックエラー（例外）:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }

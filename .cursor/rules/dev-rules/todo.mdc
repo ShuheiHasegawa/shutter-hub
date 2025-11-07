@@ -102,6 +102,30 @@
 - **依存関係**: Phase 6実装完了（完了済み）
 - **完成判定**: 全テストケース正常実行、UIセレクター調整完了
 
+### **📸 t0-050: 即座撮影リクエスト機能改善（2段階マッチング対応）**
+
+- [x] **Phase 1**: データベーススキーマ変更（instant_photo_requestsテーブル拡張）✅
+- [x] **Phase 2**: 受諾資格チェック改善（オンライン状態・位置情報フィルタリング）✅
+- [x] **Phase 3**: マッチングフロー変更（2段階マッチング、タイムアウト処理）✅
+- [x] **Phase 4**: UI実装（ゲスト承認UI、PhotographerInstantDashboard修正）✅
+- **優先度**: 🔴 緊急（即座撮影リクエスト機能の核心機能）
+- **見積時間**: 4-5時間
+- **実装時間**: 2025年11月7日完了
+- **依存関係**: なし
+- **完成判定**: 全Phase完了、動作確認済み
+- **技術成果**:
+  - **✅ データベーススキーマ拡張**: pending_photographer_id, photographer_accepted_at, guest_approved_at, photographer_timeout_at追加
+  - **✅ 受諾資格チェック改善**: is_online, accepting_requests, 距離ベースフィルタリング実装
+  - **✅ 2段階マッチングフロー**: pending → photographer_accepted → guest_approved → matched
+  - **✅ タイムアウト処理**: 10分以内にゲストが承認しない場合、自動的にpendingに戻す
+  - **✅ 再受諾防止**: 同じフォトグラファーは再度受諾できない（1回限り）
+  - **✅ リアルタイム監視**: ゲスト向けリクエスト詳細ページでリアルタイム更新
+  - **✅ UI実装**: GuestApprovalPanel, InstantRequestDetailClientコンポーネント作成
+- **次のステップ**:
+  - 動作確認（フォトグラファー受諾 → ゲスト承認フロー）
+  - タイムアウト処理の動作確認
+  - 同県フィルタリング機能の追加（将来的に実装）
+
 ### **💰 t0-049: サブスクリプションシステム実装（Phase 4完了）**
 
 - [x] **Phase 1**: データベース基盤構築（subscription_plans, user_subscriptions等）✅

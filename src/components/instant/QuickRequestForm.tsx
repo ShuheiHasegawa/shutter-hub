@@ -215,13 +215,13 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
           '撮影リクエストを送信しました！近くのカメラマンに通知中です...'
         );
 
-        // 地図タブに切り替えて進捗を確認
-        setActiveTab('map');
-
-        // 5秒後に自動的にリフレッシュして最新状況を確認
-        setTimeout(() => {
-          window.location.reload();
-        }, 5000);
+        // リクエスト詳細ページに遷移
+        const requestId = result.data?.id;
+        if (requestId) {
+          setTimeout(() => {
+            router.push(`/instant/${requestId}`);
+          }, 2000);
+        }
       } else {
         setSubmitStatus('error');
         setErrorMessage(result.error || 'リクエストの送信に失敗しました');

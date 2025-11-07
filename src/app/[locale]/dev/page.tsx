@@ -25,6 +25,7 @@ import {
   Code,
   Star,
   PlayCircle,
+  Camera,
 } from 'lucide-react';
 
 interface DevTool {
@@ -44,6 +45,14 @@ const devTools: DevTool[] = [
     icon: <Palette className="h-5 w-5" />,
     status: 'stable',
     category: 'ui',
+  },
+  {
+    title: '即座撮影テスト',
+    description: '即座撮影リクエストのテストデータ作成とStripe決済テスト',
+    path: '/dev/instant-test',
+    icon: <Camera className="h-5 w-5" />,
+    status: 'stable',
+    category: 'testing',
   },
   {
     title: 'Stripe決済テスト',

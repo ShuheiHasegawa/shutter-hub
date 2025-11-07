@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { useSubscription } from './useSubscription';
 import { useAuth } from './useAuth';
-import { useProfile } from './useProfile';
+import { useProfile } from './useSimpleProfile';
 
 /**
  * モデル向け機能制限フック
