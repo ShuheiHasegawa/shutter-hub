@@ -1,13 +1,31 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
+import { waitForPageLoad } from '../utils/test-helpers';
+
+async function loginUser(
+  page: Page,
+  email: string,
+  password: string
+): Promise<void> {
+  await page.goto('/ja/auth/signin');
+  await waitForPageLoad(page);
+
+  const emailField = page.locator('#signin-email');
+  const passwordField = page.locator('#signin-password');
+  await expect(emailField).toBeVisible();
+  await expect(passwordField).toBeVisible();
+
+  await emailField.fill(email);
+  await passwordField.fill(password);
+  await passwordField.press('Enter');
+
+  await page.waitForLoadState('networkidle', { timeout: 20000 });
+  await page.waitForURL('**/dashboard', { timeout: 10000 });
+}
 
 test.describe('権限管理機能', () => {
   test('created_byがnullのスタジオの権限修正テスト', async ({ page }) => {
     // テスト用ログイン
-    await page.goto('/ja/login');
-    await page.fill('[name="email"]', 'test@example.com');
-    await page.fill('[name="password"]', 'password123');
-    await page.click('button[type="submit"]');
-    await page.waitForURL('**/dashboard');
+    await loginUser(page, 'test@example.com', 'password123');
 
     // まず、created_byがnullのスタジオを確認
     const response = await page.request.get(
@@ -36,11 +54,7 @@ test.describe('権限管理機能', () => {
   test('organizerユーザーでの編集権限テスト', async ({ page }) => {
     // organizerでログイン
     await page.goto('/ja/logout');
-    await page.goto('/ja/login');
-    await page.fill('[name="email"]', 'organizer@example.com');
-    await page.fill('[name="password"]', 'password123');
-    await page.click('button[type="submit"]');
-    await page.waitForURL('**/dashboard');
+    await loginUser(page, 'organizer@example.com', 'password123');
 
     const studioId = 'afaa8889-8a04-489e-b10e-3951e460b353';
     await page.goto(`/ja/studios/${studioId}/edit`);
@@ -62,21 +76,30 @@ test.describe('権限管理機能', () => {
 
   test('スタジオ作成者での編集権限テスト', async ({ page }) => {
     // テスト用ログイン
-    await page.goto('/ja/login');
-    await page.fill('[name="email"]', 'test@example.com');
-    await page.fill('[name="password"]', 'password123');
-    await page.click('button[type="submit"]');
-    await page.waitForURL('**/dashboard');
+    await loginUser(page, 'test@example.com', 'password123');
 
     // 新しいスタジオを作成してテスト
-    await page.goto('/ja/studios/new');
+    await page.goto('/ja/studios/create');
+
+    // ページ読み込み完了を待機
+    await page.waitForLoadState('networkidle');
 
     // スタジオ作成
     await page.fill('input[name="name"]', '権限テスト用スタジオ');
     await page.fill('textarea[name="description"]', 'テスト用の説明');
-    await page.fill('input[name="address"]', '東京都渋谷区1-1-1');
-    await page.selectOption('select[name="prefecture"]', '東京都');
-    await page.click('button[type="submit"]');
+
+    // 都道府県選択（Selectコンポーネント）
+    await page.click('button:has-text("都道府県を選択")');
+    await page.click('text=東京都');
+
+    // 市区町村入力
+    await page.fill('input[name="city"]', '渋谷区');
+
+    // 住所入力
+    await page.fill('input[name="address"]', '渋谷1-1-1');
+
+    // 作成ボタンをクリック（ActionBarのボタン）
+    await page.click('button:has-text("保存")');
 
     // 作成成功を確認
     await expect(page.locator('text=作成しました')).toBeVisible({

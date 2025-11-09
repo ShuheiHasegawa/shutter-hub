@@ -1,16 +1,13 @@
 import { test, expect } from '@playwright/test';
+import { authenticateTestUser } from '../utils/photo-session-helpers';
 
 test.describe('スタジオ編集機能', () => {
   test.beforeEach(async ({ page }) => {
-    // テスト用ログイン
-    await page.goto('/ja/login');
-    await page.fill('[name="email"]', 'test@example.com');
-    await page.fill('[name="password"]', 'password123');
-    await page.click('button[type="submit"]');
-    await page.waitForURL('**/dashboard');
+    // テスト用ログイン（誰でもスタジオ編集可能）
+    await authenticateTestUser(page, 'organizer');
   });
 
-  test('スタジオ編集権限のテスト', async ({ page }) => {
+  test('誰でもスタジオ編集可能なテスト', async ({ page }) => {
     const studioId = 'afaa8889-8a04-489e-b10e-3951e460b353';
 
     // スタジオ編集ページに移動
@@ -18,6 +15,11 @@ test.describe('スタジオ編集機能', () => {
 
     // フォームが表示されることを確認
     await expect(page.locator('form')).toBeVisible();
+
+    // Wikipedia風の注意書きが表示されることを確認
+    await expect(
+      page.locator('text=このスタジオ情報は誰でも編集可能です')
+    ).toBeVisible();
 
     // スタジオ名を変更
     const nameInput = page.locator('input[name="name"]');
@@ -27,31 +29,19 @@ test.describe('スタジオ編集機能', () => {
     // 保存ボタンをクリック
     await page.click('button[type="submit"]');
 
-    // 結果を確認（成功または適切なエラーメッセージ）
+    // 成功メッセージまたはリダイレクトを確認
     await page.waitForTimeout(2000);
 
-    // 成功の場合: 成功メッセージまたはリダイレクト
-    // 失敗の場合: 権限エラーメッセージ
+    // 成功メッセージが表示されることを確認
     const hasSuccessMessage = await page
-      .locator('text=更新しました')
-      .isVisible();
-    const hasErrorMessage = await page
-      .locator('text=権限がありません')
+      .locator('text=スタジオが更新されました')
       .isVisible();
 
-    expect(hasSuccessMessage || hasErrorMessage).toBe(true);
+    expect(hasSuccessMessage).toBe(true);
   });
 
   test('住所正規化の重複テスト', async ({ page }) => {
     const studioId = 'afaa8889-8a04-489e-b10e-3951e460b353';
-
-    // organizerでログイン（権限確保）
-    await page.goto('/ja/logout');
-    await page.goto('/ja/login');
-    await page.fill('[name="email"]', 'organizer@example.com');
-    await page.fill('[name="password"]', 'password123');
-    await page.click('button[type="submit"]');
-    await page.waitForURL('**/dashboard');
 
     await page.goto(`/ja/studios/${studioId}/edit`);
 
