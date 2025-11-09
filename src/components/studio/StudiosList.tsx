@@ -75,6 +75,27 @@ export function StudiosList({
           } else {
             setFavoriteStates(favoriteResult.favoriteStates);
           }
+        } else {
+          // 一括取得が失敗した場合でも、空のfavoriteStateを設定して個別の呼び出しを防ぐ
+          // 認証されていない場合は空の状態を設定
+          const emptyStates: Record<
+            string,
+            { isFavorited: boolean; favoriteCount: number }
+          > = {};
+          newStudios.forEach(studio => {
+            emptyStates[`studio_${studio.id}`] = {
+              isFavorited: false,
+              favoriteCount: 0,
+            };
+          });
+          if (append) {
+            setFavoriteStates(prev => ({
+              ...prev,
+              ...emptyStates,
+            }));
+          } else {
+            setFavoriteStates(emptyStates);
+          }
         }
 
         const totalItems = result.totalCount || result.studios.length;

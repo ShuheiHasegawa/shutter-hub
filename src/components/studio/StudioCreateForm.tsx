@@ -17,11 +17,9 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { createStudioAction } from '@/app/actions/studio';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
-import { Info } from 'lucide-react';
 import { PREFECTURES } from '@/constants/japan';
 import { VALIDATION } from '@/constants/common';
 import dynamic from 'next/dynamic';
@@ -183,8 +181,7 @@ export function StudioCreateForm({ onSuccess }: StudioCreateFormProps) {
       if (result.success && result.studio) {
         toast({
           title: '成功',
-          description:
-            'スタジオが作成されました。管理者の承認をお待ちください。',
+          description: 'スタジオが作成されました。',
         });
 
         if (onSuccess) {
@@ -506,15 +503,6 @@ export function StudioCreateForm({ onSuccess }: StudioCreateFormProps) {
             </div>
           </CardContent>
         </Card>
-
-        {/* 注意事項 */}
-        <Alert>
-          <Info className="h-4 w-4" />
-          <AlertDescription>
-            作成されたスタジオ情報は管理者による承認後に公開されます。
-            承認には1-3営業日かかる場合があります。
-          </AlertDescription>
-        </Alert>
 
         {/* ページ下部の保存ボタン（ActionBar自動制御） */}
         <ActionBarSentinel className="pt-4">

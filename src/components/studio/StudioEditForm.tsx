@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -25,15 +25,22 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Save, X, Info } from 'lucide-react';
+import { Save, X, Info } from 'lucide-react';
 import { toast } from 'sonner';
 import { updateStudioAction } from '@/app/actions/studio';
-import { StudioWithStats } from '@/types/database';
+import { StudioWithStats, StudioPhoto } from '@/types/database';
 import { PREFECTURES } from '@/constants/japan';
 import { VALIDATION } from '@/constants/common';
+import { StudioImageUpload } from './StudioImageUpload';
+import {
+  ActionBar,
+  ActionBarButton,
+  ActionBarSentinel,
+} from '@/components/ui/action-bar';
 
 interface StudioEditFormProps {
   studio: StudioWithStats;
+  initialPhotos?: StudioPhoto[];
   onSuccess: () => void;
   onCancel: () => void;
 }
@@ -111,11 +118,14 @@ type FormData = z.infer<typeof formSchema>;
 
 export function StudioEditForm({
   studio,
+  initialPhotos = [],
   onSuccess,
   onCancel,
 }: StudioEditFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [photos, setPhotos] = useState<StudioPhoto[]>(initialPhotos);
+  const formRef = useRef<HTMLFormElement>(null);
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -167,8 +177,40 @@ export function StudioEditForm({
     }
   };
 
+  // 下部固定アクションバー用ボタン
+  const actionBarButtons: ActionBarButton[] = [
+    {
+      id: 'cancel',
+      label: 'キャンセル',
+      variant: 'outline',
+      onClick: onCancel,
+      disabled: isSubmitting,
+    },
+    {
+      id: 'submit',
+      label: isSubmitting ? '保存中...' : '保存',
+      variant: 'cta',
+      onClick: () => formRef.current?.requestSubmit(),
+      loading: isSubmitting,
+      disabled: isSubmitting,
+    },
+  ];
+
   return (
     <div className="space-y-6">
+      {/* Wikipedia風の注意書き */}
+      <Alert>
+        <Info className="h-4 w-4" />
+        <AlertDescription>
+          <div className="space-y-2">
+            <p className="font-medium">このスタジオ情報は誰でも編集可能です</p>
+            <p className="text-sm">
+              不適切な編集は報告機能で対応します。報告数が3件に達すると自動的に非表示になります。
+            </p>
+          </div>
+        </AlertDescription>
+      </Alert>
+
       {error && (
         <Alert variant="destructive">
           <AlertDescription>{error}</AlertDescription>
@@ -176,7 +218,27 @@ export function StudioEditForm({
       )}
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+        <form
+          ref={formRef}
+          onSubmit={form.handleSubmit(handleSubmit)}
+          className="space-y-6"
+        >
+          {/* 画像アップロード */}
+          <Card>
+            <CardHeader>
+              <CardTitle>スタジオ画像</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <StudioImageUpload
+                studioId={studio.id}
+                initialPhotos={photos}
+                maxImages={10}
+                disabled={isSubmitting}
+                onPhotosChange={setPhotos}
+              />
+            </CardContent>
+          </Card>
+
           {/* 基本情報 */}
           <Card>
             <CardHeader>
@@ -494,29 +556,53 @@ export function StudioEditForm({
             </AlertDescription>
           </Alert>
 
-          {/* フォームアクション */}
-          <div className="flex gap-3 justify-end">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onCancel}
-              disabled={isSubmitting}
-            >
-              <X className="w-4 h-4 mr-2" />
-              キャンセル
-            </Button>
+          {/* ページ下部の保存ボタン（ActionBar自動制御） */}
+          <ActionBarSentinel className="pt-4 pb-0">
+            <div className="flex gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onCancel}
+                disabled={isSubmitting}
+                className="flex-1"
+              >
+                <X className="w-4 h-4 mr-2" />
+                キャンセル
+              </Button>
 
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? (
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              ) : (
-                <Save className="w-4 h-4 mr-2" />
-              )}
-              {isSubmitting ? '保存中...' : '保存'}
-            </Button>
-          </div>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                variant="cta"
+                className="flex-1 text-base font-medium transition-colors"
+              >
+                {isSubmitting ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                    保存中...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4 mr-2" />
+                    保存
+                  </>
+                )}
+              </Button>
+            </div>
+          </ActionBarSentinel>
         </form>
       </Form>
+
+      {/* 下部固定ActionBar（Sentinel非表示時のみ表示） */}
+      <ActionBar
+        actions={actionBarButtons}
+        maxColumns={2}
+        background="blur"
+        sticky={true}
+        autoHide={true}
+      />
+      {/* ActionBar用のスペーサー（fixed要素の高さ分） */}
+      <div className="h-20 md:h-20 flex-shrink-0" />
     </div>
   );
 }
