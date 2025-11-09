@@ -226,10 +226,48 @@ export function PhotoSessionList({
                 '[PhotoSessionList] お気に入り状態取得失敗:',
                 favoriteResult
               );
+              // 一括取得が失敗した場合でも、空のfavoriteStateを設定して個別の呼び出しを防ぐ
+              const emptyStates: Record<
+                string,
+                { isFavorited: boolean; favoriteCount: number }
+              > = {};
+              sessions.forEach(session => {
+                emptyStates[`photo_session_${session.id}`] = {
+                  isFavorited: false,
+                  favoriteCount: 0,
+                };
+              });
+              if (pendingResetRef.current) {
+                setFavoriteStates(emptyStates);
+              } else {
+                setFavoriteStates(prev => ({
+                  ...prev,
+                  ...emptyStates,
+                }));
+              }
             }
           })
           .catch(error => {
             logger.error('[PhotoSessionList] お気に入り状態取得エラー:', error);
+            // エラー時も空のfavoriteStateを設定して個別の呼び出しを防ぐ
+            const emptyStates: Record<
+              string,
+              { isFavorited: boolean; favoriteCount: number }
+            > = {};
+            sessions.forEach(session => {
+              emptyStates[`photo_session_${session.id}`] = {
+                isFavorited: false,
+                favoriteCount: 0,
+              };
+            });
+            if (pendingResetRef.current) {
+              setFavoriteStates(emptyStates);
+            } else {
+              setFavoriteStates(prev => ({
+                ...prev,
+                ...emptyStates,
+              }));
+            }
           });
       }
 

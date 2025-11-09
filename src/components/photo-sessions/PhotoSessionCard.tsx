@@ -131,7 +131,12 @@ export function PhotoSessionCard({
                           favoriteCount: favoriteState.favoriteCount,
                           isAuthenticated: true,
                         }
-                      : undefined
+                      : {
+                          // favoriteStateがundefinedの場合でも空のinitialStateを設定して個別の呼び出しを防ぐ
+                          isFavorited: false,
+                          favoriteCount: 0,
+                          isAuthenticated: false,
+                        }
                   }
                   onToggle={onFavoriteToggle}
                 />
