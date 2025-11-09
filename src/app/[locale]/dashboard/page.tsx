@@ -194,7 +194,7 @@ export default function DashboardPage() {
 
   return (
     <AuthenticatedLayout>
-      <div className="space-y-6">
+      <div>
         {/* 成功メッセージアラート */}
         {successMessage && (
           <Alert className="border-green-200 bg-green-50">

@@ -378,15 +378,24 @@ export default function UserProfilePage() {
               <Card>
                 <CardContent className="p-6 relative">
                   {/* 右上の編集/フォローボタン */}
-                  <div className="absolute top-4 right-4">
+                  <div className="absolute top-4 right-4 flex flex-col gap-2">
                     {isOwnProfile ? (
-                      <Button
-                        variant="cta"
-                        onClick={() => router.push('/profile/edit')}
-                      >
-                        <Pencil className="w-4 h-4 mr-2" />
-                        編集
-                      </Button>
+                      <>
+                        <Button
+                          variant="cta"
+                          onClick={() => router.push('/profile/edit')}
+                        >
+                          <Pencil className="w-4 h-4 mr-2" />
+                          編集
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => router.push(`/${locale}/subscription`)}
+                        >
+                          サブスクリプション
+                        </Button>
+                      </>
                     ) : (
                       user &&
                       followStats && (

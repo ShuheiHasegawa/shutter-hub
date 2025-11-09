@@ -77,7 +77,7 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
   const [matchedBookingId, setMatchedBookingId] = useState<string | null>(null);
 
   // 統合通知システムを使用
-  const { notifications, unreadCount, markAsRead } = useNotifications({
+  const { notifications, unreadCount } = useNotifications({
     enableRealtime: true,
     enableSound: true,
     enableToast: true,
@@ -678,6 +678,7 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
               {/* 送信ボタン */}
               <Button
                 type="submit"
+                variant="cta"
                 className="w-full"
                 size="lg"
                 disabled={isSubmitting || usageLimit?.can_use === false}
@@ -762,46 +763,6 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
                         </span>
                       </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* 通知履歴 */}
-            {notifications.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">通知履歴</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {notifications.slice(0, 5).map(notification => (
-                      <div
-                        key={notification.id}
-                        className={`p-3 rounded-lg border ${
-                          notification.read
-                            ? 'bg-muted'
-                            : 'bg-shutter-info/10 border-shutter-info/20'
-                        }`}
-                        onClick={() => markAsRead(notification.id)}
-                      >
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <h5 className="font-medium text-sm text-foreground">
-                              {notification.title}
-                            </h5>
-                            <p className="text-sm text-muted-foreground mt-1">
-                              {notification.message}
-                            </p>
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {new Date(
-                              notification.created_at
-                            ).toLocaleTimeString()}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
                   </div>
                 </CardContent>
               </Card>

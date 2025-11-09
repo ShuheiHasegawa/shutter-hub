@@ -353,27 +353,26 @@ export default function StudioDetailPage() {
           </div>
         </div>
 
-        {/* タブ切り替え ｜ お気に入り・シェアボタン */}
-        <Tabs defaultValue="photos" className="w-full">
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
-            <TabsList className="grid w-full lg:w-auto grid-cols-4 lg:grid-cols-4">
-              <TabsTrigger value="photos">写真</TabsTrigger>
-              <TabsTrigger value="equipment">設備</TabsTrigger>
-              <TabsTrigger value="evaluations">評価</TabsTrigger>
-              <TabsTrigger value="history">履歴</TabsTrigger>
-            </TabsList>
+        {/* お気に入り・シェアボタン */}
+        <div className="flex justify-end gap-2 mb-4">
+          <Button variant="outline" size="sm">
+            <Heart className="w-4 h-4 mr-2" />
+            お気に入り
+          </Button>
+          <Button variant="outline" size="sm">
+            <Share2 className="w-4 h-4 mr-2" />
+            シェア
+          </Button>
+        </div>
 
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm">
-                <Heart className="w-4 h-4 mr-2" />
-                お気に入り
-              </Button>
-              <Button variant="outline" size="sm">
-                <Share2 className="w-4 h-4 mr-2" />
-                シェア
-              </Button>
-            </div>
-          </div>
+        {/* タブ切り替え */}
+        <Tabs defaultValue="photos" className="w-full">
+          <TabsList className="grid w-full lg:w-auto grid-cols-4 lg:grid-cols-4 mb-6">
+            <TabsTrigger value="photos">写真</TabsTrigger>
+            <TabsTrigger value="equipment">設備</TabsTrigger>
+            <TabsTrigger value="evaluations">評価</TabsTrigger>
+            <TabsTrigger value="history">履歴</TabsTrigger>
+          </TabsList>
 
           {/* タブコンテンツ */}
           <TabsContent value="photos">

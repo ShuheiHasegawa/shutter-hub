@@ -41,7 +41,10 @@
     "settings": "Settings",
     "signin": "Sign In",
     "signup": "Sign Up",
-    "signout": "Sign Out"
+    "signout": "Sign Out",
+    "sns": "SNS",
+    "messages": "Messages",
+    "timeline": "Timeline"
   },
   "theme": {
     "light": "Light",

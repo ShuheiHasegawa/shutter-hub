@@ -80,7 +80,7 @@ export default async function PhotoSessionReviewsPage({
 
   return (
     <AuthenticatedLayout>
-      <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="w-full max-w-6xl mx-auto px-2 sm:px-4 lg:px-6 py-6">
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">

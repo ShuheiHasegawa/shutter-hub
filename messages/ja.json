@@ -42,7 +42,10 @@
     "settings": "設定",
     "signin": "ログイン",
     "signup": "新規登録",
-    "signout": "ログアウト"
+    "signout": "ログアウト",
+    "sns": "SNS",
+    "messages": "メッセージ",
+    "timeline": "タイムライン"
   },
   "theme": {
     "light": "ライト",
