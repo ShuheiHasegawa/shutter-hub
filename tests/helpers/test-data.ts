@@ -1,5 +1,7 @@
 // テスト用の共通データとヘルパー関数
 
+import { Page } from '@playwright/test';
+
 export const TEST_USERS = {
   photographer: {
     email: 'test@example.com',
@@ -33,28 +35,54 @@ export const TEST_STUDIOS = {
   },
 } as const;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function login(
-  page: any,
+  page: Page,
   userType: keyof typeof TEST_USERS = 'photographer'
 ) {
   const user = TEST_USERS[userType];
-  await page.goto('/ja/login');
-  await page.fill('[name="email"]', user.email);
-  await page.fill('[name="password"]', user.password);
-  await page.click('button[type="submit"]');
-  await page.waitForURL('**/dashboard');
+  await page.goto('/ja/auth/signin');
+
+  // ページ読み込み完了を待機
+  await page.waitForLoadState('networkidle', { timeout: 10000 });
+
+  // サインインページの確認
+  await page.waitForSelector('#signin-email', { timeout: 10000 });
+
+  // 認証情報入力
+  await page.fill('#signin-email', user.email);
+  await page.fill('#signin-password', user.password);
+
+  // Enterキーでフォーム送信（より確実）
+  await page.locator('#signin-password').press('Enter');
+
+  // ログイン後のページ読み込み完了を待機
+  await page.waitForLoadState('networkidle', { timeout: 20000 });
+
+  // ダッシュボードへのリダイレクトを確認
+  await page.waitForURL('**/dashboard', { timeout: 10000 });
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function createTestStudio(page: any) {
-  await page.goto('/ja/studios/new');
+export async function createTestStudio(page: Page) {
+  await page.goto('/ja/studios/create');
+
+  // ページ読み込み完了を待機
+  await page.waitForLoadState('networkidle');
 
   const studio = TEST_STUDIOS.new;
   await page.fill('input[name="name"]', studio.name);
   await page.fill('textarea[name="description"]', studio.description);
+
+  // 都道府県選択（Selectコンポーネント）
+  await page.click('button:has-text("都道府県を選択")');
+  await page.click(`text=${studio.prefecture}`);
+
+  // 市区町村入力
+  await page.fill('input[name="city"]', '渋谷区');
+
+  // 住所入力
   await page.fill('input[name="address"]', studio.address);
-  await page.selectOption('select[name="prefecture"]', studio.prefecture);
+
+  // 料金入力（オプショナル）
   await page.fill(
     'input[name="hourly_rate_min"]',
     studio.hourlyRateMin.toString()
@@ -64,7 +92,8 @@ export async function createTestStudio(page: any) {
     studio.hourlyRateMax.toString()
   );
 
-  await page.click('button[type="submit"]');
+  // 作成ボタンをクリック（ActionBarのボタン）
+  await page.click('button:has-text("保存")');
 
   // URLからスタジオIDを取得
   const url = page.url();

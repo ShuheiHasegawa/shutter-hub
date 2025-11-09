@@ -572,8 +572,12 @@ export async function authenticateTestUser(
 ): Promise<void> {
   Logger.info(`🔐 テストユーザー認証: ${userType}`);
 
-  await page.goto('/auth/signin');
+  // ロケールを明示的に指定（/ja/auth/signin）
+  await page.goto('/ja/auth/signin');
   await waitForPageLoad(page);
+
+  // サインインページの確認
+  await page.waitForSelector('#signin-email', { timeout: 10000 });
 
   // テスト用認証（実際のUIセレクターと作成済みテストユーザーに対応）
   if (userType === 'organizer') {
@@ -594,6 +598,23 @@ export async function authenticateTestUser(
   // ログイン後のページ読み込み完了を待機（長めのタイムアウト）
   await page.waitForLoadState('networkidle', { timeout: 20000 });
 
+  // エラーメッセージの確認（ログイン失敗の場合）
+  const errorMessage = page.locator(
+    'text=メールアドレスまたはパスワードが正しくありません'
+  );
+  const hasError = await errorMessage
+    .isVisible({ timeout: 2000 })
+    .catch(() => false);
+
+  if (hasError) {
+    Logger.error(
+      `❌ ${userType}認証エラー: メールアドレスまたはパスワードが正しくありません`
+    );
+    throw new Error(
+      `${userType}認証に失敗しました: メールアドレスまたはパスワードが正しくありません`
+    );
+  }
+
   // ログイン成功の確認（ロケール考慮、複数の条件でチェック）
   await Promise.race([
     page
@@ -604,19 +625,24 @@ export async function authenticateTestUser(
       .catch(() => null),
     page.waitForSelector('nav', { timeout: 8000 }).catch(() => null),
     page.waitForURL('**/dashboard', { timeout: 8000 }).catch(() => null),
+    page.waitForURL('**/ja/dashboard', { timeout: 8000 }).catch(() => null),
     page.waitForURL('**/profile/edit', { timeout: 8000 }).catch(() => null), // プロフィール未設定の場合
   ]);
 
   // 最終URL確認（ログイン成功判定）
   const finalUrl = page.url();
   const isSuccess =
-    finalUrl.includes('/dashboard') || finalUrl.includes('/profile');
+    finalUrl.includes('/dashboard') ||
+    finalUrl.includes('/profile') ||
+    finalUrl.includes('/ja/dashboard') ||
+    finalUrl.includes('/ja/profile');
 
   if (!isSuccess && finalUrl.includes('/auth/signin')) {
+    Logger.error(`❌ ${userType}認証失敗: 最終URL = ${finalUrl}`);
     throw new Error(`${userType}認証に失敗しました: ${finalUrl}`);
   }
 
-  Logger.info(`✅ ${userType}認証完了`);
+  Logger.info(`✅ ${userType}認証完了: ${finalUrl}`);
 }
 
 /**

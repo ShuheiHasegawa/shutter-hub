@@ -1,13 +1,35 @@
 import { test, expect } from '@playwright/test';
+import { waitForPageLoad } from '../utils/test-helpers';
 
 test.describe('ダッシュボード機能', () => {
   test.beforeEach(async ({ page }) => {
     // ログイン
-    await page.goto('/ja/login');
-    await page.fill('[name="email"]', 'test@example.com');
-    await page.fill('[name="password"]', 'password123');
-    await page.click('button[type="submit"]');
-    await page.waitForURL('**/dashboard');
+    await page.goto('/ja/auth/signin');
+    await waitForPageLoad(page);
+
+    // サインインページの確認
+    await expect(page.getByText('アカウントにサインイン')).toBeVisible({
+      timeout: 10000,
+    });
+
+    // フォーム要素の存在確認
+    const emailField = page.locator('#signin-email');
+    const passwordField = page.locator('#signin-password');
+    await expect(emailField).toBeVisible();
+    await expect(passwordField).toBeVisible();
+
+    // 認証情報入力
+    await emailField.fill('test@example.com');
+    await passwordField.fill('password123');
+
+    // Enterキーでフォーム送信
+    await passwordField.press('Enter');
+
+    // ログイン後のページ読み込み完了を待機
+    await page.waitForLoadState('networkidle', { timeout: 20000 });
+
+    // ダッシュボードへのリダイレクトを確認
+    await page.waitForURL('**/dashboard', { timeout: 10000 });
   });
 
   test('ダッシュボード基本表示', async ({ page }) => {
