@@ -1569,5 +1569,36 @@
     "cancelPlan": "Cancel Plan",
     "cancelling": "Cancelling...",
     "phase1Notice": "Phase 1: Basic Features Implementation"
+  },
+  "studio": {
+    "report": {
+      "button": "Report",
+      "title": "Report Studio",
+      "description": "Report {studioName}?",
+      "reason": "Report Reason",
+      "reasons": {
+        "spam": "Spam",
+        "inappropriate": "Inappropriate Content",
+        "falseInfo": "False Information",
+        "other": "Other"
+      },
+      "details": "Details",
+      "detailsPlaceholder": "Enter report details (optional)",
+      "warning": "This studio will be automatically hidden when 3 reports are received.",
+      "selectReason": "Please select a report reason",
+      "success": "Report submitted successfully",
+      "error": "Failed to submit report",
+      "submitting": "Submitting...",
+      "submit": "Submit Report",
+      "autoHiddenMessage": "This studio has been automatically hidden due to 3 reports."
+    },
+    "editNotice": {
+      "title": "This studio information can be edited by anyone",
+      "description": "Inappropriate edits will be handled through the report function. The studio will be automatically hidden when 3 reports are received."
+    },
+    "hiddenNotice": {
+      "title": "This studio is temporarily hidden",
+      "description": "This studio has been temporarily hidden due to multiple reports."
+    }
   }
 }

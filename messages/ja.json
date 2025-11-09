@@ -1620,5 +1620,36 @@
     "paymentSuccess": "決済が完了しました",
     "paymentFailed": "決済に失敗しました",
     "securePayment": "安全な決済処理"
+  },
+  "studio": {
+    "report": {
+      "button": "報告",
+      "title": "スタジオを報告",
+      "description": "{studioName}について報告しますか？",
+      "reason": "報告理由",
+      "reasons": {
+        "spam": "スパム",
+        "inappropriate": "不適切な内容",
+        "falseInfo": "誤情報",
+        "other": "その他"
+      },
+      "details": "詳細説明",
+      "detailsPlaceholder": "報告の詳細を入力してください（任意）",
+      "warning": "報告数が3件に達すると自動的に非表示になります。",
+      "selectReason": "報告理由を選択してください",
+      "success": "報告を送信しました",
+      "error": "報告の送信に失敗しました",
+      "submitting": "送信中...",
+      "submit": "報告を送信",
+      "autoHiddenMessage": "報告数が3件に達したため、このスタジオは自動的に非表示になりました。"
+    },
+    "editNotice": {
+      "title": "このスタジオ情報は誰でも編集可能です",
+      "description": "不適切な編集は報告機能で対応します。報告数が3件に達すると自動的に非表示になります。"
+    },
+    "hiddenNotice": {
+      "title": "このスタジオは一時的に非表示になっています",
+      "description": "複数の報告により一時的に非表示になっています。"
+    }
   }
 }
