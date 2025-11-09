@@ -1,25 +1,17 @@
 'use client';
 
-import { PhotoSessionFavoritesContent } from '@/components/favorites/PhotoSessionFavoritesContent';
-import { AuthenticatedLayout } from '@/components/layout/authenticated-layout';
-import { PageTitleHeader } from '@/components/ui/page-title-header';
-import { HeartIcon } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useLocale } from 'next-intl';
 
 export default function PhotoSessionFavoritesPage() {
-  const _t = useTranslations('favorites');
+  const router = useRouter();
+  const locale = useLocale();
 
-  return (
-    <AuthenticatedLayout>
-      <div className="max-w-6xl mx-auto">
-        <PageTitleHeader
-          title="お気に入り撮影会"
-          description="お気に入りに登録した撮影会を一覧で確認できます"
-          icon={<HeartIcon className="h-6 w-6" />}
-        />
+  useEffect(() => {
+    // 統合お気に入りページにリダイレクト（撮影会タブで初期表示）
+    router.replace(`/${locale}/favorites?tab=photo_session`);
+  }, [router, locale]);
 
-        <PhotoSessionFavoritesContent />
-      </div>
-    </AuthenticatedLayout>
-  );
+  return null;
 }

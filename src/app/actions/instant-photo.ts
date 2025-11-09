@@ -31,9 +31,9 @@ export async function createInstantPhotoRequest(
       };
     }
 
-    // 有効期限を設定（2時間後）
+    // 有効期限を設定（数日以内：3日後）
     const expiresAt = new Date();
-    expiresAt.setHours(expiresAt.getHours() + 2);
+    expiresAt.setDate(expiresAt.getDate() + 3);
 
     // リクエストを作成
     const { data: request, error } = await supabase

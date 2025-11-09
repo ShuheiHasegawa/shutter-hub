@@ -8,11 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { UserProfileDisplay } from '@/components/ui/user-profile-display';
-import {
-  ActionBar,
-  ActionBarButton,
-  ActionBarSentinel,
-} from '@/components/ui/action-bar';
+import { ActionBar, ActionBarButton } from '@/components/ui/action-bar';
 import {
   CalendarIcon,
   MapPinIcon,
@@ -329,53 +325,12 @@ export function PhotoSessionDetail({
       return [];
     }
 
-    // レビュー可能な場合はレビューボタンを表示
-    if (canReview) {
-      // 既存レビューがある場合は「レビュー修正」、ない場合は「レビューを書く」
-      if (hasExistingReview) {
-        return [
-          {
-            id: 'edit-review',
-            label: 'レビュー修正',
-            variant: 'cta',
-            onClick: () => {
-              router.push(`/${locale}/photo-sessions/${session.id}/reviews`);
-            },
-            icon: <Star className="h-4 w-4" />,
-          },
-        ];
-      } else {
-        return [
-          {
-            id: 'write-review',
-            label: 'レビューを書く',
-            variant: 'cta',
-            onClick: () => {
-              router.push(`/${locale}/photo-sessions/${session.id}/reviews`);
-            },
-            icon: <Star className="h-4 w-4" />,
-          },
-        ];
-      }
-    }
+    const buttons: ActionBarButton[] = [];
 
-    // 予約できない場合は無効化されたボタンを表示
-    if (!canBook) {
-      return [
-        {
-          id: 'cannot-book',
-          label: '予約不可',
-          variant: 'outline',
-          onClick: () => {}, // 何もしない
-          disabled: true,
-          icon: <Calendar className="h-4 w-4" />,
-        },
-      ];
-    }
-
-    if (hasSlots) {
-      return [
-        {
+    // 予約可能な場合は予約ボタンを追加
+    if (canBook) {
+      if (hasSlots) {
+        buttons.push({
           id: 'select-slot',
           label: bookingLoading ? '確認中...' : '時間枠を選択',
           variant: 'accent',
@@ -387,11 +342,9 @@ export function PhotoSessionDetail({
           },
           disabled: bookingLoading,
           icon: <Calendar className="h-4 w-4" />,
-        },
-      ];
-    } else {
-      return [
-        {
+        });
+      } else {
+        buttons.push({
           id: 'book-now',
           label: bookingLoading
             ? '確認中...'
@@ -407,9 +360,35 @@ export function PhotoSessionDetail({
           },
           disabled: bookingLoading,
           icon: <CreditCard className="h-4 w-4" />,
-        },
-      ];
+        });
+      }
+    } else if (!canBook) {
+      // 予約できない場合は無効化されたボタンを表示
+      buttons.push({
+        id: 'cannot-book',
+        label: '予約不可',
+        variant: 'outline',
+        onClick: () => {}, // 何もしない
+        disabled: true,
+        icon: <Calendar className="h-4 w-4" />,
+      });
     }
+
+    // レビュー可能な場合はレビューボタンを追加（予約ボタンの下に表示）
+    if (canReview) {
+      // 既存レビューがある場合は「レビュー修正」、ない場合は「レビューを書く」
+      buttons.push({
+        id: hasExistingReview ? 'edit-review' : 'write-review',
+        label: hasExistingReview ? 'レビュー修正' : 'レビューを書く',
+        variant: 'cta',
+        onClick: () => {
+          router.push(`/${locale}/photo-sessions/${session.id}/reviews`);
+        },
+        icon: <Star className="h-4 w-4" />,
+      });
+    }
+
+    return buttons;
   };
 
   // 予約フロー表示中は予約フローコンポーネントのみ表示
@@ -962,29 +941,13 @@ export function PhotoSessionDetail({
         </>
       )}
 
-      {/* ページ下部のインラインCTA（最下部でのみ表示） */}
-      {hasSlots && !isOrganizer && user && (
-        <ActionBarSentinel className="pt-4">
-          <Button
-            variant="accent"
-            className="text-base font-medium w-full transition-colors"
-            onClick={() => {
-              router.push(`?step=select`, { scroll: false });
-            }}
-            disabled={bookingLoading || !canBook}
-          >
-            {bookingLoading ? '確認中...' : '時間枠を選択'}
-          </Button>
-        </ActionBarSentinel>
-      )}
-
       {/* 固定フッターアクションバー */}
       {!isOrganizer && user && (
         <ActionBar
           actions={getActionBarButtons()}
           maxColumns={1}
           background="blur"
-          autoHide={true}
+          autoHide={false}
         />
       )}
     </div>

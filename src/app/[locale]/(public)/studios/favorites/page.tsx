@@ -1,23 +1,17 @@
 'use client';
 
-import { StudioFavoritesContent } from '@/components/favorites/StudioFavoritesContent';
-import { AuthenticatedLayout } from '@/components/layout/authenticated-layout';
-import { useTranslations } from 'next-intl';
-import { PageTitleHeader } from '@/components/ui/page-title-header';
-import { HeartIcon } from 'lucide-react';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useLocale } from 'next-intl';
 
 export default function StudioFavoritesPage() {
-  const _t = useTranslations('favorites');
+  const router = useRouter();
+  const locale = useLocale();
 
-  return (
-    <AuthenticatedLayout>
-      <div className="max-w-6xl mx-auto">
-        <PageTitleHeader
-          title="お気に入りスタジオ"
-          icon={<HeartIcon className="h-6 w-6" />}
-        />
-        <StudioFavoritesContent />
-      </div>
-    </AuthenticatedLayout>
-  );
+  useEffect(() => {
+    // 統合お気に入りページにリダイレクト（スタジオタブで初期表示）
+    router.replace(`/${locale}/favorites?tab=studio`);
+  }, [router, locale]);
+
+  return null;
 }

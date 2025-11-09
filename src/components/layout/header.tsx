@@ -1,6 +1,6 @@
 'use client';
 
-import { Camera, Menu, User, LogOut, MessageCircle } from 'lucide-react';
+import { Camera, Menu, User, LogOut, MessageCircle, Crown } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
@@ -96,6 +96,12 @@ export function AppHeader({
                   <Link href="/profile">
                     <User className="mr-2 h-4 w-4" />
                     <span>{t('profile')}</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/subscription">
+                    <Crown className="mr-2 h-4 w-4" />
+                    <span>{t('subscription')}</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>

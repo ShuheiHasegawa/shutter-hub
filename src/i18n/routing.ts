@@ -40,6 +40,10 @@ export const routing = defineRouting({
       ja: '/settings',
       en: '/settings',
     },
+    '/subscription': {
+      ja: '/subscription',
+      en: '/subscription',
+    },
     '/photo-sessions': {
       ja: '/photo-sessions',
       en: '/photo-sessions',

@@ -6,17 +6,9 @@ import { useTranslations } from 'next-intl';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import {
   Send,
   Paperclip,
-  MoreVertical,
   ArrowLeft,
   Check,
   CheckCheck,
@@ -40,7 +32,6 @@ import { ja, enUS } from 'date-fns/locale';
 import { useLocale } from 'next-intl';
 import { toast } from 'sonner';
 import { formatFileSize, isImageFile } from '@/lib/storage/message-files';
-import { useRouter } from 'next/navigation';
 
 interface ChatWindowProps {
   conversation: ConversationWithUsers;
@@ -59,7 +50,6 @@ export function ChatWindow({
 }: ChatWindowProps) {
   const t = useTranslations('social.messaging');
   const locale = useLocale();
-  const router = useRouter();
   const [messages, setMessages] = useState<MessageWithUser[]>([]);
   const [messageText, setMessageText] = useState('');
   const [loading, setLoading] = useState(true);
@@ -75,13 +65,6 @@ export function ChatWindow({
     : conversation.participant1_id === currentUserId
       ? conversation.participant2
       : conversation.participant1;
-
-  // 撮影会ページに遷移する関数（最適化済み）
-  const handleGoToPhotoSession = () => {
-    if (conversation.photo_session_id) {
-      router.push(`/photo-sessions/${conversation.photo_session_id}`);
-    }
-  };
 
   // メッセージ一覧を取得
   const loadMessages = async () => {
@@ -320,29 +303,13 @@ export function ChatWindow({
 
           {/* アクションボタン */}
           <div className="flex items-center gap-1">
-            {/* グループチャットの場合のみメニューを表示 */}
-            {conversation.is_group && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm">
-                    <MoreVertical className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  {conversation.photo_session_id && (
-                    <DropdownMenuItem onClick={handleGoToPhotoSession}>
-                      {t('goToPhotoSession')}
-                    </DropdownMenuItem>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
+            {/* 3点リーダーは削除 */}
           </div>
         </div>
       )}
 
       {/* メッセージエリア */}
-      <ScrollArea ref={scrollAreaRef} className="flex-1 min-h-0 p-4">
+      <div ref={scrollAreaRef} className="flex-1 min-h-0 p-4 overflow-y-auto">
         {loading ? (
           <div className="flex items-center justify-center h-32">
             <div className="text-muted-foreground">{t('loadingMessages')}</div>
@@ -497,7 +464,7 @@ export function ChatWindow({
             <div ref={messagesEndRef} />
           </div>
         )}
-      </ScrollArea>
+      </div>
 
       {/* メッセージ入力エリア */}
       <div className="p-4 border-t bg-background flex-shrink-0">

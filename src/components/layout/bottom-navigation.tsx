@@ -1,7 +1,13 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { Home, Search, Calendar, MessageCircle, Heart } from 'lucide-react';
+import {
+  LayoutDashboard,
+  Camera,
+  Calendar,
+  MessageCircle,
+  Hash,
+} from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { Link } from '@/i18n/routing';
@@ -12,34 +18,34 @@ export function BottomNavigation() {
 
   const navigationItems = [
     {
-      icon: Home,
-      label: t('home'),
-      href: '/',
-      key: 'home',
+      icon: LayoutDashboard,
+      label: t('dashboard'),
+      href: '/dashboard',
+      key: 'dashboard',
     },
     {
-      icon: Search,
-      label: t('search'),
-      href: '/search',
-      key: 'search',
-    },
-    {
-      icon: Heart,
-      label: t('favorites'),
-      href: '/favorites',
-      key: 'favorites',
-    },
-    {
-      icon: MessageCircle,
-      label: 'Messages',
-      href: '/messages',
-      key: 'messages',
+      icon: Camera,
+      label: t('photoSessions'),
+      href: '/photo-sessions',
+      key: 'photoSessions',
     },
     {
       icon: Calendar,
       label: t('bookings'),
       href: '/bookings',
       key: 'bookings',
+    },
+    {
+      icon: MessageCircle,
+      label: t('messages'),
+      href: '/messages',
+      key: 'messages',
+    },
+    {
+      icon: Hash,
+      label: t('timeline'),
+      href: '/timeline',
+      key: 'timeline',
     },
   ];
 
@@ -50,7 +56,9 @@ export function BottomNavigation() {
           const Icon = item.icon;
           // ロケールプレフィックスを考慮したパスマッチング
           const isActive =
-            pathname === item.href || pathname.endsWith(item.href);
+            pathname === item.href ||
+            pathname.startsWith(item.href + '/') ||
+            (item.href !== '/' && pathname.endsWith(item.href));
 
           return (
             <Link
@@ -58,15 +66,21 @@ export function BottomNavigation() {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               href={item.href as any}
               className={cn(
-                'flex flex-col items-center justify-center transition-colors',
+                'flex flex-col items-center justify-center gap-0.5 transition-colors min-w-0',
                 isActive
                   ? 'text-shutter-primary'
                   : 'text-muted-foreground hover:text-foreground'
               )}
             >
               <Icon
-                className={cn('h-6 w-6', isActive && 'text-shutter-primary')}
+                className={cn(
+                  'h-5 w-5 flex-shrink-0',
+                  isActive && 'text-shutter-primary'
+                )}
               />
+              <span className="text-[10px] font-medium leading-tight whitespace-nowrap overflow-hidden text-ellipsis max-w-full px-0.5">
+                {item.label}
+              </span>
             </Link>
           );
         })}

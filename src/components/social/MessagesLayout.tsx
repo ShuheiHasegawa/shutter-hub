@@ -9,7 +9,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   ResizableHandle,
   ResizablePanel,
@@ -191,8 +190,11 @@ export function MessagesLayout({ initialConversationId }: MessagesLayoutProps) {
   }
 
   return (
-    <div className="h-[calc(100vh-10rem)] max-h-[calc(100vh-10rem)] border rounded-lg bg-card overflow-hidden">
-      <ResizablePanelGroup direction="horizontal" className="h-full">
+    <div className="h-full border rounded-lg bg-card overflow-hidden flex flex-col">
+      <ResizablePanelGroup
+        direction="horizontal"
+        className="h-full flex-1 min-h-0"
+      >
         {/* 左側：メッセージ一覧サイドバー */}
         <ResizablePanel
           defaultSize={30}
@@ -239,7 +241,7 @@ export function MessagesLayout({ initialConversationId }: MessagesLayoutProps) {
             </div>
 
             {/* 会話リスト */}
-            <ScrollArea className="flex-1">
+            <div className="flex-1 overflow-y-auto min-h-0">
               {loading ? (
                 <div className="p-4 text-center text-muted-foreground">
                   {t('loading')}
@@ -343,7 +345,7 @@ export function MessagesLayout({ initialConversationId }: MessagesLayoutProps) {
                   })}
                 </div>
               )}
-            </ScrollArea>
+            </div>
           </div>
         </ResizablePanel>
 

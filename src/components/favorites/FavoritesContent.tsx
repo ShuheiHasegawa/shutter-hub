@@ -1,10 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Heart, Building2, Camera, Search, Filter } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -29,12 +28,18 @@ import {
 } from '@/types/database';
 import Logger from '@/lib/logger';
 
-export function FavoritesContent() {
+interface FavoritesContentProps {
+  initialTab?: 'studio' | 'photo_session';
+}
+
+export function FavoritesContent({
+  initialTab = 'studio',
+}: FavoritesContentProps) {
   const t = useTranslations('favorites');
   const router = useRouter();
 
   const [activeTab, setActiveTab] = useState<'studio' | 'photo_session'>(
-    'studio'
+    initialTab
   );
   const [studioFavorites, setStudioFavorites] = useState<
     UserFavoriteWithDetails[]
@@ -50,41 +55,44 @@ export function FavoritesContent() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
   // お気に入りデータの取得
-  const fetchFavorites = async (type?: 'studio' | 'photo_session') => {
-    try {
-      setLoading(true);
-      const result = await getUserFavoritesAction(type, 1, 50);
+  const fetchFavorites = useCallback(
+    async (type?: 'studio' | 'photo_session') => {
+      try {
+        setLoading(true);
+        const result = await getUserFavoritesAction(type, 1, 50);
 
-      if (!result.isAuthenticated) {
-        setIsAuthenticated(false);
-        return;
-      }
-
-      setIsAuthenticated(true);
-
-      if (result.success) {
-        const favorites = result.favorites || [];
-
-        if (type === 'studio') {
-          setStudioFavorites(favorites as UserFavoriteWithDetails[]);
-        } else if (type === 'photo_session') {
-          setPhotoSessionFavorites(favorites as UserFavoriteWithDetails[]);
+        if (!result.isAuthenticated) {
+          setIsAuthenticated(false);
+          return;
         }
-      } else {
-        toast.error(result.error || 'お気に入り一覧の取得に失敗しました');
-      }
-    } catch (error) {
-      Logger.error('Failed to fetch favorites:', error);
-      toast.error('システムエラーが発生しました');
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  // 初期データ取得（スタジオのみ）
+        setIsAuthenticated(true);
+
+        if (result.success) {
+          const favorites = result.favorites || [];
+
+          if (type === 'studio') {
+            setStudioFavorites(favorites as UserFavoriteWithDetails[]);
+          } else if (type === 'photo_session') {
+            setPhotoSessionFavorites(favorites as UserFavoriteWithDetails[]);
+          }
+        } else {
+          toast.error(result.error || 'お気に入り一覧の取得に失敗しました');
+        }
+      } catch (error) {
+        Logger.error('Failed to fetch favorites:', error);
+        toast.error('システムエラーが発生しました');
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
+  // 初期データ取得（初期タブに応じて）
   useEffect(() => {
-    fetchFavorites('studio');
-  }, []);
+    fetchFavorites(initialTab);
+  }, [initialTab, fetchFavorites]);
 
   // フィルタリング・ソート機能
   const filterAndSortItems = (
@@ -150,6 +158,15 @@ export function FavoritesContent() {
     const newTab = value as 'studio' | 'photo_session';
     setActiveTab(newTab);
 
+    // URLパラメータを更新
+    const newUrl = new URL(window.location.href);
+    if (newTab === 'photo_session') {
+      newUrl.searchParams.set('tab', 'photo_session');
+    } else {
+      newUrl.searchParams.delete('tab');
+    }
+    router.replace(newUrl.pathname + newUrl.search, { scroll: false });
+
     // 必要に応じて個別にデータを再取得
     if (newTab === 'studio' && studioFavorites.length === 0) {
       fetchFavorites('studio');
@@ -186,9 +203,6 @@ export function FavoritesContent() {
     return <FavoritesLoading />;
   }
 
-  // お気に入りの合計数
-  const totalFavorites = studioFavorites.length + photoSessionFavorites.length;
-
   // タブに表示する内容を取得
   const getTabContent = (tab: 'studio' | 'photo_session') => {
     let items: UserFavoriteWithDetails[] = [];
@@ -217,57 +231,6 @@ export function FavoritesContent() {
             </h1>
             <p className="text-theme-text-secondary">{t('subtitle')}</p>
           </div>
-        </div>
-
-        {/* 統計 */}
-        <div className="flex gap-4 mb-6">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2">
-                <Heart className="h-5 w-5 text-pink-600" />
-                <div>
-                  <p className="text-2xl font-bold text-theme-text-primary">
-                    {totalFavorites}
-                  </p>
-                  <p className="text-sm text-theme-text-secondary">
-                    {t('stats.total')}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2">
-                <Building2 className="h-5 w-5 text-blue-600" />
-                <div>
-                  <p className="text-2xl font-bold text-theme-text-primary">
-                    {studioFavorites.length}
-                  </p>
-                  <p className="text-sm text-theme-text-secondary">
-                    {t('stats.studios')}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2">
-                <Camera className="h-5 w-5 text-green-600" />
-                <div>
-                  <p className="text-2xl font-bold text-theme-text-primary">
-                    {photoSessionFavorites.length}
-                  </p>
-                  <p className="text-sm text-theme-text-secondary">
-                    {t('stats.photoSessions')}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </div>
 
         {/* 検索・フィルター */}

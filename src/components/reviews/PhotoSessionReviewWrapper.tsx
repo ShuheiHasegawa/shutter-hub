@@ -35,7 +35,7 @@ export function PhotoSessionReviewWrapper({
   const locale = useLocale();
   const tReviews = useTranslations('reviews');
   // レビューが書ける場合または編集可能な場合は初期状態でフォームを表示
-  const [showReviewForm, setShowReviewForm] = useState(
+  const [showReviewForm] = useState(
     (canWriteReview && !!bookingId) || !!existingReview
   );
 
@@ -56,6 +56,11 @@ export function PhotoSessionReviewWrapper({
     router.push(`/${locale}/photo-sessions/${photoSessionId}`);
   };
 
+  const handleCancel = () => {
+    // キャンセル時に撮影会詳細ページに戻る
+    router.push(`/${locale}/photo-sessions/${photoSessionId}`);
+  };
+
   return (
     <div className="space-y-6">
       {/* レビュー投稿フォーム */}
@@ -70,7 +75,7 @@ export function PhotoSessionReviewWrapper({
             bookingId={bookingId}
             existingReview={existingReview}
             onSuccess={handleReviewSuccess}
-            onCancel={() => setShowReviewForm(false)}
+            onCancel={handleCancel}
           />
         </div>
       )}

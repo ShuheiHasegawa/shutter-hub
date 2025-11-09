@@ -69,7 +69,7 @@ export default function StudiosPage() {
         title="スタジオ一覧"
         icon={<BuildingIcon className="h-6 w-6" />}
         actions={
-          <Link href="/studios/create">
+          <Link href="/studios/create" className="ml-auto">
             <Button className="flex items-center gap-2" variant="cta">
               <PlusIcon className="w-4 h-4" />
               新しいスタジオを追加

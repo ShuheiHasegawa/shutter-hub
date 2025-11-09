@@ -3,6 +3,7 @@ import { Suspense } from 'react';
 import { FavoritesContent } from '@/components/favorites/FavoritesContent';
 import { FavoritesLoading } from '@/components/favorites/FavoritesLoading';
 import { getTranslations } from 'next-intl/server';
+import { AuthenticatedLayout } from '@/components/layout/authenticated-layout';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('favorites');
@@ -13,14 +14,22 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function FavoritesPage() {
+export default async function FavoritesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string }>;
+}) {
+  const params = await searchParams;
+  const initialTab =
+    params.tab === 'photo_session' ? 'photo_session' : 'studio';
+
   return (
-    <div className="min-h-screen bg-theme-background">
+    <AuthenticatedLayout>
       <div className="container mx-auto px-4 py-8">
         <Suspense fallback={<FavoritesLoading />}>
-          <FavoritesContent />
+          <FavoritesContent initialTab={initialTab} />
         </Suspense>
       </div>
-    </div>
+    </AuthenticatedLayout>
   );
 }

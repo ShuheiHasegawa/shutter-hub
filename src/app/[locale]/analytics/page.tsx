@@ -328,69 +328,110 @@ export default function AnalyticsPage() {
   const renderOrganizerStats = () => (
     <>
       {/* 運営者向け統計 */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">総撮影会数</CardTitle>
-            <Camera className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalSessions}</div>
-            <p className="text-xs text-muted-foreground">
-              今月: {stats.thisMonthSessions}件
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">総収益</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              ¥{stats.totalEarnings.toLocaleString()}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              今月: ¥{stats.thisMonthEarnings.toLocaleString()}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">平均評価</CardTitle>
-            <Star className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {stats.averageRating.toFixed(1)}
-            </div>
-            <div className="flex items-center mt-1">
-              {[1, 2, 3, 4, 5].map(star => (
-                <Star
-                  key={star}
-                  className={`h-3 w-3 ${
-                    star <= stats.averageRating
-                      ? 'text-yellow-400 fill-current'
-                      : 'text-gray-300'
-                  }`}
-                />
-              ))}
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 mb-8">
+        <Card className="hover:shadow-lg transition-all duration-200 border-border/50 bg-card/50 backdrop-blur-sm">
+          <CardContent className="p-3 md:p-4 lg:p-6">
+            <div className="flex flex-col space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-xs md:text-sm font-medium text-muted-foreground leading-tight">
+                  総撮影会数
+                </p>
+                <div className="p-1.5 md:p-2 rounded-lg bg-blue-100 flex-shrink-0">
+                  <Camera className="h-3.5 w-3.5 md:h-4 md:w-4 text-blue-600" />
+                </div>
+              </div>
+              <div className="flex flex-col space-y-0.5">
+                <p className="text-lg md:text-xl lg:text-2xl font-bold text-foreground">
+                  {stats.totalSessions}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  今月: {stats.thisMonthSessions}件
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">予定撮影会</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.upcomingSessions}</div>
-            <p className="text-xs text-muted-foreground">
-              完了: {stats.completedSessions}件
-            </p>
+        <Card className="hover:shadow-lg transition-all duration-200 border-border/50 bg-card/50 backdrop-blur-sm">
+          <CardContent className="p-3 md:p-4 lg:p-6">
+            <div className="flex flex-col space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-xs md:text-sm font-medium text-muted-foreground leading-tight">
+                  総収益
+                </p>
+                <div className="p-1.5 md:p-2 rounded-lg bg-emerald-100 flex-shrink-0">
+                  <DollarSign className="h-3.5 w-3.5 md:h-4 md:w-4 text-emerald-600" />
+                </div>
+              </div>
+              <div className="flex flex-col space-y-0.5">
+                <p className="text-lg md:text-xl lg:text-2xl font-bold text-foreground">
+                  ¥{stats.totalEarnings.toLocaleString()}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  今月: ¥{stats.thisMonthEarnings.toLocaleString()}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-lg transition-all duration-200 border-border/50 bg-card/50 backdrop-blur-sm">
+          <CardContent className="p-3 md:p-4 lg:p-6">
+            <div className="flex flex-col space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-xs md:text-sm font-medium text-muted-foreground leading-tight">
+                  平均評価
+                </p>
+                <div className="p-1.5 md:p-2 rounded-lg bg-yellow-100 flex-shrink-0">
+                  <Star className="h-3.5 w-3.5 md:h-4 md:w-4 text-yellow-600" />
+                </div>
+              </div>
+              <div className="flex flex-col space-y-0.5">
+                <div className="flex items-baseline space-x-0.5">
+                  <p className="text-lg md:text-xl lg:text-2xl font-bold text-foreground">
+                    {stats.averageRating.toFixed(1)}
+                  </p>
+                  <span className="text-xs md:text-sm text-muted-foreground">
+                    /5.0
+                  </span>
+                </div>
+                <div className="flex items-center gap-0.5">
+                  {[1, 2, 3, 4, 5].map(star => (
+                    <Star
+                      key={star}
+                      className={`h-2.5 w-2.5 ${
+                        star <= stats.averageRating
+                          ? 'text-yellow-400 fill-current'
+                          : 'text-gray-300'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-lg transition-all duration-200 border-border/50 bg-card/50 backdrop-blur-sm">
+          <CardContent className="p-3 md:p-4 lg:p-6">
+            <div className="flex flex-col space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-xs md:text-sm font-medium text-muted-foreground leading-tight">
+                  予定撮影会
+                </p>
+                <div className="p-1.5 md:p-2 rounded-lg bg-green-100 flex-shrink-0">
+                  <Calendar className="h-3.5 w-3.5 md:h-4 md:w-4 text-green-600" />
+                </div>
+              </div>
+              <div className="flex flex-col space-y-0.5">
+                <p className="text-lg md:text-xl lg:text-2xl font-bold text-foreground">
+                  {stats.upcomingSessions}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  完了: {stats.completedSessions}件
+                </p>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -457,67 +498,110 @@ export default function AnalyticsPage() {
   const renderPhotographerStats = () => (
     <>
       {/* カメラマン向け統計 */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">撮影回数</CardTitle>
-            <Camera className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalSessions}</div>
-            <p className="text-xs text-muted-foreground">
-              今月: {stats.thisMonthSessions}回
-            </p>
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 mb-8">
+        <Card className="hover:shadow-lg transition-all duration-200 border-border/50 bg-card/50 backdrop-blur-sm">
+          <CardContent className="p-3 md:p-4 lg:p-6">
+            <div className="flex flex-col space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-xs md:text-sm font-medium text-muted-foreground leading-tight">
+                  撮影回数
+                </p>
+                <div className="p-1.5 md:p-2 rounded-lg bg-blue-100 flex-shrink-0">
+                  <Camera className="h-3.5 w-3.5 md:h-4 md:w-4 text-blue-600" />
+                </div>
+              </div>
+              <div className="flex flex-col space-y-0.5">
+                <p className="text-lg md:text-xl lg:text-2xl font-bold text-foreground">
+                  {stats.totalSessions}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  今月: {stats.thisMonthSessions}回
+                </p>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">総収入</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              ¥{stats.totalEarnings.toLocaleString()}
+        <Card className="hover:shadow-lg transition-all duration-200 border-border/50 bg-card/50 backdrop-blur-sm">
+          <CardContent className="p-3 md:p-4 lg:p-6">
+            <div className="flex flex-col space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-xs md:text-sm font-medium text-muted-foreground leading-tight">
+                  総収入
+                </p>
+                <div className="p-1.5 md:p-2 rounded-lg bg-emerald-100 flex-shrink-0">
+                  <DollarSign className="h-3.5 w-3.5 md:h-4 md:w-4 text-emerald-600" />
+                </div>
+              </div>
+              <div className="flex flex-col space-y-0.5">
+                <p className="text-lg md:text-xl lg:text-2xl font-bold text-foreground">
+                  ¥{stats.totalEarnings.toLocaleString()}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  今月: ¥{stats.thisMonthEarnings.toLocaleString()}
+                </p>
+              </div>
             </div>
-            <p className="text-xs text-muted-foreground">
-              今月: ¥{stats.thisMonthEarnings.toLocaleString()}
-            </p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">顧客評価</CardTitle>
-            <Star className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {stats.averageRating.toFixed(1)}
+        <Card className="hover:shadow-lg transition-all duration-200 border-border/50 bg-card/50 backdrop-blur-sm">
+          <CardContent className="p-3 md:p-4 lg:p-6">
+            <div className="flex flex-col space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-xs md:text-sm font-medium text-muted-foreground leading-tight">
+                  顧客評価
+                </p>
+                <div className="p-1.5 md:p-2 rounded-lg bg-yellow-100 flex-shrink-0">
+                  <Star className="h-3.5 w-3.5 md:h-4 md:w-4 text-yellow-600" />
+                </div>
+              </div>
+              <div className="flex flex-col space-y-0.5">
+                <div className="flex items-baseline space-x-0.5">
+                  <p className="text-lg md:text-xl lg:text-2xl font-bold text-foreground">
+                    {stats.averageRating.toFixed(1)}
+                  </p>
+                  <span className="text-xs md:text-sm text-muted-foreground">
+                    /5.0
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {stats.totalReviews}件のレビュー
+                </p>
+              </div>
             </div>
-            <p className="text-xs text-muted-foreground">
-              {stats.totalReviews}件のレビュー
-            </p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">完了率</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {stats.totalSessions > 0
-                ? Math.round(
-                    (stats.completedSessions / stats.totalSessions) * 100
-                  )
-                : 0}
-              %
+        <Card className="hover:shadow-lg transition-all duration-200 border-border/50 bg-card/50 backdrop-blur-sm">
+          <CardContent className="p-3 md:p-4 lg:p-6">
+            <div className="flex flex-col space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-xs md:text-sm font-medium text-muted-foreground leading-tight">
+                  完了率
+                </p>
+                <div className="p-1.5 md:p-2 rounded-lg bg-purple-100 flex-shrink-0">
+                  <Activity className="h-3.5 w-3.5 md:h-4 md:w-4 text-purple-600" />
+                </div>
+              </div>
+              <div className="flex flex-col space-y-0.5">
+                <div className="flex items-baseline space-x-0.5">
+                  <p className="text-lg md:text-xl lg:text-2xl font-bold text-foreground">
+                    {stats.totalSessions > 0
+                      ? Math.round(
+                          (stats.completedSessions / stats.totalSessions) * 100
+                        )
+                      : 0}
+                  </p>
+                  <span className="text-xs md:text-sm text-muted-foreground">
+                    %
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  完了: {stats.completedSessions}件
+                </p>
+              </div>
             </div>
-            <p className="text-xs text-muted-foreground">
-              完了: {stats.completedSessions}件
-            </p>
           </CardContent>
         </Card>
       </div>
@@ -601,72 +685,117 @@ export default function AnalyticsPage() {
   const renderModelStats = () => (
     <>
       {/* モデル向け統計 */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">参加撮影会</CardTitle>
-            <Camera className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalSessions}</div>
-            <p className="text-xs text-muted-foreground">
-              今月: {stats.thisMonthSessions}回
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">評価</CardTitle>
-            <Star className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {stats.averageRating.toFixed(1)}
-            </div>
-            <div className="flex items-center mt-1">
-              {[1, 2, 3, 4, 5].map(star => (
-                <Star
-                  key={star}
-                  className={`h-3 w-3 ${
-                    star <= stats.averageRating
-                      ? 'text-yellow-400 fill-current'
-                      : 'text-gray-300'
-                  }`}
-                />
-              ))}
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 mb-8">
+        <Card className="hover:shadow-lg transition-all duration-200 border-border/50 bg-card/50 backdrop-blur-sm">
+          <CardContent className="p-3 md:p-4 lg:p-6">
+            <div className="flex flex-col space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-xs md:text-sm font-medium text-muted-foreground leading-tight">
+                  参加撮影会
+                </p>
+                <div className="p-1.5 md:p-2 rounded-lg bg-blue-100 flex-shrink-0">
+                  <Camera className="h-3.5 w-3.5 md:h-4 md:w-4 text-blue-600" />
+                </div>
+              </div>
+              <div className="flex flex-col space-y-0.5">
+                <p className="text-lg md:text-xl lg:text-2xl font-bold text-foreground">
+                  {stats.totalSessions}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  今月: {stats.thisMonthSessions}回
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">予定撮影会</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.upcomingSessions}</div>
-            <p className="text-xs text-muted-foreground">今後の参加予定</p>
+        <Card className="hover:shadow-lg transition-all duration-200 border-border/50 bg-card/50 backdrop-blur-sm">
+          <CardContent className="p-3 md:p-4 lg:p-6">
+            <div className="flex flex-col space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-xs md:text-sm font-medium text-muted-foreground leading-tight">
+                  評価
+                </p>
+                <div className="p-1.5 md:p-2 rounded-lg bg-yellow-100 flex-shrink-0">
+                  <Star className="h-3.5 w-3.5 md:h-4 md:w-4 text-yellow-600" />
+                </div>
+              </div>
+              <div className="flex flex-col space-y-0.5">
+                <div className="flex items-baseline space-x-0.5">
+                  <p className="text-lg md:text-xl lg:text-2xl font-bold text-foreground">
+                    {stats.averageRating.toFixed(1)}
+                  </p>
+                  <span className="text-xs md:text-sm text-muted-foreground">
+                    /5.0
+                  </span>
+                </div>
+                <div className="flex items-center gap-0.5">
+                  {[1, 2, 3, 4, 5].map(star => (
+                    <Star
+                      key={star}
+                      className={`h-2.5 w-2.5 ${
+                        star <= stats.averageRating
+                          ? 'text-yellow-400 fill-current'
+                          : 'text-gray-300'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">完了率</CardTitle>
-            <Award className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {stats.totalSessions > 0
-                ? Math.round(
-                    (stats.completedSessions / stats.totalSessions) * 100
-                  )
-                : 0}
-              %
+        <Card className="hover:shadow-lg transition-all duration-200 border-border/50 bg-card/50 backdrop-blur-sm">
+          <CardContent className="p-3 md:p-4 lg:p-6">
+            <div className="flex flex-col space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-xs md:text-sm font-medium text-muted-foreground leading-tight">
+                  予定撮影会
+                </p>
+                <div className="p-1.5 md:p-2 rounded-lg bg-green-100 flex-shrink-0">
+                  <Calendar className="h-3.5 w-3.5 md:h-4 md:w-4 text-green-600" />
+                </div>
+              </div>
+              <div className="flex flex-col space-y-0.5">
+                <p className="text-lg md:text-xl lg:text-2xl font-bold text-foreground">
+                  {stats.upcomingSessions}
+                </p>
+                <p className="text-xs text-muted-foreground">今後の参加予定</p>
+              </div>
             </div>
-            <p className="text-xs text-muted-foreground">
-              完了: {stats.completedSessions}回
-            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-lg transition-all duration-200 border-border/50 bg-card/50 backdrop-blur-sm">
+          <CardContent className="p-3 md:p-4 lg:p-6">
+            <div className="flex flex-col space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-xs md:text-sm font-medium text-muted-foreground leading-tight">
+                  完了率
+                </p>
+                <div className="p-1.5 md:p-2 rounded-lg bg-purple-100 flex-shrink-0">
+                  <Award className="h-3.5 w-3.5 md:h-4 md:w-4 text-purple-600" />
+                </div>
+              </div>
+              <div className="flex flex-col space-y-0.5">
+                <div className="flex items-baseline space-x-0.5">
+                  <p className="text-lg md:text-xl lg:text-2xl font-bold text-foreground">
+                    {stats.totalSessions > 0
+                      ? Math.round(
+                          (stats.completedSessions / stats.totalSessions) * 100
+                        )
+                      : 0}
+                  </p>
+                  <span className="text-xs md:text-sm text-muted-foreground">
+                    %
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  完了: {stats.completedSessions}回
+                </p>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>

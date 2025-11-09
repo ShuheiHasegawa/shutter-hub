@@ -543,6 +543,7 @@ export function PhotographerInstantDashboard({
                               handleUpdateStatus(request.id, 'in_progress')
                             }
                             className="flex-1"
+                            variant="cta"
                           >
                             <Camera className="h-4 w-4 mr-2" />
                             撮影開始

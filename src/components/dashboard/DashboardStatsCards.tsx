@@ -107,26 +107,35 @@ export function DashboardStatsCards({
   const statsCards = getStatsForUserType();
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
       {statsCards.map((stat, index) => (
-        <Card key={index} className="hover:shadow-md transition-shadow">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-card-foreground">
+        <Card
+          key={index}
+          className="hover:shadow-lg transition-all duration-200 border-border/50 bg-card/50 backdrop-blur-sm"
+        >
+          <CardContent className="p-3 md:p-4 lg:p-6">
+            <div className="flex flex-col space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-xs md:text-sm font-medium text-muted-foreground leading-tight">
                   {stat.title}
                 </p>
-                <div className="flex items-baseline space-x-1">
-                  <p className="text-2xl font-bold">{stat.value}</p>
-                  {'unit' in stat && stat.unit && (
-                    <span className="text-sm text-card-foreground">
-                      {stat.unit}
-                    </span>
-                  )}
+                <div
+                  className={`p-1.5 md:p-2 rounded-lg ${stat.bgColor} flex-shrink-0`}
+                >
+                  <stat.icon
+                    className={`h-3.5 w-3.5 md:h-4 md:w-4 ${stat.color}`}
+                  />
                 </div>
               </div>
-              <div className={`p-3 rounded-full ${stat.bgColor}`}>
-                <stat.icon className={`h-6 w-6 ${stat.color}`} />
+              <div className="flex items-baseline space-x-0.5">
+                <p className="text-lg md:text-xl lg:text-2xl font-bold text-foreground">
+                  {stat.value}
+                </p>
+                {'unit' in stat && stat.unit && (
+                  <span className="text-xs md:text-sm text-muted-foreground">
+                    {stat.unit}
+                  </span>
+                )}
               </div>
             </div>
           </CardContent>

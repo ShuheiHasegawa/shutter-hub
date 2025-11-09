@@ -308,8 +308,7 @@ export function SlotBookingFlow({
     selectedSlotId,
     selectedSlots,
     selectedSlot,
-    session.id,
-    session.price_per_person,
+    session,
     userId,
     navigateToStep,
     selectedPaymentMethod,
@@ -321,8 +320,6 @@ export function SlotBookingFlow({
     // ページをリロードして最新の状態を反映
     window.location.href = window.location.pathname;
   }, []);
-
-  
 
   // ActionBarボタンの取得
   const getActionBarButtons = useCallback((): ActionBarButton[] => {

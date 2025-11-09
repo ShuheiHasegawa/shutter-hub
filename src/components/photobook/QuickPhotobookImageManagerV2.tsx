@@ -308,8 +308,12 @@ function DraggableImageCard({
           {...listeners}
           className={cn(
             'cursor-grab active:cursor-grabbing hover:bg-gray-50 transition-colors flex items-center justify-center',
-            isMobile ? 'p-2' : 'p-3'
+            isMobile ? 'p-2' : 'p-3',
+            'touch-none' // スマホでのドラッグを有効化
           )}
+          style={{
+            touchAction: 'none', // スマホでのタッチ操作を有効化
+          }}
           title="ドラッグして並び替え"
         >
           <div className="flex items-center justify-center gap-2">
@@ -881,7 +885,7 @@ export function QuickPhotobookImageManagerV2({
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8, // 8px以上移動でドラッグ開始
+        distance: 8, // 8px移動でドラッグ開始（スマホ対応）
       },
     }),
     useSensor(KeyboardSensor, {

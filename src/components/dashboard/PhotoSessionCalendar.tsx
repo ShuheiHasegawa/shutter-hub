@@ -134,11 +134,35 @@ export function PhotoSessionCalendar({ sessions }: PhotoSessionCalendarProps) {
       <CardContent>
         <CalendarProvider locale="ja-JP" startDay={0} className="w-full">
           <CalendarDate>
-            <CalendarDatePicker>
-              <CalendarMonthPicker />
-              <CalendarYearPicker end={maxYear} start={minYear} />
-            </CalendarDatePicker>
-            <CalendarDatePagination />
+            {/* PC表示（md以上）: 横並びレイアウト */}
+            <div className="hidden md:flex items-center justify-between gap-4 mb-4">
+              <CalendarDatePicker>
+                <div className="flex items-center gap-2">
+                  <CalendarYearPicker end={maxYear} start={minYear} />
+                  <CalendarMonthPicker />
+                </div>
+              </CalendarDatePicker>
+              <CalendarDatePagination />
+            </div>
+
+            {/* モバイル表示（md未満）: コンパクトレイアウト */}
+            <div className="flex md:hidden items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <CalendarDatePicker>
+                  <div className="w-20 [&_button]:!w-20 [&_button]:!min-w-20 [&_button]:text-xs [&_button]:px-2 [&_button]:py-1 [&_button]:h-7">
+                    <CalendarYearPicker end={maxYear} start={minYear} />
+                  </div>
+                </CalendarDatePicker>
+                <CalendarDatePicker>
+                  <div className="w-20 [&_button]:!w-20 [&_button]:!min-w-20 [&_button]:text-xs [&_button]:px-2 [&_button]:py-1 [&_button]:h-7">
+                    <CalendarMonthPicker />
+                  </div>
+                </CalendarDatePicker>
+              </div>
+              <div className="flex-shrink-0">
+                <CalendarDatePagination />
+              </div>
+            </div>
           </CalendarDate>
           <CalendarHeader />
           <CalendarBody features={features} onFeatureClick={handleFeatureClick}>

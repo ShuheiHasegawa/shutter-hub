@@ -17,9 +17,6 @@ import {
   Home,
   Camera,
   Calendar,
-  Crown,
-  User,
-  Settings,
   BarChart3,
   Plus,
   List,
@@ -88,14 +85,14 @@ export function Sidebar({ className }: SidebarProps) {
       icon: Zap,
     },
     {
+      title: 'お気に入り',
+      href: '/favorites',
+      icon: Heart,
+    },
+    {
       title: t('photoSessions'),
       icon: Camera,
       children: [
-        {
-          title: 'お気に入り',
-          href: '/photo-sessions/favorites',
-          icon: Heart,
-        },
         {
           title: '撮影会一覧',
           href: '/photo-sessions',
@@ -122,11 +119,6 @@ export function Sidebar({ className }: SidebarProps) {
       title: 'スタジオ',
       icon: Building,
       children: [
-        {
-          title: 'お気に入り',
-          href: '/studios/favorites',
-          icon: Heart,
-        },
         {
           title: 'スタジオ一覧',
           href: '/studios',
@@ -168,21 +160,6 @@ export function Sidebar({ className }: SidebarProps) {
           },
         ]
       : []),
-    {
-      title: t('profile'),
-      href: '/profile',
-      icon: User,
-    },
-    {
-      title: t('settings'),
-      href: '/settings',
-      icon: Settings,
-    },
-    {
-      title: t('subscription'),
-      href: '/subscription',
-      icon: Crown,
-    },
     // 開発環境でのみ表示
     ...(process.env.NODE_ENV === 'development'
       ? [
@@ -198,6 +175,9 @@ export function Sidebar({ className }: SidebarProps) {
   const isActive = (href: string) => {
     if (href === '/dashboard') {
       return pathname === '/dashboard' || pathname.endsWith('/dashboard');
+    }
+    if (href === '/favorites') {
+      return pathname === '/favorites' || pathname.startsWith('/favorites');
     }
     return pathname.startsWith(href);
   };
@@ -328,6 +308,11 @@ export function MobileSidebarTrigger() {
       icon: Zap,
     },
     {
+      title: 'お気に入り',
+      href: '/favorites',
+      icon: Heart,
+    },
+    {
       title: t('photoSessions'),
       icon: Camera,
       children: [
@@ -346,17 +331,28 @@ export function MobileSidebarTrigger() {
           href: '/dashboard/my-sessions',
           icon: Camera,
         },
+        {
+          title: t('bookings'),
+          href: '/bookings',
+          icon: Calendar,
+        },
       ],
     },
     {
-      title: t('bookings'),
-      href: '/bookings',
-      icon: Calendar,
-    },
-    {
-      title: t('profile'),
-      href: '/profile',
-      icon: User,
+      title: 'スタジオ',
+      icon: Building,
+      children: [
+        {
+          title: 'スタジオ一覧',
+          href: '/studios',
+          icon: List,
+        },
+        {
+          title: 'スタジオ作成',
+          href: '/studios/create',
+          icon: Plus,
+        },
+      ],
     },
     {
       title: 'フォトブック',
@@ -387,11 +383,6 @@ export function MobileSidebarTrigger() {
           },
         ]
       : []),
-    {
-      title: t('settings'),
-      href: '/settings',
-      icon: Settings,
-    },
     // 開発環境でのみ表示
     ...(process.env.NODE_ENV === 'development'
       ? [
@@ -407,6 +398,9 @@ export function MobileSidebarTrigger() {
   const isActive = (href: string) => {
     if (href === '/dashboard') {
       return pathname === '/dashboard' || pathname.endsWith('/dashboard');
+    }
+    if (href === '/favorites') {
+      return pathname === '/favorites' || pathname.startsWith('/favorites');
     }
     return pathname.startsWith(href);
   };
