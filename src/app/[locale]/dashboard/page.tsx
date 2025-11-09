@@ -194,7 +194,7 @@ export default function DashboardPage() {
 
   return (
     <AuthenticatedLayout>
-      <div>
+      <>
         {/* 成功メッセージアラート */}
         {successMessage && (
           <Alert className="border-green-200 bg-green-50">
@@ -298,7 +298,7 @@ export default function DashboardPage() {
             />
           </div>
         </div>
-      </div>
+      </>
     </AuthenticatedLayout>
   );
 }
