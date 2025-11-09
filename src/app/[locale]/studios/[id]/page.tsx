@@ -8,9 +8,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { getStudioDetailAction } from '@/app/actions/studio';
 import { StudioEditHistory } from '@/components/studio/StudioEditHistory';
+import { StudioReportDialog } from '@/components/studio/StudioReportDialog';
 import {
   StudioWithStats,
   StudioPhoto,
@@ -31,6 +32,8 @@ import {
   Pencil,
   Heart,
   Share2,
+  Flag,
+  Info,
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -164,45 +167,53 @@ export default function StudioDetailPage() {
       <div className="container mx-auto px-4 py-6 max-w-6xl">
         {/* ヘッダー */}
         <div className="mb-6">
-          <Link href="/studios">
-            <Button variant="ghost" className="mb-4">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              スタジオ一覧に戻る
-            </Button>
-          </Link>
-
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-3xl font-bold">{studio.name}</h1>
-                {studio.verification_status === 'verified' && (
-                  <Badge className="bg-green-500 text-white">認証済み</Badge>
-                )}
-              </div>
-
-              {averageRatings && studio.evaluation_count > 0 && (
-                <div className="flex items-center gap-2">
-                  <div className="flex">
-                    {renderStars(averageRatings.overall)}
-                  </div>
-                  <span className="text-lg font-medium">
-                    {averageRatings.overall.toFixed(1)}
-                  </span>
-                  <span className="text-theme-text-secondary">
-                    ({studio.evaluation_count}件のレビュー)
-                  </span>
-                </div>
-              )}
-            </div>
+          {/* 戻るボタンと編集ボタン */}
+          <div className="flex justify-between items-center mb-4">
+            <Link href="/studios">
+              <Button variant="ghost">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                スタジオ一覧に戻る
+              </Button>
+            </Link>
 
             <Link href={`/studios/${studio.id}/edit`}>
-              <Button variant="outline">
+              <Button variant="cta">
                 <Pencil className="w-4 h-4 mr-2" />
                 編集
               </Button>
             </Link>
           </div>
+
+          {/* タイトルと評価 */}
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <h1 className="text-3xl font-bold">{studio.name}</h1>
+            </div>
+
+            {averageRatings && studio.evaluation_count > 0 && (
+              <div className="flex items-center gap-2">
+                <div className="flex">
+                  {renderStars(averageRatings.overall)}
+                </div>
+                <span className="text-lg font-medium">
+                  {averageRatings.overall.toFixed(1)}
+                </span>
+                <span className="text-theme-text-secondary">
+                  ({studio.evaluation_count}件のレビュー)
+                </span>
+              </div>
+            )}
+          </div>
         </div>
+
+        {/* スタジオ情報の注意書き */}
+        <Alert className="mb-4">
+          <Info className="h-4 w-4" />
+          <AlertTitle>このスタジオ情報は誰でも編集可能です</AlertTitle>
+          <AlertDescription>
+            不適切な内容を見つけた場合は報告してください。報告数が3件に達すると自動的に非表示になります。
+          </AlertDescription>
+        </Alert>
 
         {/* 大きなメイン画像 */}
         <div className="aspect-[4/3] relative bg-gray-100 rounded-lg overflow-hidden mb-8">
@@ -216,6 +227,28 @@ export default function StudioDetailPage() {
             fill
             className="object-contain object-center"
             priority
+          />
+        </div>
+
+        {/* お気に入り・シェア・報告ボタン */}
+        <div className="flex justify-end gap-2 mb-4">
+          <Button variant="outline" size="sm">
+            <Heart className="w-4 h-4 mr-2" />
+            お気に入り
+          </Button>
+          <Button variant="outline" size="sm">
+            <Share2 className="w-4 h-4 mr-2" />
+            シェア
+          </Button>
+          <StudioReportDialog
+            studioId={studioId}
+            studioName={studio.name}
+            trigger={
+              <Button variant="outline" size="sm">
+                <Flag className="w-4 h-4 mr-2" />
+                報告
+              </Button>
+            }
           />
         </div>
 
@@ -353,17 +386,16 @@ export default function StudioDetailPage() {
           </div>
         </div>
 
-        {/* お気に入り・シェアボタン */}
-        <div className="flex justify-end gap-2 mb-4">
-          <Button variant="outline" size="sm">
-            <Heart className="w-4 h-4 mr-2" />
-            お気に入り
-          </Button>
-          <Button variant="outline" size="sm">
-            <Share2 className="w-4 h-4 mr-2" />
-            シェア
-          </Button>
-        </div>
+        {/* 非表示スタジオの警告メッセージ */}
+        {studio.is_hidden && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertTitle>このスタジオは一時的に非表示になっています</AlertTitle>
+            <AlertDescription>
+              {studio.hidden_reason ||
+                '複数の報告により一時的に非表示になっています。'}
+            </AlertDescription>
+          </Alert>
+        )}
 
         {/* タブ切り替え */}
         <Tabs defaultValue="photos" className="w-full">

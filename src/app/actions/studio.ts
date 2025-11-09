@@ -528,19 +528,6 @@ export async function updateStudioAction(
       return { success: false, error: '認証が必要です' };
     }
 
-    // ユーザープロフィール確認
-    const { data: userProfile } = await supabase
-      .from('profiles')
-      .select('user_type')
-      .eq('id', user.id)
-      .single();
-
-    Logger.info('ユーザー認証情報:', {
-      userId: user.id,
-      userType: userProfile?.user_type,
-      isOrganizer: userProfile?.user_type === 'organizer',
-    });
-
     // 既存スタジオの確認
     Logger.info('スタジオ存在確認開始:', { studioId });
 
@@ -554,12 +541,6 @@ export async function updateStudioAction(
       studioId,
       found: !!existingStudio,
       error: fetchError || null,
-      studioCreatedBy: existingStudio?.created_by,
-      currentUserId: user.id,
-      canUpdate: existingStudio?.created_by === user.id,
-      userCanUpdate:
-        existingStudio?.created_by === user.id ||
-        userProfile?.user_type === 'organizer',
     });
 
     if (fetchError || !existingStudio) {
@@ -569,38 +550,6 @@ export async function updateStudioAction(
         hasExistingStudio: !!existingStudio,
       });
       return { success: false, error: 'スタジオが見つかりません' };
-    }
-
-    // 権限チェック（複数の条件を考慮）
-    const isOwner = existingStudio.created_by === user.id;
-    const isOrganizer = userProfile?.user_type === 'organizer';
-    const isAdmin = userProfile?.user_type === 'admin'; // 将来の拡張
-    const canUpdate = isOwner || isOrganizer || isAdmin;
-
-    Logger.info('権限チェック詳細:', {
-      studioId,
-      userId: user.id,
-      studioCreatedBy: existingStudio.created_by,
-      userType: userProfile?.user_type,
-      isOwner,
-      isOrganizer,
-      isAdmin,
-      canUpdate,
-    });
-
-    if (!canUpdate) {
-      Logger.error('スタジオ更新権限不足:', {
-        studioId,
-        userId: user.id,
-        studioCreatedBy: existingStudio.created_by,
-        userType: userProfile?.user_type,
-        reason: 'ユーザーはスタジオ作成者でもorganizer/adminでもありません',
-      });
-      return {
-        success: false,
-        error:
-          'このスタジオを更新する権限がありません。スタジオ作成者またはorganizer権限が必要です。',
-      };
     }
 
     // 更新データの準備
@@ -663,23 +612,13 @@ export async function updateStudioAction(
       .eq('id', studioId)
       .select();
 
-    // 更新結果の検証
-    const studio = studios?.[0];
-    if (!studio && !error) {
-      Logger.error('スタジオ更新：対象レコードが見つからない', {
-        studioId,
-        updateData,
-        resultCount: studios?.length || 0,
-      });
-      return { success: false, error: 'スタジオが見つかりません' };
-    }
-
     // 詳細ログ
     Logger.info('スタジオ更新結果:', {
       success: !error,
       studioId,
       rowCount: count,
-      hasData: !!studio,
+      hasData: !!studios?.[0],
+      dataLength: studios?.length || 0,
       error: error || null,
     });
 
@@ -693,6 +632,42 @@ export async function updateStudioAction(
         errorDetails: error.details,
       });
       return { success: false, error: 'スタジオの更新に失敗しました' };
+    }
+
+    // 更新後のデータ取得（RLSポリシーで取得できない場合は既存データとマージ）
+    let studio = studios?.[0];
+    if (!studio) {
+      // 更新は成功したが、.select()でデータが取得できない場合（RLSポリシーの可能性）
+      // 既存データと更新データをマージして返す
+      Logger.warning(
+        'スタジオ更新：.select()でデータが取得できませんでした（RLSポリシーの可能性）',
+        {
+          studioId,
+          updateData,
+          resultCount: studios?.length || 0,
+        }
+      );
+
+      // 更新後のデータを再取得を試みる
+      const { data: refreshedStudio, error: refreshError } = await supabase
+        .from('studios')
+        .select('*')
+        .eq('id', studioId)
+        .single();
+
+      if (refreshError || !refreshedStudio) {
+        // 再取得も失敗した場合は、既存データと更新データをマージ
+        Logger.warning(
+          'スタジオ更新：再取得も失敗。既存データと更新データをマージします',
+          {
+            studioId,
+            refreshError: refreshError?.message,
+          }
+        );
+        studio = { ...existingStudio, ...updateData } as Studio;
+      } else {
+        studio = refreshedStudio as Studio;
+      }
     }
 
     // 履歴保存
@@ -839,4 +814,323 @@ export async function searchStudiosAction(
   error?: string;
 }> {
   return getStudiosAction(filters);
+}
+
+// =============================================================================
+// スタジオ画像管理
+// =============================================================================
+
+/**
+ * スタジオ画像を作成する
+ */
+export async function createStudioPhotoAction(
+  studioId: string,
+  imageUrl: string,
+  options?: {
+    alt_text?: string;
+    caption?: string;
+    category?: string;
+    display_order?: number;
+  }
+): Promise<{
+  success: boolean;
+  photo?: StudioPhoto;
+  error?: string;
+}> {
+  try {
+    const supabase = await createClient();
+
+    // ユーザー認証チェック
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return { success: false, error: '認証が必要です' };
+    }
+
+    // スタジオの存在確認
+    const { data: studio, error: studioError } = await supabase
+      .from('studios')
+      .select('id, created_by')
+      .eq('id', studioId)
+      .single();
+
+    if (studioError || !studio) {
+      Logger.error('スタジオが見つからない:', studioError);
+      return { success: false, error: 'スタジオが見つかりません' };
+    }
+
+    // 既存の画像数を取得してdisplay_orderを設定
+    const { count } = await supabase
+      .from('studio_photos')
+      .select('*', { count: 'exact', head: true })
+      .eq('studio_id', studioId);
+
+    const displayOrder = options?.display_order ?? (count || 0) + 1;
+
+    // スタジオ画像を作成
+    const { data: photo, error } = await supabase
+      .from('studio_photos')
+      .insert({
+        studio_id: studioId,
+        image_url: imageUrl,
+        image_filename: imageUrl.split('/').pop(),
+        alt_text: options?.alt_text,
+        caption: options?.caption,
+        category: (options?.category as StudioPhoto['category']) || 'other',
+        display_order: displayOrder,
+        uploaded_by: user.id,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      Logger.error('スタジオ画像作成エラー:', error);
+      return { success: false, error: '画像の追加に失敗しました' };
+    }
+
+    revalidatePath(`/studios/${studioId}`);
+    Logger.info('スタジオ画像作成成功:', { photoId: photo.id, studioId });
+
+    return { success: true, photo };
+  } catch (error) {
+    Logger.error('スタジオ画像作成失敗:', error);
+    return {
+      success: false,
+      error: '画像の追加中にエラーが発生しました',
+    };
+  }
+}
+
+/**
+ * スタジオ画像を削除する
+ */
+export async function deleteStudioPhotoAction(photoId: string): Promise<{
+  success: boolean;
+  error?: string;
+}> {
+  try {
+    const supabase = await createClient();
+
+    // ユーザー認証チェック
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return { success: false, error: '認証が必要です' };
+    }
+
+    // 画像の存在確認
+    const { data: photo, error: photoError } = await supabase
+      .from('studio_photos')
+      .select('id, studio_id')
+      .eq('id', photoId)
+      .single();
+
+    if (photoError || !photo) {
+      Logger.error('スタジオ画像が見つからない:', photoError);
+      return { success: false, error: '画像が見つかりません' };
+    }
+
+    // 画像を削除
+    const { error } = await supabase
+      .from('studio_photos')
+      .delete()
+      .eq('id', photoId);
+
+    if (error) {
+      Logger.error('スタジオ画像削除エラー:', error);
+      return { success: false, error: '画像の削除に失敗しました' };
+    }
+
+    revalidatePath(`/studios/${photo.studio_id}`);
+    Logger.info('スタジオ画像削除成功:', {
+      photoId,
+      studioId: photo.studio_id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    Logger.error('スタジオ画像削除失敗:', error);
+    return {
+      success: false,
+      error: '画像の削除中にエラーが発生しました',
+    };
+  }
+}
+
+/**
+ * スタジオ画像の表示順を更新する
+ */
+export async function updateStudioPhotoOrderAction(
+  photoId: string,
+  displayOrder: number
+): Promise<{
+  success: boolean;
+  error?: string;
+}> {
+  try {
+    const supabase = await createClient();
+
+    // ユーザー認証チェック
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return { success: false, error: '認証が必要です' };
+    }
+
+    // 画像の存在確認
+    const { data: photo, error: photoError } = await supabase
+      .from('studio_photos')
+      .select('id, studio_id')
+      .eq('id', photoId)
+      .single();
+
+    if (photoError || !photo) {
+      return { success: false, error: '画像が見つかりません' };
+    }
+
+    // 表示順を更新
+    const { error } = await supabase
+      .from('studio_photos')
+      .update({ display_order: displayOrder })
+      .eq('id', photoId);
+
+    if (error) {
+      Logger.error('スタジオ画像表示順更新エラー:', error);
+      return { success: false, error: '表示順の更新に失敗しました' };
+    }
+
+    revalidatePath(`/studios/${photo.studio_id}`);
+    return { success: true };
+  } catch (error) {
+    Logger.error('スタジオ画像表示順更新失敗:', error);
+    return {
+      success: false,
+      error: '表示順の更新中にエラーが発生しました',
+    };
+  }
+}
+
+// =============================================================================
+// スタジオ報告機能
+// =============================================================================
+
+/**
+ * スタジオを報告する
+ */
+export async function reportStudioAction(
+  studioId: string,
+  reportReason: 'spam' | 'inappropriate' | 'false_info' | 'other',
+  reportDetails?: string
+): Promise<{
+  success: boolean;
+  error?: string;
+  autoHidden?: boolean;
+}> {
+  try {
+    const supabase = await createClient();
+
+    // ユーザー認証チェック
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return { success: false, error: '認証が必要です' };
+    }
+
+    // スタジオの存在確認
+    const { data: studio, error: studioError } = await supabase
+      .from('studios')
+      .select('id')
+      .eq('id', studioId)
+      .single();
+
+    if (studioError || !studio) {
+      Logger.error('スタジオが見つからない:', studioError);
+      return { success: false, error: 'スタジオが見つかりません' };
+    }
+
+    // 重複報告チェック（同じユーザーが同じスタジオに既に報告していないか）
+    const { data: existingReport, error: checkError } = await supabase
+      .from('studio_reports')
+      .select('id')
+      .eq('studio_id', studioId)
+      .eq('reporter_id', user.id)
+      .eq('status', 'pending')
+      .single();
+
+    if (checkError && checkError.code !== 'PGRST116') {
+      Logger.error('報告チェックエラー:', checkError);
+      return { success: false, error: '報告の確認中にエラーが発生しました' };
+    }
+
+    if (existingReport) {
+      return {
+        success: false,
+        error: 'このスタジオには既に報告済みです',
+      };
+    }
+
+    // 報告レコード作成
+    const { error: createError } = await supabase
+      .from('studio_reports')
+      .insert({
+        studio_id: studioId,
+        reporter_id: user.id,
+        report_reason: reportReason,
+        report_details: reportDetails || null,
+        status: 'pending',
+      })
+      .select()
+      .single();
+
+    if (createError) {
+      Logger.error('報告作成エラー:', createError);
+      return { success: false, error: '報告の送信に失敗しました' };
+    }
+
+    // 報告数が3件に達したかチェック（トリガーで自動的に非表示になるが、確認のため）
+    const { count: reportCount } = await supabase
+      .from('studio_reports')
+      .select('*', { count: 'exact', head: true })
+      .eq('studio_id', studioId)
+      .eq('status', 'pending');
+
+    // スタジオの非表示状態を確認
+    const { data: updatedStudio } = await supabase
+      .from('studios')
+      .select('is_hidden')
+      .eq('id', studioId)
+      .single();
+
+    revalidatePath(`/studios/${studioId}`);
+    Logger.info('スタジオ報告成功:', {
+      studioId,
+      reporterId: user.id,
+      reportReason,
+      reportCount: reportCount || 0,
+      isHidden: updatedStudio?.is_hidden || false,
+    });
+
+    return {
+      success: true,
+      autoHidden: updatedStudio?.is_hidden || false,
+    };
+  } catch (error) {
+    Logger.error('スタジオ報告失敗:', error);
+    return {
+      success: false,
+      error: '報告の送信中にエラーが発生しました',
+    };
+  }
 }

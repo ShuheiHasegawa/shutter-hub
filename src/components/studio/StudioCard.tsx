@@ -11,6 +11,7 @@ import {
   WifiIcon,
 } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
+import { Building2 } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { StudioWithStats } from '@/types/database';
@@ -55,6 +56,25 @@ export function StudioCard({
     return '料金応相談';
   };
 
+  const formatUpdateTime = (updatedAt: string) => {
+    const updated = new Date(updatedAt);
+    const now = new Date();
+    const diffMs = now.getTime() - updated.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+
+    if (diffDays > 0) {
+      return `${diffDays}日前に更新`;
+    } else if (diffHours > 0) {
+      return `${diffHours}時間前に更新`;
+    } else if (diffMinutes > 0) {
+      return `${diffMinutes}分前に更新`;
+    } else {
+      return 'たった今更新';
+    }
+  };
+
   const renderStars = (rating: number) => {
     const stars = [];
     const fullStars = Math.floor(rating);
@@ -94,29 +114,34 @@ export function StudioCard({
       <CardHeader className="p-0">
         {/* メイン画像 */}
         <div className="aspect-video relative bg-theme-neutral/10 rounded-t-lg overflow-hidden">
-          <Image
-            src={
-              studio.featuredPhotos && studio.featuredPhotos.length > 0
-                ? studio.featuredPhotos[0].image_url
-                : '/images/no-image.png'
-            }
-            alt={
-              studio.featuredPhotos && studio.featuredPhotos.length > 0
-                ? studio.featuredPhotos[0].alt_text || studio.name
-                : 'No Image'
-            }
-            fill
-            className="object-cover object-center"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          />
+          {studio.featuredPhotos && studio.featuredPhotos.length > 0 ? (
+            <Image
+              src={studio.featuredPhotos[0].image_url}
+              alt={studio.featuredPhotos[0].alt_text || studio.name}
+              fill
+              className="object-cover object-center"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-theme-primary/10 to-theme-accent/10 dark:from-theme-primary/20 dark:to-theme-accent/20 flex items-center justify-center">
+              <Building2 className="h-12 w-12 text-theme-text-muted opacity-40" />
+            </div>
+          )}
 
           {/* バッジ */}
-          <div className="absolute top-2 left-2 flex gap-2">
-            {studio.verification_status === 'verified' && (
-              <Badge className="bg-theme-primary text-xs">認証済み</Badge>
+          <div className="absolute top-2 left-2 flex gap-2 flex-wrap">
+            {studio.prefecture && (
+              <Badge className="bg-theme-primary text-xs">
+                {studio.prefecture}
+              </Badge>
             )}
-            {studio.average_rating > 4.5 && (
+            {studio.average_rating > 4.5 && studio.evaluation_count > 0 && (
               <Badge className="bg-theme-accent text-xs">高評価</Badge>
+            )}
+            {studio.is_hidden && (
+              <Badge variant="destructive" className="text-xs">
+                非表示
+              </Badge>
             )}
           </div>
 
@@ -145,7 +170,12 @@ export function StudioCard({
                       favoriteCount: favoriteState.favoriteCount,
                       isAuthenticated: true,
                     }
-                  : undefined
+                  : {
+                      // favoriteStateがundefinedの場合でも空のinitialStateを設定して個別の呼び出しを防ぐ
+                      isFavorited: false,
+                      favoriteCount: 0,
+                      isAuthenticated: false,
+                    }
               }
               onToggle={onFavoriteToggle}
             />
@@ -203,9 +233,16 @@ export function StudioCard({
         </div>
 
         {/* 統計情報 */}
-        <div className="flex justify-between text-xs border-t border-theme-neutral/20 pt-2">
-          <span>写真 {studio.photo_count}枚</span>
-          <span>機材 {studio.equipment_count}点</span>
+        <div className="space-y-1 border-t border-theme-neutral/20 pt-4">
+          <div className="flex justify-between text-xs">
+            <span>写真 {studio.photo_count}枚</span>
+            <span>機材 {studio.equipment_count}点</span>
+          </div>
+          {studio.updated_at && (
+            <div className="text-xs text-theme-text-muted">
+              {formatUpdateTime(studio.updated_at)}
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

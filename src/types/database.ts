@@ -362,6 +362,9 @@ export interface Studio {
   location_hash: string;
   verification_status: 'pending' | 'verified' | 'rejected' | 'suspended';
   admin_notes?: string;
+  is_hidden: boolean;
+  hidden_reason?: string;
+  hidden_at?: string;
   created_at: string;
   updated_at: string;
   created_by: string;
@@ -444,6 +447,19 @@ export interface StudioEditHistory {
   ip_address?: string;
   user_agent?: string;
   created_at: string;
+}
+
+export interface StudioReport {
+  id: string;
+  studio_id: string;
+  reporter_id: string;
+  report_reason: 'spam' | 'inappropriate' | 'false_info' | 'other';
+  report_details?: string;
+  status: 'pending' | 'resolved' | 'dismissed';
+  created_at: string;
+  resolved_at?: string;
+  resolved_by?: string;
+  resolution_notes?: string;
 }
 
 export interface OrganizerStudio {

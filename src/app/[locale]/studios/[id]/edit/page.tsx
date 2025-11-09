@@ -8,7 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { PageTitleHeader } from '@/components/ui/page-title-header';
 import { getStudioDetailAction } from '@/app/actions/studio';
 import { StudioEditForm } from '@/components/studio/StudioEditForm';
-import { StudioWithStats } from '@/types/database';
+import { StudioWithStats, StudioPhoto } from '@/types/database';
 
 export default function StudioEditPage() {
   const params = useParams();
@@ -16,6 +16,7 @@ export default function StudioEditPage() {
   const studioId = params.id as string;
 
   const [studio, setStudio] = useState<StudioWithStats | null>(null);
+  const [photos, setPhotos] = useState<StudioPhoto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -29,6 +30,7 @@ export default function StudioEditPage() {
 
         if (result.success && result.studio) {
           setStudio(result.studio);
+          setPhotos(result.photos || []);
         } else {
           setError(result.error || 'スタジオの取得に失敗しました');
         }
@@ -95,6 +97,7 @@ export default function StudioEditPage() {
         {/* 編集フォーム */}
         <StudioEditForm
           studio={studio}
+          initialPhotos={photos}
           onSuccess={handleSuccess}
           onCancel={handleCancel}
         />
