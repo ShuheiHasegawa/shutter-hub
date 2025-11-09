@@ -8,7 +8,6 @@ import { useRouter, useParams } from 'next/navigation';
 import { AuthenticatedLayout } from '@/components/layout/authenticated-layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import {
@@ -21,7 +20,6 @@ import {
   MapPin,
   Heart,
   Award,
-  Zap,
   BarChart3,
   AlertTriangle,
 } from 'lucide-react';
@@ -932,69 +930,6 @@ export default function AnalyticsPage() {
                   </div>
                 </div>
               ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* アクション */}
-        <Card>
-          <CardHeader>
-            <CardTitle>クイックアクション</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-4">
-              {profile.user_type === 'organizer' && (
-                <>
-                  <Button variant="outline" asChild>
-                    <a href={`/${locale}/photo-sessions/create`}>
-                      <Camera className="h-4 w-4 mr-2" />
-                      新しい撮影会を作成
-                    </a>
-                  </Button>
-                  <Button variant="outline" asChild>
-                    <a href={`/${locale}/dashboard/my-sessions`}>
-                      <Calendar className="h-4 w-4 mr-2" />
-                      撮影会管理
-                    </a>
-                  </Button>
-                </>
-              )}
-              {profile.user_type === 'photographer' && (
-                <>
-                  <Button variant="outline" asChild>
-                    <a href={`/${locale}/instant`}>
-                      <Zap className="h-4 w-4 mr-2" />
-                      即座撮影を開始
-                    </a>
-                  </Button>
-                  <Button variant="outline" asChild>
-                    <a href={`/${locale}/photo-sessions`}>
-                      <Camera className="h-4 w-4 mr-2" />
-                      撮影会を探す
-                    </a>
-                  </Button>
-                </>
-              )}
-              {profile.user_type === 'model' && (
-                <>
-                  <Button variant="outline" asChild>
-                    <a href={`/${locale}/photo-sessions`}>
-                      <Camera className="h-4 w-4 mr-2" />
-                      撮影会を探す
-                    </a>
-                  </Button>
-                  <Button variant="outline" asChild>
-                    <a href={`/${locale}/bookings`}>
-                      <Calendar className="h-4 w-4 mr-2" />
-                      予約管理
-                    </a>
-                  </Button>
-                </>
-              )}
-              <Button variant="outline">
-                <BarChart3 className="h-4 w-4 mr-2" />
-                詳細レポート
-              </Button>
             </div>
           </CardContent>
         </Card>

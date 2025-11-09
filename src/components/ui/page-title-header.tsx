@@ -49,31 +49,26 @@ export function PageTitleHeader({
   return (
     <div className={cn('pt-4 pb-2', className)}>
       {/* メインヘッダー行 */}
-      <div className="flex items-center">
+      <div className="flex items-center gap-2 min-w-0">
         {/* 戻るボタン */}
         {backButton && <BackButton {...backButton} />}
 
         {/* タイトル部分 */}
-        <div className="flex-1">
-          <h1 className="text-lg font-bold flex items-center">
-            {icon}&nbsp;&nbsp;
-            {title}
+        <div className="flex-1 min-w-0">
+          <h1 className="text-lg font-bold flex items-center gap-2">
+            {icon}
+            <span className="truncate">{title}</span>
           </h1>
           {description && (
             <p className="text-muted-foreground mt-1">{description}</p>
           )}
         </div>
 
-        {/* デスクトップ用アクションボタン */}
+        {/* アクションボタン（常に同じ行に表示） */}
         {actions && (
-          <div className="hidden md:flex items-center gap-2">{actions}</div>
+          <div className="flex items-center gap-2 flex-shrink-0">{actions}</div>
         )}
       </div>
-
-      {/* モバイル用アクションボタン（下段） */}
-      {actions && (
-        <div className="flex md:hidden items-center gap-2 mt-4">{actions}</div>
-      )}
     </div>
   );
 }
