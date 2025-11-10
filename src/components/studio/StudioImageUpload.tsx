@@ -16,7 +16,7 @@ import {
 import { toast } from 'sonner';
 import { StudioPhoto } from '@/types/database';
 import Image from 'next/image';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/utils/logger';
 
 interface StudioImageUploadProps {
   studioId: string;
