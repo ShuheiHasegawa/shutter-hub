@@ -9,9 +9,16 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { getStudioDetailAction } from '@/app/actions/studio';
 import { StudioEditHistory } from '@/components/studio/StudioEditHistory';
 import { StudioReportDialog } from '@/components/studio/StudioReportDialog';
+import { InlineFavoriteButton } from '@/components/ui/favorite-heart-button';
 import {
   StudioWithStats,
   StudioPhoto,
@@ -30,13 +37,15 @@ import {
   Globe,
   ArrowLeft,
   Pencil,
-  Heart,
   Share2,
   Flag,
   Info,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { toast } from 'sonner';
 
 export default function StudioDetailPage() {
   const params = useParams();
@@ -60,6 +69,9 @@ export default function StudioDetailPage() {
   } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(
+    null
+  );
 
   useEffect(() => {
     const fetchStudioDetail = async () => {
@@ -126,6 +138,54 @@ export default function StudioDetailPage() {
       return `¥${studio.hourly_rate_min.toLocaleString()}～`;
     }
     return '料金応相談';
+  };
+
+  const handleShare = async () => {
+    const url = window.location.href;
+    const title = `${studio?.name || 'スタジオ'} - ShutterHub`;
+    const text = studio?.description || '';
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title,
+          text,
+          url,
+        });
+        toast.success('シェアしました');
+      } catch (error) {
+        // ユーザーがキャンセルした場合などはエラーを表示しない
+        if ((error as Error).name !== 'AbortError') {
+          toast.error('シェアに失敗しました');
+        }
+      }
+    } else {
+      // フォールバック: クリップボードにコピー
+      try {
+        await navigator.clipboard.writeText(url);
+        toast.success('URLをコピーしました');
+      } catch {
+        toast.error('コピーに失敗しました');
+      }
+    }
+  };
+
+  const handlePhotoClick = (index: number) => {
+    setSelectedPhotoIndex(index);
+  };
+
+  const handlePreviousPhoto = () => {
+    if (selectedPhotoIndex === null || photos.length === 0) return;
+    setSelectedPhotoIndex(
+      selectedPhotoIndex === 0 ? photos.length - 1 : selectedPhotoIndex - 1
+    );
+  };
+
+  const handleNextPhoto = () => {
+    if (selectedPhotoIndex === null || photos.length === 0) return;
+    setSelectedPhotoIndex(
+      selectedPhotoIndex === photos.length - 1 ? 0 : selectedPhotoIndex + 1
+    );
   };
 
   if (loading) {
@@ -232,11 +292,13 @@ export default function StudioDetailPage() {
 
         {/* お気に入り・シェア・報告ボタン */}
         <div className="flex justify-end gap-2 mb-4">
-          <Button variant="outline" size="sm">
-            <Heart className="w-4 h-4 mr-2" />
-            お気に入り
-          </Button>
-          <Button variant="outline" size="sm">
+          <InlineFavoriteButton
+            favoriteType="studio"
+            favoriteId={studioId}
+            variant="outline"
+            size="sm"
+          />
+          <Button variant="outline" size="sm" onClick={handleShare}>
             <Share2 className="w-4 h-4 mr-2" />
             シェア
           </Button>
@@ -415,10 +477,11 @@ export default function StudioDetailPage() {
               <CardContent>
                 {photos.length > 0 ? (
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {photos.map(photo => (
+                    {photos.map((photo, index) => (
                       <div
                         key={photo.id}
-                        className="aspect-square relative bg-gray-100 rounded-lg overflow-hidden"
+                        className="aspect-square relative bg-gray-100 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+                        onClick={() => handlePhotoClick(index)}
                       >
                         <Image
                           src={photo.image_url || '/images/no-image.png'}
@@ -537,6 +600,68 @@ export default function StudioDetailPage() {
             <StudioEditHistory studioId={studioId} />
           </TabsContent>
         </Tabs>
+
+        {/* 写真拡大表示モーダル */}
+        <Dialog
+          open={selectedPhotoIndex !== null}
+          onOpenChange={open => {
+            if (!open) setSelectedPhotoIndex(null);
+          }}
+        >
+          <DialogContent className="max-w-4xl max-h-[90vh] p-0">
+            <DialogHeader className="sr-only">
+              <DialogTitle>写真拡大表示</DialogTitle>
+            </DialogHeader>
+            {selectedPhotoIndex !== null && photos[selectedPhotoIndex] && (
+              <div className="relative w-full h-full flex flex-col">
+                <div className="flex-1 relative overflow-hidden bg-black">
+                  <div className="w-full h-full flex items-center justify-center p-4">
+                    <Image
+                      src={
+                        photos[selectedPhotoIndex].image_url ||
+                        '/images/no-image.png'
+                      }
+                      alt={
+                        photos[selectedPhotoIndex].alt_text ||
+                        `${studio.name}の写真`
+                      }
+                      width={1200}
+                      height={800}
+                      className="max-w-full max-h-[70vh] object-contain"
+                    />
+                  </div>
+
+                  {/* 前後の写真へのナビゲーション */}
+                  {photos.length > 1 && (
+                    <>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white border-white/20"
+                        onClick={handlePreviousPhoto}
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white border-white/20"
+                        onClick={handleNextPhoto}
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
+                        <Badge className="bg-black/50 text-white">
+                          {selectedPhotoIndex + 1} / {photos.length}
+                        </Badge>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </AuthenticatedLayout>
   );
