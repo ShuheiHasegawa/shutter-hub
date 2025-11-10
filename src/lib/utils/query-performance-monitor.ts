@@ -140,6 +140,9 @@ class QueryPerformanceMonitor {
 
     const stats = this.getStats();
 
+    // クエリが実行されていない場合はログを出力しない
+    if (stats.totalCalls === 0) return;
+
     logger.group('[QueryMonitor] Performance Stats');
     logger.info(`Total calls: ${stats.totalCalls}`);
     logger.info(`Completed: ${stats.completedCalls}`);
