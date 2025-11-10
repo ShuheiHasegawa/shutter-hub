@@ -396,6 +396,70 @@ export function FavoriteHeartButton({
     );
   }
 
+  // iconOnly=falseの場合、ボタン全体（アイコン+テキスト）をクリック可能にする
+  if (!iconOnly) {
+    // Buttonコンポーネントのsizeは "default" | "sm" | "lg" | "icon" のみ
+    const buttonSize = size === 'md' ? 'default' : size === 'sm' ? 'sm' : 'lg';
+
+    return (
+      <div
+        className={cn(
+          'flex items-center',
+          positionClasses[position],
+          className
+        )}
+      >
+        <Button
+          variant={variant}
+          size={buttonSize}
+          onClick={handleToggle}
+          disabled={isPending}
+          className={cn(
+            'flex items-center gap-2',
+            'transition-all duration-200',
+            isPending && 'animate-pulse',
+            // お気に入り状態でのスタイル
+            isFavorited && [
+              'bg-pink-50/90 hover:bg-pink-100/90',
+              'text-pink-600 hover:text-pink-700',
+            ]
+          )}
+          aria-label={isFavorited ? 'お気に入りから削除' : 'お気に入りに追加'}
+        >
+          <Heart
+            className={cn(
+              iconSizeClasses[size],
+              'transition-all duration-200',
+              isFavorited
+                ? 'fill-current text-pink-600'
+                : 'text-muted-foreground hover:text-pink-500',
+              isPending && 'scale-90'
+            )}
+          />
+          {showCount && favoriteCount > 0 ? (
+            <span
+              className={cn(
+                'text-xs font-medium transition-colors',
+                isFavorited ? 'text-pink-600' : 'text-muted-foreground'
+              )}
+            >
+              {favoriteCount}
+            </span>
+          ) : (
+            <span
+              className={cn(
+                'text-xs font-medium transition-colors hidden sm:inline',
+                isFavorited ? 'text-pink-600' : 'text-muted-foreground'
+              )}
+            >
+              {isFavorited ? 'お気に入り済み' : 'お気に入り'}
+            </span>
+          )}
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div
       className={cn(
@@ -443,17 +507,6 @@ export function FavoriteHeartButton({
           )}
         >
           {favoriteCount}
-        </span>
-      )}
-
-      {!iconOnly && showCount === false && (
-        <span
-          className={cn(
-            'text-xs font-medium ml-1 transition-colors hidden sm:inline',
-            isFavorited ? 'text-pink-600' : 'text-muted-foreground'
-          )}
-        >
-          {isFavorited ? 'お気に入り済み' : 'お気に入り'}
         </span>
       )}
     </div>
