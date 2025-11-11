@@ -672,9 +672,20 @@ export async function updateStudioAction(
 
     // 履歴保存
     try {
+      // profilesテーブルから現在のユーザーのIDを取得（edited_byはprofiles(id)を参照）
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', user.id)
+        .single();
+
+      const editorId = profile?.id || user.id; // フォールバックとしてuser.idを使用
+
       Logger.info('履歴保存開始:', {
         studioId,
-        editedBy: user.id,
+        editedBy: editorId,
+        userId: user.id,
+        profileFound: !!profile,
         changedFields: Object.keys(formData),
       });
 
@@ -682,7 +693,7 @@ export async function updateStudioAction(
         .from('studio_edit_history')
         .insert({
           studio_id: studioId,
-          edited_by: user.id,
+          edited_by: editorId,
           edit_type: 'update',
           old_values: existingStudio,
           new_values: studio,
@@ -693,13 +704,17 @@ export async function updateStudioAction(
         Logger.error('履歴保存エラー詳細:', {
           historyError,
           studioId,
-          editedBy: user.id,
+          editedBy: editorId,
+          userId: user.id,
+          profileError: profileError || null,
           errorCode: historyError.code,
           errorMessage: historyError.message,
+          errorDetails: historyError.details,
+          errorHint: historyError.hint,
         });
         // 履歴保存失敗でも更新は成功として扱う
       } else {
-        Logger.info('履歴保存成功:', { studioId });
+        Logger.info('履歴保存成功:', { studioId, editedBy: editorId });
       }
     } catch (historyErr) {
       Logger.error('履歴保存例外:', historyErr);
