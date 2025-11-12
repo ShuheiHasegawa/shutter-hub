@@ -1,11 +1,56 @@
 // 日付フォーマット用のユーティリティ関数
 
+/**
+ * ユーザーのタイムゾーンを取得する（user_metadataから）
+ * サーバーサイドでのみ使用可能
+ */
+export async function getUserTimezone(): Promise<string> {
+  try {
+    const { createClient } = await import('@/lib/supabase/server');
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (user?.user_metadata?.timezone) {
+      return user.user_metadata.timezone;
+    }
+  } catch {
+    // エラー時はデフォルト値を返す
+  }
+  return 'Asia/Tokyo';
+}
+
+/**
+ * ユーザーのロケールを取得する（user_metadataから）
+ * サーバーサイドでのみ使用可能
+ */
+export async function getUserLocale(): Promise<string> {
+  try {
+    const { createClient } = await import('@/lib/supabase/server');
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (user?.user_metadata?.language) {
+      const lang = user.user_metadata.language;
+      // 'ja' -> 'ja-JP', 'en' -> 'en-US' に変換
+      return lang === 'ja' ? 'ja-JP' : lang === 'en' ? 'en-US' : lang;
+    }
+  } catch {
+    // エラー時はデフォルト値を返す
+  }
+  return 'ja-JP';
+}
+
 export function formatDate(
   date: Date,
-  format: 'short' | 'long' | 'time' = 'short'
+  format: 'short' | 'long' | 'time' = 'short',
+  timeZone?: string
 ): string {
   const options: Intl.DateTimeFormatOptions = {
-    timeZone: 'Asia/Tokyo',
+    timeZone: timeZone || 'Asia/Tokyo',
   };
 
   switch (format) {
@@ -33,10 +78,11 @@ export function formatDate(
 export function formatDateLocalized(
   date: Date,
   locale: string = 'ja-JP',
-  format: 'short' | 'long' | 'time' = 'short'
+  format: 'short' | 'long' | 'time' = 'short',
+  timeZone?: string
 ): string {
   const options: Intl.DateTimeFormatOptions = {
-    timeZone: 'Asia/Tokyo',
+    timeZone: timeZone || 'Asia/Tokyo',
   };
 
   switch (format) {
@@ -60,7 +106,7 @@ export function formatDateLocalized(
   return new Intl.DateTimeFormat(locale, options).format(date);
 }
 
-export function formatDateTime(date: Date): string {
+export function formatDateTime(date: Date, timeZone?: string): string {
   return new Intl.DateTimeFormat('ja-JP', {
     year: 'numeric',
     month: 'long',
@@ -68,13 +114,14 @@ export function formatDateTime(date: Date): string {
     weekday: 'long',
     hour: '2-digit',
     minute: '2-digit',
-    timeZone: 'Asia/Tokyo',
+    timeZone: timeZone || 'Asia/Tokyo',
   }).format(date);
 }
 
 export function formatDateTimeLocalized(
   date: Date,
-  locale: string = 'ja-JP'
+  locale: string = 'ja-JP',
+  timeZone?: string
 ): string {
   return new Intl.DateTimeFormat(locale, {
     year: 'numeric',
@@ -83,26 +130,27 @@ export function formatDateTimeLocalized(
     weekday: 'long',
     hour: '2-digit',
     minute: '2-digit',
-    timeZone: 'Asia/Tokyo',
+    timeZone: timeZone || 'Asia/Tokyo',
   }).format(date);
 }
 
-export function formatTime(date: Date): string {
+export function formatTime(date: Date, timeZone?: string): string {
   return new Intl.DateTimeFormat('ja-JP', {
     hour: '2-digit',
     minute: '2-digit',
-    timeZone: 'Asia/Tokyo',
+    timeZone: timeZone || 'Asia/Tokyo',
   }).format(date);
 }
 
 export function formatTimeLocalized(
   date: Date,
-  locale: string = 'ja-JP'
+  locale: string = 'ja-JP',
+  timeZone?: string
 ): string {
   return new Intl.DateTimeFormat(locale, {
     hour: '2-digit',
     minute: '2-digit',
-    timeZone: 'Asia/Tokyo',
+    timeZone: timeZone || 'Asia/Tokyo',
   }).format(date);
 }
 
