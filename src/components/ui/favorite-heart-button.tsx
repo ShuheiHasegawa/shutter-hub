@@ -432,7 +432,7 @@ export function FavoriteHeartButton({
               'transition-all duration-200',
               isFavorited
                 ? 'fill-current text-pink-600'
-                : 'text-muted-foreground hover:text-pink-500',
+                : 'hover:text-pink-500',
               isPending && 'scale-90'
             )}
           />
@@ -446,13 +446,8 @@ export function FavoriteHeartButton({
               {favoriteCount}
             </span>
           ) : (
-            <span
-              className={cn(
-                'text-xs font-medium transition-colors hidden sm:inline',
-                isFavorited ? 'text-pink-600' : 'text-muted-foreground'
-              )}
-            >
-              {isFavorited ? 'お気に入り済み' : 'お気に入り'}
+            <span className="text-xs font-medium transition-colors hidden sm:inline">
+              お気に入り
             </span>
           )}
         </Button>

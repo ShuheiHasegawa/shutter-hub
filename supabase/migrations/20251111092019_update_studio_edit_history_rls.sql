@@ -22,3 +22,5 @@ CREATE POLICY "Authenticated users can insert edit history" ON studio_edit_histo
 COMMENT ON POLICY "Authenticated users can insert edit history" ON studio_edit_history IS 
 '認証済みユーザーなら誰でもスタジオ編集履歴を挿入可能（Wikipedia風編集システム）';
 
+
+

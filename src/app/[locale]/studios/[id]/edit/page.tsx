@@ -47,7 +47,10 @@ export default function StudioEditPage() {
   }, [studioId]);
 
   const handleSuccess = () => {
-    router.push(`/studios/${studioId}`);
+    // キャッシュを無効化して最新データを取得
+    router.refresh();
+    // タイムスタンプをクエリパラメータに追加して、詳細ページで再フェッチをトリガー
+    router.push(`/studios/${studioId}?refresh=${Date.now()}`);
   };
 
   const handleCancel = () => {

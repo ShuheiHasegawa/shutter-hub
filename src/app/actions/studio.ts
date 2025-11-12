@@ -648,12 +648,20 @@ export async function updateStudioAction(
         }
       );
 
-      // 更新後のデータを再取得を試みる
+      // 更新後のデータを再取得を試みる（verification_statusフィルターなし）
+      Logger.info('スタジオ更新：再取得を試みます', { studioId });
       const { data: refreshedStudio, error: refreshError } = await supabase
         .from('studios')
         .select('*')
         .eq('id', studioId)
         .single();
+
+      Logger.info('スタジオ更新：再取得結果', {
+        studioId,
+        hasData: !!refreshedStudio,
+        error: refreshError?.message || null,
+        hourlyRateMax: refreshedStudio?.hourly_rate_max,
+      });
 
       if (refreshError || !refreshedStudio) {
         // 再取得も失敗した場合は、既存データと更新データをマージ
@@ -662,11 +670,42 @@ export async function updateStudioAction(
           {
             studioId,
             refreshError: refreshError?.message,
+            refreshErrorCode: refreshError?.code,
+            refreshErrorDetails: refreshError?.details,
           }
         );
         studio = { ...existingStudio, ...updateData } as Studio;
+        Logger.info('スタジオ更新：マージ後のデータ', {
+          studioId,
+          hourlyRateMax: studio.hourly_rate_max,
+        });
       } else {
         studio = refreshedStudio as Studio;
+        Logger.info('スタジオ更新：再取得成功', {
+          studioId,
+          hourlyRateMax: studio.hourly_rate_max,
+        });
+      }
+    } else {
+      // .select()でデータが取得できた場合でも、最新データを再取得して確実にする
+      const { data: latestStudio, error: latestError } = await supabase
+        .from('studios')
+        .select('*')
+        .eq('id', studioId)
+        .single();
+
+      if (latestStudio) {
+        studio = latestStudio as Studio;
+      } else if (latestError) {
+        // 再取得が失敗した場合は、取得できたデータと更新データをマージ
+        Logger.warning(
+          'スタジオ更新：最新データの再取得に失敗。取得データと更新データをマージします',
+          {
+            studioId,
+            latestError: latestError.message,
+          }
+        );
+        studio = { ...studios[0], ...updateData } as Studio;
       }
     }
 
