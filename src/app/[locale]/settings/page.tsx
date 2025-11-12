@@ -5,9 +5,23 @@ import { logger } from '@/lib/utils/logger';
 import { getProfile } from '@/lib/auth/profile';
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import {
+  updateDisplaySettings,
+  getDisplaySettings,
+  updateNotificationSettings,
+  getNotificationSettings,
+  updatePrivacySettings,
+  getPrivacySettings,
+  updatePhotoSessionSettings,
+  getPhotoSessionSettings,
+  updateSecuritySettings,
+  getSecuritySettings,
+} from '@/app/actions/settings';
+import { deleteAccount } from '@/app/actions/legal-documents';
 import { AuthenticatedLayout } from '@/components/layout/authenticated-layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { ActionBar, ActionBarSentinel } from '@/components/ui/action-bar';
 import { Switch } from '@/components/ui/switch';
 import {
   Select,
@@ -21,6 +35,18 @@ import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { Input } from '@/components/ui/input';
+import {
   Settings,
   Bell,
   Globe,
@@ -31,10 +57,8 @@ import {
   Camera,
   Smartphone,
   Mail,
-  Volume2,
   Lock,
   Trash2,
-  Download,
   AlertTriangle,
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
@@ -56,8 +80,6 @@ interface UserSettings {
   // 通知設定
   emailNotifications: boolean;
   pushNotifications: boolean;
-  smsNotifications: boolean;
-  soundNotifications: boolean;
 
   // 通知種別
   bookingReminders: boolean;
@@ -85,14 +107,11 @@ interface UserSettings {
 
   // セキュリティ設定
   twoFactorEnabled: boolean;
-  sessionTimeout: number;
 }
 
 const defaultSettings: UserSettings = {
   emailNotifications: true,
   pushNotifications: true,
-  smsNotifications: false,
-  soundNotifications: true,
   bookingReminders: true,
   instantRequests: true,
   messageNotifications: true,
@@ -110,11 +129,10 @@ const defaultSettings: UserSettings = {
   timezone: 'Asia/Tokyo',
   currency: 'JPY',
   twoFactorEnabled: false,
-  sessionTimeout: 30,
 };
 
 export default function SettingsPage() {
-  const { user, loading } = useAuth();
+  const { user, loading, logout } = useAuth();
   const router = useRouter();
   const params = useParams();
   const locale = params.locale || 'ja';
@@ -122,6 +140,11 @@ export default function SettingsPage() {
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [settings, setSettings] = useState<UserSettings>(defaultSettings);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const loadProfile = useCallback(async () => {
     if (!user) return;
@@ -142,6 +165,81 @@ export default function SettingsPage() {
     }
   }, [user]);
 
+  const loadSettings = useCallback(async () => {
+    if (!user) return;
+
+    try {
+      setIsLoading(true);
+
+      // 表示設定をuser_metadataから取得
+      const displayResult = await getDisplaySettings();
+      if (displayResult.success && displayResult.data) {
+        setSettings(prev => ({
+          ...prev,
+          language: displayResult.data!.language,
+          timezone: displayResult.data!.timezone,
+          currency: displayResult.data!.currency,
+        }));
+      }
+
+      // 通知設定を取得
+      const notificationResult = await getNotificationSettings();
+      if (notificationResult.success && notificationResult.data) {
+        const notif = notificationResult.data;
+        setSettings(prev => ({
+          ...prev,
+          emailNotifications: notif.email_enabled_global,
+          pushNotifications: notif.push_enabled_global,
+          bookingReminders: notif.email_enabled.booking_reminders ?? true,
+          instantRequests: notif.email_enabled.instant_requests ?? true,
+          messageNotifications: notif.email_enabled.messages ?? true,
+          marketingEmails: notif.email_enabled.marketing ?? false,
+          systemUpdates: notif.email_enabled.system_updates ?? true,
+        }));
+      }
+
+      // プライバシー設定を取得
+      const privacyResult = await getPrivacySettings();
+      if (privacyResult.success && privacyResult.data) {
+        const privacy = privacyResult.data;
+        setSettings(prev => ({
+          ...prev,
+          profileVisibility: privacy.profile_visibility,
+          showLocation: privacy.show_location,
+          showOnlineStatus: privacy.show_online_status,
+          allowDirectMessages: privacy.allow_messages_from_strangers,
+        }));
+      }
+
+      // 撮影関連設定を取得
+      const photoSessionResult = await getPhotoSessionSettings();
+      if (photoSessionResult.success && photoSessionResult.data) {
+        const photoSession = photoSessionResult.data;
+        setSettings(prev => ({
+          ...prev,
+          instantPhotoAvailable: photoSession.instant_photo_available,
+          maxTravelDistance: photoSession.max_travel_distance,
+          autoAcceptBookings: photoSession.auto_accept_bookings,
+          requirePhotoConsent: photoSession.require_photo_consent,
+        }));
+      }
+
+      // セキュリティ設定を取得
+      const securityResult = await getSecuritySettings();
+      if (securityResult.success && securityResult.data) {
+        const security = securityResult.data;
+        setSettings(prev => ({
+          ...prev,
+          twoFactorEnabled: security.two_factor_enabled,
+        }));
+      }
+    } catch (error) {
+      logger.error('設定取得エラー:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user]);
+
   useEffect(() => {
     if (!loading && !user) {
       router.push(`/${locale}/auth/signin`);
@@ -150,8 +248,9 @@ export default function SettingsPage() {
 
     if (user) {
       loadProfile();
+      loadSettings();
     }
-  }, [user, loading, router, locale, loadProfile]);
+  }, [user, loading, router, locale, loadProfile, loadSettings]);
 
   const handleSettingChange = (
     key: keyof UserSettings,
@@ -164,36 +263,139 @@ export default function SettingsPage() {
   };
 
   const handleSave = async () => {
-    try {
-      // 実際の保存処理はここに実装
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      toast.success('設定を保存しました');
-    } catch {
-      toast.error('設定の保存に失敗しました');
-    }
-  };
+    if (!user) return;
 
-  const handleExport = async () => {
     try {
-      // 実際のエクスポート処理はここに実装
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      toast.success('データをエクスポートしました');
-    } catch {
-      toast.error('エクスポートに失敗しました');
+      setIsSaving(true);
+
+      // 表示設定をuser_metadataに保存
+      const displayResult = await updateDisplaySettings({
+        language: settings.language,
+        timezone: settings.timezone,
+        currency: settings.currency,
+      });
+
+      if (!displayResult.success) {
+        throw new Error(displayResult.error || '表示設定の保存に失敗しました');
+      }
+
+      // 通知設定を保存
+      const notificationResult = await updateNotificationSettings({
+        email_enabled_global: settings.emailNotifications,
+        push_enabled_global: settings.pushNotifications,
+        email_enabled: {
+          booking_reminders: settings.bookingReminders,
+          instant_requests: settings.instantRequests,
+          messages: settings.messageNotifications,
+          marketing: settings.marketingEmails,
+          system_updates: settings.systemUpdates,
+        },
+        push_enabled: {
+          booking_reminders: settings.bookingReminders,
+          instant_requests: settings.instantRequests,
+          messages: settings.messageNotifications,
+          marketing: settings.marketingEmails,
+          system_updates: settings.systemUpdates,
+        },
+      });
+
+      if (!notificationResult.success) {
+        throw new Error(
+          notificationResult.error || '通知設定の保存に失敗しました'
+        );
+      }
+
+      // プライバシー設定を保存
+      const privacyResult = await updatePrivacySettings({
+        profile_visibility: settings.profileVisibility,
+        show_online_status: settings.showOnlineStatus,
+        allow_messages_from_strangers: settings.allowDirectMessages,
+        show_location: settings.showLocation,
+      });
+
+      if (!privacyResult.success) {
+        throw new Error(
+          privacyResult.error || 'プライバシー設定の保存に失敗しました'
+        );
+      }
+
+      // 撮影関連設定を保存
+      const photoSessionResult = await updatePhotoSessionSettings({
+        instant_photo_available: settings.instantPhotoAvailable,
+        max_travel_distance: settings.maxTravelDistance,
+        auto_accept_bookings: settings.autoAcceptBookings,
+        require_photo_consent: settings.requirePhotoConsent,
+      });
+
+      if (!photoSessionResult.success) {
+        throw new Error(
+          photoSessionResult.error || '撮影関連設定の保存に失敗しました'
+        );
+      }
+
+      // セキュリティ設定を保存
+      const securityResult = await updateSecuritySettings({
+        two_factor_enabled: settings.twoFactorEnabled,
+      });
+
+      if (!securityResult.success) {
+        throw new Error(
+          securityResult.error || 'セキュリティ設定の保存に失敗しました'
+        );
+      }
+
+      toast.success('設定を保存しました');
+
+      // 言語設定が変更された場合は、ページをリロードして言語を適用
+      if (settings.language !== locale) {
+        router.push(`/${settings.language}/settings`);
+        router.refresh();
+      }
+    } catch (error) {
+      logger.error('設定保存エラー:', error);
+      toast.error(
+        error instanceof Error ? error.message : '設定の保存に失敗しました'
+      );
+    } finally {
+      setIsSaving(false);
     }
   };
 
   const handleDelete = async () => {
+    // 確認テキストが正しく入力されているかチェック
+    if (deleteConfirmText !== '削除') {
+      toast.error('確認のため「削除」と入力してください');
+      return;
+    }
+
     try {
-      // 実際の削除処理はここに実装
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      setIsDeleting(true);
+
+      // アカウントを直接削除
+      const result = await deleteAccount();
+
+      if (!result.success) {
+        throw new Error(result.error || 'アカウント削除に失敗しました');
+      }
+
       toast.success('アカウントを削除しました');
-    } catch {
-      toast.error('削除に失敗しました');
+
+      // ログアウトしてサインインページにリダイレクト
+      await logout();
+      router.push(`/${locale}/auth/signin`);
+    } catch (error) {
+      logger.error('アカウント削除エラー:', error);
+      toast.error(
+        error instanceof Error ? error.message : 'アカウント削除に失敗しました'
+      );
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteDialog(false);
+      setDeleteConfirmText('');
     }
   };
 
-  if (loading) {
+  if (loading || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -273,18 +475,6 @@ export default function SettingsPage() {
                     checked={settings.pushNotifications}
                     onCheckedChange={checked =>
                       handleSettingChange('pushNotifications', checked)
-                    }
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Volume2 className="h-4 w-4" />
-                    <Label>音声通知</Label>
-                  </div>
-                  <Switch
-                    checked={settings.soundNotifications}
-                    onCheckedChange={checked =>
-                      handleSettingChange('soundNotifications', checked)
                     }
                   />
                 </div>
@@ -606,62 +796,9 @@ export default function SettingsPage() {
                   }
                 />
               </div>
-
-              <div className="space-y-2">
-                <Label>セッションタイムアウト（日）</Label>
-                <Select
-                  value={settings.sessionTimeout.toString()}
-                  onValueChange={value =>
-                    handleSettingChange('sessionTimeout', parseInt(value))
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1">1日</SelectItem>
-                    <SelectItem value="7">7日</SelectItem>
-                    <SelectItem value="30">30日</SelectItem>
-                    <SelectItem value="90">90日</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
             </div>
           </CardContent>
         </Card>
-
-        {/* 開発者向け機能 */}
-        {process.env.NODE_ENV === 'development' && (
-          <Card className="border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-orange-700 dark:text-orange-300">
-                <AlertTriangle className="h-5 w-5" />
-                開発者向け機能
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Alert className="border-orange-200 bg-orange-100 dark:border-orange-800 dark:bg-orange-900">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertDescription className="text-orange-800 dark:text-orange-200">
-                  これらの機能は開発環境でのみ利用可能です
-                </AlertDescription>
-              </Alert>
-              <div className="flex flex-col gap-4">
-                <Button
-                  variant="outline"
-                  onClick={() => window.open('/ja/dev/test-login', '_blank')}
-                  className="w-full border-orange-300 text-orange-700 hover:bg-orange-100 dark:border-orange-700 dark:text-orange-300 dark:hover:bg-orange-900"
-                >
-                  <User className="h-4 w-4 mr-2" />
-                  テストアカウントログイン
-                </Button>
-                <p className="text-sm text-orange-600 dark:text-orange-400">
-                  蜷川実花（カメラマン）、小日向ゆか（モデル）、ことり撮影会（運営者）のテストアカウントでログインできます。
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         {/* データ管理 */}
         <Card>
@@ -672,36 +809,131 @@ export default function SettingsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button
-                variant="outline"
-                onClick={handleExport}
-                className="flex-1"
-              >
-                <Download className="h-4 w-4 mr-2" />
-                データをエクスポート
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={handleDelete}
-                className="flex-1"
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                アカウント削除
-              </Button>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              データエクスポートでは、あなたの全データをダウンロードできます。
-              アカウント削除は取り消せません。
-            </p>
+            <Alert variant="destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>
+                アカウントを削除すると、すべてのデータが永久に削除され、復元できません。
+              </AlertDescription>
+            </Alert>
+
+            <AlertDialog
+              open={showDeleteDialog}
+              onOpenChange={setShowDeleteDialog}
+            >
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" className="w-full">
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  アカウント削除
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>
+                    アカウントを削除しますか？
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    この操作は取り消せません。アカウントとすべてのデータが永久に削除されます。
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <p className="text-sm font-semibold">削除されるデータ：</p>
+                    <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
+                      <li>プロフィール情報</li>
+                      <li>撮影会・予約履歴</li>
+                      <li>メッセージ履歴</li>
+                      <li>お気に入り</li>
+                      <li>アップロードした画像</li>
+                      <li>その他すべてのデータ</li>
+                    </ul>
+                  </div>
+                  <div className="pt-2">
+                    <Label
+                      htmlFor="delete-confirm"
+                      className="text-sm font-semibold"
+                    >
+                      確認のため「<span className="font-mono">削除</span>
+                      」と入力してください：
+                    </Label>
+                    <Input
+                      id="delete-confirm"
+                      value={deleteConfirmText}
+                      onChange={e => setDeleteConfirmText(e.target.value)}
+                      placeholder="削除"
+                      className="mt-2"
+                      disabled={isDeleting}
+                    />
+                  </div>
+                </div>
+                <AlertDialogFooter>
+                  <AlertDialogCancel
+                    disabled={isDeleting}
+                    onClick={() => {
+                      setDeleteConfirmText('');
+                      setShowDeleteDialog(false);
+                    }}
+                  >
+                    キャンセル
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDelete}
+                    disabled={isDeleting || deleteConfirmText !== '削除'}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    {isDeleting ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                        削除中...
+                      </>
+                    ) : (
+                      '削除する'
+                    )}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </CardContent>
         </Card>
 
-        {/* 保存ボタン */}
-        <div className="flex justify-end">
-          <Button onClick={handleSave}>設定を保存</Button>
-        </div>
+        {/* ページ下部の保存ボタン（ActionBar自動制御） */}
+        <ActionBarSentinel className="pt-4 pb-0">
+          <Button
+            onClick={handleSave}
+            disabled={isSaving}
+            variant="cta"
+            className="text-base font-medium w-full transition-colors"
+          >
+            {isSaving ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                保存中...
+              </>
+            ) : (
+              '設定を保存'
+            )}
+          </Button>
+        </ActionBarSentinel>
       </div>
+
+      {/* 下部固定ActionBar（Sentinel非表示時のみ表示） */}
+      <ActionBar
+        actions={[
+          {
+            id: 'save',
+            label: isSaving ? '保存中...' : '設定を保存',
+            variant: 'cta',
+            onClick: handleSave,
+            disabled: isSaving,
+            loading: isSaving,
+          },
+        ]}
+        maxColumns={1}
+        background="blur"
+        sticky={true}
+        autoHide={true}
+      />
+      {/* ActionBar用のスペーサー（fixed要素の高さ分） */}
+      <div className="h-20 md:h-20 flex-shrink-0" />
     </AuthenticatedLayout>
   );
 }
