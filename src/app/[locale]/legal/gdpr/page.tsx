@@ -16,11 +16,9 @@ import {
   Clock,
   CheckCircle2,
   AlertCircle,
-  Plus,
 } from 'lucide-react';
 import Link from 'next/link';
 import { GdprRequestForm } from '@/components/legal/gdpr-request-form';
-import { DataExportButton } from '@/components/legal/data-export-button';
 
 interface GdprPageProps {
   params: Promise<{
@@ -147,30 +145,6 @@ export default async function GdprPage({ params }: GdprPageProps) {
                     </p>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* 即座データエクスポート */}
-          <Card className="border-purple-200 bg-purple-50 dark:border-purple-800 dark:bg-purple-950/20">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-purple-800 dark:text-purple-200">
-                <Download className="w-5 h-5" />
-                即座データエクスポート
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-purple-700 dark:text-purple-300 mb-4">
-                基本的な個人データは即座にダウンロードできます。
-                より詳細なデータが必要な場合は、正式なデータポータビリティ要求を提出してください。
-              </p>
-
-              <div className="flex gap-2">
-                <DataExportButton />
-                <Button variant="outline" size="sm">
-                  <Plus className="w-4 h-4 mr-2" />
-                  詳細データ要求
-                </Button>
               </div>
             </CardContent>
           </Card>
