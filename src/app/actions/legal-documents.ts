@@ -565,7 +565,97 @@ export async function exportUserData() {
 }
 
 /**
+ * アカウントを直接削除（GDPR Article 17対応）
+ */
+export async function deleteAccount(): Promise<{
+  success: boolean;
+  error?: string;
+}> {
+  try {
+    const supabase = await createClient();
+
+    // 認証確認
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) {
+      redirect('/login');
+    }
+
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!supabaseUrl || !serviceRoleKey) {
+      Logger.error(
+        'Supabase configuration missing',
+        new Error('Missing env vars'),
+        {
+          component: 'legal-documents',
+          action: 'deleteAccount',
+          userId: user.id,
+        }
+      );
+      return {
+        success: false,
+        error: 'サーバー設定エラーが発生しました',
+      };
+    }
+
+    // Supabase Admin APIを使用してユーザーを削除
+    const deleteResponse = await fetch(
+      `${supabaseUrl}/auth/v1/admin/users/${user.id}`,
+      {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${serviceRoleKey}`,
+          apikey: serviceRoleKey,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    if (!deleteResponse.ok) {
+      const errorData = await deleteResponse.json().catch(() => ({}));
+      Logger.error(
+        'Failed to delete user account',
+        new Error(deleteResponse.statusText),
+        {
+          component: 'legal-documents',
+          action: 'deleteAccount',
+          userId: user.id,
+          status: deleteResponse.status,
+          errorData,
+        }
+      );
+      return {
+        success: false,
+        error: 'アカウント削除に失敗しました',
+      };
+    }
+
+    Logger.info('User account deleted successfully', {
+      component: 'legal-documents',
+      action: 'deleteAccount',
+      userId: user.id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    Logger.error('Error in deleteAccount', error as Error, {
+      component: 'legal-documents',
+      action: 'deleteAccount',
+    });
+    return {
+      success: false,
+      error: '予期しないエラーが発生しました',
+    };
+  }
+}
+
+/**
  * アカウント削除要求（GDPR Article 17対応）
+ * @deprecated 直接削除を使用する場合は不要。将来的にメール確認方式に変更する場合に使用
  */
 export async function requestAccountDeletion(reason?: string) {
   try {
