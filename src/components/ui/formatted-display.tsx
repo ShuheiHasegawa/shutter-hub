@@ -1,8 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocale } from 'next-intl';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/hooks/useAuth';
 
 // 日時表示の種類
 export type DateTimeFormat =
@@ -72,11 +73,22 @@ export function FormattedDateTime({
   endValue,
   locale,
   className,
-  timeZone = 'Asia/Tokyo',
+  timeZone: propTimeZone,
   'aria-label': ariaLabel,
 }: FormattedDateTimeProps) {
   const currentLocale = useLocale();
   const displayLocale = locale || currentLocale;
+  const { user } = useAuth();
+  const [timeZone, setTimeZone] = useState(propTimeZone || 'Asia/Tokyo');
+
+  // user_metadataからタイムゾーンを取得
+  useEffect(() => {
+    if (user?.user_metadata?.timezone) {
+      setTimeZone(user.user_metadata.timezone);
+    } else if (propTimeZone) {
+      setTimeZone(propTimeZone);
+    }
+  }, [user, propTimeZone]);
 
   // 日時の正規化（datetime-local形式やISO文字列をDateオブジェクトに変換）
   const normalizeDate = (dateValue: Date | string): Date => {
@@ -232,13 +244,24 @@ export function FormattedPrice({
   format,
   maxValue,
   unit,
-  currency = 'JPY',
+  currency: propCurrency,
   locale,
   className,
   'aria-label': ariaLabel,
 }: FormattedPriceProps) {
   const currentLocale = useLocale();
   const displayLocale = locale || currentLocale;
+  const { user } = useAuth();
+  const [currency, setCurrency] = useState(propCurrency || 'JPY');
+
+  // user_metadataから通貨を取得
+  useEffect(() => {
+    if (user?.user_metadata?.currency) {
+      setCurrency(user.user_metadata.currency);
+    } else if (propCurrency) {
+      setCurrency(propCurrency);
+    }
+  }, [user, propCurrency]);
 
   const formatPrice = (price: number): string => {
     return new Intl.NumberFormat(displayLocale, {
