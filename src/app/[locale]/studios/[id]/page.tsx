@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useParams, notFound } from 'next/navigation';
+import { useState, useEffect, useRef } from 'react';
+import { useParams, useSearchParams, notFound } from 'next/navigation';
 import { AuthenticatedLayout } from '@/components/layout/authenticated-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -49,6 +49,7 @@ import { toast } from 'sonner';
 
 export default function StudioDetailPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const studioId = params.id as string;
 
   const [studio, setStudio] = useState<StudioWithStats | null>(null);
@@ -72,6 +73,7 @@ export default function StudioDetailPage() {
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(
     null
   );
+  const lastRefreshParam = useRef<string | null>(null);
 
   useEffect(() => {
     const fetchStudioDetail = async () => {
@@ -97,10 +99,41 @@ export default function StudioDetailPage() {
       }
     };
 
+    // refreshパラメータが存在し、前回と異なる場合のみ再フェッチ
+    const refreshParam = searchParams.get('refresh');
+    if (refreshParam && refreshParam !== lastRefreshParam.current) {
+      lastRefreshParam.current = refreshParam;
+      if (studioId) {
+        fetchStudioDetail();
+        return;
+      }
+    }
+
     if (studioId) {
       fetchStudioDetail();
     }
-  }, [studioId]);
+
+    // ページがフォーカスされた時にデータを再フェッチ（編集後の戻りに対応）
+    const handleFocus = () => {
+      if (studioId) {
+        fetchStudioDetail();
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && studioId) {
+        fetchStudioDetail();
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [studioId, searchParams]);
 
   const renderStars = (rating: number) => {
     const stars = [];
@@ -461,7 +494,7 @@ export default function StudioDetailPage() {
 
         {/* タブ切り替え */}
         <Tabs defaultValue="photos" className="w-full">
-          <TabsList className="grid w-full lg:w-auto grid-cols-4 lg:grid-cols-4 mb-6">
+          <TabsList className="grid w-full lg:w-auto grid-cols-4 lg:grid-cols-4">
             <TabsTrigger value="photos">写真</TabsTrigger>
             <TabsTrigger value="equipment">設備</TabsTrigger>
             <TabsTrigger value="evaluations">評価</TabsTrigger>
