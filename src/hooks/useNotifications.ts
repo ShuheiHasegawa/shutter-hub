@@ -13,10 +13,15 @@ import {
   getNotificationStats,
   createTestNotifications,
 } from '@/app/actions/notifications';
+import {
+  getNotificationSettings,
+  type NotificationSettings,
+} from '@/app/actions/settings';
 import type {
   Notification,
   NotificationFilters,
   NotificationStats,
+  NotificationType,
 } from '@/types/notification';
 
 interface UseNotificationsOptions {
@@ -42,9 +47,9 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
     autoRefresh = true,
     refreshInterval = 30000, // 30秒
     initialFilters = { limit: 50 },
-    enableRealtime = true,
-    enableSound = false,
-    enableToast = true,
+    enableRealtime: _enableRealtime, // 設定から取得するため、オプションは無視
+    enableSound: _enableSound, // 常に無効のため、オプションは無視
+    enableToast: _enableToast, // 設定から取得するため、オプションは無視
   } = options;
 
   const { user } = useAuth();
@@ -57,37 +62,62 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
     isConnected: false,
   });
   const [filters, setFilters] = useState<NotificationFilters>(initialFilters);
+  const [notificationSettings, setNotificationSettings] =
+    useState<NotificationSettings | null>(null);
   const supabase = createClient();
 
-  // 通知音を再生
-  const playNotificationSound = useCallback(() => {
-    if (!enableSound) return;
+  // 通知種別から設定キーへのマッピング
+  const getNotificationSettingKey = useCallback(
+    (type: NotificationType): string | null => {
+      if (type.startsWith('instant_photo_')) {
+        return 'instant_requests';
+      }
+      if (type.startsWith('photo_session_')) {
+        return 'booking_reminders';
+      }
+      if (type.startsWith('message_')) {
+        return 'messages';
+      }
+      if (type.startsWith('system_')) {
+        return 'system_updates';
+      }
+      // その他の通知種別はデフォルトで有効
+      return null;
+    },
+    []
+  );
 
-    try {
-      // Web Audio APIを使用した通知音
-      const audioContext = new (window.AudioContext ||
-        (window as unknown as typeof AudioContext))();
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
+  // 通知が有効かどうかをチェック
+  const isNotificationEnabled = useCallback(
+    (notification: Notification): boolean => {
+      if (!notificationSettings) {
+        // 設定が未取得の場合はデフォルトで有効
+        return true;
+      }
 
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
+      const settingKey = getNotificationSettingKey(notification.type);
+      if (!settingKey) {
+        // マッピングがない場合はデフォルトで有効
+        return true;
+      }
 
-      oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-      oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1);
+      // push_enabledを優先的にチェック（アプリ内通知として扱う）
+      const pushEnabledForType =
+        notificationSettings.push_enabled &&
+        typeof notificationSettings.push_enabled === 'object' &&
+        settingKey in notificationSettings.push_enabled
+          ? (notificationSettings.push_enabled as Record<string, boolean>)[
+              settingKey
+            ]
+          : undefined;
 
-      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(
-        0.01,
-        audioContext.currentTime + 0.3
-      );
+      const pushEnabled =
+        pushEnabledForType ?? notificationSettings.push_enabled_global ?? true;
 
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.3);
-    } catch (error) {
-      logger.warn('通知音の再生に失敗しました:', error);
-    }
-  }, [enableSound]);
+      return pushEnabled;
+    },
+    [notificationSettings, getNotificationSettingKey]
+  );
 
   // 通知一覧を取得
   const fetchNotifications = useCallback(
@@ -121,11 +151,16 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
           'data' in result &&
           result.data?.notifications
         ) {
+          // 通知種別設定に基づいてフィルタリング
+          const filteredNotifications = result.data.notifications.filter(
+            notification => isNotificationEnabled(notification)
+          );
+
           setState(prev => ({
             ...prev,
             notifications: resetList
-              ? result.data.notifications
-              : [...prev.notifications, ...result.data.notifications],
+              ? filteredNotifications
+              : [...prev.notifications, ...filteredNotifications],
             hasMore: result.data.notifications.length === (filters.limit || 50),
             loading: false,
           }));
@@ -148,7 +183,7 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
         }));
       }
     },
-    [user?.id, filters, state.notifications.length]
+    [user?.id, filters, state.notifications.length, isNotificationEnabled]
   );
 
   // 通知統計を取得
@@ -323,17 +358,69 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
     }
   }, [user?.id, refresh]);
 
-  // 初期化
+  // 通知設定を取得
+  const fetchNotificationSettings = useCallback(async () => {
+    if (!user?.id) return;
+
+    try {
+      const result = await getNotificationSettings().catch(error => {
+        logger.error(
+          '[useNotifications] getNotificationSettings Server Action Error:',
+          error
+        );
+        return { success: false, error: 'Server Action呼び出しエラー' };
+      });
+
+      if (result && result.success && 'data' in result && result.data) {
+        setNotificationSettings(result.data);
+        logger.debug('[useNotifications] 通知設定取得成功:', result.data);
+      } else {
+        // 設定取得失敗時はデフォルト設定を使用
+        setNotificationSettings({
+          email_enabled_global: true,
+          push_enabled_global: true,
+          toast_enabled: true,
+          realtime_enabled: true,
+          email_enabled: {},
+          push_enabled: {},
+        });
+      }
+    } catch (error) {
+      logger.error('[useNotifications] 通知設定取得エラー:', error);
+      // エラー時もデフォルト設定を使用
+      setNotificationSettings({
+        email_enabled_global: true,
+        push_enabled_global: true,
+        toast_enabled: true,
+        realtime_enabled: true,
+        email_enabled: {},
+        push_enabled: {},
+      });
+    }
+  }, [user?.id]);
+
+  // 通知設定から有効な設定を取得
+  const effectiveRealtime = notificationSettings?.realtime_enabled ?? true;
+  const effectiveToast = notificationSettings?.toast_enabled ?? true;
+
+  // 通知設定を取得
   useEffect(() => {
     if (user?.id) {
+      fetchNotificationSettings();
+    }
+  }, [user?.id, fetchNotificationSettings]);
+
+  // 通知設定取得後に通知一覧と統計を取得
+  useEffect(() => {
+    if (user?.id && notificationSettings) {
       fetchNotifications(true);
       fetchStats();
     }
-  }, [user?.id, filters, fetchNotifications, fetchStats]);
+  }, [user?.id, notificationSettings, filters, fetchNotifications, fetchStats]);
 
   // リアルタイム接続の設定
   useEffect(() => {
-    if (!enableRealtime || !user?.id) return;
+    if (!effectiveRealtime || !user?.id) return;
 
     let channel: ReturnType<typeof supabase.channel> | null = null;
 
@@ -364,12 +451,17 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
               // 統計を更新
               fetchStats();
 
-              // 通知音とトーストを表示
-              if (enableSound) {
-                playNotificationSound();
+              // 通知種別設定をチェック
+              if (!isNotificationEnabled(newNotification)) {
+                logger.debug(
+                  '通知種別が無効のためスキップ:',
+                  newNotification.type
+                );
+                return;
               }
 
-              if (enableToast) {
+              // トーストを表示
+              if (effectiveToast) {
                 toast(newNotification.title, {
                   description: newNotification.message,
                   duration: 5000,
@@ -423,13 +515,13 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
       }
     };
   }, [
-    enableRealtime,
+    effectiveRealtime,
     user?.id,
-    enableSound,
-    enableToast,
-    playNotificationSound,
+    effectiveToast,
     fetchStats,
     supabase,
+    isNotificationEnabled,
+    notificationSettings,
   ]);
 
   // 自動リフレッシュ
