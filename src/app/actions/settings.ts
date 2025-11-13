@@ -20,6 +20,8 @@ export interface DisplaySettings {
 export interface NotificationSettings {
   email_enabled_global: boolean;
   push_enabled_global: boolean;
+  toast_enabled?: boolean;
+  realtime_enabled?: boolean;
   email_enabled: {
     booking_reminders?: boolean;
     instant_requests?: boolean;
@@ -183,6 +185,12 @@ export async function updateNotificationSettings(
     if (settings.push_enabled) {
       updateData.push_enabled = settings.push_enabled;
     }
+    if (settings.toast_enabled !== undefined) {
+      updateData.toast_enabled = settings.toast_enabled;
+    }
+    if (settings.realtime_enabled !== undefined) {
+      updateData.realtime_enabled = settings.realtime_enabled;
+    }
 
     if (existingSettings) {
       // 更新
@@ -258,6 +266,8 @@ export async function getNotificationSettings(): Promise<{
         ? {
             email_enabled_global: data.email_enabled_global ?? true,
             push_enabled_global: data.push_enabled_global ?? true,
+            toast_enabled: data.toast_enabled ?? true,
+            realtime_enabled: data.realtime_enabled ?? true,
             email_enabled:
               (data.email_enabled as NotificationSettings['email_enabled']) ||
               {},
@@ -267,6 +277,8 @@ export async function getNotificationSettings(): Promise<{
         : {
             email_enabled_global: true,
             push_enabled_global: true,
+            toast_enabled: true,
+            realtime_enabled: true,
             email_enabled: {},
             push_enabled: {},
           },

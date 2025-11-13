@@ -42,8 +42,8 @@ interface NotificationCenterProps {
 
 export function NotificationCenter({
   userType: _userType = 'photographer',
-  enableSound: _enableSound = false,
-  enableRealtime = true,
+  enableSound: _enableSound = false, // 未使用（常に無効）
+  enableRealtime: _enableRealtime = true, // 未使用（設定から取得）
   maxNotifications = 50,
 }: NotificationCenterProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -60,7 +60,6 @@ export function NotificationCenter({
     refresh,
   } = useNotifications({
     autoRefresh: true,
-    enableRealtime,
     initialFilters: { limit: maxNotifications },
   });
 

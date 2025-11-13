@@ -60,6 +60,7 @@ import {
   Lock,
   Trash2,
   AlertTriangle,
+  RefreshCcw,
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { toast } from 'sonner';
@@ -80,6 +81,8 @@ interface UserSettings {
   // 通知設定
   emailNotifications: boolean;
   pushNotifications: boolean;
+  toastNotifications: boolean;
+  realtimeNotifications: boolean;
 
   // 通知種別
   bookingReminders: boolean;
@@ -112,6 +115,8 @@ interface UserSettings {
 const defaultSettings: UserSettings = {
   emailNotifications: true,
   pushNotifications: true,
+  toastNotifications: true,
+  realtimeNotifications: true,
   bookingReminders: true,
   instantRequests: true,
   messageNotifications: true,
@@ -190,6 +195,8 @@ export default function SettingsPage() {
           ...prev,
           emailNotifications: notif.email_enabled_global,
           pushNotifications: notif.push_enabled_global,
+          toastNotifications: notif.toast_enabled ?? true,
+          realtimeNotifications: notif.realtime_enabled ?? true,
           bookingReminders: notif.email_enabled.booking_reminders ?? true,
           instantRequests: notif.email_enabled.instant_requests ?? true,
           messageNotifications: notif.email_enabled.messages ?? true,
@@ -283,6 +290,8 @@ export default function SettingsPage() {
       const notificationResult = await updateNotificationSettings({
         email_enabled_global: settings.emailNotifications,
         push_enabled_global: settings.pushNotifications,
+        toast_enabled: settings.toastNotifications,
+        realtime_enabled: settings.realtimeNotifications,
         email_enabled: {
           booking_reminders: settings.bookingReminders,
           instant_requests: settings.instantRequests,
@@ -475,6 +484,40 @@ export default function SettingsPage() {
                     checked={settings.pushNotifications}
                     onCheckedChange={checked =>
                       handleSettingChange('pushNotifications', checked)
+                    }
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Bell className="h-4 w-4" />
+                    <div>
+                      <Label>トースト通知</Label>
+                      <p className="text-xs text-muted-foreground">
+                        画面上部に通知を表示
+                      </p>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={settings.toastNotifications}
+                    onCheckedChange={checked =>
+                      handleSettingChange('toastNotifications', checked)
+                    }
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <RefreshCcw className="h-4 w-4" />
+                    <div>
+                      <Label>リアルタイム通知</Label>
+                      <p className="text-xs text-muted-foreground">
+                        データベース変更をリアルタイムで受信（オフの場合は30秒ごとに更新）
+                      </p>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={settings.realtimeNotifications}
+                    onCheckedChange={checked =>
+                      handleSettingChange('realtimeNotifications', checked)
                     }
                   />
                 </div>
