@@ -27,6 +27,7 @@ export type NotificationType =
   | 'message_new_message'
   | 'message_group_invite'
   | 'message_group_message'
+  | 'participant_message'
   | 'review_received'
   | 'review_reminder'
   | 'admin_user_report'

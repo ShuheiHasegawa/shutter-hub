@@ -1133,6 +1133,55 @@ export async function approvePhotographer(
       bookingId: booking?.id,
     });
 
+    // マッチング完了通知を送信（ゲストに通知）
+    try {
+      const { createNotification } = await import(
+        '@/app/actions/notifications'
+      );
+
+      // カメラマンのプロフィール情報を取得
+      const { data: photographerProfile, error: photographerError } =
+        await supabase
+          .from('profiles')
+          .select('id, display_name, avatar_url')
+          .eq('id', photographerId)
+          .single();
+
+      if (!photographerError && photographerProfile && request.guest_id) {
+        const { getNotificationMessage } = await import(
+          '@/lib/utils/notification-i18n'
+        );
+        const notification = await getNotificationMessage(
+          request.guest_id,
+          'notificationMessages.instantPhoto.matchFound',
+          { photographerName: photographerProfile.display_name }
+        );
+
+        await createNotification({
+          userId: request.guest_id,
+          type: 'instant_photo_match_found',
+          category: 'instant_photo',
+          priority: 'high',
+          title: notification.title,
+          message: notification.message,
+          data: {
+            request_id: requestId,
+            photographer_id: photographerId,
+            photographer_name: photographerProfile.display_name,
+            booking_id: booking?.id,
+            budget: request.budget,
+          },
+          relatedEntityType: 'instant_photo_request',
+          relatedEntityId: requestId,
+          actionUrl: `/instant/${requestId}`,
+          actionLabel: '決済に進む',
+        });
+      }
+    } catch (notificationError) {
+      // 通知作成失敗はログに記録するが、メイン処理は継続
+      logger.error('マッチング完了通知送信エラー:', notificationError);
+    }
+
     return { success: true, data: { bookingId: booking?.id || null } };
   } catch (error) {
     logger.error('承認処理エラー（例外）:', error);

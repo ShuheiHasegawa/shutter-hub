@@ -192,33 +192,38 @@ export function ParticipantManagement({
 
     setSendingMessage(true);
     try {
-      const supabase = createClient();
-
-      // 選択された参加者にメッセージを送信
-      const messagePromises = selectedParticipants.map(async participantId => {
-        const participant = participants.find(p => p.id === participantId);
-        if (!participant) return;
-
-        // 通知テーブルに挿入
-        return supabase.from('notifications').insert({
-          user_id: participant.user_id,
-          type: 'participant_message',
-          title: '撮影会主催者からのメッセージ',
-          message: messageText,
-          data: {
-            photo_session_id: sessionId,
-            from_organizer: true,
-          },
-        });
-      });
-
-      await Promise.all(messagePromises);
-
-      toast.success(
-        `${selectedParticipants.length}名にメッセージを送信しました`
+      const { sendParticipantMessage } = await import(
+        '@/app/actions/photo-session-participants'
       );
-      setMessageText('');
-      setSelectedParticipants([]);
+
+      // 選択された参加者のuser_idを取得
+      const participantUserIds = selectedParticipants
+        .map(participantId => {
+          const participant = participants.find(p => p.id === participantId);
+          return participant?.user_id;
+        })
+        .filter((id): id is string => !!id);
+
+      if (participantUserIds.length === 0) {
+        toast.error('送信先が見つかりませんでした');
+        return;
+      }
+
+      const result = await sendParticipantMessage(
+        sessionId,
+        participantUserIds,
+        messageText
+      );
+
+      if (result.success) {
+        toast.success(
+          `${selectedParticipants.length}名にメッセージを送信しました`
+        );
+        setMessageText('');
+        setSelectedParticipants([]);
+      } else {
+        toast.error(result.error || 'メッセージの送信に失敗しました');
+      }
     } catch (error) {
       logger.error('メッセージ送信エラー:', error);
       toast.error('メッセージの送信に失敗しました');

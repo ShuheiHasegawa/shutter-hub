@@ -149,6 +149,75 @@ export async function confirmEscrowPayment(
       })
       .eq('id', escrowPayment.booking_id);
 
+    // 決済完了通知を送信（カメラマンに通知）
+    try {
+      const { createNotification } = await import(
+        '@/app/actions/notifications'
+      );
+
+      // 予約情報とゲスト情報を取得
+      const { data: booking, error: bookingError } = await supabase
+        .from('instant_bookings')
+        .select(
+          `
+          *,
+          request:instant_photo_requests(
+            *,
+            guest:profiles!guest_id(
+              id,
+              display_name,
+              avatar_url
+            )
+          )
+        `
+        )
+        .eq('id', escrowPayment.booking_id)
+        .single();
+
+      if (!bookingError && booking) {
+        const request = Array.isArray(booking.request)
+          ? booking.request[0]
+          : booking.request;
+        const guest = Array.isArray(request?.guest)
+          ? request.guest[0]
+          : request?.guest;
+
+        if (request && guest && booking.photographer_id) {
+          const { getNotificationMessage } = await import(
+            '@/lib/utils/notification-i18n'
+          );
+          const notification = await getNotificationMessage(
+            booking.photographer_id,
+            'notificationMessages.instantPhoto.paymentReceived',
+            { guestName: guest.display_name }
+          );
+
+          await createNotification({
+            userId: booking.photographer_id,
+            type: 'instant_photo_payment_received',
+            category: 'instant_photo',
+            priority: 'high',
+            title: notification.title,
+            message: notification.message,
+            data: {
+              booking_id: escrowPayment.booking_id,
+              request_id: request.id,
+              guest_id: guest.id,
+              guest_name: guest.display_name,
+              total_amount: booking.total_amount,
+            },
+            relatedEntityType: 'instant_booking',
+            relatedEntityId: escrowPayment.booking_id,
+            actionUrl: `/instant/${request.id}`,
+            actionLabel: '予約詳細を見る',
+          });
+        }
+      }
+    } catch (notificationError) {
+      // 通知作成失敗はログに記録するが、メイン処理は継続
+      logger.error('決済完了通知送信エラー:', notificationError);
+    }
+
     revalidatePath('/instant');
     return { success: true, data: escrowPayment };
   } catch (error) {
@@ -249,7 +318,24 @@ export async function deliverPhotos(
     // リクエストのステータスを 'delivered' に更新
     const { data: bookingData, error: bookingSelectError } = await supabase
       .from('instant_bookings')
-      .select('request_id')
+      .select(
+        `
+        request_id,
+        request:instant_photo_requests(
+          *,
+          guest:profiles!guest_id(
+            id,
+            display_name,
+            avatar_url
+          )
+        ),
+        photographer:profiles!photographer_id(
+          id,
+          display_name,
+          avatar_url
+        )
+      `
+      )
       .eq('id', data.booking_id)
       .single();
 
@@ -279,6 +365,58 @@ export async function deliverPhotos(
 
       if (statusUpdateError) {
         logger.error('ステータス更新エラー:', statusUpdateError);
+      }
+
+      // 写真配信通知を送信（ゲストに通知）
+      try {
+        const { createNotification } = await import(
+          '@/app/actions/notifications'
+        );
+
+        const request = Array.isArray(bookingData.request)
+          ? bookingData.request[0]
+          : bookingData.request;
+        const guest = Array.isArray(request?.guest)
+          ? request.guest[0]
+          : request?.guest;
+        const photographer = Array.isArray(bookingData.photographer)
+          ? bookingData.photographer[0]
+          : bookingData.photographer;
+
+        if (request && guest && photographer && request.guest_id) {
+          const { getNotificationMessage } = await import(
+            '@/lib/utils/notification-i18n'
+          );
+          const notification = await getNotificationMessage(
+            request.guest_id,
+            'notificationMessages.instantPhoto.photosDelivered',
+            { photographerName: photographer.display_name }
+          );
+
+          await createNotification({
+            userId: request.guest_id,
+            type: 'instant_photo_photos_delivered',
+            category: 'instant_photo',
+            priority: 'high',
+            title: notification.title,
+            message: notification.message,
+            data: {
+              booking_id: data.booking_id,
+              request_id: request.id,
+              photographer_id: photographer.id,
+              photographer_name: photographer.display_name,
+              photo_count: data.photo_count,
+              delivery_url: data.delivery_url || data.external_url,
+            },
+            relatedEntityType: 'instant_booking',
+            relatedEntityId: data.booking_id,
+            actionUrl: `/instant/${request.id}`,
+            actionLabel: '写真を確認する',
+          });
+        }
+      } catch (notificationError) {
+        // 通知作成失敗はログに記録するが、メイン処理は継続
+        logger.error('写真配信通知送信エラー:', notificationError);
       }
     } else {
       logger.error('request_idが見つかりません:', { bookingData });

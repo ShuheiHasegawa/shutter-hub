@@ -3,6 +3,8 @@
 import { createClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/utils/logger';
 import { revalidatePath } from 'next/cache';
+import { createNotification } from '@/app/actions/notifications';
+import { getNotificationMessage } from '@/lib/utils/notification-i18n';
 
 export interface WaitlistEntry {
   id?: string;
@@ -351,14 +353,62 @@ export async function promoteFromWaitlist(
     }
 
     const result = data?.[0];
+    const promotedUsers = result?.promoted_users || [];
     revalidatePath('/photo-sessions');
     revalidatePath(`/photo-sessions/${photoSessionId}`);
+
+    // 繰り上げ当選通知を送信
+    if (promotedUsers.length > 0) {
+      try {
+        // 撮影会情報を取得
+        const { data: photoSession, error: sessionError } = await supabase
+          .from('photo_sessions')
+          .select('*')
+          .eq('id', photoSessionId)
+          .single();
+
+        if (!sessionError && photoSession) {
+          // 繰り上げ当選した各ユーザーに通知（多言語対応）
+          const notificationPromises = promotedUsers.map(
+            async (promotedUserId: string) => {
+              const notification = await getNotificationMessage(
+                promotedUserId,
+                'notificationMessages.photoSession.slotAvailable',
+                { title: photoSession.title }
+              );
+
+              await createNotification({
+                userId: promotedUserId,
+                type: 'photo_session_slot_available',
+                category: 'photo_session',
+                priority: 'high',
+                title: notification.title,
+                message: notification.message,
+                data: {
+                  photo_session_id: photoSessionId,
+                  photo_session_title: photoSession.title,
+                },
+                relatedEntityType: 'photo_session',
+                relatedEntityId: photoSessionId,
+                actionUrl: `/photo-sessions/${photoSessionId}`,
+                actionLabel: '予約を確定する',
+              });
+            }
+          );
+
+          await Promise.all(notificationPromises);
+        }
+      } catch (notificationError) {
+        // 通知作成失敗はログに記録するが、メイン処理は継続
+        logger.error('繰り上げ当選通知送信エラー:', notificationError);
+      }
+    }
 
     return {
       success: true,
       data: {
         promoted_count: result?.promoted_count || 0,
-        promoted_users: result?.promoted_users || [],
+        promoted_users: promotedUsers,
       },
     };
   } catch (error) {
