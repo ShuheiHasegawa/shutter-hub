@@ -25,8 +25,10 @@ import { PhotoSessionSlot } from '@/types/photo-session';
 import { OrganizerManagementPanel } from './OrganizerManagementPanel';
 import { PhotoSessionGroupChat } from './PhotoSessionGroupChat';
 import { PhotoSessionDocuments } from './PhotoSessionDocuments';
-import { formatDateLocalized, formatTimeLocalized } from '@/lib/utils/date';
-import { Price } from '@/components/ui/formatted-display';
+import {
+  FormattedDateTime,
+  FormattedPrice,
+} from '@/components/ui/formatted-display';
 
 import {
   getPhotoSessionParticipants,
@@ -488,11 +490,17 @@ export function PhotoSessionDetail({
                     <CalendarIcon className="h-5 w-5 text-muted-foreground" />
                     <div>
                       <div className="font-medium">
-                        {formatDateLocalized(startDate, 'ja', 'long')}
+                        <FormattedDateTime
+                          value={startDate}
+                          format="date-long"
+                        />
                       </div>
                       <div className="text-sm text-muted-foreground">
-                        {formatTimeLocalized(startDate, 'ja')} -{' '}
-                        {formatTimeLocalized(endDate, 'ja')}
+                        <FormattedDateTime
+                          value={startDate}
+                          format="time-range"
+                          endValue={endDate}
+                        />
                       </div>
                     </div>
                   </div>
@@ -510,7 +518,7 @@ export function PhotoSessionDetail({
                   <div className="flex items-center gap-3">
                     <CircleDollarSignIcon className="h-5 w-5 text-muted-foreground" />
                     <span>
-                      <Price
+                      <FormattedPrice
                         value={session.price_per_person}
                         format="with-unit"
                         unit="/人"
@@ -640,11 +648,17 @@ export function PhotoSessionDetail({
                     <CalendarIcon className="h-5 w-5 text-muted-foreground" />
                     <div>
                       <div className="font-medium">
-                        {formatDateLocalized(startDate, 'ja', 'long')}
+                        <FormattedDateTime
+                          value={startDate}
+                          format="date-long"
+                        />
                       </div>
                       <div className="text-sm text-muted-foreground">
-                        {formatTimeLocalized(startDate, 'ja')} -{' '}
-                        {formatTimeLocalized(endDate, 'ja')}
+                        <FormattedDateTime
+                          value={startDate}
+                          format="time-range"
+                          endValue={endDate}
+                        />
                       </div>
                     </div>
                   </div>
@@ -662,7 +676,7 @@ export function PhotoSessionDetail({
                   <div className="flex items-center gap-3">
                     <CircleDollarSignIcon className="h-5 w-5 text-muted-foreground" />
                     <span>
-                      <Price
+                      <FormattedPrice
                         value={session.price_per_person}
                         format="with-unit"
                         unit="/人"
@@ -808,8 +822,11 @@ export function PhotoSessionDetail({
                           時間
                         </div>
                         <div className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white break-words">
-                          {formatTimeLocalized(slotStartTime, 'ja')} -{' '}
-                          {formatTimeLocalized(slotEndTime, 'ja')}
+                          <FormattedDateTime
+                            value={slotStartTime}
+                            format="time-range"
+                            endValue={slotEndTime}
+                          />
                         </div>
                       </div>
 
@@ -820,9 +837,14 @@ export function PhotoSessionDetail({
                           <span className="text-sm font-medium">料金</span>
                         </div>
                         <div className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-                          {slot.price_per_person === 0
-                            ? '無料'
-                            : `¥${slot.price_per_person.toLocaleString()}`}
+                          {slot.price_per_person === 0 ? (
+                            '無料'
+                          ) : (
+                            <FormattedPrice
+                              value={slot.price_per_person}
+                              format="simple"
+                            />
+                          )}
                         </div>
                       </div>
                     </div>
@@ -840,7 +862,7 @@ export function PhotoSessionDetail({
           <PhotoSessionGroupChat
             sessionId={session.id}
             sessionTitle={session.title}
-            sessionDate={formatDateLocalized(startDate, 'ja', 'long')}
+            sessionDate={startDate}
             sessionLocation={session.location}
             organizerId={session.organizer_id}
             currentUserId={user.id}

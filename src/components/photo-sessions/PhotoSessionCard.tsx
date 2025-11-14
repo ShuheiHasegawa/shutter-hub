@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { formatDateLocalized, formatTimeLocalized } from '@/lib/utils/date';
 import {
   CalendarIcon,
   MapPinIcon,
@@ -13,9 +12,12 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { useTranslations, useLocale } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import type { PhotoSessionWithOrganizer } from '@/types/database';
-import { FormattedPrice } from '@/components/ui/formatted-display';
+import {
+  FormattedPrice,
+  FormattedDateTime,
+} from '@/components/ui/formatted-display';
 import { CardFavoriteButton } from '@/components/ui/favorite-heart-button';
 
 interface PhotoSessionCardProps {
@@ -45,7 +47,6 @@ export function PhotoSessionCard({
   const t = useTranslations('photoSessions');
   const tBooking = useTranslations('booking');
   const tWaitlist = useTranslations('waitlist');
-  const locale = useLocale();
 
   const startDate = new Date(session.start_time);
   const endDate = new Date(session.end_time);
@@ -166,12 +167,17 @@ export function PhotoSessionCard({
                   <div className="flex items-center text-gray-600 dark:text-gray-300">
                     <CalendarIcon className="w-4 h-4 mr-2 text-info" />
                     <span>
-                      {formatDateLocalized(startDate, locale, 'short')}
+                      <FormattedDateTime
+                        value={startDate}
+                        format="date-short"
+                      />
                     </span>
                   </div>
                   <div className="flex items-center text-gray-600 dark:text-gray-300">
                     <Clock className="w-4 h-4 mr-2 text-info" />
-                    <span>{formatTimeLocalized(startDate, locale)}〜</span>
+                    <span>
+                      <FormattedDateTime value={startDate} format="time" />〜
+                    </span>
                   </div>
                   <div className="flex items-center text-gray-600 dark:text-gray-300">
                     <MapPinIcon className="w-4 h-4 mr-2 text-success" />
@@ -274,11 +280,15 @@ export function PhotoSessionCard({
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div className="flex items-center text-gray-600 dark:text-gray-300">
                   <CalendarIcon className="w-4 h-4 mr-2 text-info" />
-                  <span>{formatDateLocalized(startDate, locale, 'short')}</span>
+                  <span>
+                    <FormattedDateTime value={startDate} format="date-short" />
+                  </span>
                 </div>
                 <div className="flex items-center text-gray-600 dark:text-gray-300">
                   <Clock className="w-4 h-4 mr-2 text-info" />
-                  <span>{formatTimeLocalized(startDate, locale)}〜</span>
+                  <span>
+                    <FormattedDateTime value={startDate} format="time" />〜
+                  </span>
                 </div>
                 <div className="flex items-center text-gray-600 dark:text-gray-300">
                   <MapPinIcon className="w-4 h-4 mr-2 text-success" />
@@ -407,10 +417,10 @@ export function PhotoSessionCard({
                 </span>
               </div>
               <div className="text-xs font-medium text-gray-900 leading-tight">
-                {formatDateLocalized(startDate, locale, 'short')}
+                <FormattedDateTime value={startDate} format="date-short" />
               </div>
               <div className="text-xs text-gray-600 mt-0.5 leading-tight">
-                {formatTimeLocalized(startDate, locale)}〜
+                <FormattedDateTime value={startDate} format="time" />〜
               </div>
             </div>
 
@@ -602,11 +612,14 @@ export function PhotoSessionCard({
                   </span>
                 </div>
                 <div className="text-sm font-medium text-gray-900 leading-tight">
-                  {formatDateLocalized(startDate, locale, 'short')}
+                  <FormattedDateTime value={startDate} format="date-short" />
                 </div>
                 <div className="text-xs text-gray-600 mt-1 leading-tight">
-                  {formatTimeLocalized(startDate, locale)} -{' '}
-                  {formatTimeLocalized(endDate, locale)}
+                  <FormattedDateTime
+                    value={startDate}
+                    format="time-range"
+                    endValue={endDate}
+                  />
                 </div>
               </div>
 
@@ -768,10 +781,15 @@ export function PhotoSessionCard({
           <div className="flex items-center gap-2">
             <CalendarIcon className="h-4 w-4 text-muted-foreground" />
             <div>
-              <div>{formatDateLocalized(startDate, locale, 'long')}</div>
+              <div>
+                <FormattedDateTime value={startDate} format="date-long" />
+              </div>
               <div className="text-muted-foreground">
-                {formatTimeLocalized(startDate, locale)} -{' '}
-                {formatTimeLocalized(endDate, locale)}
+                <FormattedDateTime
+                  value={startDate}
+                  format="time-range"
+                  endValue={endDate}
+                />
               </div>
             </div>
           </div>

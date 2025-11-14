@@ -20,6 +20,10 @@ import { Badge } from '@/components/ui/badge';
 import { CreditCard, Shield, Check } from 'lucide-react';
 import { logger } from '@/lib/utils/logger';
 import { type SubscriptionPlan } from '@/app/actions/subscription-management';
+import {
+  FormattedPrice,
+  FormattedDateTime,
+} from '@/components/ui/formatted-display';
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
@@ -142,7 +146,7 @@ function PaymentForm({ clientSecret, planInfo }: PaymentFormProps) {
               <div className="flex items-center justify-between">
                 <span>月額料金</span>
                 <span className="text-lg font-bold">
-                  ¥{planInfo.price.toLocaleString()}
+                  <FormattedPrice value={planInfo.price} format="simple" />
                 </span>
               </div>
               <div className="flex items-center justify-between text-sm text-muted-foreground">
@@ -152,9 +156,10 @@ function PaymentForm({ clientSecret, planInfo }: PaymentFormProps) {
               <div className="flex items-center justify-between text-sm text-muted-foreground">
                 <span>次回請求</span>
                 <span>
-                  {new Date(
-                    Date.now() + 30 * 24 * 60 * 60 * 1000
-                  ).toLocaleDateString('ja-JP')}
+                  <FormattedDateTime
+                    value={new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)}
+                    format="date-short"
+                  />
                 </span>
               </div>
             </div>
@@ -235,13 +240,20 @@ function PaymentForm({ clientSecret, planInfo }: PaymentFormProps) {
               size="lg"
               variant="cta"
             >
-              {isLoading
-                ? '決済処理中...'
-                : !isComplete
-                  ? 'カード情報を入力してください'
-                  : elementError
-                    ? 'カード情報に誤りがあります'
-                    : `¥${planInfo?.price.toLocaleString() || '---'}/月で開始`}
+              {isLoading ? (
+                '決済処理中...'
+              ) : !isComplete ? (
+                'カード情報を入力してください'
+              ) : elementError ? (
+                'カード情報に誤りがあります'
+              ) : planInfo ? (
+                <>
+                  <FormattedPrice value={planInfo.price} format="simple" />
+                  /月で開始
+                </>
+              ) : (
+                '---/月で開始'
+              )}
             </Button>
           </form>
         </CardContent>

@@ -20,6 +20,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { confirmDeliveryWithReview } from '@/app/actions/instant-payment';
+import { FormattedDateTime } from '@/components/ui/formatted-display';
 import type {
   ConfirmDeliveryData,
   SimpleDeliveryConfirmationFormProps,
@@ -251,7 +252,10 @@ export function DeliveryConfirmationForm({
                   配信日時:
                 </span>
                 <span className="ml-2 font-medium">
-                  {new Date(delivery.delivered_at).toLocaleString('ja-JP')}
+                  <FormattedDateTime
+                    value={new Date(delivery.delivered_at)}
+                    format="datetime-short"
+                  />
                 </span>
               </div>
             </div>

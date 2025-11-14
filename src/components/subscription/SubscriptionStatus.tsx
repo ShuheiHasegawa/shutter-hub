@@ -9,6 +9,10 @@ import { cancelSubscription } from '@/app/actions/subscription-management';
 import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
 import { logger } from '@/lib/utils/logger';
+import {
+  FormattedPrice,
+  FormattedDateTime,
+} from '@/components/ui/formatted-display';
 
 /**
  * 現在のサブスクリプション状況を表示するコンポーネント（Phase 1: 基本実装）
@@ -131,7 +135,7 @@ export function SubscriptionStatus() {
           <div className="flex items-center justify-between">
             <span>月額料金</span>
             <span className="font-medium">
-              ¥{currentPlan.price.toLocaleString()}
+              <FormattedPrice value={currentPlan.price} format="simple" />
             </span>
           </div>
         )}
@@ -163,11 +167,7 @@ export function SubscriptionStatus() {
               <span>次回請求日</span>
             </span>
             <span className="font-medium">
-              {periodEnd.toLocaleDateString('ja-JP', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-              })}
+              <FormattedDateTime value={periodEnd} format="date-long" />
             </span>
           </div>
         )}
@@ -177,7 +177,8 @@ export function SubscriptionStatus() {
           <div className="flex items-center space-x-2 p-3 bg-yellow-50 rounded-lg">
             <AlertCircle className="h-4 w-4 text-yellow-600" />
             <span className="text-sm text-yellow-800">
-              {periodEnd.toLocaleDateString('ja-JP')} にプランが終了します
+              <FormattedDateTime value={periodEnd} format="date-short" />{' '}
+              にプランが終了します
             </span>
           </div>
         )}

@@ -24,6 +24,7 @@ import EditorSidebar from './EditorSidebar';
 import EditableCanvas from './EditableCanvas';
 import { ToastProvider } from './ToastManager';
 import { cn } from '@/lib/utils';
+import { FormattedDateTime } from '@/components/ui/formatted-display';
 
 // ============================================
 // ツールバーコンポーネント
@@ -382,11 +383,14 @@ const PhotobookEditor: React.FC<PhotobookEditorProps> = ({
                     <span>{currentProject.meta.accountTier} プラン</span>
                     <span className="text-xs text-gray-500">
                       最終保存:{' '}
-                      {currentProject.meta.lastSavedAt
-                        ? new Date(
-                            currentProject.meta.lastSavedAt
-                          ).toLocaleString()
-                        : '未保存'}
+                      {currentProject.meta.lastSavedAt ? (
+                        <FormattedDateTime
+                          value={new Date(currentProject.meta.lastSavedAt)}
+                          format="datetime-short"
+                        />
+                      ) : (
+                        '未保存'
+                      )}
                     </span>
                   </div>
                 </div>

@@ -22,6 +22,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/utils/logger';
 import { PlanChangeConfirmDialog } from './PlanChangeConfirmDialog';
+import { FormattedPrice } from '@/components/ui/formatted-display';
 
 interface PlanSelectorProps {
   userType: 'model' | 'photographer' | 'organizer';
@@ -177,15 +178,29 @@ export function PlanSelector({ userType }: PlanSelectorProps) {
           const prorationMessage =
             result.prorationAmount !== undefined
               ? result.prorationAmount > 0
-                ? `追加請求額: ¥${Math.abs(result.prorationAmount).toLocaleString()}`
+                ? `追加請求額: `
                 : result.prorationAmount < 0
-                  ? `返金額: ¥${Math.abs(result.prorationAmount).toLocaleString()}`
+                  ? `返金額: `
                   : ''
               : '';
+          const prorationAmount =
+            result.prorationAmount !== undefined
+              ? Math.abs(result.prorationAmount)
+              : 0;
 
           toast({
             title: 'プラン変更完了',
-            description: `${plan.name}に変更しました${prorationMessage ? `（${prorationMessage}）` : ''}`,
+            description: (
+              <span>
+                {plan.name}に変更しました
+                {prorationMessage && prorationAmount > 0 && (
+                  <>
+                    （{prorationMessage}
+                    <FormattedPrice value={prorationAmount} format="simple" />）
+                  </>
+                )}
+              </span>
+            ),
           });
 
           // ページをリロードして最新状態を反映
@@ -462,7 +477,7 @@ export function PlanSelector({ userType }: PlanSelectorProps) {
                       '無料'
                     ) : (
                       <>
-                        ¥{plan.price.toLocaleString()}
+                        <FormattedPrice value={plan.price} format="simple" />
                         <span className="text-sm font-normal text-muted-foreground">
                           /月
                         </span>

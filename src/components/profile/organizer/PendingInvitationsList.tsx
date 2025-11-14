@@ -29,6 +29,7 @@ import {
   MessageSquare,
 } from 'lucide-react';
 import { useState } from 'react';
+import { FormattedDateTime } from '@/components/ui/formatted-display';
 
 interface PendingInvitationsListProps {
   invitations: OrganizerModelInvitationWithProfiles[];
@@ -45,24 +46,6 @@ export function PendingInvitationsList({
   const [actionLoading, setActionLoading] = useState<Record<string, boolean>>(
     {}
   );
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('ja-JP', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
-
-  const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleString('ja-JP', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
 
   const handleCancelInvitation = async (invitationId: string) => {
     setActionLoading(prev => ({ ...prev, [invitationId]: true }));
@@ -243,9 +226,14 @@ export function PendingInvitationsList({
                       <Calendar className="h-4 w-4 text-muted-foreground" />
                       <span className="text-muted-foreground">
                         招待送信:{' '}
-                        {formatDateTime(
-                          invitation.invited_at || invitation.created_at
-                        )}
+                        <FormattedDateTime
+                          value={
+                            new Date(
+                              invitation.invited_at || invitation.created_at
+                            )
+                          }
+                          format="datetime-short"
+                        />
                       </span>
                     </div>
 
@@ -253,7 +241,11 @@ export function PendingInvitationsList({
                       <div className="flex items-center gap-2">
                         <CheckCircle className="h-4 w-4 text-muted-foreground" />
                         <span className="text-muted-foreground">
-                          回答: {formatDateTime(invitation.responded_at)}
+                          回答:{' '}
+                          <FormattedDateTime
+                            value={new Date(invitation.responded_at)}
+                            format="datetime-short"
+                          />
                         </span>
                       </div>
                     )}
@@ -268,7 +260,11 @@ export function PendingInvitationsList({
                               : ''
                           }`}
                         >
-                          期限: {formatDate(invitation.expires_at)}
+                          期限:{' '}
+                          <FormattedDateTime
+                            value={new Date(invitation.expires_at)}
+                            format="date-short"
+                          />
                           {isExpiring(invitation.expires_at) && (
                             <span className="ml-1 brand-warning">
                               (まもなく期限切れ)

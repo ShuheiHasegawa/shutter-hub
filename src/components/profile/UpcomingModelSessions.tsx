@@ -16,10 +16,12 @@ import {
   ExternalLink,
   Loader2,
 } from 'lucide-react';
-import { format } from 'date-fns';
-import { ja } from 'date-fns/locale';
 import Link from 'next/link';
 import Image from 'next/image';
+import {
+  FormattedPrice,
+  FormattedDateTime,
+} from '@/components/ui/formatted-display';
 import type { BookingStatus } from '@/types/database';
 
 interface ModelUpcomingSession {
@@ -179,14 +181,6 @@ export function UpcomingModelSessions({ userId }: UpcomingModelSessionsProps) {
     fetchUpcomingSessions();
   }, [fetchUpcomingSessions]);
 
-  const formatDateTime = (dateString: string) => {
-    return format(new Date(dateString), 'M月d日(E) HH:mm', { locale: ja });
-  };
-
-  const formatPrice = (price: number) => {
-    return `¥${price.toLocaleString()}`;
-  };
-
   if (loading) {
     return (
       <Card>
@@ -281,7 +275,10 @@ export function UpcomingModelSessions({ userId }: UpcomingModelSessionsProps) {
                     <div className="space-y-1">
                       <div className="flex items-center gap-1 text-xs text-muted-foreground">
                         <Calendar className="h-3 w-3" />
-                        {formatDateTime(session.start_time)}
+                        <FormattedDateTime
+                          value={session.start_time}
+                          format="datetime-short"
+                        />
                       </div>
                       <div className="flex items-center gap-1 text-xs text-muted-foreground">
                         <MapPin className="h-3 w-3" />
@@ -289,7 +286,10 @@ export function UpcomingModelSessions({ userId }: UpcomingModelSessionsProps) {
                       </div>
                       <div className="flex items-center gap-1 text-xs text-muted-foreground">
                         <Users className="h-3 w-3" />
-                        {formatPrice(session.price_per_person)}
+                        <FormattedPrice
+                          value={session.price_per_person}
+                          format="simple"
+                        />
                       </div>
                     </div>
                   </div>

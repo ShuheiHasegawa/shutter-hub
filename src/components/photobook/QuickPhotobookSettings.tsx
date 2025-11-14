@@ -38,6 +38,7 @@ import {
 } from '@/app/actions/quick-photobook';
 import { logger } from '@/lib/utils/logger';
 import { toast } from 'sonner';
+import { FormattedDateTime } from '@/components/ui/formatted-display';
 
 /**
  * 設定フォームスキーマ
@@ -346,13 +347,19 @@ export function QuickPhotobookSettings({
                 <div className="flex justify-between">
                   <span>作成日:</span>
                   <span>
-                    {new Date(photobook.created_at).toLocaleDateString('ja-JP')}
+                    <FormattedDateTime
+                      value={new Date(photobook.created_at)}
+                      format="date-short"
+                    />
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span>最終更新:</span>
                   <span>
-                    {new Date(photobook.updated_at).toLocaleDateString('ja-JP')}
+                    <FormattedDateTime
+                      value={new Date(photobook.updated_at)}
+                      format="date-short"
+                    />
                   </span>
                 </div>
                 <div className="flex justify-between">

@@ -33,6 +33,7 @@ import { checkLocationAccuracy } from '@/hooks/useGeolocation';
 import { useNotifications } from '@/hooks/useNotifications';
 import { InstantPhotoMap } from './InstantPhotoMap';
 import { useRouter } from 'next/navigation';
+import { FormattedPrice } from '@/components/ui/formatted-display';
 import type {
   LocationData,
   RequestType,
@@ -565,7 +566,10 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
                           カメラマンが料金を提示
                         </span>
                       ) : (
-                        `¥${priceBreakdown.basePrice.toLocaleString()}`
+                        <FormattedPrice
+                          value={priceBreakdown.basePrice}
+                          format="simple"
+                        />
                       )}
                     </span>
                   </div>
@@ -573,7 +577,11 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
                     <div className="flex justify-between text-shutter-warning font-medium">
                       <span>追加料金</span>
                       <span>
-                        +¥{priceBreakdown.additionalFees.toLocaleString()}
+                        +
+                        <FormattedPrice
+                          value={priceBreakdown.additionalFees}
+                          format="simple"
+                        />
                       </span>
                     </div>
                   )}
@@ -587,7 +595,10 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
                           カメラマンが料金を提示
                         </span>
                       ) : (
-                        `¥${priceBreakdown.totalPrice.toLocaleString()}`
+                        <FormattedPrice
+                          value={priceBreakdown.totalPrice}
+                          format="simple"
+                        />
                       )}
                     </span>
                   </div>

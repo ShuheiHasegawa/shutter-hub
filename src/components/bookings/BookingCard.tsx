@@ -12,8 +12,11 @@ import {
   ClockIcon,
   EyeIcon,
 } from 'lucide-react';
-import { formatDateLocalized, formatTimeLocalized } from '@/lib/utils/date';
-import { useTranslations, useLocale } from 'next-intl';
+import { useTranslations } from 'next-intl';
+import {
+  FormattedPrice,
+  FormattedDateTime,
+} from '@/components/ui/formatted-display';
 import { BookingWithDetails } from '@/types/database';
 
 interface BookingCardProps {
@@ -22,7 +25,6 @@ interface BookingCardProps {
 
 export function BookingCard({ booking }: BookingCardProps) {
   const t = useTranslations('bookings');
-  const locale = useLocale();
 
   const { photo_session: session } = booking;
 
@@ -78,10 +80,12 @@ export function BookingCard({ booking }: BookingCardProps) {
           <div className="flex items-center gap-2 text-sm">
             <CalendarIcon className="h-4 w-4 text-muted-foreground" />
             <span>
-              {formatDateLocalized(startDate, locale, 'long')}{' '}
-              {formatTimeLocalized(startDate, locale)}
-              {' - '}
-              {formatTimeLocalized(endDate, locale)}
+              <FormattedDateTime value={startDate} format="date-long" />{' '}
+              <FormattedDateTime
+                value={startDate}
+                format="time-range"
+                endValue={endDate}
+              />
             </span>
           </div>
 
@@ -101,7 +105,11 @@ export function BookingCard({ booking }: BookingCardProps) {
           <div className="flex items-center gap-2 text-sm">
             <CircleDollarSignIcon className="h-4 w-4 text-muted-foreground" />
             <span>
-              ¥{session.price_per_person.toLocaleString()} {t('perPerson')}
+              <FormattedPrice
+                value={session.price_per_person}
+                format="simple"
+              />{' '}
+              {t('perPerson')}
             </span>
           </div>
         </div>
@@ -114,11 +122,10 @@ export function BookingCard({ booking }: BookingCardProps) {
             <ClockIcon className="h-4 w-4 text-muted-foreground" />
             <span>
               {t('bookedAt')}:{' '}
-              {formatDateLocalized(
-                new Date(booking.created_at),
-                locale,
-                'short'
-              )}
+              <FormattedDateTime
+                value={new Date(booking.created_at)}
+                format="date-short"
+              />
             </span>
           </div>
         </div>

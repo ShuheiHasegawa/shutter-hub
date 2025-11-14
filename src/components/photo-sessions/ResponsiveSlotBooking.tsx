@@ -26,10 +26,14 @@ import {
 } from 'lucide-react';
 import { PhotoSessionSlot } from '@/types/photo-session';
 import { PhotoSessionWithOrganizer } from '@/types/database';
-import { formatTimeLocalized, formatDateLocalized } from '@/lib/utils/date';
+import {
+  FormattedDateTime,
+  FormattedPrice,
+} from '@/components/ui/formatted-display';
 import { createSlotBooking } from '@/lib/photo-sessions/slots';
 import { createPhotoSessionBooking } from '@/app/actions/photo-session-booking';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 interface ResponsiveSlotBookingProps {
   session: PhotoSessionWithOrganizer;
@@ -62,8 +66,37 @@ export const ResponsiveSlotBooking = memo(function ResponsiveSlotBooking({
   const [isBooking, setIsBooking] = useState(false);
 
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const hasSlots = slots && slots.length > 0;
+
+  // ユーザー設定に基づいたフォーマット関数
+  const formatTimeString = useCallback(
+    (date: Date): string => {
+      const locale = user?.user_metadata?.language === 'en' ? 'en-US' : 'ja-JP';
+      const timeZone = user?.user_metadata?.timezone || 'Asia/Tokyo';
+      return new Intl.DateTimeFormat(locale, {
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone,
+      }).format(date);
+    },
+    [user]
+  );
+
+  const formatPriceString = useCallback(
+    (price: number): string => {
+      const locale = user?.user_metadata?.language === 'en' ? 'en-US' : 'ja-JP';
+      const currency = user?.user_metadata?.currency || 'JPY';
+      return new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency,
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      }).format(price);
+    },
+    [user]
+  );
 
   // レスポンシブ判定
   useEffect(() => {
@@ -287,15 +320,11 @@ export const ResponsiveSlotBooking = memo(function ResponsiveSlotBooking({
                               </div>
                               <div className="text-theme-text-secondary">
                                 枠 {selectedSlot.slot_number}:{' '}
-                                {formatTimeLocalized(
-                                  new Date(selectedSlot.start_time),
-                                  'ja'
-                                )}{' '}
-                                -{' '}
-                                {formatTimeLocalized(
-                                  new Date(selectedSlot.end_time),
-                                  'ja'
-                                )}
+                                <FormattedDateTime
+                                  value={new Date(selectedSlot.start_time)}
+                                  format="time-range"
+                                  endValue={new Date(selectedSlot.end_time)}
+                                />
                               </div>
                             </div>
                           )}
@@ -306,9 +335,17 @@ export const ResponsiveSlotBooking = memo(function ResponsiveSlotBooking({
                             </div>
                             <div className="text-theme-text-secondary">
                               {(selectedSlot?.price_per_person ||
-                                session.price_per_person) === 0
-                                ? '無料'
-                                : `¥${(selectedSlot?.price_per_person || session.price_per_person).toLocaleString()}`}
+                                session.price_per_person) === 0 ? (
+                                '無料'
+                              ) : (
+                                <FormattedPrice
+                                  value={
+                                    selectedSlot?.price_per_person ||
+                                    session.price_per_person
+                                  }
+                                  format="simple"
+                                />
+                              )}
                             </div>
                           </div>
                         </CardContent>
@@ -448,7 +485,7 @@ export const ResponsiveSlotBooking = memo(function ResponsiveSlotBooking({
         if (!isSlotFull) {
           actionButtons.push({
             id: slot.id,
-            label: `枠 ${index + 1} - ${formatTimeLocalized(slotStartTime, 'ja')} - ${formatTimeLocalized(slotEndTime, 'ja')} (¥${slot.price_per_person.toLocaleString()})`,
+            label: `枠 ${index + 1} - ${formatTimeString(slotStartTime)} - ${formatTimeString(slotEndTime)} (${formatPriceString(slot.price_per_person)})`,
             onClick: () => {
               setSelectedSlotId(slot.id);
               // ActionSheetを閉じて確認ダイアログを表示
@@ -462,7 +499,7 @@ export const ResponsiveSlotBooking = memo(function ResponsiveSlotBooking({
       // 通常撮影会の場合
       actionButtons.push({
         id: 'book-session',
-        label: `予約する - ${session.title} (¥${session.price_per_person.toLocaleString()})`,
+        label: `予約する - ${session.title} (${formatPriceString(session.price_per_person)})`,
         onClick: () => {
           // 直接予約処理
           transitionToStep('confirm');
@@ -526,12 +563,11 @@ export const ResponsiveSlotBooking = memo(function ResponsiveSlotBooking({
                   </div>
                   <div className="text-sm text-theme-text-secondary">
                     枠 {selectedSlot.slot_number}:{' '}
-                    {formatTimeLocalized(
-                      new Date(selectedSlot.start_time),
-                      'ja'
-                    )}{' '}
-                    -{' '}
-                    {formatTimeLocalized(new Date(selectedSlot.end_time), 'ja')}
+                    <FormattedDateTime
+                      value={new Date(selectedSlot.start_time)}
+                      format="time-range"
+                      endValue={new Date(selectedSlot.end_time)}
+                    />
                   </div>
                 </div>
               )}
@@ -540,9 +576,17 @@ export const ResponsiveSlotBooking = memo(function ResponsiveSlotBooking({
                 <div className="font-medium text-theme-text-primary">料金</div>
                 <div className="text-sm text-theme-text-secondary">
                   {(selectedSlot?.price_per_person ||
-                    session.price_per_person) === 0
-                    ? '無料'
-                    : `¥${(selectedSlot?.price_per_person || session.price_per_person).toLocaleString()}`}
+                    session.price_per_person) === 0 ? (
+                    '無料'
+                  ) : (
+                    <FormattedPrice
+                      value={
+                        selectedSlot?.price_per_person ||
+                        session.price_per_person
+                      }
+                      format="simple"
+                    />
+                  )}
                 </div>
               </div>
             </div>
@@ -620,6 +664,8 @@ export const ResponsiveSlotBooking = memo(function ResponsiveSlotBooking({
     handleBooking,
     isBooking,
     handleComplete,
+    formatTimeString,
+    formatPriceString,
   ]);
 
   // レスポンシブに応じてコンポーネントを切り替え
@@ -695,8 +741,11 @@ const SlotCard = memo(
               <span>時間</span>
             </div>
             <div className="font-medium">
-              {formatTimeLocalized(slotStartTime, 'ja')} -{' '}
-              {formatTimeLocalized(slotEndTime, 'ja')}
+              <FormattedDateTime
+                value={slotStartTime}
+                format="time-range"
+                endValue={slotEndTime}
+              />
             </div>
           </div>
 
@@ -716,9 +765,11 @@ const SlotCard = memo(
               <span>料金</span>
             </div>
             <div className="font-medium">
-              {slot.price_per_person === 0
-                ? '無料'
-                : `¥${slot.price_per_person.toLocaleString()}`}
+              {slot.price_per_person === 0 ? (
+                '無料'
+              ) : (
+                <FormattedPrice value={slot.price_per_person} format="simple" />
+              )}
             </div>
           </div>
         </div>
@@ -758,10 +809,13 @@ function SessionInfoDisplay({
           <div>
             <div className="font-medium text-theme-text-primary">日時</div>
             <div className="text-theme-text-secondary">
-              {formatDateLocalized(startDate, 'ja', 'long')}
+              <FormattedDateTime value={startDate} format="date-long" />
               <br />
-              {formatTimeLocalized(startDate, 'ja')} -{' '}
-              {formatTimeLocalized(endDate, 'ja')}
+              <FormattedDateTime
+                value={startDate}
+                format="time-range"
+                endValue={endDate}
+              />
             </div>
           </div>
 
@@ -781,9 +835,14 @@ function SessionInfoDisplay({
           <div>
             <div className="font-medium text-theme-text-primary">料金</div>
             <div className="text-theme-text-secondary">
-              {session.price_per_person === 0
-                ? '無料'
-                : `¥${session.price_per_person.toLocaleString()}`}
+              {session.price_per_person === 0 ? (
+                '無料'
+              ) : (
+                <FormattedPrice
+                  value={session.price_per_person}
+                  format="simple"
+                />
+              )}
             </div>
           </div>
         </CardContent>

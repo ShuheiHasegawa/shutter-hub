@@ -37,6 +37,7 @@ import {
   Star,
 } from 'lucide-react';
 import Image from 'next/image';
+import { FormattedDateTime } from '@/components/ui/formatted-display';
 
 interface StudioEvaluationsProps {
   studioId: string;
@@ -346,7 +347,10 @@ function EvaluationCard({ evaluation }: { evaluation: StudioEvaluationType }) {
                   */}
                 </div>
                 <div className="text-xs text-gray-500 mt-1">
-                  {new Date(evaluation.created_at).toLocaleDateString('ja-JP')}
+                  <FormattedDateTime
+                    value={new Date(evaluation.created_at)}
+                    format="date-short"
+                  />
                 </div>
               </div>
             </div>

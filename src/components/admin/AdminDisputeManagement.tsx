@@ -33,6 +33,10 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { resolveDispute } from '@/app/actions/admin-dispute';
+import {
+  FormattedPrice,
+  FormattedDateTime,
+} from '@/components/ui/formatted-display';
 
 // 争議データの型定義
 interface AdminDispute {
@@ -340,9 +344,10 @@ export function AdminDisputeManagement({
                           </Badge>
                         </div>
                         <span className="text-sm text-gray-500">
-                          {new Date(dispute.created_at).toLocaleDateString(
-                            'ja-JP'
-                          )}
+                          <FormattedDateTime
+                            value={new Date(dispute.created_at)}
+                            format="date-short"
+                          />
                         </span>
                       </div>
 
@@ -352,7 +357,10 @@ export function AdminDisputeManagement({
                             {dispute.guest_name} vs {dispute.photographer_name}
                           </span>
                           <span className="text-sm font-medium text-green-600">
-                            ¥{dispute.amount.toLocaleString()}
+                            <FormattedPrice
+                              value={dispute.amount}
+                              format="simple"
+                            />
                           </span>
                         </div>
                         <p className="text-sm text-gray-600 line-clamp-2">
@@ -419,15 +427,19 @@ export function AdminDisputeManagement({
                       <div>
                         <span className="text-gray-600">申請日時:</span>
                         <span className="ml-2">
-                          {new Date(selectedDispute.created_at).toLocaleString(
-                            'ja-JP'
-                          )}
+                          <FormattedDateTime
+                            value={new Date(selectedDispute.created_at)}
+                            format="datetime-short"
+                          />
                         </span>
                       </div>
                       <div>
                         <span className="text-gray-600">金額:</span>
                         <span className="ml-2 font-medium text-green-600">
-                          ¥{selectedDispute.amount.toLocaleString()}
+                          <FormattedPrice
+                            value={selectedDispute.amount}
+                            format="simple"
+                          />
                         </span>
                       </div>
                     </div>
@@ -551,9 +563,14 @@ export function AdminDisputeManagement({
                             <Calendar className="h-4 w-4 text-gray-500" />
                             <span>
                               撮影日:{' '}
-                              {new Date(
-                                selectedDispute.booking.shooting_date
-                              ).toLocaleDateString('ja-JP')}
+                              <FormattedDateTime
+                                value={
+                                  new Date(
+                                    selectedDispute.booking.shooting_date
+                                  )
+                                }
+                                format="date-short"
+                              />
                             </span>
                           </div>
                         </div>
@@ -569,11 +586,14 @@ export function AdminDisputeManagement({
                         <CheckCircle className="h-4 w-4 text-green-600" />
                         <AlertDescription className="text-green-800">
                           この争議は解決済みです (
-                          {selectedDispute.resolved_at
-                            ? new Date(
-                                selectedDispute.resolved_at
-                              ).toLocaleDateString('ja-JP')
-                            : ''}
+                          {selectedDispute.resolved_at ? (
+                            <FormattedDateTime
+                              value={new Date(selectedDispute.resolved_at)}
+                              format="date-short"
+                            />
+                          ) : (
+                            ''
+                          )}
                           )
                         </AlertDescription>
                       </Alert>
@@ -591,8 +611,10 @@ export function AdminDisputeManagement({
                         <div className="space-y-2">
                           <Label>返金額</Label>
                           <div className="text-lg font-medium text-green-600">
-                            ¥
-                            {selectedDispute.resolution_amount.toLocaleString()}
+                            <FormattedPrice
+                              value={selectedDispute.resolution_amount}
+                              format="simple"
+                            />
                           </div>
                         </div>
                       )}
@@ -654,7 +676,11 @@ export function AdminDisputeManagement({
                             max={selectedDispute.amount}
                           />
                           <div className="text-xs text-gray-500">
-                            最大: ¥{selectedDispute.amount.toLocaleString()}
+                            最大:{' '}
+                            <FormattedPrice
+                              value={selectedDispute.amount}
+                              format="simple"
+                            />
                           </div>
                         </div>
                       )}

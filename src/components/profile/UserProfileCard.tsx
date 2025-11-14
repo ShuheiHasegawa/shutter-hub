@@ -6,10 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { User, Mail, Calendar, MapPin, Edit, CheckCircle } from 'lucide-react';
-import { format } from 'date-fns';
-import { ja } from 'date-fns/locale';
-import { useLocale } from 'next-intl';
 import Link from 'next/link';
+import { FormattedDateTime } from '@/components/ui/formatted-display';
 
 interface UserProfileCardProps {
   profile: {
@@ -27,8 +25,6 @@ interface UserProfileCardProps {
 }
 
 export function UserProfileCard({ profile }: UserProfileCardProps) {
-  const locale = useLocale();
-
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -36,12 +32,6 @@ export function UserProfileCard({ profile }: UserProfileCardProps) {
       .join('')
       .toUpperCase()
       .slice(0, 2);
-  };
-
-  const formatDate = (dateString: string) => {
-    return format(new Date(dateString), 'PPP', {
-      locale: locale === 'ja' ? ja : undefined,
-    });
   };
 
   // プロフィール画像のキャッシュバスティング用URLを生成
@@ -125,7 +115,11 @@ export function UserProfileCard({ profile }: UserProfileCardProps) {
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm">
-              {formatDate(profile.created_at)}に参加
+              <FormattedDateTime
+                value={new Date(profile.created_at)}
+                format="date-long"
+              />
+              に参加
             </span>
           </div>
 

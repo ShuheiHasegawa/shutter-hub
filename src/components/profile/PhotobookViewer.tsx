@@ -19,6 +19,7 @@ import {
   Calendar,
 } from 'lucide-react';
 import { Photobook } from '@/types/photobook';
+import { FormattedDateTime } from '@/components/ui/formatted-display';
 
 interface PhotobookViewerProps {
   photobook: Photobook;
@@ -310,7 +311,11 @@ export const PhotobookViewer: React.FC<PhotobookViewerProps> = ({
                 <div className="flex items-center space-x-2">
                   <Calendar size={16} />
                   <span>
-                    作成日: {photobook.createdAt.toLocaleDateString('ja-JP')}
+                    作成日:{' '}
+                    <FormattedDateTime
+                      value={new Date(photobook.createdAt)}
+                      format="date-short"
+                    />
                   </span>
                 </div>
                 <div className="flex items-center space-x-2">

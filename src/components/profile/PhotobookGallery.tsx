@@ -20,6 +20,7 @@ import {
 import { createClient } from '@/lib/supabase/client';
 import { PhotobookData } from '@/types/photobook';
 import { Button } from '@/components/ui/button';
+import { FormattedDateTime } from '@/components/ui/formatted-display';
 
 interface PhotobookGalleryProps {
   userId: string;
@@ -310,9 +311,10 @@ export const PhotobookGallery: React.FC<PhotobookGalleryProps> = ({
                     <div className="flex items-center text-xs">
                       <Calendar size={12} className="mr-1" />
                       <span>
-                        {new Date(photobook.created_at).toLocaleDateString(
-                          'ja-JP'
-                        )}
+                        <FormattedDateTime
+                          value={new Date(photobook.created_at)}
+                          format="date-short"
+                        />
                       </span>
                     </div>
                   </div>
@@ -366,9 +368,10 @@ export const PhotobookGallery: React.FC<PhotobookGalleryProps> = ({
                         <div className="flex items-center space-x-1">
                           <Calendar size={12} />
                           <span>
-                            {new Date(photobook.created_at).toLocaleDateString(
-                              'ja-JP'
-                            )}
+                            <FormattedDateTime
+                              value={new Date(photobook.created_at)}
+                              format="date-short"
+                            />
                           </span>
                         </div>
                         <div className="flex items-center space-x-1">

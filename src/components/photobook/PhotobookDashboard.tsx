@@ -17,6 +17,7 @@ import {
   Crown,
   Grid,
 } from 'lucide-react';
+import { FormattedDateTime } from '@/components/ui/formatted-display';
 
 interface PhotobookData {
   id: string;
@@ -226,9 +227,10 @@ export const PhotobookDashboard: React.FC<PhotobookDashboardProps> = ({
                       <div className="flex items-center text-sm text-gray-500 mb-3">
                         <Calendar size={14} className="mr-1" />
                         <span>
-                          {new Date(photobook.created_at).toLocaleDateString(
-                            'ja-JP'
-                          )}
+                          <FormattedDateTime
+                            value={new Date(photobook.created_at)}
+                            format="date-short"
+                          />
                         </span>
                       </div>
 
@@ -285,9 +287,10 @@ export const PhotobookDashboard: React.FC<PhotobookDashboardProps> = ({
                         <div className="flex items-center">
                           <Calendar size={14} className="mr-1" />
                           <span>
-                            {new Date(photobook.created_at).toLocaleDateString(
-                              'ja-JP'
-                            )}
+                            <FormattedDateTime
+                              value={new Date(photobook.created_at)}
+                              format="date-short"
+                            />
                           </span>
                         </div>
                         <div

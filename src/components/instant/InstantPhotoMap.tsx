@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { MapPin, Camera, Star, Navigation } from 'lucide-react';
+import { FormattedPrice } from '@/components/ui/formatted-display';
 import type { LocationData, NearbyPhotographer } from '@/types/instant-photo';
 
 // Leafletコンポーネントをdynamic importでSSR無効化
@@ -288,7 +289,14 @@ function PhotographerPopup({
         <div className="text-xs">
           <span className="font-medium text-gray-800">料金: </span>
           <span className="text-green-600 font-semibold">
-            ¥{photographer.instant_rate?.toLocaleString() || 'N/A'}
+            {photographer.instant_rate ? (
+              <FormattedPrice
+                value={photographer.instant_rate}
+                format="simple"
+              />
+            ) : (
+              'N/A'
+            )}
           </span>
         </div>
 

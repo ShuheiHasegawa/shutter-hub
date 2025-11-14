@@ -21,9 +21,8 @@ import {
   Mail,
   RefreshCw,
 } from 'lucide-react';
-import { format } from 'date-fns';
-import { ja } from 'date-fns/locale';
 import type { OrganizerModelWithProfile } from '@/types/organizer-model';
+import { FormattedDateTime } from '@/components/ui/formatted-display';
 
 interface OrganizerModelsListProps {
   models: OrganizerModelWithProfile[];
@@ -126,14 +125,6 @@ export function OrganizerModelsList({
         return <Badge variant="destructive">停止中</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    try {
-      return format(new Date(dateString), 'yyyy年MM月dd日', { locale: ja });
-    } catch {
-      return '不明';
     }
   };
 
@@ -268,7 +259,13 @@ export function OrganizerModelsList({
                 </div>
                 <div className="flex items-center justify-center gap-2 text-xs text-gray-500 dark:text-gray-400">
                   <Calendar className="h-3 w-3" />
-                  <span>登録日: {formatDate(model.joined_at)}</span>
+                  <span>
+                    登録日:{' '}
+                    <FormattedDateTime
+                      value={new Date(model.joined_at)}
+                      format="date-short"
+                    />
+                  </span>
                 </div>
               </div>
 
@@ -290,11 +287,14 @@ export function OrganizerModelsList({
 
                 <div className="rounded-lg p-3 text-center">
                   <p className="text-lg font-semibold">
-                    {model.last_activity_at
-                      ? format(new Date(model.last_activity_at), 'MM/dd', {
-                          locale: ja,
-                        })
-                      : '---'}
+                    {model.last_activity_at ? (
+                      <FormattedDateTime
+                        value={new Date(model.last_activity_at)}
+                        format="date-short"
+                      />
+                    ) : (
+                      '---'
+                    )}
                   </p>
                   <p className="text-xs">最終活動日</p>
                 </div>
@@ -316,7 +316,10 @@ export function OrganizerModelsList({
                           開始日
                         </span>
                         <span className="font-medium text-gray-900 dark:text-white">
-                          {formatDate(model.contract_start_date)}
+                          <FormattedDateTime
+                            value={new Date(model.contract_start_date)}
+                            format="date-short"
+                          />
                         </span>
                       </div>
                     )}
@@ -326,7 +329,10 @@ export function OrganizerModelsList({
                           終了日
                         </span>
                         <span className="font-medium text-gray-900 dark:text-white">
-                          {formatDate(model.contract_end_date)}
+                          <FormattedDateTime
+                            value={new Date(model.contract_end_date)}
+                            format="date-short"
+                          />
                         </span>
                       </div>
                     )}

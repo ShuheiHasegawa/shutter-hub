@@ -32,6 +32,8 @@ import { ja, enUS } from 'date-fns/locale';
 import { useLocale } from 'next-intl';
 import { toast } from 'sonner';
 import { formatFileSize, isImageFile } from '@/lib/storage/message-files';
+import { FormattedDateTime } from '@/components/ui/formatted-display';
+import { useAuth } from '@/hooks/useAuth';
 
 interface ChatWindowProps {
   conversation: ConversationWithUsers;
@@ -50,6 +52,7 @@ export function ChatWindow({
 }: ChatWindowProps) {
   const t = useTranslations('social.messaging');
   const locale = useLocale();
+  const { user } = useAuth();
   const [messages, setMessages] = useState<MessageWithUser[]>([]);
   const [messageText, setMessageText] = useState('');
   const [loading, setLoading] = useState(true);
@@ -232,10 +235,15 @@ export function ChatWindow({
     );
 
     if (diffInDays === 0) {
-      return date.toLocaleTimeString(locale === 'ja' ? 'ja-JP' : 'en-US', {
+      // ユーザー設定に基づいた時刻フォーマット
+      const userLocale =
+        user?.user_metadata?.language === 'en' ? 'en-US' : 'ja-JP';
+      const timeZone = user?.user_metadata?.timezone || 'Asia/Tokyo';
+      return new Intl.DateTimeFormat(userLocale, {
         hour: '2-digit',
         minute: '2-digit',
-      });
+        timeZone,
+      }).format(date);
     } else if (diffInDays === 1) {
       return t('yesterday');
     } else {
@@ -444,10 +452,10 @@ export function ChatWindow({
                         )}
                       >
                         <span>
-                          {new Date(message.created_at).toLocaleTimeString(
-                            locale === 'ja' ? 'ja-JP' : 'en-US',
-                            { hour: '2-digit', minute: '2-digit' }
-                          )}
+                          <FormattedDateTime
+                            value={new Date(message.created_at)}
+                            format="time"
+                          />
                         </span>
                         {isOwn && getReadStatusIcon(message)}
                         {message.is_edited && (

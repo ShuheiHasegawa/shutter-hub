@@ -46,6 +46,10 @@ import {
 import Image from 'next/image';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import {
+  FormattedPrice,
+  FormattedDateTime,
+} from '@/components/ui/formatted-display';
 
 export default function StudioDetailPage() {
   const params = useParams();
@@ -166,9 +170,18 @@ export default function StudioDetailPage() {
     if (!studio) return '料金応相談';
 
     if (studio.hourly_rate_min && studio.hourly_rate_max) {
-      return `¥${studio.hourly_rate_min.toLocaleString()} - ¥${studio.hourly_rate_max.toLocaleString()}`;
+      return (
+        <>
+          <FormattedPrice value={studio.hourly_rate_min} format="simple" /> -{' '}
+          <FormattedPrice value={studio.hourly_rate_max} format="simple" />
+        </>
+      );
     } else if (studio.hourly_rate_min) {
-      return `¥${studio.hourly_rate_min.toLocaleString()}～`;
+      return (
+        <>
+          <FormattedPrice value={studio.hourly_rate_min} format="simple" />～
+        </>
+      );
     }
     return '料金応相談';
   };
@@ -564,7 +577,11 @@ export default function StudioDetailPage() {
                           <span>数量: {item.quantity}点</span>
                           {item.rental_fee && (
                             <span>
-                              レンタル料: ¥{item.rental_fee.toLocaleString()}
+                              レンタル料:{' '}
+                              <FormattedPrice
+                                value={item.rental_fee}
+                                format="simple"
+                              />
                             </span>
                           )}
                           <span>
@@ -613,9 +630,10 @@ export default function StudioDetailPage() {
                           </p>
                         )}
                         <p className="text-xs text-theme-text-muted mt-2">
-                          {new Date(evaluation.created_at).toLocaleDateString(
-                            'ja-JP'
-                          )}
+                          <FormattedDateTime
+                            value={new Date(evaluation.created_at)}
+                            format="date-short"
+                          />
                         </p>
                       </div>
                     ))}

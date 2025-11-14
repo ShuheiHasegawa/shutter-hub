@@ -8,6 +8,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Clock, User, Edit } from 'lucide-react';
 import { getStudioEditHistoryAction } from '@/app/actions/studio';
 import { StudioEditHistory as StudioEditHistoryType } from '@/types/database';
+import {
+  FormattedDateTime,
+  FormattedPrice,
+} from '@/components/ui/formatted-display';
 
 interface StudioEditHistoryProps {
   studioId: string;
@@ -43,10 +47,6 @@ export function StudioEditHistory({ studioId }: StudioEditHistoryProps) {
     }
   }, [studioId]);
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString('ja-JP');
-  };
-
   const getFieldLabel = (field: string): string => {
     const fieldLabels: Record<string, string> = {
       name: 'スタジオ名',
@@ -66,10 +66,17 @@ export function StudioEditHistory({ studioId }: StudioEditHistoryProps) {
     return fieldLabels[field] || field;
   };
 
-  const formatValue = (value: unknown): string => {
+  const formatValue = (value: unknown, field?: string): React.ReactNode => {
     if (value === null || value === undefined) return '未設定';
     if (typeof value === 'boolean') return value ? 'あり' : 'なし';
-    if (typeof value === 'number') return value.toLocaleString();
+    if (typeof value === 'number') {
+      // 通貨フィールドの場合はFormattedPriceを使用
+      if (field === 'hourly_rate_min' || field === 'hourly_rate_max') {
+        return <FormattedPrice value={value} format="simple" />;
+      }
+      // その他の数値は通常の数値表示
+      return value.toLocaleString();
+    }
     return String(value);
   };
 
@@ -85,9 +92,10 @@ export function StudioEditHistory({ studioId }: StudioEditHistoryProps) {
         <div key={field} className="text-sm">
           <span className="font-medium">{getFieldLabel(field)}:</span>{' '}
           <span className="text-red-600 line-through">
-            {formatValue(oldValue)}
+            {formatValue(oldValue, field)}
           </span>{' '}
-          → <span className="text-green-600">{formatValue(newValue)}</span>
+          →{' '}
+          <span className="text-green-600">{formatValue(newValue, field)}</span>
         </div>
       );
     });
@@ -168,7 +176,10 @@ export function StudioEditHistory({ studioId }: StudioEditHistoryProps) {
                   </div>
                   <div className="flex items-center gap-1 text-sm text-theme-text-muted">
                     <Clock className="w-4 h-4" />
-                    {formatDate(entry.created_at)}
+                    <FormattedDateTime
+                      value={new Date(entry.created_at)}
+                      format="datetime-short"
+                    />
                   </div>
                 </div>
 

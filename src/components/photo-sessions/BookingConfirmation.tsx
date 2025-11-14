@@ -20,8 +20,11 @@ import {
   CircleDollarSignIcon,
   UserIcon,
 } from 'lucide-react';
-import { formatDateLocalized, formatTimeLocalized } from '@/lib/utils/date';
-import { useTranslations, useLocale } from 'next-intl';
+import { useTranslations } from 'next-intl';
+import {
+  FormattedDateTime,
+  FormattedPrice,
+} from '@/components/ui/formatted-display';
 
 interface BookingConfirmationProps {
   isOpen: boolean;
@@ -48,7 +51,6 @@ export function BookingConfirmation({
   const t = useTranslations('booking');
   const tErrors = useTranslations('errors');
   const tSuccess = useTranslations('success');
-  const locale = useLocale();
   const [isLoading, setIsLoading] = useState(false);
 
   const handleConfirm = async () => {
@@ -126,10 +128,15 @@ export function BookingConfirmation({
               <div className="flex items-center gap-2">
                 <CalendarIcon className="h-4 w-4 text-muted-foreground" />
                 <div>
-                  <div>{formatDateLocalized(startDate, locale, 'long')}</div>
+                  <div>
+                    <FormattedDateTime value={startDate} format="date-long" />
+                  </div>
                   <div className="text-muted-foreground">
-                    {formatTimeLocalized(startDate, locale)} -{' '}
-                    {formatTimeLocalized(endDate, locale)}
+                    <FormattedDateTime
+                      value={startDate}
+                      format="time-range"
+                      endValue={endDate}
+                    />
                   </div>
                 </div>
               </div>
@@ -149,9 +156,14 @@ export function BookingConfirmation({
               <div className="flex items-center gap-2">
                 <CircleDollarSignIcon className="h-4 w-4 text-muted-foreground" />
                 <span>
-                  {session.price_per_person === 0
-                    ? t('free')
-                    : `¥${session.price_per_person.toLocaleString()}`}
+                  {session.price_per_person === 0 ? (
+                    t('free')
+                  ) : (
+                    <FormattedPrice
+                      value={session.price_per_person}
+                      format="simple"
+                    />
+                  )}
                 </span>
               </div>
             </div>

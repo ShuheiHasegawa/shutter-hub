@@ -11,6 +11,7 @@ import { GuestApprovalPanel } from '@/components/instant/GuestApprovalPanel';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { FormattedPrice } from '@/components/ui/formatted-display';
 import {
   Camera,
   MapPin,
@@ -215,7 +216,7 @@ export function InstantRequestDetailClient({
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">撮影料金</span>
               <span className="text-lg font-semibold">
-                ¥{request.budget.toLocaleString()}
+                <FormattedPrice value={request.budget} format="simple" />
               </span>
             </div>
           </div>

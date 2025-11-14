@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { logger } from '@/lib/utils/logger';
 // import { useTranslations } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
@@ -18,8 +18,10 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { format } from 'date-fns';
-import { ja } from 'date-fns/locale';
+import {
+  FormattedPrice,
+  FormattedDateTime,
+} from '@/components/ui/formatted-display';
 
 interface EditHistoryEntry {
   id: string;
@@ -187,15 +189,21 @@ export function EditHistory({
     return fieldNames[fieldName] || fieldName;
   };
 
-  const formatValue = (value: unknown, fieldName: string) => {
+  const formatValue = (
+    value: unknown,
+    fieldName: string
+  ): string | React.ReactNode => {
     if (value === null || value === undefined) return '未設定';
 
     switch (fieldName) {
       case 'start_time':
       case 'end_time':
-        return format(new Date(value as string), 'yyyy年MM月dd日 HH:mm', {
-          locale: ja,
-        });
+        return (
+          <FormattedDateTime
+            value={new Date(value as string)}
+            format="datetime-short"
+          />
+        );
       case 'is_published':
         return value ? '公開' : '非公開';
       case 'booking_type':
@@ -208,7 +216,7 @@ export function EditHistory({
         };
         return bookingTypes[value as string] || String(value);
       case 'price_per_person':
-        return `¥${(value as number).toLocaleString()}`;
+        return <FormattedPrice value={value as number} format="simple" />;
       case 'image_urls':
         return Array.isArray(value) ? `${value.length}枚の画像` : '画像なし';
       default:
@@ -289,11 +297,10 @@ export function EditHistory({
                         </div>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <Clock className="h-3 w-3" />
-                          {format(
-                            new Date(entry.created_at),
-                            'yyyy年MM月dd日 HH:mm',
-                            { locale: ja }
-                          )}
+                          <FormattedDateTime
+                            value={new Date(entry.created_at)}
+                            format="datetime-short"
+                          />
                         </div>
                       </div>
                     </div>

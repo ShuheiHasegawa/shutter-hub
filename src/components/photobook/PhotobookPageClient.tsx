@@ -3,6 +3,7 @@
 import { logger } from '@/lib/utils/logger';
 import Photobook from '@/components/photobook/Photobook';
 import { Photo, Photobook as PhotobookType } from '@/types/photobook';
+import { FormattedDateTime } from '@/components/ui/formatted-display';
 
 interface PhotobookPageClientProps {
   photobook: PhotobookType;
@@ -110,11 +111,19 @@ export function PhotobookPageClient({
         {/* 作成日時表示 */}
         <div className="text-center mb-6">
           <p className="text-sm text-gray-500">
-            作成日: {photobook.createdAt.toLocaleDateString('ja-JP')}
+            作成日:{' '}
+            <FormattedDateTime
+              value={photobook.createdAt}
+              format="date-short"
+            />
             {photobook.updatedAt.getTime() !==
               photobook.createdAt.getTime() && (
               <span className="ml-2">
-                更新日: {photobook.updatedAt.toLocaleDateString('ja-JP')}
+                更新日:{' '}
+                <FormattedDateTime
+                  value={photobook.updatedAt}
+                  format="date-short"
+                />
               </span>
             )}
           </p>

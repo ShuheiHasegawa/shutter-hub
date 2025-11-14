@@ -12,6 +12,7 @@ import {
   MapPin,
   Zap,
 } from 'lucide-react';
+import { FormattedPrice } from '@/components/ui/formatted-display';
 
 interface DashboardStatsCardsProps {
   stats: DashboardStats;
@@ -76,7 +77,8 @@ export function DashboardStatsCards({
         },
         {
           title: '今月の収益',
-          value: `¥${(stats.userTypeStats.monthlyEarnings || 0).toLocaleString()}`,
+          value: stats.userTypeStats.monthlyEarnings || 0,
+          isPrice: true,
           icon: TrendingUp,
           color: 'text-emerald-600',
           bgColor: 'bg-emerald-100',
@@ -129,7 +131,14 @@ export function DashboardStatsCards({
               </div>
               <div className="flex items-baseline space-x-0.5">
                 <p className="text-lg md:text-xl lg:text-2xl font-bold text-foreground">
-                  {stat.value}
+                  {'isPrice' in stat && stat.isPrice ? (
+                    <FormattedPrice
+                      value={stat.value as number}
+                      format="simple"
+                    />
+                  ) : (
+                    stat.value
+                  )}
                 </p>
                 {'unit' in stat && stat.unit && (
                   <span className="text-xs md:text-sm text-muted-foreground">

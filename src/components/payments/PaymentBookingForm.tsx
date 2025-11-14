@@ -19,8 +19,10 @@ import {
 import { StripeProvider } from './StripeProvider';
 import { PaymentForm } from './PaymentForm';
 import { createPhotoSessionBooking } from '@/app/actions/photo-session-booking';
-import { format } from 'date-fns';
-import { ja } from 'date-fns/locale';
+import {
+  FormattedDateTime,
+  FormattedPrice,
+} from '@/components/ui/formatted-display';
 
 interface PhotoSession {
   id: string;
@@ -151,21 +153,20 @@ export function PaymentBookingForm({
             <div className="flex items-center gap-2">
               <Calendar className="h-4 w-4 text-muted-foreground" />
               <span>
-                {format(new Date(photoSession.start_time), 'PPP', {
-                  locale: ja,
-                })}
+                <FormattedDateTime
+                  value={new Date(photoSession.start_time)}
+                  format="date-long"
+                />
               </span>
             </div>
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4 text-muted-foreground" />
               <span>
-                {format(new Date(photoSession.start_time), 'HH:mm', {
-                  locale: ja,
-                })}{' '}
-                -
-                {format(new Date(photoSession.end_time), 'HH:mm', {
-                  locale: ja,
-                })}
+                <FormattedDateTime
+                  value={new Date(photoSession.start_time)}
+                  format="time-range"
+                  endValue={new Date(photoSession.end_time)}
+                />
               </span>
             </div>
             <div className="flex items-center gap-2">
@@ -182,7 +183,10 @@ export function PaymentBookingForm({
             <span className="text-lg font-semibold">参加費用</span>
             <div className="text-right">
               <div className="text-2xl font-bold">
-                ¥{photoSession.price_per_person.toLocaleString()}
+                <FormattedPrice
+                  value={photoSession.price_per_person}
+                  format="simple"
+                />
               </div>
               <div className="text-sm text-muted-foreground">1名あたり</div>
             </div>
