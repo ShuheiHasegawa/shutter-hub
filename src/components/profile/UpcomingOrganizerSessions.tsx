@@ -19,10 +19,12 @@ import {
   Loader2,
   Plus,
 } from 'lucide-react';
-import { format } from 'date-fns';
-import { ja } from 'date-fns/locale';
 import Link from 'next/link';
 import Image from 'next/image';
+import {
+  FormattedPrice,
+  FormattedDateTime,
+} from '@/components/ui/formatted-display';
 import type { BookingType } from '@/types/database';
 
 interface OrganizerUpcomingSession {
@@ -93,14 +95,6 @@ export function UpcomingOrganizerSessions({
   useEffect(() => {
     fetchUpcomingSessions();
   }, [fetchUpcomingSessions]);
-
-  const formatDateTime = (dateString: string) => {
-    return format(new Date(dateString), 'M月d日(E) HH:mm', { locale: ja });
-  };
-
-  const formatPrice = (price: number) => {
-    return `¥${price.toLocaleString()}`;
-  };
 
   const getBookingTypeLabel = (type: BookingType) => {
     switch (type) {
@@ -230,7 +224,10 @@ export function UpcomingOrganizerSessions({
                     <div className="space-y-1">
                       <div className="flex items-center gap-1 text-xs text-muted-foreground">
                         <Calendar className="h-3 w-3" />
-                        {formatDateTime(session.start_time)}
+                        <FormattedDateTime
+                          value={session.start_time}
+                          format="datetime-short"
+                        />
                       </div>
                       <div className="flex items-center gap-1 text-xs text-muted-foreground">
                         <MapPin className="h-3 w-3" />
@@ -238,7 +235,10 @@ export function UpcomingOrganizerSessions({
                       </div>
                       <div className="flex items-center gap-1 text-xs text-muted-foreground">
                         <Users className="h-3 w-3" />
-                        {formatPrice(session.price_per_person)}
+                        <FormattedPrice
+                          value={session.price_per_person}
+                          format="simple"
+                        />
                       </div>
                     </div>
 

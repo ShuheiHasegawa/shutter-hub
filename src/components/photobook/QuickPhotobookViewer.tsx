@@ -21,6 +21,7 @@ import { updatePhotobook } from '@/app/actions/quick-photobook';
 import { logger } from '@/lib/utils/logger';
 import { toast } from 'sonner';
 import { BackButton } from '../ui/back-button';
+import { FormattedDateTime } from '@/components/ui/formatted-display';
 
 /**
  * フォトブック情報ヘッダー
@@ -97,7 +98,10 @@ function PhotobookHeader({
                   <Calendar className="h-4 w-4" />
                   <span>
                     作成日:{' '}
-                    {new Date(photobook.created_at).toLocaleDateString()}
+                    <FormattedDateTime
+                      value={new Date(photobook.created_at)}
+                      format="date-short"
+                    />
                   </span>
                 </div>
                 <div className="flex items-center gap-1">
@@ -153,7 +157,12 @@ function PhotobookHeader({
         <div className="flex items-center justify-between mt-4 pt-3 border-t text-xs text-muted-foreground md:hidden">
           <div className="flex items-center gap-1">
             <Calendar className="h-3 w-3" />
-            <span>{new Date(photobook.created_at).toLocaleDateString()}</span>
+            <span>
+              <FormattedDateTime
+                value={new Date(photobook.created_at)}
+                format="date-short"
+              />
+            </span>
           </div>
           <div className="flex items-center gap-1">
             <User className="h-3 w-3" />
@@ -212,10 +221,18 @@ function StatsDisplay({ images, photobook }: StatsDisplayProps) {
         <div className="mt-4 pt-4 border-t">
           <div className="flex items-center justify-between text-sm">
             <span>
-              作成日: {new Date(photobook.created_at).toLocaleDateString()}
+              作成日:{' '}
+              <FormattedDateTime
+                value={new Date(photobook.created_at)}
+                format="date-short"
+              />
             </span>
             <span>
-              更新日: {new Date(photobook.updated_at).toLocaleDateString()}
+              更新日:{' '}
+              <FormattedDateTime
+                value={new Date(photobook.updated_at)}
+                format="date-short"
+              />
             </span>
           </div>
         </div>

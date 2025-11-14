@@ -26,6 +26,7 @@ import {
 import { createClient } from '@/lib/supabase/client';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { PageTitleHeader } from '@/components/ui/page-title-header';
+import { FormattedPrice } from '@/components/ui/formatted-display';
 
 interface Profile {
   id: string;
@@ -65,7 +66,8 @@ export default function AnalyticsPage() {
   const loadUserStats = async (
     supabase: SupabaseClient,
     userId: string,
-    userType: string
+    userType: string,
+    user?: { user_metadata?: { language?: string; timezone?: string } }
   ): Promise<UserStats> => {
     const now = new Date();
     const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -219,13 +221,17 @@ export default function AnalyticsPage() {
     ];
 
     // 月次トレンド（仮データ）
+    const userLocale =
+      user?.user_metadata?.language === 'en' ? 'en-US' : 'ja-JP';
+    const userTimezone = user?.user_metadata?.timezone || 'Asia/Tokyo';
     const monthlyTrend = Array.from({ length: 6 }, (_, i) => {
       const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
       return {
-        month: date.toLocaleDateString('ja-JP', {
+        month: new Intl.DateTimeFormat(userLocale, {
           year: 'numeric',
           month: 'short',
-        }),
+          timeZone: userTimezone,
+        }).format(date),
         count: Math.max(0, totalSessions - i * 2),
         earnings: Math.max(0, totalEarnings - i * 5000),
       };
@@ -267,7 +273,8 @@ export default function AnalyticsPage() {
       const statsData = await loadUserStats(
         supabase,
         user.id,
-        profileData.user_type
+        profileData.user_type,
+        user
       );
       setStats(statsData);
     } catch (error) {
@@ -363,10 +370,14 @@ export default function AnalyticsPage() {
               </div>
               <div className="flex flex-col space-y-0.5">
                 <p className="text-lg md:text-xl lg:text-2xl font-bold text-foreground">
-                  ¥{stats.totalEarnings.toLocaleString()}
+                  <FormattedPrice value={stats.totalEarnings} format="simple" />
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  今月: ¥{stats.thisMonthEarnings.toLocaleString()}
+                  今月:{' '}
+                  <FormattedPrice
+                    value={stats.thisMonthEarnings}
+                    format="simple"
+                  />
                 </p>
               </div>
             </div>
@@ -533,10 +544,14 @@ export default function AnalyticsPage() {
               </div>
               <div className="flex flex-col space-y-0.5">
                 <p className="text-lg md:text-xl lg:text-2xl font-bold text-foreground">
-                  ¥{stats.totalEarnings.toLocaleString()}
+                  <FormattedPrice value={stats.totalEarnings} format="simple" />
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  今月: ¥{stats.thisMonthEarnings.toLocaleString()}
+                  今月:{' '}
+                  <FormattedPrice
+                    value={stats.thisMonthEarnings}
+                    format="simple"
+                  />
                 </p>
               </div>
             </div>
@@ -643,12 +658,14 @@ export default function AnalyticsPage() {
               <div className="flex items-center justify-between">
                 <span>平均収入/回</span>
                 <span className="font-bold">
-                  ¥
-                  {stats.totalSessions > 0
-                    ? Math.round(
-                        stats.totalEarnings / stats.totalSessions
-                      ).toLocaleString()
-                    : 0}
+                  <FormattedPrice
+                    value={
+                      stats.totalSessions > 0
+                        ? Math.round(stats.totalEarnings / stats.totalSessions)
+                        : 0
+                    }
+                    format="simple"
+                  />
                 </span>
               </div>
             </div>
@@ -915,7 +932,10 @@ export default function AnalyticsPage() {
                       <div className="font-medium">{month.count}件</div>
                       {profile.user_type !== 'model' && (
                         <div className="text-sm text-muted-foreground">
-                          ¥{month.earnings.toLocaleString()}
+                          <FormattedPrice
+                            value={month.earnings}
+                            format="simple"
+                          />
                         </div>
                       )}
                     </div>

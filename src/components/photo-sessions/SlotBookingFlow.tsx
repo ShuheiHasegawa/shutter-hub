@@ -18,7 +18,10 @@ import {
 } from 'lucide-react';
 import { PhotoSessionSlot } from '@/types/photo-session';
 import { PhotoSessionWithOrganizer } from '@/types/database';
-import { formatDateLocalized, formatTimeLocalized } from '@/lib/utils/date';
+import {
+  FormattedDateTime,
+  FormattedPrice,
+} from '@/components/ui/formatted-display';
 import { createPendingSlotBooking } from '@/lib/photo-sessions/slots';
 import { createPhotoSessionBooking } from '@/app/actions/photo-session-booking';
 import { checkUserHasBadRating } from '@/app/actions/rating-block';
@@ -517,13 +520,14 @@ export function SlotBookingFlow({
                       選択中: {selectedSlotIds.length}件の時間枠
                       {selectedSlotIds.length > 0 && (
                         <span className="ml-2 text-info">
-                          （合計料金: ¥
-                          {selectedSlots
-                            .reduce(
+                          （合計料金:{' '}
+                          <FormattedPrice
+                            value={selectedSlots.reduce(
                               (sum, slot) => sum + slot.price_per_person,
                               0
-                            )
-                            .toLocaleString()}
+                            )}
+                            format="simple"
+                          />
                           ）
                         </span>
                       )}
@@ -584,18 +588,16 @@ export function SlotBookingFlow({
                         開催日時
                       </div>
                       <div className="text-theme-text-secondary">
-                        {formatDateLocalized(
-                          new Date(session.start_time),
-                          'ja',
-                          'long'
-                        )}
+                        <FormattedDateTime
+                          value={new Date(session.start_time)}
+                          format="date-long"
+                        />
                         <br />
-                        {formatTimeLocalized(
-                          new Date(session.start_time),
-                          'ja'
-                        )}{' '}
-                        -{' '}
-                        {formatTimeLocalized(new Date(session.end_time), 'ja')}
+                        <FormattedDateTime
+                          value={new Date(session.start_time)}
+                          format="time-range"
+                          endValue={new Date(session.end_time)}
+                        />
                       </div>
                     </div>
 
@@ -652,23 +654,24 @@ export function SlotBookingFlow({
                                     枠 {slot.slot_number}
                                   </div>
                                   <div className="text-sm opacity-70">
-                                    {formatTimeLocalized(
-                                      new Date(slot.start_time),
-                                      'ja'
-                                    )}{' '}
-                                    -{' '}
-                                    {formatTimeLocalized(
-                                      new Date(slot.end_time),
-                                      'ja'
-                                    )}
+                                    <FormattedDateTime
+                                      value={new Date(slot.start_time)}
+                                      format="time-range"
+                                      endValue={new Date(slot.end_time)}
+                                    />
                                   </div>
                                 </div>
                                 <div className="text-right">
                                   <div className="text-sm opacity-70">料金</div>
                                   <div className="font-medium">
-                                    {slot.price_per_person === 0
-                                      ? '無料'
-                                      : `¥${slot.price_per_person.toLocaleString()}`}
+                                    {slot.price_per_person === 0 ? (
+                                      '無料'
+                                    ) : (
+                                      <FormattedPrice
+                                        value={slot.price_per_person}
+                                        format="simple"
+                                      />
+                                    )}
                                   </div>
                                 </div>
                               </div>
@@ -738,23 +741,24 @@ export function SlotBookingFlow({
                                 枠 {selectedSlot.slot_number}
                               </div>
                               <div className="text-sm opacity-70">
-                                {formatTimeLocalized(
-                                  new Date(selectedSlot.start_time),
-                                  'ja'
-                                )}{' '}
-                                -{' '}
-                                {formatTimeLocalized(
-                                  new Date(selectedSlot.end_time),
-                                  'ja'
-                                )}
+                                <FormattedDateTime
+                                  value={new Date(selectedSlot.start_time)}
+                                  format="time-range"
+                                  endValue={new Date(selectedSlot.end_time)}
+                                />
                               </div>
                             </div>
                             <div className="text-right">
                               <div className="text-sm opacity-70">料金</div>
                               <div className="font-medium">
-                                {selectedSlot.price_per_person === 0
-                                  ? '無料'
-                                  : `¥${selectedSlot.price_per_person.toLocaleString()}`}
+                                {selectedSlot.price_per_person === 0 ? (
+                                  '無料'
+                                ) : (
+                                  <FormattedPrice
+                                    value={selectedSlot.price_per_person}
+                                    format="simple"
+                                  />
+                                )}
                               </div>
                             </div>
                           </div>
@@ -771,9 +775,14 @@ export function SlotBookingFlow({
                         <div className="surface-primary-0 p-3 rounded-lg border border-theme-primary/20">
                           <div className="text-center">
                             <div className="text-2xl font-bold">
-                              {session.price_per_person === 0
-                                ? '無料'
-                                : `¥${session.price_per_person.toLocaleString()}`}
+                              {session.price_per_person === 0 ? (
+                                '無料'
+                              ) : (
+                                <FormattedPrice
+                                  value={session.price_per_person}
+                                  format="simple"
+                                />
+                              )}
                             </div>
                             <div className="text-sm opacity-70">参加費</div>
                           </div>
@@ -788,17 +797,33 @@ export function SlotBookingFlow({
                           合計料金
                         </span>
                         <span className="text-2xl font-bold text-theme-text-primary">
-                          {allowMultiple && selectedSlots.length > 0
-                            ? selectedSlots.reduce(
-                                (sum, slot) => sum + slot.price_per_person,
-                                0
-                              ) === 0
-                              ? '無料'
-                              : `¥${selectedSlots.reduce((sum, slot) => sum + slot.price_per_person, 0).toLocaleString()}`
-                            : (selectedSlot?.price_per_person ||
-                                  session.price_per_person) === 0
-                              ? '無料'
-                              : `¥${(selectedSlot?.price_per_person || session.price_per_person).toLocaleString()}`}
+                          {allowMultiple && selectedSlots.length > 0 ? (
+                            selectedSlots.reduce(
+                              (sum, slot) => sum + slot.price_per_person,
+                              0
+                            ) === 0 ? (
+                              '無料'
+                            ) : (
+                              <FormattedPrice
+                                value={selectedSlots.reduce(
+                                  (sum, slot) => sum + slot.price_per_person,
+                                  0
+                                )}
+                                format="simple"
+                              />
+                            )
+                          ) : (selectedSlot?.price_per_person ||
+                              session.price_per_person) === 0 ? (
+                            '無料'
+                          ) : (
+                            <FormattedPrice
+                              value={
+                                selectedSlot?.price_per_person ||
+                                session.price_per_person
+                              }
+                              format="simple"
+                            />
+                          )}
                         </span>
                       </div>
                     </div>
@@ -969,8 +994,11 @@ function SlotCard({
             <span>時間</span>
           </div>
           <div className="font-medium">
-            {formatTimeLocalized(slotStartTime, 'ja')} -{' '}
-            {formatTimeLocalized(slotEndTime, 'ja')}
+            <FormattedDateTime
+              value={slotStartTime}
+              format="time-range"
+              endValue={slotEndTime}
+            />
           </div>
         </div>
 
@@ -981,9 +1009,11 @@ function SlotCard({
             <span>料金</span>
           </div>
           <div className="font-medium">
-            {slot.price_per_person === 0
-              ? '無料'
-              : `¥${slot.price_per_person.toLocaleString()}`}
+            {slot.price_per_person === 0 ? (
+              '無料'
+            ) : (
+              <FormattedPrice value={slot.price_per_person} format="simple" />
+            )}
           </div>
         </div>
       </div>
@@ -1012,10 +1042,13 @@ function SessionInfoDisplay({
           <div>
             <div className="font-medium text-theme-text-primary">日時</div>
             <div className="text-theme-text-secondary">
-              {formatDateLocalized(startDate, 'ja', 'long')}
+              <FormattedDateTime value={startDate} format="date-long" />
               <br />
-              {formatTimeLocalized(startDate, 'ja')} -{' '}
-              {formatTimeLocalized(endDate, 'ja')}
+              <FormattedDateTime
+                value={startDate}
+                format="time-range"
+                endValue={endDate}
+              />
             </div>
           </div>
 
@@ -1035,9 +1068,14 @@ function SessionInfoDisplay({
           <div>
             <div className="font-medium text-theme-text-primary">料金</div>
             <div className="text-theme-text-secondary">
-              {session.price_per_person === 0
-                ? '無料'
-                : `¥${session.price_per_person.toLocaleString()}`}
+              {session.price_per_person === 0 ? (
+                '無料'
+              ) : (
+                <FormattedPrice
+                  value={session.price_per_person}
+                  format="simple"
+                />
+              )}
             </div>
           </div>
         </CardContent>

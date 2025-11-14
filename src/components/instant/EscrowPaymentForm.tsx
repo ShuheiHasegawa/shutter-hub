@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { FormattedPrice } from '@/components/ui/formatted-display';
 import {
   Shield,
   CreditCard,
@@ -170,30 +171,42 @@ export function EscrowPaymentForm({
             <div className="flex justify-between text-sm">
               <span>撮影料金</span>
               <span>
-                ¥
-                {(booking.total_amount - booking.platform_fee).toLocaleString()}
+                <FormattedPrice
+                  value={booking.total_amount - booking.platform_fee}
+                  format="simple"
+                />
               </span>
             </div>
             <div className="flex justify-between text-sm text-gray-600">
               <span>プラットフォーム手数料</span>
-              <span>¥{booking.platform_fee.toLocaleString()}</span>
+              <span>
+                <FormattedPrice value={booking.platform_fee} format="simple" />
+              </span>
             </div>
             <div className="flex justify-between text-sm">
               <span>緊急料金</span>
-              <span>¥{booking.rush_fee.toLocaleString()}</span>
+              <span>
+                <FormattedPrice value={booking.rush_fee} format="simple" />
+              </span>
             </div>
             <div className="flex justify-between text-sm">
               <span>休日料金</span>
-              <span>¥{booking.holiday_fee.toLocaleString()}</span>
+              <span>
+                <FormattedPrice value={booking.holiday_fee} format="simple" />
+              </span>
             </div>
             <div className="flex justify-between text-sm">
               <span>夜間料金</span>
-              <span>¥{booking.night_fee.toLocaleString()}</span>
+              <span>
+                <FormattedPrice value={booking.night_fee} format="simple" />
+              </span>
             </div>
             <Separator />
             <div className="flex justify-between font-medium">
               <span>合計</span>
-              <span>¥{booking.total_amount.toLocaleString()}</span>
+              <span>
+                <FormattedPrice value={booking.total_amount} format="simple" />
+              </span>
             </div>
           </div>
         </div>
@@ -253,8 +266,12 @@ export function EscrowPaymentForm({
                 </>
               ) : (
                 <>
-                  <CreditCard className="h-4 w-4 mr-2" />¥
-                  {booking.total_amount.toLocaleString()}を預託決済
+                  <CreditCard className="h-4 w-4 mr-2" />
+                  <FormattedPrice
+                    value={booking.total_amount}
+                    format="simple"
+                  />
+                  を預託決済
                 </>
               )}
             </Button>

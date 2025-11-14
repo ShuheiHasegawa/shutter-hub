@@ -20,6 +20,7 @@ import {
 import { createPaymentIntent, confirmPayment } from '@/app/actions/payments';
 import { calculateTotalFees } from '@/lib/stripe/config';
 import type { PaymentFormData, PaymentResult } from '@/types/payment';
+import { FormattedPrice } from '@/components/ui/formatted-display';
 
 interface PaymentFormProps {
   bookingId: string;
@@ -200,24 +201,34 @@ export function PaymentForm({
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span>撮影料金</span>
-              <span>¥{amount.toLocaleString()}</span>
+              <span>
+                <FormattedPrice value={amount} format="simple" />
+              </span>
             </div>
             <div className="flex justify-between text-gray-600">
               <span>プラットフォーム手数料 (10%)</span>
-              <span>¥{fees.platformFee.toLocaleString()}</span>
+              <span>
+                <FormattedPrice value={fees.platformFee} format="simple" />
+              </span>
             </div>
             <div className="flex justify-between text-gray-600">
               <span>決済手数料 (3.6%)</span>
-              <span>¥{fees.stripeFee.toLocaleString()}</span>
+              <span>
+                <FormattedPrice value={fees.stripeFee} format="simple" />
+              </span>
             </div>
             <Separator />
             <div className="flex justify-between font-medium">
               <span>お支払い金額</span>
-              <span>¥{amount.toLocaleString()}</span>
+              <span>
+                <FormattedPrice value={amount} format="simple" />
+              </span>
             </div>
             <div className="flex justify-between text-sm text-gray-600">
               <span>主催者受取額</span>
-              <span>¥{fees.organizerPayout.toLocaleString()}</span>
+              <span>
+                <FormattedPrice value={fees.organizerPayout} format="simple" />
+              </span>
             </div>
           </div>
         </div>
@@ -308,8 +319,9 @@ export function PaymentForm({
               </>
             ) : (
               <>
-                <CheckCircle className="h-4 w-4 mr-2" />¥
-                {amount.toLocaleString()}を支払う
+                <CheckCircle className="h-4 w-4 mr-2" />
+                <FormattedPrice value={amount} format="simple" />
+                を支払う
               </>
             )}
           </Button>

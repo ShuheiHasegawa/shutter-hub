@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ReviewCard } from '@/components/reviews/ReviewCard';
 import { getUserReviews } from '@/app/actions/reviews';
+import { FormattedDateTime } from '@/components/ui/formatted-display';
 import {
   Star,
   Users,
@@ -281,9 +282,10 @@ export function UserReviewList({ userId }: UserReviewListProps) {
 
                             <div className="flex items-center justify-between text-sm text-muted-foreground">
                               <span>
-                                {new Date(review.created_at).toLocaleDateString(
-                                  'ja-JP'
-                                )}
+                                <FormattedDateTime
+                                  value={new Date(review.created_at)}
+                                  format="date-short"
+                                />
                               </span>
                               {review.helpful_count > 0 && (
                                 <span>

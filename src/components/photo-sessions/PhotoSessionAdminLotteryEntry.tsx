@@ -26,8 +26,11 @@ import {
   TrophyIcon,
   ShieldCheckIcon,
 } from 'lucide-react';
-import { formatDateLocalized, formatTimeLocalized } from '@/lib/utils/date';
-import { useTranslations, useLocale } from 'next-intl';
+import { useTranslations } from 'next-intl';
+import {
+  FormattedDateTime,
+  FormattedPrice,
+} from '@/components/ui/formatted-display';
 
 interface PhotoSessionAdminLotteryEntryProps {
   adminLotterySessionId: string;
@@ -45,7 +48,6 @@ export function PhotoSessionAdminLotteryEntry({
   const t = useTranslations('adminLottery');
   const tErrors = useTranslations('errors');
   const tSuccess = useTranslations('success');
-  const locale = useLocale();
 
   const [adminLotterySession, setAdminLotterySession] =
     useState<AdminLotteryPhotoSessionWithDetails | null>(null);
@@ -272,10 +274,18 @@ export function PhotoSessionAdminLotteryEntry({
           <div className="flex items-center gap-2">
             <CalendarIcon className="h-4 w-4 text-muted-foreground" />
             <div>
-              <div>{formatDateLocalized(sessionStartDate, locale, 'long')}</div>
+              <div>
+                <FormattedDateTime
+                  value={sessionStartDate}
+                  format="date-long"
+                />
+              </div>
               <div className="text-muted-foreground">
-                {formatTimeLocalized(sessionStartDate, locale)} -{' '}
-                {formatTimeLocalized(sessionEndDate, locale)}
+                <FormattedDateTime
+                  value={sessionStartDate}
+                  format="time-range"
+                  endValue={sessionEndDate}
+                />
               </div>
             </div>
           </div>
@@ -302,9 +312,14 @@ export function PhotoSessionAdminLotteryEntry({
           <div className="flex items-center gap-2">
             <CircleDollarSignIcon className="h-4 w-4 text-muted-foreground" />
             <span>
-              {photo_session.price_per_person === 0
-                ? t('free')
-                : `¥${photo_session.price_per_person.toLocaleString()}`}
+              {photo_session.price_per_person === 0 ? (
+                t('free')
+              ) : (
+                <FormattedPrice
+                  value={photo_session.price_per_person}
+                  format="simple"
+                />
+              )}
             </span>
           </div>
         </div>
@@ -317,10 +332,15 @@ export function PhotoSessionAdminLotteryEntry({
               <ClockIcon className="h-4 w-4 text-muted-foreground" />
               <span className="font-medium">{t('schedule.entryPeriod')}:</span>
               <span>
-                {formatDateLocalized(entryStartDate, locale)}{' '}
-                {formatTimeLocalized(entryStartDate, locale)} -
-                {formatDateLocalized(entryEndDate, locale)}{' '}
-                {formatTimeLocalized(entryEndDate, locale)}
+                <FormattedDateTime
+                  value={entryStartDate}
+                  format="datetime-short"
+                />{' '}
+                -{' '}
+                <FormattedDateTime
+                  value={entryEndDate}
+                  format="datetime-short"
+                />
               </span>
             </div>
             <div className="flex items-center gap-2">
@@ -329,8 +349,10 @@ export function PhotoSessionAdminLotteryEntry({
                 {t('schedule.selectionDeadline')}:
               </span>
               <span>
-                {formatDateLocalized(selectionDeadlineDate, locale)}{' '}
-                {formatTimeLocalized(selectionDeadlineDate, locale)}
+                <FormattedDateTime
+                  value={selectionDeadlineDate}
+                  format="datetime-short"
+                />
               </span>
             </div>
           </div>

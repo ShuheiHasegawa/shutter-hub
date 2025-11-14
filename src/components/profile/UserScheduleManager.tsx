@@ -28,6 +28,7 @@ import {
   useCalendarYear,
 } from '@/components/ui/shadcn-io/calendar';
 import { Clock, Plus, Copy, Calendar, AlertCircle } from 'lucide-react';
+import { FormattedDateTime } from '@/components/ui/formatted-display';
 import { getDaysInMonth, getDay } from 'date-fns';
 import { toast } from 'sonner';
 import {
@@ -894,7 +895,12 @@ export function UserScheduleManager({
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Calendar className="h-5 w-5" />
-                スケジュール編集 - {selectedDate?.toLocaleDateString('ja-JP')}
+                スケジュール編集 -{' '}
+                {selectedDate ? (
+                  <FormattedDateTime value={selectedDate} format="date-short" />
+                ) : (
+                  ''
+                )}
               </DialogTitle>
             </DialogHeader>
 
@@ -1120,7 +1126,12 @@ export function UserScheduleManager({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Calendar className="h-5 w-5" />
-              空き時間詳細 - {selectedDate?.toLocaleDateString('ja-JP')}
+              空き時間詳細 -{' '}
+              {selectedDate ? (
+                <FormattedDateTime value={selectedDate} format="date-short" />
+              ) : (
+                ''
+              )}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-3">

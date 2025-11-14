@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { User, Calendar, Mail, Clock, Settings } from 'lucide-react';
-import { formatDateLocalized } from '@/lib/utils/date';
+import { FormattedDateTime } from '@/components/ui/formatted-display';
 import { logger } from '@/lib/utils/logger';
 import Link from 'next/link';
 import type { OrganizerModelWithProfile } from '@/types/organizer-model';
@@ -154,11 +154,10 @@ export function OrganizerModelsCommon({
                 <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground mt-1">
                   <Calendar className="h-3 w-3" />
                   <span>
-                    {formatDateLocalized(
-                      new Date(model.joined_at),
-                      'ja',
-                      'short'
-                    )}
+                    <FormattedDateTime
+                      value={new Date(model.joined_at)}
+                      format="date-short"
+                    />
                   </span>
                 </div>
               </div>
@@ -185,13 +184,14 @@ export function OrganizerModelsCommon({
                 <Clock className="h-3 w-3" />
                 <span>
                   最終活動:{' '}
-                  {model.last_activity_at
-                    ? formatDateLocalized(
-                        new Date(model.last_activity_at),
-                        'ja',
-                        'short'
-                      )
-                    : '未記録'}
+                  {model.last_activity_at ? (
+                    <FormattedDateTime
+                      value={new Date(model.last_activity_at)}
+                      format="date-short"
+                    />
+                  ) : (
+                    '未記録'
+                  )}
                 </span>
               </div>
 

@@ -11,6 +11,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, CreditCard, Calendar } from 'lucide-react';
 import { type SubscriptionPlan } from '@/app/actions/subscription-management';
+import { FormattedPrice } from '@/components/ui/formatted-display';
 
 interface PlanChangeConfirmDialogProps {
   isOpen: boolean;
@@ -66,9 +67,11 @@ export function PlanChangeConfirmDialog({
             <div className="text-right">
               <p className="text-sm text-muted-foreground">月額</p>
               <p className="text-lg font-bold">
-                {currentPlan?.price
-                  ? `¥${currentPlan.price.toLocaleString()}`
-                  : '無料'}
+                {currentPlan?.price ? (
+                  <FormattedPrice value={currentPlan.price} format="simple" />
+                ) : (
+                  '無料'
+                )}
               </p>
             </div>
           </div>
@@ -87,9 +90,11 @@ export function PlanChangeConfirmDialog({
             <div className="text-right">
               <p className="text-sm text-muted-foreground">月額</p>
               <p className="text-lg font-bold">
-                {newPlan.price > 0
-                  ? `¥${newPlan.price.toLocaleString()}`
-                  : '無料'}
+                {newPlan.price > 0 ? (
+                  <FormattedPrice value={newPlan.price} format="simple" />
+                ) : (
+                  '無料'
+                )}
               </p>
             </div>
           </div>
@@ -108,7 +113,9 @@ export function PlanChangeConfirmDialog({
                 <div className="space-y-1 text-sm text-yellow-800">
                   <p>
                     • 月額料金が{' '}
-                    <strong>¥{priceDifference.toLocaleString()}</strong>{' '}
+                    <strong>
+                      <FormattedPrice value={priceDifference} format="simple" />
+                    </strong>{' '}
                     増加します
                   </p>
                   <p>• 次回請求日から新料金が適用されます</p>
@@ -118,7 +125,9 @@ export function PlanChangeConfirmDialog({
                 <div className="space-y-1 text-sm text-yellow-800">
                   <p>
                     • 月額料金が{' '}
-                    <strong>¥{priceDifference.toLocaleString()}</strong>{' '}
+                    <strong>
+                      <FormattedPrice value={priceDifference} format="simple" />
+                    </strong>{' '}
                     減少します
                   </p>
                   <p>• 現在の請求期間終了時に新プランに変更されます</p>
@@ -171,11 +180,16 @@ export function PlanChangeConfirmDialog({
             キャンセル
           </Button>
           <Button onClick={onConfirm} disabled={isProcessing} variant="cta">
-            {isProcessing
-              ? '処理中...'
-              : isUpgrade
-                ? `¥${newPlan.price.toLocaleString()}/月で開始`
-                : 'プランを変更'}
+            {isProcessing ? (
+              '処理中...'
+            ) : isUpgrade ? (
+              <>
+                <FormattedPrice value={newPlan.price} format="simple" />
+                /月で開始
+              </>
+            ) : (
+              'プランを変更'
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

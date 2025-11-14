@@ -36,6 +36,10 @@ import { createClient } from '@/lib/supabase/client';
 import { useGeolocation } from '@/hooks/useGeolocation';
 import { NotificationCenter } from '@/components/instant/NotificationCenter';
 import { useRouter } from 'next/navigation';
+import {
+  FormattedPrice,
+  FormattedDateTime,
+} from '@/components/ui/formatted-display';
 import type { InstantPhotoRequest } from '@/types/instant-photo';
 
 interface PhotographerInstantDashboardProps {
@@ -405,13 +409,19 @@ export function PhotographerInstantDashboard({
                           </Badge>
                         </div>
                         <div className="text-sm text-muted-foreground">
-                          {new Date(request.created_at).toLocaleTimeString()}
+                          <FormattedDateTime
+                            value={request.created_at}
+                            format="time"
+                          />
                         </div>
                       </div>
 
                       <div className="text-right shrink-0">
                         <div className="text-lg font-medium text-success">
-                          ¥{request.budget.toLocaleString()}
+                          <FormattedPrice
+                            value={request.budget}
+                            format="simple"
+                          />
                         </div>
                         <div className="text-sm text-muted-foreground">
                           {request.duration}分

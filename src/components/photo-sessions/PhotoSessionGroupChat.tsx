@@ -20,7 +20,7 @@ import { useRouter } from 'next/navigation';
 interface PhotoSessionGroupChatProps {
   sessionId: string;
   sessionTitle: string;
-  sessionDate: string;
+  sessionDate: string | Date;
   sessionLocation: string;
   organizerId: string;
   currentUserId: string;
@@ -161,7 +161,11 @@ export function PhotoSessionGroupChat({
     setCreating(true);
     try {
       const groupName = `${sessionId} - 撮影会チャット`;
-      const groupDescription = `${sessionTitle}（${sessionDate} ${sessionLocation}）の専用チャットです。`;
+      const sessionDateStr =
+        typeof sessionDate === 'string'
+          ? sessionDate
+          : sessionDate.toISOString();
+      const groupDescription = `${sessionTitle}（${sessionDateStr} ${sessionLocation}）の専用チャットです。`;
 
       // 主催者以外のメンバーIDを渡す（createGroupConversationで主催者は自動で追加される）
       const memberIds = confirmedParticipants;

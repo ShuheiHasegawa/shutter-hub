@@ -23,6 +23,7 @@ import {
   checkPhotographerTimeout,
   getInstantPhotoRequest,
 } from '@/app/actions/instant-photo';
+import { FormattedPrice } from '@/components/ui/formatted-display';
 import type { InstantPhotoRequest } from '@/types/instant-photo';
 
 interface GuestApprovalPanelProps {
@@ -284,7 +285,7 @@ export function GuestApprovalPanel({
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">撮影料金</span>
             <span className="text-lg font-semibold">
-              ¥{request.budget.toLocaleString()}
+              <FormattedPrice value={request.budget} format="simple" />
             </span>
           </div>
         </div>

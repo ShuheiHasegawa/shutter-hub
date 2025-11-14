@@ -16,8 +16,11 @@ import {
   MapPinIcon,
 } from 'lucide-react';
 import { getPhotoSessionParticipants } from '@/app/actions/photo-session-participants';
-import { formatDateLocalized, formatTimeLocalized } from '@/lib/utils/date';
 import { PageTitleHeader } from '@/components/ui/page-title-header';
+import {
+  FormattedDateTime,
+  FormattedPrice,
+} from '@/components/ui/formatted-display';
 
 interface AnalyticsPageProps {
   params: Promise<{ locale: string; id: string }>;
@@ -112,10 +115,19 @@ export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
       }))
     : [];
 
+  // ユーザーのロケールとタイムゾーンを取得
+  const userLocale = user.user_metadata?.language === 'en' ? 'en-US' : 'ja-JP';
+  const userTimezone = user.user_metadata?.timezone || 'Asia/Tokyo';
+
   // 予約トレンド（日別）
   const bookingTrend = participants.reduce(
     (acc, participant) => {
-      const date = new Date(participant.created_at).toLocaleDateString();
+      const date = new Intl.DateTimeFormat(userLocale, {
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+        timeZone: userTimezone,
+      }).format(new Date(participant.created_at));
       acc[date] = (acc[date] || 0) + 1;
       return acc;
     },
@@ -181,10 +193,10 @@ export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
                 <div>
                   <p className="text-sm text-muted-foreground">予想収益</p>
                   <p className="text-3xl font-bold">
-                    ¥{expectedRevenue.toLocaleString()}
+                    <FormattedPrice value={expectedRevenue} format="simple" />
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    / ¥{maxRevenue.toLocaleString()}
+                    / <FormattedPrice value={maxRevenue} format="simple" />
                   </p>
                 </div>
                 <CircleDollarSignIcon className="h-8 w-8 text-yellow-600" />
@@ -203,7 +215,7 @@ export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
                     {isPast ? '終了' : isOngoing ? '開催中' : '予定'}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    {formatDateLocalized(startDate, 'ja', 'short')}
+                    <FormattedDateTime value={startDate} format="date-short" />
                   </p>
                 </div>
                 <CalendarIcon className="h-8 w-8 text-purple-600" />
@@ -313,11 +325,14 @@ export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
                 <CalendarIcon className="h-5 w-5 text-muted-foreground" />
                 <div>
                   <div className="font-medium">
-                    {formatDateLocalized(startDate, 'ja', 'long')}
+                    <FormattedDateTime value={startDate} format="date-long" />
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    {formatTimeLocalized(startDate, 'ja')} -{' '}
-                    {formatTimeLocalized(endDate, 'ja')}
+                    <FormattedDateTime
+                      value={startDate}
+                      format="time-range"
+                      endValue={endDate}
+                    />
                   </div>
                 </div>
               </div>
@@ -338,9 +353,17 @@ export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
                 <CircleDollarSignIcon className="h-5 w-5 text-muted-foreground" />
                 <div>
                   <div className="font-medium">
-                    {session.price_per_person === 0
-                      ? '無料'
-                      : `¥${session.price_per_person.toLocaleString()}/人`}
+                    {session.price_per_person === 0 ? (
+                      '無料'
+                    ) : (
+                      <>
+                        <FormattedPrice
+                          value={session.price_per_person}
+                          format="simple"
+                        />
+                        /人
+                      </>
+                    )}
                   </div>
                   <div className="text-sm text-muted-foreground">
                     {hasSlots ? '撮影枠制' : session.booking_type}
@@ -387,7 +410,7 @@ export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
                     </div>
                     <div className="text-right">
                       <div className="font-bold">
-                        ¥{slot.revenue.toLocaleString()}
+                        <FormattedPrice value={slot.revenue} format="simple" />
                       </div>
                       <Progress value={slot.rate} className="w-24 mt-1" />
                     </div>

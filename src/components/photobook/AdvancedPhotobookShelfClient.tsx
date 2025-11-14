@@ -22,6 +22,7 @@ import type {
   PhotobookListItem,
   PhotobookPlanLimits,
 } from '@/types/quick-photobook';
+import { FormattedDateTime } from '@/components/ui/formatted-display';
 
 interface AdvancedPhotobookShelfClientProps {
   photobooks: PhotobookListItem[];
@@ -164,7 +165,10 @@ export function AdvancedPhotobookShelfClient({
                 <div className="space-y-2">
                   <div className="flex items-center text-xs opacity-70">
                     <Calendar className="h-3 w-3 mr-1" />
-                    {new Date(photobook.updated_at).toLocaleDateString('ja-JP')}
+                    <FormattedDateTime
+                      value={new Date(photobook.updated_at)}
+                      format="date-short"
+                    />
                   </div>
 
                   <div className="flex items-center justify-between">

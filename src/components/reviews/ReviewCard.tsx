@@ -3,9 +3,7 @@
 import { useState } from 'react';
 import { logger } from '@/lib/utils/logger';
 import { useTranslations } from 'next-intl';
-import { format } from 'date-fns';
-import { ja, enUS } from 'date-fns/locale';
-import { useLocale } from 'next-intl';
+import { FormattedDateTime } from '@/components/ui/formatted-display';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -74,8 +72,6 @@ export function ReviewCard({
   const { toast } = useToast();
   const t = useTranslations('reviews');
   const tCommon = useTranslations('common');
-  const locale = useLocale();
-  const dateLocale = locale === 'ja' ? ja : enUS;
 
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
   const [reportReason, setReportReason] = useState<string>('');
@@ -199,10 +195,6 @@ export function ReviewCard({
     );
   };
 
-  const formatDate = (dateString: string) => {
-    return format(new Date(dateString), 'PPP', { locale: dateLocale });
-  };
-
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -269,7 +261,10 @@ export function ReviewCard({
                 </div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Calendar className="h-3 w-3" />
-                  {formatDate(review.created_at)}
+                  <FormattedDateTime
+                    value={new Date(review.created_at)}
+                    format="date-long"
+                  />
                 </div>
               </div>
             </div>

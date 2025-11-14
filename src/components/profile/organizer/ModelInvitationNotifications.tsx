@@ -34,6 +34,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { FormattedDateTime } from '@/components/ui/formatted-display';
 
 interface ModelInvitationNotificationsProps {
   className?: string;
@@ -103,25 +104,6 @@ export function ModelInvitationNotifications({
   useEffect(() => {
     loadInvitations();
   }, []);
-
-  // 日付フォーマット
-  const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleString('ja-JP', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('ja-JP', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
 
   // 期限切れ判定
   const isExpiring = (expiresAt: string) => {
@@ -346,7 +328,11 @@ export function ModelInvitationNotifications({
                       <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4" />
                         <span>
-                          招待送信: {formatDateTime(invitation.created_at)}
+                          招待送信:{' '}
+                          <FormattedDateTime
+                            value={new Date(invitation.created_at)}
+                            format="datetime-short"
+                          />
                         </span>
                       </div>
 
@@ -361,7 +347,11 @@ export function ModelInvitationNotifications({
                                   : ''
                               }`}
                             >
-                              期限: {formatDate(invitation.expires_at)}
+                              期限:{' '}
+                              <FormattedDateTime
+                                value={new Date(invitation.expires_at)}
+                                format="date-short"
+                              />
                               {isExpiring(invitation.expires_at) && (
                                 <span className="ml-1">(まもなく期限切れ)</span>
                               )}

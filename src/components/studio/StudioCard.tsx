@@ -16,6 +16,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { StudioWithStats } from '@/types/database';
 import { CardFavoriteButton } from '@/components/ui/favorite-heart-button';
+import { FormattedPrice } from '@/components/ui/formatted-display';
 
 interface StudioCardProps {
   studio: StudioWithStats;
@@ -45,15 +46,6 @@ export function StudioCard({
     } else {
       router.push(`/studios/${studio.id}`);
     }
-  };
-
-  const formatPriceRange = () => {
-    if (studio.hourly_rate_min && studio.hourly_rate_max) {
-      return `¥${studio.hourly_rate_min.toLocaleString()} - ¥${studio.hourly_rate_max.toLocaleString()}`;
-    } else if (studio.hourly_rate_min) {
-      return `¥${studio.hourly_rate_min.toLocaleString()}～`;
-    }
-    return '料金応相談';
   };
 
   const formatUpdateTime = (updatedAt: string) => {
@@ -202,7 +194,31 @@ export function StudioCard({
 
           <div className="flex items-center gap-2 text-sm">
             <CurrencyYenIcon className="w-4 h-4 flex-shrink-0" />
-            <span>{formatPriceRange()}</span>
+            <span>
+              {studio.hourly_rate_min && studio.hourly_rate_max ? (
+                <>
+                  <FormattedPrice
+                    value={studio.hourly_rate_min}
+                    format="simple"
+                  />{' '}
+                  -{' '}
+                  <FormattedPrice
+                    value={studio.hourly_rate_max}
+                    format="simple"
+                  />
+                </>
+              ) : studio.hourly_rate_min ? (
+                <>
+                  <FormattedPrice
+                    value={studio.hourly_rate_min}
+                    format="simple"
+                  />
+                  ～
+                </>
+              ) : (
+                '料金応相談'
+              )}
+            </span>
           </div>
         </div>
 

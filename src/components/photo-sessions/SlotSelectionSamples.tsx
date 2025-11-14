@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -23,7 +23,11 @@ import {
   Clock,
 } from 'lucide-react';
 import { PhotoSessionSlot } from '@/types/photo-session';
-import { formatTimeLocalized } from '@/lib/utils/date';
+import {
+  FormattedDateTime,
+  FormattedPrice,
+} from '@/components/ui/formatted-display';
+import { useAuth } from '@/hooks/useAuth';
 
 // サンプルデータ
 const sampleSlots: PhotoSessionSlot[] = [
@@ -265,8 +269,11 @@ export function StepBookingFlow() {
                             時間
                           </div>
                           <div className="font-bold text-gray-900 dark:text-gray-100">
-                            {formatTimeLocalized(slotStartTime, 'ja')} -{' '}
-                            {formatTimeLocalized(slotEndTime, 'ja')}
+                            <FormattedDateTime
+                              value={slotStartTime}
+                              format="time-range"
+                              endValue={slotEndTime}
+                            />
                           </div>
                         </div>
                         <div className="text-center">
@@ -275,7 +282,10 @@ export function StepBookingFlow() {
                             <span>料金</span>
                           </div>
                           <div className="font-bold text-gray-900 dark:text-gray-100">
-                            ¥{slot.price_per_person.toLocaleString()}
+                            <FormattedPrice
+                              value={slot.price_per_person}
+                              format="simple"
+                            />
                           </div>
                         </div>
                       </div>
@@ -310,15 +320,11 @@ export function StepBookingFlow() {
                       時間:
                     </span>
                     <span className="font-medium text-blue-900 dark:text-blue-100">
-                      {formatTimeLocalized(
-                        new Date(selectedSlot.start_time),
-                        'ja'
-                      )}{' '}
-                      -{' '}
-                      {formatTimeLocalized(
-                        new Date(selectedSlot.end_time),
-                        'ja'
-                      )}
+                      <FormattedDateTime
+                        value={new Date(selectedSlot.start_time)}
+                        format="time-range"
+                        endValue={new Date(selectedSlot.end_time)}
+                      />
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -326,7 +332,10 @@ export function StepBookingFlow() {
                       料金:
                     </span>
                     <span className="font-medium text-blue-900 dark:text-blue-100">
-                      ¥{selectedSlot.price_per_person.toLocaleString()}
+                      <FormattedPrice
+                        value={selectedSlot.price_per_person}
+                        format="simple"
+                      />
                     </span>
                   </div>
                 </div>
@@ -395,6 +404,7 @@ export function StepBookingFlow() {
  * 提案2: ActionSheet活用
  */
 export function ActionSheetBookingFlow() {
+  const { user } = useAuth();
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [isBooking, setIsBooking] = useState(false);
@@ -417,6 +427,20 @@ export function ActionSheetBookingFlow() {
     setSelectedSlotId(null);
   };
 
+  // 時刻フォーマット関数（user_metadataからlocaleとtimezoneを取得）
+  const formatTimeString = useCallback(
+    (date: Date): string => {
+      const locale = user?.user_metadata?.language === 'en' ? 'en-US' : 'ja-JP';
+      const timeZone = user?.user_metadata?.timezone || 'Asia/Tokyo';
+      return new Intl.DateTimeFormat(locale, {
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone,
+      }).format(date);
+    },
+    [user]
+  );
+
   // ActionSheet用のアクションボタンを生成
   const slotActions: ActionButton[] = sampleSlots.map(slot => {
     const isSlotFull = slot.current_participants >= slot.max_participants;
@@ -425,7 +449,7 @@ export function ActionSheetBookingFlow() {
 
     return {
       id: slot.id,
-      label: `枠 ${slot.slot_number} (${formatTimeLocalized(slotStartTime, 'ja')} - ${formatTimeLocalized(slotEndTime, 'ja')})`,
+      label: `枠 ${slot.slot_number} (${formatTimeString(slotStartTime)} - ${formatTimeString(slotEndTime)})`,
       variant: isSlotFull ? 'outline' : 'default',
       onClick: () => !isSlotFull && handleSlotSelect(slot.id),
       disabled: isSlotFull,
@@ -472,9 +496,17 @@ export function ActionSheetBookingFlow() {
               </h4>
               <div className="text-sm text-blue-800 dark:text-blue-200">
                 枠 {selectedSlot.slot_number}:{' '}
-                {formatTimeLocalized(new Date(selectedSlot.start_time), 'ja')} -{' '}
-                {formatTimeLocalized(new Date(selectedSlot.end_time), 'ja')} ( ¥
-                {selectedSlot.price_per_person.toLocaleString()})
+                <FormattedDateTime
+                  value={new Date(selectedSlot.start_time)}
+                  format="time-range"
+                  endValue={new Date(selectedSlot.end_time)}
+                />{' '}
+                (
+                <FormattedPrice
+                  value={selectedSlot.price_per_person}
+                  format="simple"
+                />
+                )
               </div>
             </div>
           )}
@@ -509,15 +541,11 @@ export function ActionSheetBookingFlow() {
                           時間:
                         </span>
                         <span className="font-medium text-gray-900 dark:text-gray-100">
-                          {formatTimeLocalized(
-                            new Date(selectedSlot.start_time),
-                            'ja'
-                          )}{' '}
-                          -{' '}
-                          {formatTimeLocalized(
-                            new Date(selectedSlot.end_time),
-                            'ja'
-                          )}
+                          <FormattedDateTime
+                            value={new Date(selectedSlot.start_time)}
+                            format="time-range"
+                            endValue={new Date(selectedSlot.end_time)}
+                          />
                         </span>
                       </div>
                       <div className="flex justify-between">
@@ -525,7 +553,10 @@ export function ActionSheetBookingFlow() {
                           料金:
                         </span>
                         <span className="font-medium text-gray-900 dark:text-gray-100">
-                          ¥{selectedSlot.price_per_person.toLocaleString()}
+                          <FormattedPrice
+                            value={selectedSlot.price_per_person}
+                            format="simple"
+                          />
                         </span>
                       </div>
                     </div>
