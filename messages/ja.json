@@ -1651,5 +1651,43 @@
       "title": "このスタジオは一時的に非表示になっています",
       "description": "複数の報告により一時的に非表示になっています。"
     }
+  },
+  "notificationMessages": {
+    "photoSession": {
+      "bookingConfirmed": {
+        "title": "予約が確定しました",
+        "message": "{title}の予約が確定しました。",
+        "organizerTitle": "新しい予約が入りました",
+        "organizerMessage": "{userName}さんが{title}を予約しました。"
+      },
+      "bookingCancelled": {
+        "title": "予約をキャンセルしました",
+        "message": "{title}の予約をキャンセルしました。",
+        "organizerTitle": "予約がキャンセルされました",
+        "organizerMessage": "{userName}さんが{title}の予約をキャンセルしました。"
+      },
+      "slotAvailable": {
+        "title": "キャンセル待ちから繰り上げ当選しました",
+        "message": "{title}のキャンセル待ちから繰り上げ当選しました。予約を確定してください。"
+      },
+      "participantMessage": {
+        "title": "撮影会主催者からのメッセージ",
+        "message": "{message}"
+      }
+    },
+    "instantPhoto": {
+      "matchFound": {
+        "title": "カメラマンとのマッチングが完了しました",
+        "message": "{photographerName}さんとのマッチングが完了しました。決済に進んでください。"
+      },
+      "paymentReceived": {
+        "title": "決済が完了しました",
+        "message": "{guestName}さんからの決済が完了しました。撮影を開始できます。"
+      },
+      "photosDelivered": {
+        "title": "写真が配信されました",
+        "message": "{photographerName}さんから写真が配信されました。"
+      }
+    }
   }
 }

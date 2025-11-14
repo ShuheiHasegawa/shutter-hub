@@ -1600,5 +1600,43 @@
       "title": "This studio is temporarily hidden",
       "description": "This studio has been temporarily hidden due to multiple reports."
     }
+  },
+  "notificationMessages": {
+    "photoSession": {
+      "bookingConfirmed": {
+        "title": "Booking Confirmed",
+        "message": "Your booking for {title} has been confirmed.",
+        "organizerTitle": "New Booking Received",
+        "organizerMessage": "{userName} has booked {title}."
+      },
+      "bookingCancelled": {
+        "title": "Booking Cancelled",
+        "message": "Your booking for {title} has been cancelled.",
+        "organizerTitle": "Booking Cancelled",
+        "organizerMessage": "{userName} has cancelled their booking for {title}."
+      },
+      "slotAvailable": {
+        "title": "Promoted from Waitlist",
+        "message": "You have been promoted from the waitlist for {title}. Please confirm your booking."
+      },
+      "participantMessage": {
+        "title": "Message from Organizer",
+        "message": "{message}"
+      }
+    },
+    "instantPhoto": {
+      "matchFound": {
+        "title": "Photographer Matched",
+        "message": "You have been matched with {photographerName}. Please proceed to payment."
+      },
+      "paymentReceived": {
+        "title": "Payment Received",
+        "message": "Payment from {guestName} has been received. You can start the photo session."
+      },
+      "photosDelivered": {
+        "title": "Photos Delivered",
+        "message": "Photos have been delivered by {photographerName}."
+      }
+    }
   }
 }

@@ -28,6 +28,7 @@ export type NotificationType =
   | 'message_new_message'
   | 'message_group_invite'
   | 'message_group_message'
+  | 'participant_message'
 
   // レビュー関連
   | 'review_received'

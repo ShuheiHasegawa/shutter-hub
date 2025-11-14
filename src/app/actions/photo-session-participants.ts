@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/utils/logger';
+import { createNotification } from '@/app/actions/notifications';
 
 export interface PhotoSessionParticipant {
   id: string;
@@ -81,5 +82,96 @@ export async function checkUserParticipation(
   } catch (error) {
     logger.error('Error in checkUserParticipation:', error);
     return false;
+  }
+}
+
+/**
+ * 参加者にメッセージを送信（通知）
+ */
+export async function sendParticipantMessage(
+  sessionId: string,
+  participantUserIds: string[],
+  message: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabase = await createClient();
+
+    // 認証チェック
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      return { success: false, error: '認証が必要です' };
+    }
+
+    // 撮影会情報と運営者情報を取得
+    const { data: photoSession, error: sessionError } = await supabase
+      .from('photo_sessions')
+      .select(
+        `
+        *,
+        organizer:profiles!organizer_id(
+          id,
+          display_name,
+          avatar_url
+        )
+      `
+      )
+      .eq('id', sessionId)
+      .single();
+
+    if (sessionError || !photoSession) {
+      logger.error('撮影会情報取得エラー:', sessionError);
+      return { success: false, error: '撮影会情報の取得に失敗しました' };
+    }
+
+    // 運営者権限チェック
+    const organizer = Array.isArray(photoSession.organizer)
+      ? photoSession.organizer[0]
+      : photoSession.organizer;
+    if (photoSession.organizer_id !== user.id) {
+      return { success: false, error: '権限がありません' };
+    }
+
+    // 各参加者に通知を送信（多言語対応）
+    const notificationPromises = participantUserIds.map(
+      async participantUserId => {
+        const { getNotificationMessage } = await import(
+          '@/lib/utils/notification-i18n'
+        );
+        const notification = await getNotificationMessage(
+          participantUserId,
+          'notificationMessages.photoSession.participantMessage',
+          { message: message }
+        );
+
+        await createNotification({
+          userId: participantUserId,
+          type: 'participant_message',
+          category: 'photo_session',
+          priority: 'normal',
+          title: notification.title,
+          message: notification.message,
+          data: {
+            photo_session_id: sessionId,
+            photo_session_title: photoSession.title,
+            organizer_id: organizer?.id,
+            organizer_name: organizer?.display_name,
+            from_organizer: true,
+          },
+          relatedEntityType: 'photo_session',
+          relatedEntityId: sessionId,
+          actionUrl: `/photo-sessions/${sessionId}`,
+          actionLabel: '撮影会詳細を見る',
+        });
+      }
+    );
+
+    await Promise.all(notificationPromises);
+
+    return { success: true };
+  } catch (error) {
+    logger.error('参加者メッセージ送信エラー:', error);
+    return { success: false, error: 'メッセージの送信に失敗しました' };
   }
 }
