@@ -1494,6 +1494,71 @@ type PriceFormat =
   | 'breakdown'; // ¥5,000 (税込)
 ```
 
+### **新規実装時の必須注意点**
+
+#### **🚨 絶対に守るべきルール**
+
+1. **`FormattedDateTime`と`FormattedPrice`コンポーネントの使用が必須**
+   - 新規実装時は必ずこれらのコンポーネントを使用すること
+   - `toLocaleString()`、`toLocaleDateString()`、`toLocaleTimeString()`の直接使用は**禁止**
+   - `formatDateLocalized`や`formatTimeLocalized`関数の使用は**推奨されない**（`FormattedDateTime`コンポーネントを使用すること）
+
+2. **ユーザー設定の自動反映**
+   - `FormattedDateTime`は`user_metadata.timezone`を自動取得して適用
+   - `FormattedPrice`は`user_metadata.currency`を自動取得して適用
+   - 追加の設定取得処理は不要
+
+3. **例外ケース**
+   - 通貨以外の数値表示（例：収容人数、ページ数）は`toLocaleString()`で問題なし
+   - データ処理用の日付フォーマット（例：オブジェクトのキー生成）は`Intl.DateTimeFormat`で問題なし
+
+#### **新規実装時のチェックリスト**
+
+```yaml
+新規実装前の必須確認:
+  - [ ] 日時表示が必要な場合、`FormattedDateTime`コンポーネントを使用するか？
+  - [ ] 通貨表示が必要な場合、`FormattedPrice`コンポーネントを使用するか？
+  - [ ] `toLocaleString()`や`toLocaleDateString()`を直接使用していないか？
+  - [ ] `formatDateLocalized`や`formatTimeLocalized`関数を使用していないか？
+  - [ ] 適切なフォーマット（`date-short`、`date-long`、`time-range`等）を選択しているか？
+  - [ ] ユーザーのタイムゾーン・通貨設定が自動的に反映されることを理解しているか？
+
+実装完了後の確認:
+  - [ ] ブラウザで実際の表示を確認（ユーザー設定が反映されているか）
+  - [ ] タイムゾーンを変更して表示が変わることを確認
+  - [ ] 通貨設定を変更して表示が変わることを確認
+  - [ ] エラーが発生していないか確認
+```
+
+#### **よくある間違いと正しい実装**
+
+```typescript
+// ❌ 間違い1: toLocaleString()の直接使用
+<span>{new Date(session.start_time).toLocaleString('ja-JP')}</span>
+<span>¥{price.toLocaleString()}</span>
+
+// ✅ 正しい実装
+<FormattedDateTime value={new Date(session.start_time)} format="datetime-short" />
+<FormattedPrice value={price} format="simple" />
+
+// ❌ 間違い2: formatDateLocalized関数の使用
+{formatDateLocalized(startDate, locale, 'long')}
+
+// ✅ 正しい実装
+<FormattedDateTime value={startDate} format="date-long" />
+
+// ❌ 間違い3: 手動でのタイムゾーン指定
+const options = { timeZone: 'Asia/Tokyo' };
+{new Date().toLocaleString('ja-JP', options)}
+
+// ✅ 正しい実装（ユーザー設定が自動適用される）
+<FormattedDateTime value={new Date()} format="datetime-short" />
+
+// ✅ 例外: 通貨以外の数値表示は問題なし
+<span>{maxCapacity.toLocaleString()}人</span>
+<span>{pageCount.toLocaleString()}ページ</span>
+```
+
 ### **実装時の必須チェック**
 
 ```yaml
@@ -1503,11 +1568,13 @@ pre_implementation_check:
     - 'FormattedDateTime/FormattedPriceコンポーネントを使用しているか？'
     - '適切なフォーマットを選択しているか？'
     - '多言語対応が考慮されているか？'
+    - 'ユーザーのタイムゾーン・通貨設定が自動的に反映されることを理解しているか？'
 
   if_uncertain:
     - '共通コンポーネントの使用を最優先する'
     - '新しいフォーマットが必要な場合は共通コンポーネントに追加'
     - '既存の個別実装は見つけ次第共通コンポーネントに置き換える'
+    - '迷った場合は必ず`FormattedDateTime`/`FormattedPrice`を使用'
 ```
 
 ### **移行ガイドライン**
@@ -1563,9 +1630,16 @@ violation_response:
     - '実装前に必ずこのルールを確認'
     - '迷った場合は必ず共通コンポーネントを使用'
     - '新しいフォーマットが必要な場合は共通コンポーネントに追加提案'
+    - '新規実装時は必ずチェックリストを確認'
 ```
 
-この統一ルールにより、プロジェクト全体で一貫した日時・価格表示を実現し、メンテナンス性とユーザビリティを大幅に向上させます。
+### **参考情報**
+
+- **実装完了状況**: `docs/currency-timezone-settings-investigation.md`に全52ファイルの実装完了記録あり
+- **コンポーネント定義**: `src/components/ui/formatted-display.tsx`
+- **ユーザー設定取得**: `user_metadata.timezone`と`user_metadata.currency`を自動取得
+
+この統一ルールにより、プロジェクト全体で一貫した日時・価格表示を実現し、メンテナンス性とユーザビリティを大幅に向上させます。**新規実装時は必ずこのルールに従ってください。**
 
 ## 日付・時刻フォーマット
 
