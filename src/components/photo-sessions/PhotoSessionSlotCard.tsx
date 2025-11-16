@@ -21,6 +21,7 @@ import {
   Calendar,
   MapPin,
 } from 'lucide-react';
+import Image from 'next/image';
 import { PhotoSessionSlot } from '@/types/photo-session';
 import {
   calculateDiscountedPrice,
@@ -254,11 +255,13 @@ export default function PhotoSessionSlotCard({
                     <DialogHeader>
                       <DialogTitle>{t.costumePreview}</DialogTitle>
                     </DialogHeader>
-                    <div className="flex justify-center">
-                      <img
+                    <div className="relative flex justify-center max-h-96 w-full">
+                      <Image
                         src={slot.costume_image_url}
                         alt="Costume preview"
-                        className="max-w-full max-h-96 object-contain rounded-lg"
+                        fill
+                        className="object-contain rounded-lg"
+                        sizes="100vw"
                       />
                     </div>
                     {slot.costume_description && (

@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Image, Type, Square, Circle, Triangle, Star } from 'lucide-react';
+import NextImage from 'next/image';
 import { cn } from '@/lib/utils';
 // import { debugLogger } from '@/lib/utils/debug-logger';
 import { useNativeDrag, type DragItem } from './NativeDndProvider';
@@ -129,10 +130,11 @@ export const DraggableUploadedImage: React.FC<{ image: ImageResource }> = ({
       {...dragProps}
     >
       <div className="w-24 h-24 overflow-hidden rounded-md bg-gray-200 flex items-center justify-center">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <NextImage
           src={image.thumbnailSrc || image.src}
           alt={image.name}
+          width={96}
+          height={96}
           className="w-full h-full object-cover"
           loading="lazy"
         />

@@ -32,6 +32,7 @@ import {
   Search,
   RefreshCw,
 } from 'lucide-react';
+import Image from 'next/image';
 import { resolveDispute } from '@/app/actions/admin-dispute';
 import {
   FormattedPrice,
@@ -521,11 +522,14 @@ export function AdminDisputeManagement({
                       <div className="grid grid-cols-2 gap-2">
                         {selectedDispute.evidence_urls.map((url, idx) => (
                           <div key={idx} className="border rounded-lg p-2">
-                            <img
-                              src={url}
-                              alt={`証拠画像 ${idx + 1}`}
-                              className="w-full h-32 object-cover rounded"
-                            />
+                            <div className="relative h-32 w-full">
+                              <Image
+                                src={url}
+                                alt={`証拠画像 ${idx + 1}`}
+                                fill
+                                className="object-cover rounded"
+                              />
+                            </div>
                           </div>
                         ))}
                       </div>

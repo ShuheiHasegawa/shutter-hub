@@ -31,6 +31,7 @@ import {
   Eye,
   Loader2,
 } from 'lucide-react';
+import Image from 'next/image';
 import { toast } from 'sonner';
 import { createPost } from '@/app/actions/posts';
 import { CreatePostData, PostType, PostVisibility } from '@/types/social';
@@ -378,9 +379,11 @@ export function CreatePostForm({
                   <div className="flex w-max space-x-4 p-4">
                     {selectedFiles.map((file, index) => (
                       <div key={index} className="relative">
-                        <img
+                        <Image
                           src={URL.createObjectURL(file)}
                           alt={`Preview ${index + 1}`}
+                          width={96}
+                          height={96}
                           className="h-24 w-24 rounded-md object-cover"
                         />
                         <Button

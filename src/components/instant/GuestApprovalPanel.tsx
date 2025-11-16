@@ -17,6 +17,7 @@ import {
   Star,
   User,
 } from 'lucide-react';
+import Image from 'next/image';
 import {
   approvePhotographer,
   rejectPhotographer,
@@ -214,9 +215,11 @@ export function GuestApprovalPanel({
           <div className="space-y-4">
             <div className="flex items-start gap-4">
               {photographer.avatar_url ? (
-                <img
+                <Image
                   src={photographer.avatar_url}
                   alt={photographer.display_name || 'フォトグラファー'}
+                  width={64}
+                  height={64}
                   className="w-16 h-16 rounded-full object-cover"
                 />
               ) : (

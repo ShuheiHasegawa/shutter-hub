@@ -5,6 +5,7 @@ import { logger } from '@/lib/utils/logger';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { X, Upload, Image as ImageIcon } from 'lucide-react';
+import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import {
   uploadPhotoSessionImage,
@@ -137,10 +138,11 @@ export function ImageUpload({
             <Card key={index} className="relative group overflow-hidden">
               <CardContent className="p-0">
                 <div className="aspect-square relative">
-                  <img
+                  <Image
                     src={url}
                     alt={`アップロード画像 ${index + 1}`}
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
                   />
                   <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                     <Button

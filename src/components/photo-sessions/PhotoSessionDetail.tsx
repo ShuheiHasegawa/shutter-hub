@@ -44,6 +44,7 @@ import { SlotBookingFlow } from './SlotBookingFlow';
 import { BackButton } from '../ui/back-button';
 import { ReviewList } from '@/components/reviews/ReviewList';
 import { createClient } from '@/lib/supabase/client';
+import Image from 'next/image';
 
 interface PhotoSessionDetailProps {
   session: PhotoSessionWithOrganizer;
@@ -563,12 +564,13 @@ export function PhotoSessionDetail({
                   {session.image_urls.map((image: string, index: number) => (
                     <div
                       key={index}
-                      className="aspect-video rounded-lg overflow-hidden bg-gray-100"
+                      className="aspect-video rounded-lg overflow-hidden bg-gray-100 relative"
                     >
-                      <img
+                      <Image
                         src={image}
                         alt={`撮影会画像 ${index + 1}`}
-                        className="w-full h-full object-cover"
+                        fill
+                        className="object-cover"
                       />
                     </div>
                   ))}
@@ -732,12 +734,13 @@ export function PhotoSessionDetail({
                   {session.image_urls.map((image: string, index: number) => (
                     <div
                       key={index}
-                      className="aspect-video rounded-lg overflow-hidden bg-gray-100"
+                      className="aspect-video rounded-lg overflow-hidden bg-gray-100 relative"
                     >
-                      <img
+                      <Image
                         src={image}
                         alt={`撮影会画像 ${index + 1}`}
-                        className="w-full h-full object-cover"
+                        fill
+                        className="object-cover"
                       />
                     </div>
                   ))}
