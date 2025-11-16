@@ -20,11 +20,11 @@ import {
   Plus,
 } from 'lucide-react';
 import Link from 'next/link';
-import Image from 'next/image';
 import {
   FormattedPrice,
   FormattedDateTime,
 } from '@/components/ui/formatted-display';
+import { EmptyImage } from '@/components/ui/empty-image';
 import type { BookingType } from '@/types/database';
 
 interface OrganizerUpcomingSession {
@@ -186,20 +186,16 @@ export function UpcomingOrganizerSessions({
           <div key={session.id}>
             <div className="flex items-start gap-4">
               {/* 撮影会画像 */}
-              <div className="flex-shrink-0">
-                {session.image_urls && session.image_urls.length > 0 ? (
-                  <Image
-                    src={session.image_urls[0]}
-                    alt={session.title}
-                    width={64}
-                    height={64}
-                    className="w-16 h-16 rounded-lg object-cover"
-                  />
-                ) : (
-                  <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center">
-                    <Camera className="h-6 w-6 text-muted-foreground" />
-                  </div>
-                )}
+              <div className="flex-shrink-0 w-16 h-16 relative">
+                <EmptyImage
+                  src={session.image_urls?.[0] || undefined}
+                  alt={session.title}
+                  fallbackIcon={Camera}
+                  fallbackIconSize="sm"
+                  width={64}
+                  height={64}
+                  className="w-16 h-16 rounded-lg object-cover"
+                />
               </div>
 
               {/* 撮影会情報 */}

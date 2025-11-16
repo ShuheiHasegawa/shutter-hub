@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { logger } from '@/lib/utils/logger';
-import Image from 'next/image';
 import Link from 'next/link';
+import { EmptyImage } from '@/components/ui/empty-image';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   BookOpen,
@@ -243,19 +243,15 @@ export const PhotobookGallery: React.FC<PhotobookGalleryProps> = ({
                 >
                   {/* カバー画像 */}
                   <div className="aspect-[3/4] surface-neutral relative overflow-hidden">
-                    {photobook.cover_image_url ? (
-                      <Image
-                        src={photobook.cover_image_url}
-                        alt={photobook.title}
-                        fill
-                        sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-                        className="object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    ) : (
-                      <div className="flex items-center justify-center h-full">
-                        <ImageIcon size={48} />
-                      </div>
-                    )}
+                    <EmptyImage
+                      src={photobook.cover_image_url || undefined}
+                      alt={photobook.title}
+                      fallbackIcon={ImageIcon}
+                      fallbackIconSize="lg"
+                      fill
+                      sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
 
                     {/* オーバーレイ情報 */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
@@ -331,19 +327,15 @@ export const PhotobookGallery: React.FC<PhotobookGalleryProps> = ({
                     className="flex-shrink-0"
                   >
                     <div className="w-16 h-20 surface-neutral rounded relative overflow-hidden">
-                      {photobook.cover_image_url ? (
-                        <Image
-                          src={photobook.cover_image_url}
-                          alt={photobook.title}
-                          fill
-                          sizes="64px"
-                          className="object-cover"
-                        />
-                      ) : (
-                        <div className="flex items-center justify-center h-full">
-                          <ImageIcon size={24} />
-                        </div>
-                      )}
+                      <EmptyImage
+                        src={photobook.cover_image_url || undefined}
+                        alt={photobook.title}
+                        fallbackIcon={ImageIcon}
+                        fallbackIconSize="sm"
+                        fill
+                        sizes="64px"
+                        className="object-cover"
+                      />
                     </div>
                   </Link>
 

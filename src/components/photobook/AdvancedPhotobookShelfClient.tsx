@@ -1,7 +1,7 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
+import { EmptyImage } from '@/components/ui/empty-image';
 import {
   BookOpen,
   Eye,
@@ -140,20 +140,15 @@ export function AdvancedPhotobookShelfClient({
           <Link href={`/photobooks/advanced/${photobook.id}`} className="block">
             <div className="surface-primary rounded-lg shadow-lg hover:shadow-xl transition-all duration-300">
               {/* カバー画像 */}
-              <div className="aspect-[3/4] rounded-t-lg overflow-hidden bg-gray-100 dark:bg-gray-700">
-                {photobook.cover_image_url ? (
-                  <Image
-                    src={photobook.cover_image_url}
-                    alt={photobook.title}
-                    width={300}
-                    height={400}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-amber-100 to-amber-200 dark:from-amber-700 dark:to-amber-800">
-                    <BookOpen className="h-12 w-12 text-amber-600 dark:text-amber-400" />
-                  </div>
-                )}
+              <div className="aspect-[3/4] rounded-t-lg overflow-hidden bg-gray-100 dark:bg-gray-700 relative">
+                <EmptyImage
+                  src={photobook.cover_image_url || undefined}
+                  alt={photobook.title}
+                  fallbackIcon={BookOpen}
+                  fallbackIconSize="lg"
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-300"
+                />
               </div>
 
               {/* フォトブック情報 */}

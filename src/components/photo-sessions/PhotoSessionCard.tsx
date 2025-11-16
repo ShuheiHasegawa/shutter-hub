@@ -19,6 +19,8 @@ import {
   FormattedDateTime,
 } from '@/components/ui/formatted-display';
 import { CardFavoriteButton } from '@/components/ui/favorite-heart-button';
+import { EmptyImage } from '@/components/ui/empty-image';
+import { Camera } from 'lucide-react';
 
 interface PhotoSessionCardProps {
   session: PhotoSessionWithOrganizer;
@@ -95,10 +97,14 @@ export function PhotoSessionCard({
           <div className="hidden md:flex ">
             {/* Image Section */}
             <div className="w-80 flex-shrink-0 relative overflow-hidden">
-              {/* プレースホルダー画像 - 将来的に実際の画像に置き換え */}
-              <div className="w-full h-full bg-gradient-to-br from-info/10 to-primary/10 dark:from-info/20 dark:to-primary/20 flex items-center justify-center">
-                <CalendarIcon className="h-16 w-16 text-info/60 opacity-60" />
-              </div>
+              <EmptyImage
+                src={session.image_urls?.[0] || undefined}
+                alt={session.title}
+                fallbackIcon={Camera}
+                fallbackIconSize="xl"
+                fill
+                className="object-cover"
+              />
               {/* バッジ：左上に配置 */}
               <div className="absolute top-4 left-4 flex gap-2">
                 <Badge
@@ -217,9 +223,14 @@ export function PhotoSessionCard({
           <div className="md:hidden">
             {/* Image Section */}
             <div className="relative h-48 overflow-hidden">
-              <div className="w-full h-full bg-gradient-to-br from-info/10 to-primary/10 dark:from-info/20 dark:to-primary/20 flex items-center justify-center">
-                <CalendarIcon className="h-12 w-12 text-info/60 opacity-60" />
-              </div>
+              <EmptyImage
+                src={session.image_urls?.[0] || undefined}
+                alt={session.title}
+                fallbackIcon={Camera}
+                fallbackIconSize="lg"
+                fill
+                className="object-cover"
+              />
               {/* バッジ：左上に配置 */}
               <div className="absolute" style={{ top: '12px', left: '12px' }}>
                 <Badge
@@ -569,8 +580,15 @@ export function PhotoSessionCard({
       <Card className="w-full hover:shadow-lg transition-all duration-300 group border-l-4 border-l-transparent hover:border-l-blue-500 bg-gradient-to-r from-white to-gray-50/30">
         <div className="flex items-stretch p-6">
           {/* 左側: 画像エリア（将来の実装用） */}
-          <div className="w-48 h-32 bg-gradient-to-br from-info/10 to-primary/10 rounded-xl mr-6 flex-shrink-0 flex items-center justify-center shadow-sm">
-            <CalendarIcon className="h-12 w-12 text-info/60 opacity-60" />
+          <div className="w-48 h-32 rounded-xl mr-6 flex-shrink-0 relative overflow-hidden shadow-sm">
+            <EmptyImage
+              src={session.image_urls?.[0] || undefined}
+              alt={session.title}
+              fallbackIcon={Camera}
+              fallbackIconSize="lg"
+              fill
+              className="object-cover rounded-xl"
+            />
           </div>
 
           {/* 中央: コンテンツエリア */}

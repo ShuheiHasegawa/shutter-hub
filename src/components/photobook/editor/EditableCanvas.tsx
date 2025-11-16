@@ -45,10 +45,15 @@ const KonvaImageElement: React.FC<KonvaElementProps> = ({
 
   useEffect(() => {
     if (element.data.type === 'image') {
-      const img = new window.Image();
-      img.crossOrigin = 'anonymous';
-      img.onload = () => setImage(img);
-      img.src = element.data.src;
+      if (element.data.src && element.data.src.trim() !== '') {
+        const img = new window.Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => setImage(img);
+        img.onerror = () => setImage(null);
+        img.src = element.data.src;
+      } else {
+        setImage(null);
+      }
     }
   }, [element.data]);
 
@@ -93,7 +98,37 @@ const KonvaImageElement: React.FC<KonvaElementProps> = ({
     [element.id, element.transform, onUpdate, stageSize]
   );
 
-  if (!image) return null;
+  // 画像がない場合はフォールバック表示（Rect + アイコン表示用のテキスト）
+  if (!image) {
+    const x = (element.transform.x / 100) * stageSize.width;
+    const y = (element.transform.y / 100) * stageSize.height;
+    const width = (element.transform.width / 100) * stageSize.width;
+    const height = (element.transform.height / 100) * stageSize.height;
+
+    return (
+      <React.Fragment>
+        <Rect
+          x={x}
+          y={y}
+          width={width}
+          height={height}
+          fill="rgba(107, 80, 145, 0.1)"
+          stroke="rgba(107, 80, 145, 0.3)"
+          strokeWidth={1}
+          opacity={element.style.opacity}
+          listening={!isSelected}
+        />
+        <KonvaText
+          x={x + width / 2 - Math.min(width, height) * 0.15}
+          y={y + height / 2 - Math.min(width, height) * 0.15}
+          text="📷"
+          fontSize={Math.min(width, height) * 0.3}
+          fill="rgba(107, 80, 145, 0.4)"
+          align="center"
+        />
+      </React.Fragment>
+    );
+  }
 
   const x = (element.transform.x / 100) * stageSize.width;
   const y = (element.transform.y / 100) * stageSize.height;
@@ -306,7 +341,7 @@ const EditableCanvas: React.FC<EditableCanvasProps> = ({
             },
             data: {
               type: 'image',
-              src: '/images/no-image.png',
+              src: '',
               alt: '画像プレースホルダー',
             },
           };
@@ -470,7 +505,7 @@ const EditableCanvas: React.FC<EditableCanvasProps> = ({
                 },
                 data: {
                   type: 'image',
-                  src: '/images/no-image.png',
+                  src: '',
                   alt: `テンプレート画像${positionIndex + 1}`,
                 },
               };
