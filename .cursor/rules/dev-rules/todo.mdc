@@ -848,6 +848,39 @@
 
 ---
 
-**📊 Phase 0完了状況**: 37/37 (100%) ← プロフィール編集機能・プロフィール画像アップロード機能・ストレージ構造最適化・プロフィール画像表示統一・日付管理ルール策定・プロフィール編集画像一時保存機能・プロフィール画像キャッシュ問題修正・ActionSheetデザイン統一修正・プロフィール画像アップロードデバッグLogger導入・プロフィール画像アップロード問題包括的デバッグ機能実装 ✅
+### **✅ t0-051: 空状態表示の統一化（UI/UX品質向上）**
+
+- [x] **Phase 1**: EmptyStateコンポーネント作成（default/searchバリアント）✅
+- [x] **Phase 2**: 多言語化キー追加（messages/ja.json, messages/en.json）✅
+- [x] **Phase 3**: 主要コンポーネントの置き換え（ReviewList, UserList, MessagesLayout, ConversationList, PhotoSessionList）✅
+- [x] **Phase 4**: 追加コンポーネントの置き換え（OrganizerModelsList, PendingInvitationsList, PhotobookGallery, StudiosList）✅
+- **優先度**: ✅ 完了（空状態表示の統一化・一貫性向上）
+- **見積時間**: 2-3時間
+- **実装時間**: 約2時間（2025年1月18日完了）
+- **依存関係**: なし
+- **完成判定**: ✅ 9つのコンポーネントで統一化完了
+- **技術成果**:
+  - **✅ EmptyStateコンポーネント**: `src/components/ui/empty-state.tsx`（default/searchバリアント）
+  - **✅ 多言語化対応**: `common.empty.default.title`, `common.empty.search.*`キー追加
+  - **✅ 置き換え完了**: ReviewList, UserList, MessagesLayout, ConversationList, PhotoSessionList, OrganizerModelsList, PendingInvitationsList, PhotobookGallery, StudiosList
+  - **✅ 実装計画記録**: `docs/empty-state.md`に実装計画と完了状況を記録
+
+### **✅ t0-052: ローディング状態の統一化（UI/UX品質向上）**
+
+- [x] **Phase 1**: LoadingStateコンポーネント作成（spinner/skeleton/cardバリアント）✅
+- [x] **Phase 2**: 多言語化キー追加（messages/ja.json, messages/en.json）✅
+- [x] **Phase 3**: 主要コンポーネントの置き換え（UserList, MessagesLayout, ConversationList, PhotoSessionList, GroupManagement）✅
+- **優先度**: ✅ 完了（ローディング状態表示の統一化・一貫性向上）
+- **見積時間**: 2-3時間
+- **実装時間**: 約1.5時間（2025年1月18日完了）
+- **依存関係**: なし
+- **完成判定**: ✅ 5つのコンポーネントで統一化完了
+- **技術成果**:
+  - **✅ LoadingStateコンポーネント**: `src/components/ui/loading-state.tsx`（spinner/skeleton/cardバリアント）
+  - **✅ 多言語化対応**: `common.loading.default`, `common.loading.data`, `common.loading.list`キー追加
+  - **✅ 置き換え完了**: UserList, MessagesLayout, ConversationList, PhotoSessionList, GroupManagement
+  - **✅ 実装計画記録**: `docs/loading-state.md`に実装計画と完了状況を記録
+
+**📊 Phase 0完了状況**: 39/39 (100%) ← プロフィール編集機能・プロフィール画像アップロード機能・ストレージ構造最適化・プロフィール画像表示統一・日付管理ルール策定・プロフィール編集画像一時保存機能・プロフィール画像キャッシュ問題修正・ActionSheetデザイン統一修正・プロフィール画像アップロードデバッグLogger導入・プロフィール画像アップロード問題包括的デバッグ機能実装・空状態表示の統一化・ローディング状態の統一化 ✅
 
 ---
