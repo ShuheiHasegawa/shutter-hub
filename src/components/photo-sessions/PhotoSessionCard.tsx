@@ -87,7 +87,7 @@ export function PhotoSessionCard({
 
     return (
       <Card
-        className="overflow-hidden hover:shadow-xl hover:border-info/50 hover:scale-[1.02] transition-all duration-300 group cursor-pointer transform"
+        className="overflow-hidden hover:shadow-xl hover:border-info/50 hover:-translate-y-1 transition-all duration-300 group cursor-pointer"
         onClick={() => onViewDetails?.(session.id)}
       >
         <CardContent className="p-0">
@@ -342,7 +342,7 @@ export function PhotoSessionCard({
 
     return (
       <Card
-        className="w-full hover:shadow-lg hover:border-info/50 hover:scale-[1.02] transition-all duration-300 bg-white border border-gray-200 cursor-pointer transform"
+        className="w-full hover:shadow-xl hover:border-info/50 hover:-translate-y-1 transition-all duration-300 bg-white border border-gray-200 cursor-pointer"
         onClick={() => onViewDetails?.(session.id)}
       >
         <div className="p-4">
@@ -749,7 +749,7 @@ export function PhotoSessionCard({
 
   // 縦型レイアウト（既存のデザイン）
   return (
-    <Card className="w-full hover:shadow-md transition-shadow">
+    <Card className="w-full hover:shadow-lg hover:border-info/50 hover:-translate-y-1 transition-all duration-300 cursor-pointer">
       <CardHeader className="pb-3">
         <div className="flex justify-between items-start">
           <CardTitle className="text-lg line-clamp-2">
