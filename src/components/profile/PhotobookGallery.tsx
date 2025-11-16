@@ -21,6 +21,7 @@ import { createClient } from '@/lib/supabase/client';
 import { PhotobookData } from '@/types/photobook';
 import { Button } from '@/components/ui/button';
 import { FormattedDateTime } from '@/components/ui/formatted-display';
+import { EmptyState } from '@/components/ui/empty-state';
 
 interface PhotobookGalleryProps {
   userId: string;
@@ -138,30 +139,28 @@ export const PhotobookGallery: React.FC<PhotobookGalleryProps> = ({
 
   if (photobooks.length === 0) {
     return (
-      <div className="text-center py-12">
-        <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-          <BookOpen size={32} />
-        </div>
-        <h3 className="text-lg font-medium mb-2">
-          {isOwnProfile
+      <EmptyState
+        icon={BookOpen}
+        title={
+          isOwnProfile
             ? 'フォトブックがありません'
-            : '公開フォトブックがありません'}
-        </h3>
-        <p className="mb-6 max-w-md mx-auto">
-          {isOwnProfile
+            : '公開フォトブックがありません'
+        }
+        description={
+          isOwnProfile
             ? '撮影した写真を美しいフォトブックにまとめて、作品ポートフォリオを作成しましょう。'
-            : 'このユーザーはまだフォトブックを公開していません。'}
-        </p>
-        {isOwnProfile && (
-          <Button
-            variant="navigation"
-            className="inline-flex items-center px-6 py-3 font-medium rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <BookOpen size={20} className="mr-2" />
-            最初のフォトブックを作成
-          </Button>
-        )}
-      </div>
+            : 'このユーザーはまだフォトブックを公開していません。'
+        }
+        action={
+          isOwnProfile
+            ? {
+                label: 'フォトブックを作成',
+                href: '/photobook/create',
+              }
+            : undefined
+        }
+        wrapped={false}
+      />
     );
   }
 

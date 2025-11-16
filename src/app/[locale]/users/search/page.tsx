@@ -13,6 +13,8 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { UserProfileDisplay } from '@/components/ui/user-profile-display';
+import { EmptyState } from '@/components/ui/empty-state';
+import { LoadingState } from '@/components/ui/loading-state';
 import {
   Search,
   ArrowLeft,
@@ -249,22 +251,17 @@ function UserList({
   noSearchResultsMessage,
 }: UserListProps) {
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-8">
-        <Loader2 className="h-6 w-6 animate-spin" />
-        <span className="ml-2">読み込み中...</span>
-      </div>
-    );
+    return <LoadingState variant="spinner" />;
   }
 
   if (users.length === 0) {
     return (
-      <div className="text-center py-8">
-        <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-        <p className="text-muted-foreground">
-          {searchQuery ? noSearchResultsMessage : emptyMessage}
-        </p>
-      </div>
+      <EmptyState
+        icon={Users}
+        title={searchQuery ? noSearchResultsMessage : emptyMessage}
+        searchTerm={searchQuery || undefined}
+        wrapped={false}
+      />
     );
   }
 

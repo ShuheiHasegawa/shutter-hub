@@ -21,6 +21,7 @@ import {
   Mail,
   RefreshCw,
 } from 'lucide-react';
+import { EmptyState } from '@/components/ui/empty-state';
 import type { OrganizerModelWithProfile } from '@/types/organizer-model';
 import { FormattedDateTime } from '@/components/ui/formatted-display';
 
@@ -357,13 +358,12 @@ export function OrganizerModelsList({
 
       {/* 結果なし */}
       {filteredAndSortedModels.length === 0 && models.length > 0 && (
-        <div className="text-center py-12">
-          <Filter className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-          <h3 className="text-lg font-medium mb-2">該当するモデルがいません</h3>
-          <p className="text-muted-foreground">
-            フィルター条件を変更してください。
-          </p>
-        </div>
+        <EmptyState
+          icon={Filter}
+          title="該当するモデルがいません"
+          description="フィルター条件を変更してください。"
+          wrapped={false}
+        />
       )}
     </div>
   );

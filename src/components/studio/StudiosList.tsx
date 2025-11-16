@@ -5,6 +5,7 @@ import { StudioCard } from './StudioCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/empty-state';
 import { getStudiosAction } from '@/app/actions/studio';
 import { getBulkFavoriteStatusAction } from '@/app/actions/favorites';
 import { StudioWithStats, StudioSearchFilters } from '@/types/database';
@@ -158,18 +159,20 @@ export function StudiosList({
 
   if (studios.length === 0 && !loading) {
     return (
-      <div className="text-center py-12">
-        <p className="text-theme-text-secondary text-lg">
-          {triggerSearch
+      <EmptyState
+        title={
+          triggerSearch
             ? '条件に一致するスタジオが見つかりません'
-            : '検索条件を設定して「検索」ボタンを押してください'}
-        </p>
-        <p className="text-theme-text-muted text-sm mt-2">
-          {triggerSearch
+            : '検索条件を設定して「検索」ボタンを押してください'
+        }
+        description={
+          triggerSearch
             ? '検索条件を変更してお試しください'
-            : 'キーワードや都道府県を選択してスタジオを検索できます'}
-        </p>
-      </div>
+            : 'キーワードや都道府県を選択してスタジオを検索できます'
+        }
+        variant={triggerSearch ? 'search' : 'default'}
+        wrapped={false}
+      />
     );
   }
 

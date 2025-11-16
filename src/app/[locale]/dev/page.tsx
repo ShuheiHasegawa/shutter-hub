@@ -26,6 +26,7 @@ import {
   Star,
   PlayCircle,
   Camera,
+  Inbox,
 } from 'lucide-react';
 
 interface DevTool {
@@ -126,6 +127,15 @@ const devTools: DevTool[] = [
     icon: <PlayCircle className="h-5 w-5" />,
     status: 'beta',
     category: 'testing',
+  },
+  {
+    title: '空状態表示デモ',
+    description:
+      '統一的な空状態（Empty State）表示コンポーネントのデザインパターン',
+    path: '/dev/empty-state-demo',
+    icon: <Inbox className="h-5 w-5" />,
+    status: 'experimental',
+    category: 'ui',
   },
 ];
 

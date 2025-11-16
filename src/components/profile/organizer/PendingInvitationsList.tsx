@@ -28,6 +28,7 @@ import {
   Calendar,
   MessageSquare,
 } from 'lucide-react';
+import { EmptyState } from '@/components/ui/empty-state';
 import { useState } from 'react';
 import { FormattedDateTime } from '@/components/ui/formatted-display';
 
@@ -145,15 +146,12 @@ export function PendingInvitationsList({
 
   if (invitations.length === 0) {
     return (
-      <div className="text-center py-12">
-        <Mail className="mx-auto h-12 w-12 text-muted-foreground" />
-        <h3 className="mt-2 text-sm font-medium text-foreground">
-          招待履歴がありません
-        </h3>
-        <p className="mt-1 text-sm text-muted-foreground">
-          「新規招待」タブからモデルを招待してみましょう
-        </p>
-      </div>
+      <EmptyState
+        icon={Mail}
+        title="招待履歴がありません"
+        description="「新規招待」タブからモデルを招待してみましょう"
+        wrapped={false}
+      />
     );
   }
 
