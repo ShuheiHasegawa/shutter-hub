@@ -6,10 +6,11 @@ import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { EmptyState } from '@/components/ui/empty-state';
+import { LoadingState } from '@/components/ui/loading-state';
 import { MessageCircle, Search, Users, Check, CheckCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getConversations } from '@/app/actions/message';
@@ -180,21 +181,22 @@ export function ConversationList({
       {/* 会話リスト */}
       <ScrollArea className="flex-1">
         {loading ? (
-          <div className="p-4 text-center text-muted-foreground">
-            {t('loading')}
-          </div>
+          <LoadingState variant="spinner" />
         ) : filteredConversations.length === 0 ? (
-          <div className="p-8 text-center">
-            <MessageCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground">
-              {searchQuery ? t('noSearchResults') : t('noConversations')}
-            </p>
-            {!searchQuery && (
-              <Button asChild className="mt-4">
-                <Link href="/users/search">{t('startNewConversation')}</Link>
-              </Button>
-            )}
-          </div>
+          <EmptyState
+            icon={MessageCircle}
+            title={searchQuery ? t('noSearchResults') : t('noConversations')}
+            searchTerm={searchQuery || undefined}
+            action={
+              !searchQuery
+                ? {
+                    label: t('startNewConversation'),
+                    href: '/users/search',
+                  }
+                : undefined
+            }
+            wrapped={false}
+          />
         ) : (
           <div className="divide-y">
             {filteredConversations.map(conversation => {

@@ -15,6 +15,8 @@ import {
   ResizablePanelGroup,
 } from '@/components/ui/resizable';
 import { ChatWindow } from './ChatWindow';
+import { EmptyState } from '@/components/ui/empty-state';
+import { LoadingState } from '@/components/ui/loading-state';
 import {
   MessageCircle,
   Search,
@@ -28,7 +30,6 @@ import { ConversationWithUsers, UserWithFollowInfo } from '@/types/social';
 import { formatDistanceToNow } from 'date-fns';
 import { ja, enUS } from 'date-fns/locale';
 import { useLocale } from 'next-intl';
-import Link from 'next/link';
 
 interface MessagesLayoutProps {
   initialConversationId?: string;
@@ -243,23 +244,24 @@ export function MessagesLayout({ initialConversationId }: MessagesLayoutProps) {
             {/* 会話リスト */}
             <div className="flex-1 overflow-y-auto min-h-0">
               {loading ? (
-                <div className="p-4 text-center text-muted-foreground">
-                  {t('loading')}
-                </div>
+                <LoadingState variant="spinner" />
               ) : filteredConversations.length === 0 ? (
-                <div className="p-8 text-center">
-                  <MessageCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground">
-                    {searchQuery ? t('noSearchResults') : t('noConversations')}
-                  </p>
-                  {!searchQuery && (
-                    <Button asChild className="mt-4">
-                      <Link href="/users/search">
-                        {t('startNewConversation')}
-                      </Link>
-                    </Button>
-                  )}
-                </div>
+                <EmptyState
+                  icon={MessageCircle}
+                  title={
+                    searchQuery ? t('noSearchResults') : t('noConversations')
+                  }
+                  searchTerm={searchQuery || undefined}
+                  action={
+                    !searchQuery
+                      ? {
+                          label: t('startNewConversation'),
+                          href: '/users/search',
+                        }
+                      : undefined
+                  }
+                  wrapped={false}
+                />
               ) : (
                 <div className="divide-y">
                   {filteredConversations.map(conversation => {

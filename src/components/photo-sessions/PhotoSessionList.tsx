@@ -21,7 +21,9 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { PlusIcon, SearchIcon, Loader2, Plus } from 'lucide-react';
+import { EmptyState } from '@/components/ui/empty-state';
+import { LoadingState } from '@/components/ui/loading-state';
+import { SearchIcon, Loader2, Plus, Camera } from 'lucide-react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { usePhotoSessions } from '@/hooks/usePhotoSessions';
@@ -480,45 +482,12 @@ export function PhotoSessionList({
   if (loading) {
     return (
       <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold">{title}</h2>
-        </div>
-        <div className="space-y-4">
-          {[...Array(3)].map((_, i) => (
-            <Card
-              key={i}
-              className="animate-pulse-gentle"
-              style={{
-                animationDelay: `${i * 0.2}s`,
-                animationDuration: `${2.5 + i * 0.1}s`,
-              }}
-            >
-              <div className="flex p-6">
-                <div className="w-48 h-32 bg-gray-200 dark:bg-gray-700 rounded-lg mr-6"></div>
-                <div className="flex-1 space-y-3">
-                  <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
-                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
-                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
-                  <div className="flex gap-4">
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24"></div>
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-20"></div>
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
-                  </div>
-                </div>
-                <div className="w-32 space-y-2">
-                  <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                  <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                </div>
-              </div>
-            </Card>
-          ))}
-          <div className="flex justify-center items-center py-8">
-            <div className="animate-spin-slow rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-            <span className="ml-3 text-sm text-muted-foreground">
-              読み込み中...
-            </span>
+        {title && (
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-bold">{title}</h2>
           </div>
-        </div>
+        )}
+        <LoadingState variant="card" count={3} />
       </div>
     );
   }
@@ -707,24 +676,37 @@ export function PhotoSessionList({
         {/* 撮影会一覧 */}
         <div className="flex flex-col">
           {sessions.length === 0 && !loading ? (
-            <Card className="flex-shrink-0">
-              <CardContent className="text-center py-12">
-                <p className="text-muted-foreground mb-4">
-                  {searchQuery ||
-                  locationFilter ||
-                  filters?.keyword ||
-                  filters?.location
-                    ? t('list.noResults')
-                    : t('list.noSessions')}
-                </p>
-                {showCreateButton && !searchQuery && !locationFilter && (
-                  <Button onClick={handleCreate}>
-                    <PlusIcon className="h-4 w-4 mr-2" />
-                    {t('list.createFirst')}
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
+            <EmptyState
+              icon={Camera}
+              title={
+                searchQuery ||
+                locationFilter ||
+                filters?.keyword ||
+                filters?.location
+                  ? t('list.noResults')
+                  : t('list.noSessions')
+              }
+              searchTerm={
+                searchQuery ||
+                locationFilter ||
+                filters?.keyword ||
+                filters?.location
+                  ? searchQuery ||
+                    locationFilter ||
+                    filters?.keyword ||
+                    filters?.location ||
+                    undefined
+                  : undefined
+              }
+              action={
+                showCreateButton && !searchQuery && !locationFilter
+                  ? {
+                      label: t('list.createFirst'),
+                      onClick: handleCreate,
+                    }
+                  : undefined
+              }
+            />
           ) : (
             <div className="space-y-3 md:space-y-4">
               {sessions.map(session => {

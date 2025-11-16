@@ -5,6 +5,7 @@ import { logger } from '@/lib/utils/logger';
 import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/empty-state';
 
 import { Separator } from '@/components/ui/separator';
 import { ReviewCard } from './ReviewCard';
@@ -423,21 +424,20 @@ export function ReviewList({
 
         {reviews.length === 0 && (
           <CardContent>
-            <div className="text-center py-8">
-              <Star className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-medium mb-2">
-                {t('list.noReviews')}
-              </h3>
-              <p className="text-muted-foreground mb-4">
-                {t('list.noReviewsDescription')}
-              </p>
-              {showAddReviewButton && (
-                <Button onClick={onAddReviewClick}>
-                  <Star className="mr-2 h-4 w-4" />
-                  {t('list.writeFirstReview')}
-                </Button>
-              )}
-            </div>
+            <EmptyState
+              icon={Star}
+              title={t('list.noReviews')}
+              description={t('list.noReviewsDescription')}
+              action={
+                showAddReviewButton
+                  ? {
+                      label: t('list.writeFirstReview'),
+                      onClick: onAddReviewClick,
+                    }
+                  : undefined
+              }
+              wrapped={false}
+            />
           </CardContent>
         )}
       </Card>

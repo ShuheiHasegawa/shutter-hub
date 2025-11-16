@@ -1,6 +1,10 @@
 {
   "common": {
-    "loading": "Loading...",
+    "loading": {
+      "default": "Loading...",
+      "data": "Loading data...",
+      "list": "Loading list..."
+    },
     "error": "An error occurred",
     "success": "Success",
     "cancel": "Cancel",
@@ -16,7 +20,23 @@
     "filter": "Filter",
     "sort": "Sort",
     "more": "More",
-    "priceInputPlaceholder": "Enter price"
+    "priceInputPlaceholder": "Enter price",
+    "empty": {
+      "default": {
+        "title": "No data available"
+      },
+      "search": {
+        "noResults": "No search results found",
+        "noResultsWithTerm": "No results found for \"{term}\"",
+        "description": "Try searching with different keywords",
+        "suggestions": {
+          "checkSpelling": "• Check your spelling",
+          "tryDifferentTerms": "• Try different keywords",
+          "browseAll": "• Browse all items"
+        },
+        "browseAll": "Browse All"
+      }
+    }
   },
   "dashboard": {
     "loading": "Loading...",
