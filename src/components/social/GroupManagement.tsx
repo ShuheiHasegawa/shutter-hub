@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { LoadingState } from '@/components/ui/loading-state';
 import {
   Card,
   CardContent,
@@ -200,11 +201,7 @@ export function GroupManagement({
   );
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <div className="text-muted-foreground">{t('loading')}</div>
-      </div>
-    );
+    return <LoadingState variant="spinner" />;
   }
 
   return (
