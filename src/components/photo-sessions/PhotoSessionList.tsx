@@ -570,7 +570,7 @@ export function PhotoSessionList({
         </div>
 
         {/* 右側: 並び順と撮影会作成ボタン */}
-        <div className="flex items-center gap-2 md:justify-start justify-end flex-1">
+        <div className="flex items-center gap-2 justify-end flex-1">
           {/* 並び順 */}
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground hidden sm:inline">
@@ -623,8 +623,8 @@ export function PhotoSessionList({
             </Select>
           </div>
 
-          {/* 撮影会作成ボタン */}
-          <Button asChild size="sm" variant="cta" className="md:ml-0 ml-auto">
+          {/* 撮影会を作成ボタン */}
+          <Button asChild size="sm" variant="cta">
             <Link href="/photo-sessions/create">
               <Plus className="h-4 w-4 mr-2" />
               撮影会を作成
