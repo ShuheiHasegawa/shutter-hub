@@ -29,6 +29,7 @@ import {
   Loader2,
   AlertCircle,
 } from 'lucide-react';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -102,9 +103,11 @@ function SortableImageCard({
         <div className="flex gap-4">
           {/* 画像プレビュー */}
           <div className="relative w-20 h-20 flex-shrink-0">
-            <img
+            <Image
               src={image.image_url}
               alt={`ページ ${image.page_number}`}
+              width={80}
+              height={80}
               className="w-full h-full object-cover rounded-lg"
             />
             <Badge
@@ -315,7 +318,7 @@ export function QuickPhotobookImageManager({
         for (const file of files) {
           try {
             // 画像メタデータ取得
-            const img = new Image();
+            const img = new window.Image();
             const imageUrl = URL.createObjectURL(file);
 
             await new Promise((resolve, reject) => {

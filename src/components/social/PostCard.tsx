@@ -40,6 +40,7 @@ import {
   Camera,
   Verified,
 } from 'lucide-react';
+import Image from 'next/image';
 import { toast } from 'sonner';
 import {
   likePost,
@@ -386,11 +387,13 @@ export function PostCard({
               onOpenChange={setIsImageDialogOpen}
             >
               <DialogTrigger asChild>
-                <div className="relative cursor-pointer group">
-                  <img
+                <div className="relative cursor-pointer group max-h-[400px] w-full">
+                  <Image
                     src={displayPost.image_urls[currentImageIndex]}
                     alt="投稿画像"
-                    className="w-full max-h-[400px] object-cover rounded-lg"
+                    fill
+                    className="object-cover rounded-lg"
+                    sizes="(max-width: 768px) 100vw, 50vw"
                   />
                   {displayPost.image_urls.length > 1 && (
                     <Badge className="absolute top-2 right-2">
@@ -404,11 +407,13 @@ export function PostCard({
                 <DialogHeader>
                   <DialogTitle>画像を表示</DialogTitle>
                 </DialogHeader>
-                <div className="relative">
-                  <img
+                <div className="relative max-h-[70vh] w-full">
+                  <Image
                     src={displayPost.image_urls[currentImageIndex]}
                     alt="投稿画像"
-                    className="w-full max-h-[70vh] object-contain"
+                    fill
+                    className="object-contain"
+                    sizes="100vw"
                   />
                   {displayPost.image_urls.length > 1 && (
                     <>

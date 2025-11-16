@@ -22,6 +22,7 @@ import {
   File,
   ExternalLink,
 } from 'lucide-react';
+import Image from 'next/image';
 // 仮の実装（後でmessage-files.tsから移行）
 const formatFileSize = (bytes: number): string => {
   if (bytes === 0) return '0 Bytes';
@@ -98,10 +99,11 @@ export function MessageAttachment({
           >
             <CardContent className="p-2">
               <div className="relative aspect-video rounded overflow-hidden bg-muted">
-                <img
+                <Image
                   src={attachment.url}
                   alt={attachment.fileName}
-                  className="w-full h-full object-cover"
+                  fill
+                  className="object-cover"
                 />
                 <div className="absolute bottom-2 right-2">
                   <Badge variant="secondary" className="text-xs">
@@ -125,11 +127,13 @@ export function MessageAttachment({
               {formatFileSize(attachment.fileSize)}
             </DialogDescription>
           </DialogHeader>
-          <div className="flex items-center justify-center max-h-[70vh] overflow-hidden">
-            <img
+          <div className="relative flex items-center justify-center max-h-[70vh] w-full overflow-hidden">
+            <Image
               src={attachment.url}
               alt={attachment.fileName}
-              className="max-w-full max-h-full object-contain"
+              fill
+              className="object-contain"
+              sizes="100vw"
             />
           </div>
           <div className="flex justify-end gap-2">
@@ -336,10 +340,11 @@ export function AttachmentPreview({
       <CardContent className="p-2">
         {file.type.startsWith('image/') && preview ? (
           <div className="relative aspect-video rounded overflow-hidden bg-muted">
-            <img
+            <Image
               src={preview}
               alt={file.name}
-              className="w-full h-full object-cover"
+              fill
+              className="object-cover"
             />
             <div className="absolute top-2 right-2">
               <Button

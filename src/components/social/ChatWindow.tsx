@@ -13,7 +13,7 @@ import {
   Check,
   CheckCheck,
   X,
-  Image,
+  Image as ImageIcon,
   File,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -34,6 +34,7 @@ import { toast } from 'sonner';
 import { formatFileSize, isImageFile } from '@/lib/storage/message-files';
 import { FormattedDateTime } from '@/components/ui/formatted-display';
 import { useAuth } from '@/hooks/useAuth';
+import Image from 'next/image';
 
 interface ChatWindowProps {
   conversation: ConversationWithUsers;
@@ -395,11 +396,14 @@ export function ChatWindow({
                         {message.file_url && (
                           <div className="mb-2">
                             {message.message_type === 'image' ? (
-                              <div className="relative">
-                                <img
+                              <div className="relative max-w-[280px] sm:max-w-[320px] max-h-[200px] sm:max-h-[240px] w-auto">
+                                <Image
                                   src={message.file_url}
                                   alt={message.file_name || 'Image'}
-                                  className="max-w-[280px] sm:max-w-[320px] max-h-[200px] sm:max-h-[240px] w-auto h-auto object-cover rounded-lg cursor-pointer block"
+                                  width={320}
+                                  height={240}
+                                  className="max-w-[280px] sm:max-w-[320px] max-h-[200px] sm:max-h-[240px] w-auto h-auto object-cover rounded-lg cursor-pointer"
+                                  sizes="(max-width: 640px) 280px, 320px"
                                   onClick={() =>
                                     window.open(message.file_url, '_blank')
                                   }
@@ -481,7 +485,7 @@ export function ChatWindow({
           <div className="mb-3 p-3 bg-muted rounded-lg">
             <div className="flex items-center gap-2">
               {isImageFile(selectedFile.type) ? (
-                <Image className="h-4 w-4" />
+                <ImageIcon className="h-4 w-4" />
               ) : (
                 <File className="h-4 w-4" />
               )}

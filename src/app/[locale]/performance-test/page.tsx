@@ -197,40 +197,49 @@ export default function PerformanceTestPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div className="space-y-3">
                   <h3 className="font-semibold">プロフィール画像</h3>
-                  <img
-                    src="/images/sample.png"
-                    alt="プロフィールサンプル"
-                    className="w-full h-auto rounded-lg"
-                  />
+                  <div className="relative w-full aspect-square">
+                    <Image
+                      src="/images/sample.png"
+                      alt="プロフィールサンプル"
+                      fill
+                      className="rounded-lg object-cover"
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-3">
                   <h3 className="font-semibold">撮影会画像</h3>
-                  <img
-                    src="/images/sample.png"
-                    alt="撮影会サンプル"
-                    className="w-full h-auto rounded-lg aspect-[3/4]"
-                  />
+                  <div className="relative w-full aspect-[3/4]">
+                    <Image
+                      src="/images/sample.png"
+                      alt="撮影会サンプル"
+                      fill
+                      className="rounded-lg object-cover"
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-3">
                   <h3 className="font-semibold">フォトブック用</h3>
-                  <img
+                  <Image
                     src="/images/sample.png"
                     alt="フォトブックサンプル"
-                    className="w-full h-auto rounded-lg"
                     width={200}
                     height={300}
+                    className="rounded-lg"
                   />
                 </div>
 
                 <div className="space-y-3">
                   <h3 className="font-semibold">SNS投稿用</h3>
-                  <img
-                    src="/images/sample.png"
-                    alt="SNSサンプル"
-                    className="w-full h-auto rounded-lg aspect-square"
-                  />
+                  <div className="relative w-full aspect-square">
+                    <Image
+                      src="/images/sample.png"
+                      alt="SNSサンプル"
+                      fill
+                      className="rounded-lg object-cover"
+                    />
+                  </div>
                 </div>
               </div>
             </CardContent>

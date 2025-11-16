@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Upload, X, Loader2, AlertCircle } from 'lucide-react';
+import Image from 'next/image';
 
 interface ImageUploadCommonProps {
   // 基本設定
@@ -361,10 +362,11 @@ export function ImageUploadCommon({
               <Card key={index} className="relative group">
                 <CardContent className="p-2">
                   <div className="aspect-square relative rounded-lg overflow-hidden bg-muted">
-                    <img
+                    <Image
                       src={url}
                       alt={`画像 ${index + 1}`}
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
                     />
 
                     {/* メイン画像バッジ */}
