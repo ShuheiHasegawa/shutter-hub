@@ -2,8 +2,8 @@
 
 import React, { useState } from 'react';
 import { logger } from '@/lib/utils/logger';
-import Image from 'next/image';
 import Link from 'next/link';
+import { EmptyImage } from '@/components/ui/empty-image';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Plus,
@@ -185,18 +185,14 @@ export const PhotobookDashboard: React.FC<PhotobookDashboardProps> = ({
                   <>
                     {/* カバー画像 */}
                     <div className="aspect-[3/4] bg-gray-100 relative">
-                      {photobook.cover_image_url ? (
-                        <Image
-                          src={photobook.cover_image_url}
-                          alt={photobook.title}
-                          fill
-                          className="object-cover"
-                        />
-                      ) : (
-                        <div className="flex items-center justify-center h-full">
-                          <ImageIcon size={48} className="text-gray-400" />
-                        </div>
-                      )}
+                      <EmptyImage
+                        src={photobook.cover_image_url || undefined}
+                        alt={photobook.title}
+                        fallbackIcon={ImageIcon}
+                        fallbackIconSize="lg"
+                        fill
+                        className="object-cover"
+                      />
 
                       {/* 公開状態 */}
                       <div className="absolute top-2 right-2">
@@ -264,18 +260,14 @@ export const PhotobookDashboard: React.FC<PhotobookDashboardProps> = ({
                   <>
                     {/* サムネイル */}
                     <div className="w-16 h-20 bg-gray-100 rounded flex-shrink-0 relative">
-                      {photobook.cover_image_url ? (
-                        <Image
-                          src={photobook.cover_image_url}
-                          alt={photobook.title}
-                          fill
-                          className="object-cover rounded"
-                        />
-                      ) : (
-                        <div className="flex items-center justify-center h-full">
-                          <ImageIcon size={24} className="text-gray-400" />
-                        </div>
-                      )}
+                      <EmptyImage
+                        src={photobook.cover_image_url || undefined}
+                        alt={photobook.title}
+                        fallbackIcon={ImageIcon}
+                        fallbackIconSize="sm"
+                        fill
+                        className="object-cover rounded"
+                      />
                     </div>
 
                     {/* 情報 */}

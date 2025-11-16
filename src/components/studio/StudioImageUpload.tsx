@@ -15,7 +15,8 @@ import {
 } from '@/app/actions/studio';
 import { toast } from 'sonner';
 import { StudioPhoto } from '@/types/database';
-import Image from 'next/image';
+import { EmptyImage } from '@/components/ui/empty-image';
+import { Building2 } from 'lucide-react';
 import { logger } from '@/lib/utils/logger';
 
 interface StudioImageUploadProps {
@@ -189,9 +190,11 @@ export function StudioImageUpload({
             <Card key={photo.id} className="relative group overflow-hidden">
               <CardContent className="p-0">
                 <div className="aspect-square relative">
-                  <Image
-                    src={photo.image_url || '/images/no-image.png'}
+                  <EmptyImage
+                    src={photo.image_url || undefined}
                     alt={photo.alt_text || `スタジオ画像 ${index + 1}`}
+                    fallbackIcon={Building2}
+                    fallbackIconSize="lg"
                     fill
                     className="object-cover"
                   />

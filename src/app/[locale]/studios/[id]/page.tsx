@@ -42,14 +42,15 @@ import {
   Info,
   ChevronLeft,
   ChevronRight,
+  Building2,
 } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import {
   FormattedPrice,
   FormattedDateTime,
 } from '@/components/ui/formatted-display';
+import { EmptyImage } from '@/components/ui/empty-image';
 
 export default function StudioDetailPage() {
   const params = useParams();
@@ -323,13 +324,13 @@ export default function StudioDetailPage() {
 
         {/* 大きなメイン画像 */}
         <div className="aspect-[4/3] relative bg-gray-100 rounded-lg overflow-hidden mb-8">
-          <Image
-            src={
-              photos.length > 0 ? photos[0].image_url : '/images/no-image.png'
-            }
+          <EmptyImage
+            src={photos.length > 0 ? photos[0].image_url : undefined}
             alt={
               photos.length > 0 ? photos[0].alt_text || studio.name : 'No Image'
             }
+            fallbackIcon={Building2}
+            fallbackIconSize="xl"
             fill
             className="object-contain object-center"
             priority
@@ -529,9 +530,11 @@ export default function StudioDetailPage() {
                         className="aspect-square relative bg-gray-100 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
                         onClick={() => handlePhotoClick(index)}
                       >
-                        <Image
-                          src={photo.image_url || '/images/no-image.png'}
+                        <EmptyImage
+                          src={photo.image_url || undefined}
                           alt={photo.alt_text || `${studio.name}の写真`}
+                          fallbackIcon={Building2}
+                          fallbackIconSize="lg"
                           fill
                           className="object-cover"
                         />
@@ -541,9 +544,11 @@ export default function StudioDetailPage() {
                 ) : (
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     <div className="aspect-square relative bg-gray-100 rounded-lg overflow-hidden">
-                      <Image
-                        src="/images/no-image.png"
+                      <EmptyImage
+                        src={undefined}
                         alt="No Image"
+                        fallbackIcon={Building2}
+                        fallbackIconSize="lg"
                         fill
                         className="object-cover"
                       />
@@ -667,15 +672,14 @@ export default function StudioDetailPage() {
               <div className="relative w-full h-full flex flex-col">
                 <div className="flex-1 relative overflow-hidden bg-black">
                   <div className="w-full h-full flex items-center justify-center p-4">
-                    <Image
-                      src={
-                        photos[selectedPhotoIndex].image_url ||
-                        '/images/no-image.png'
-                      }
+                    <EmptyImage
+                      src={photos[selectedPhotoIndex].image_url || undefined}
                       alt={
                         photos[selectedPhotoIndex].alt_text ||
                         `${studio.name}の写真`
                       }
+                      fallbackIcon={Building2}
+                      fallbackIconSize="xl"
                       width={1200}
                       height={800}
                       className="max-w-full max-h-[70vh] object-contain"

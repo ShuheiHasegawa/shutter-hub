@@ -1997,43 +1997,65 @@ const handleModelInvite = () => {
 
 Cursorカスタムコマンド `/commit` を使用することで、適切なフォーマットとチェックリストに従ったコミット&プッシュが実行できます。
 
-## 🖼️ **画像取り扱いルール**
+## 🖼️ **画像フォールバック統一ルール**
 
 ### **基本原則**
 
-- **必須フォールバック**: 画像がない場合は必ず`/images/no-image.png`を使用する
-- **統一された処理**: 全てのコンポーネントで一貫したno-image対応を実装する
+- **EmptyImageコンポーネントの使用必須**: 画像がない場合は必ず`EmptyImage`を使用する
+- **アイコン + グラデーション背景**: `/images/no-image.png`の使用を避け、アイコン + グラデーション背景を使用する
+- **適切なアイコンの選択**: コンテキストに応じたアイコンを選択する
+- **統一された処理**: 全てのコンポーネントで一貫したフォールバック対応を実装する
 - **アクセシビリティ**: 適切なalt属性を設定する
 
 ### **実装パターン**
 
-#### **✅ 推奨パターン**
+#### **✅ 推奨パターン（EmptyImageコンポーネント使用）**
 
 ```tsx
-// メイン画像の場合
-<Image
-  src={imageUrl || '/images/no-image.png'}
-  alt={altText || 'No Image'}
+import { EmptyImage } from '@/components/ui/empty-image';
+import { Building2, Camera, User } from 'lucide-react';
+
+// スタジオカード
+<EmptyImage
+  src={studio.featuredPhotos?.[0]?.image_url}
+  alt={studio.name}
+  fallbackIcon={Building2}
+  fallbackIconSize="lg"
   fill
   className="object-cover"
+/>
+
+// 撮影会カード
+<EmptyImage
+  src={session.image_url}
+  alt={session.title}
+  fallbackIcon={Camera}
+  fallbackIconSize="lg"
+  fill
+  className="object-cover"
+/>
+
+// ユーザーアバター（小さいサイズ）
+<EmptyImage
+  src={user.avatar_url}
+  alt={user.display_name}
+  fallbackIcon={User}
+  fallbackIconSize="sm"
+  width={40}
+  height={40}
+  className="rounded-full"
 />
 
 // 配列データの場合
-<Image
-  src={photos.length > 0 ? photos[0].image_url : '/images/no-image.png'}
-  alt={photos.length > 0 ? (photos[0].alt_text || studio.name) : 'No Image'}
-  fill
-  className="object-cover"
-/>
-
-// ギャラリー表示で写真がない場合
 {photos.length > 0 ? (
   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
     {photos.map(photo => (
-      <Image
+      <EmptyImage
         key={photo.id}
-        src={photo.image_url || '/images/no-image.png'}
-        alt={photo.alt_text || 'No Image'}
+        src={photo.image_url}
+        alt={photo.alt_text || 'Gallery Image'}
+        fallbackIcon={Building2}
+        fallbackIconSize="lg"
         fill
         className="object-cover"
       />
@@ -2041,9 +2063,11 @@ Cursorカスタムコマンド `/commit` を使用することで、適切なフ
   </div>
 ) : (
   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-    <Image
-      src="/images/no-image.png"
+    <EmptyImage
+      src={undefined}
       alt="No Image"
+      fallbackIcon={Building2}
+      fallbackIconSize="lg"
       fill
       className="object-cover"
     />
@@ -2054,73 +2078,82 @@ Cursorカスタムコマンド `/commit` を使用することで、適切なフ
 #### **❌ 禁止パターン**
 
 ```tsx
+// 画像ファイルの直接使用
+<Image src={imageUrl || '/images/no-image.png'} alt={altText} />
+
 // 画像なしの場合に何も表示しない
-{
-  imageUrl && <Image src={imageUrl} alt="..." />;
-}
+{imageUrl && <Image src={imageUrl} alt="..." />}
 
 // 空白やテキストのみの表示
-{
-  imageUrl ? <Image src={imageUrl} /> : <div>画像なし</div>;
-}
+{imageUrl ? <Image src={imageUrl} /> : <div>画像なし</div>}
 
 // 条件なしでのimage_url直接使用
-<Image src={studio.image_url} alt="..." />;
+<Image src={studio.image_url} alt="..." />
 ```
 
-### **必須ファイル**
+### **デフォルトアイコンの定義**
 
-- **ファイルパス**: `public/images/no-image.png`
-- **推奨サイズ**: 800x600px（4:3比率）
-- **フォーマット**: PNG（透明背景可能）
-- **デザイン**: シンプルでわかりやすいno-imageアイコン
+- **スタジオ**: `Building2`
+- **撮影会**: `Camera` / `CalendarIcon`
+- **ユーザー**: `User`
+- **その他**: `Image`（汎用）
+
+### **アイコンサイズの選択**
+
+- **sm**: 小さいサイズ（アバター等）- `h-8 w-8`
+- **md**: 中サイズ（デフォルト）- `h-12 w-12`
+- **lg**: 大きいサイズ（カード等）- `h-16 w-16`
+- **xl**: 特大サイズ（詳細ページ等）- `h-24 w-24`
 
 ### **コンポーネント別実装ガイド**
 
 #### **スタジオカード**
 
 ```tsx
-<Image
-  src={studio.main_image || '/images/no-image.png'}
+<EmptyImage
+  src={studio.featuredPhotos?.[0]?.image_url}
   alt={studio.name}
+  fallbackIcon={Building2}
+  fallbackIconSize="lg"
   fill
   className="object-cover"
 />
 ```
 
-#### **写真ギャラリー**
+#### **撮影会カード**
 
 ```tsx
-{
-  photos.map(photo => (
-    <Image
-      key={photo.id}
-      src={photo.image_url || '/images/no-image.png'}
-      alt={photo.alt_text || 'Gallery Image'}
-      fill
-      className="object-cover"
-    />
-  ));
-}
+<EmptyImage
+  src={session.image_url}
+  alt={session.title}
+  fallbackIcon={Camera}
+  fallbackIconSize="lg"
+  fill
+  className="object-cover"
+/>
 ```
 
 #### **ユーザーアバター**
 
 ```tsx
-<Image
-  src={user.avatar_url || '/images/no-image.png'}
-  alt={user.display_name || 'User Avatar'}
+<EmptyImage
+  src={user.avatar_url}
+  alt={user.display_name}
+  fallbackIcon={User}
+  fallbackIconSize="sm"
   width={40}
   height={40}
-  className="rounded-full object-cover"
+  className="rounded-full"
 />
 ```
 
 ### **実装時チェックリスト**
 
-- [ ] 画像URLが存在しない場合の処理を実装
-- [ ] `/images/no-image.png`のフォールバック設定
-- [ ] 適切なalt属性の設定
+- [ ] `EmptyImage`コンポーネントを使用しているか
+- [ ] 適切な`fallbackIcon`を選択しているか
+- [ ] 適切な`fallbackIconSize`を選択しているか
+- [ ] 適切なalt属性を設定しているか
+- [ ] `/images/no-image.png`を使用していないか
 - [ ] レスポンシブ対応の確認
 - [ ] 全ての画像表示箇所で統一的な処理
 
@@ -2128,8 +2161,16 @@ Cursorカスタムコマンド `/commit` を使用することで、適切なフ
 
 - **UI一貫性**: 画像なし状態でも美しい表示を維持
 - **エラー防止**: 画像URL未設定によるブレイクを防止
-- **ユーザビリティ**: 視覚的にわかりやすいno-image表示
+- **ユーザビリティ**: 視覚的にわかりやすいフォールバック表示
 - **アクセシビリティ**: スクリーンリーダー対応
+- **テーマ対応**: グラデーション背景がテーマ色に自動対応
+- **メンテナンス性**: 統一コンポーネントによる保守性向上
+
+### **参考情報**
+
+- **実装完了状況**: `docs/image-fallback.md`に全実装完了記録あり
+- **コンポーネント定義**: `src/components/ui/empty-image.tsx`
+- **デモページ**: `/dev/empty-image-demo`で各種バリエーションを確認可能
 
 ## エラーハンドリング
 

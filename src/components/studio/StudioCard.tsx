@@ -12,8 +12,8 @@ import {
 } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import { Building2 } from 'lucide-react';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { EmptyImage } from '@/components/ui/empty-image';
 import { StudioWithStats } from '@/types/database';
 import { CardFavoriteButton } from '@/components/ui/favorite-heart-button';
 import { FormattedPrice } from '@/components/ui/formatted-display';
@@ -106,19 +106,23 @@ export function StudioCard({
       <CardHeader className="p-0">
         {/* メイン画像 */}
         <div className="aspect-video relative bg-theme-neutral/10 rounded-t-lg overflow-hidden">
-          {studio.featuredPhotos && studio.featuredPhotos.length > 0 ? (
-            <Image
-              src={studio.featuredPhotos[0].image_url}
-              alt={studio.featuredPhotos[0].alt_text || studio.name}
-              fill
-              className="object-cover object-center"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            />
-          ) : (
-            <div className="w-full h-full bg-gradient-to-br from-theme-primary/10 to-theme-accent/10 dark:from-theme-primary/20 dark:to-theme-accent/20 flex items-center justify-center">
-              <Building2 className="h-12 w-12 text-theme-text-muted opacity-40" />
-            </div>
-          )}
+          <EmptyImage
+            src={
+              studio.featuredPhotos && studio.featuredPhotos.length > 0
+                ? studio.featuredPhotos[0].image_url
+                : undefined
+            }
+            alt={
+              studio.featuredPhotos && studio.featuredPhotos.length > 0
+                ? studio.featuredPhotos[0].alt_text || studio.name
+                : studio.name
+            }
+            fallbackIcon={Building2}
+            fallbackIconSize="lg"
+            fill
+            className="object-cover object-center"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          />
 
           {/* バッジ */}
           <div className="absolute top-2 left-2 flex gap-2 flex-wrap">
