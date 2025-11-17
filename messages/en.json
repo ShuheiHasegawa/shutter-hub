@@ -1658,5 +1658,21 @@
         "message": "Photos have been delivered by {photographerName}."
       }
     }
+  },
+  "auth": {
+    "required": "Authentication required",
+    "insufficientPermissions": "Insufficient permissions",
+    "invalidUserType": "This feature is only available for {userType}",
+    "adminRequired": "Admin privileges required",
+    "loginRequired": "Login required",
+    "authCheckError": "An error occurred during authentication check",
+    "profileFetchError": "Failed to fetch profile",
+    "userTypeCheckError": "An error occurred during user type check",
+    "adminCheckError": "An error occurred during admin role check",
+    "userTypes": {
+      "model": "Model",
+      "photographer": "Photographer",
+      "organizer": "Organizer"
+    }
   }
 }

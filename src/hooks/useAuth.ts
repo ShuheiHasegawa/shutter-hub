@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import type { Profile, UserType } from '@/types/database';
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
@@ -59,4 +60,105 @@ export function useAuth() {
   };
 
   return { user, loading, logout };
+}
+
+/**
+ * Client Components用のプロフィール取得フック
+ * ユーザーのプロフィール情報を取得する
+ */
+export function useUserProfile() {
+  const { user, loading: authLoading } = useAuth();
+  const [profile, setProfile] = useState<
+    (Profile & { role?: 'user' | 'admin' | 'super_admin' | null }) | null
+  >(null);
+  const [loading, setLoading] = useState(true);
+  const supabase = createClient();
+
+  useEffect(() => {
+    if (authLoading) {
+      return;
+    }
+
+    if (!user) {
+      setProfile(null);
+      setLoading(false);
+      return;
+    }
+
+    const loadProfile = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*, role')
+          .eq('id', user.id)
+          .single();
+
+        if (error) {
+          logger.error('Profile fetch error in useUserProfile:', error);
+          setProfile(null);
+        } else {
+          setProfile(
+            data as Profile & {
+              role?: 'user' | 'admin' | 'super_admin' | null;
+            }
+          );
+        }
+      } catch (error) {
+        logger.error('Unexpected error in useUserProfile:', error);
+        setProfile(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProfile();
+  }, [user, authLoading, supabase]);
+
+  return { profile, loading: authLoading || loading };
+}
+
+/**
+ * Client Components用の認証必須フック
+ * 認証が必要なコンポーネントで使用する
+ * 認証されていない場合はnullを返す
+ */
+export function useRequireAuth() {
+  const { user, loading } = useAuth();
+
+  return { user, loading };
+}
+
+/**
+ * Client Components用のユーザータイプ必須フック
+ * 特定のユーザータイプが必要なコンポーネントで使用する
+ *
+ * @param userType - 必要なユーザータイプ
+ * @returns チェック成功時: { user, profile, loading: false }
+ *          チェック失敗時: { user: null, profile: null, loading: false }
+ */
+export function useRequireUserType(userType: UserType) {
+  const { user, loading: authLoading } = useAuth();
+  const { profile, loading: profileLoading } = useUserProfile();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (authLoading || profileLoading) {
+      setLoading(true);
+      return;
+    }
+
+    setLoading(false);
+  }, [authLoading, profileLoading]);
+
+  // 認証されていない、またはプロフィールが取得できない場合
+  if (!user || !profile) {
+    return { user: null, profile: null, loading };
+  }
+
+  // ユーザータイプが一致しない場合
+  if (profile.user_type !== userType) {
+    return { user: null, profile: null, loading: false };
+  }
+
+  return { user, profile, loading: false };
 }

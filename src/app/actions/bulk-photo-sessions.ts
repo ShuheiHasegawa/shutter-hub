@@ -1,8 +1,8 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { logger } from '@/lib/utils/logger';
+import { requireUserType } from '@/lib/auth/server-actions';
 import type {
   BulkPhotoSessionData,
   BulkPhotoSessionResult,
@@ -13,43 +13,17 @@ export async function createBulkPhotoSessionsAction(
   data: BulkPhotoSessionData
 ): Promise<BulkPhotoSessionResult> {
   try {
-    const supabase = await createClient();
-
-    // 認証確認
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      logger.error('認証エラー:', authError);
+    const typeResult = await requireUserType('organizer');
+    if (!typeResult.success) {
+      logger.error('認証・権限エラー:', typeResult.error);
       return {
         success: false,
         created_sessions: [],
         bulk_group_id: '',
-        error: '認証が必要です',
+        error: typeResult.error,
       };
     }
-
-    // プロフィール確認（運営アカウントのみ許可）
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('user_type')
-      .eq('user_id', user.id)
-      .single();
-
-    if (profileError || !profile || profile.user_type !== 'organizer') {
-      logger.error('権限エラー:', {
-        profileError,
-        userType: profile?.user_type,
-      });
-      return {
-        success: false,
-        created_sessions: [],
-        bulk_group_id: '',
-        error: 'この機能は運営アカウントのみ利用可能です',
-      };
-    }
+    const { user, supabase } = typeResult.data;
 
     // バリデーション
     if (!data.selected_models || data.selected_models.length === 0) {
@@ -162,7 +136,9 @@ export async function createBulkPhotoSessionsAction(
     if (fetchError) {
       logger.error('作成されたセッション取得エラー:', fetchError);
     } else if (createdSessionsData) {
-      createdSessions.push(...createdSessionsData.map(session => session.id));
+      createdSessions.push(
+        ...createdSessionsData.map((session: { id: string }) => session.id)
+      );
     }
 
     // 撮影枠も一括作成（スロットが設定されている場合）

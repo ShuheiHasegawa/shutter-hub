@@ -884,3 +884,37 @@
 **📊 Phase 0完了状況**: 39/39 (100%) ← プロフィール編集機能・プロフィール画像アップロード機能・ストレージ構造最適化・プロフィール画像表示統一・日付管理ルール策定・プロフィール編集画像一時保存機能・プロフィール画像キャッシュ問題修正・ActionSheetデザイン統一修正・プロフィール画像アップロードデバッグLogger導入・プロフィール画像アップロード問題包括的デバッグ機能実装・空状態表示の統一化・ローディング状態の統一化 ✅
 
 ---
+
+## 🔄 **認証系共通化プロジェクト（進行中）**
+
+### **✅ t0-070: 認証状態確認統一化（基盤構築完了）**
+
+- [x] **Phase 1**: 基盤ユーティリティ作成 ✅
+  - [x] 多言語化キー追加（messages/ja.json, messages/en.json）✅
+  - [x] Server Actions用認証ユーティリティ作成（requireAuthForAction, requireUserType, requireAdminRole）✅
+  - [x] Server Components用認証ユーティリティ拡張（requireUserType, requireAdminRole, getUserWithProfile）✅
+  - [x] Client Components用認証フック拡張（useUserProfile, useRequireAuth, useRequireUserType）✅
+  - [x] 認証ガードコンポーネント拡張（UserTypeGuard, AdminGuard）✅
+- [x] **Phase 2**: 高優先度コンポーネントの統一化 ✅
+  - [x] 高優先度Server Actionsの統一化（payments, message, organizer-model, admin-system, bulk-photo-sessions）✅
+  - [x] 高優先度Server Componentsの統一化（admin/page, admin/users, admin/disputes, subscription/page）✅
+  - [x] Client Componentsの統一化（PhotoSessionList, OrganizerModelManagement）✅
+- [x] **Phase 3**: エラーメッセージの統一化と多言語化対応 ✅
+- [x] **Phase 4**: パフォーマンス最適化（プロフィール取得の最適化、認証チェックの重複削減）✅
+- [ ] **Phase 5**: 残存する直接使用箇所の統一化（段階的）← **次期実装タスク**
+  - [ ] Server Actions: 38ファイルで160箇所（高優先度5ファイルは完了）
+  - [ ] Server Components: 15ファイルで25箇所（高優先度4ファイルは完了）
+- **優先度**: 🟡 高（認証処理の統一化・保守性向上）
+- **見積時間**: Phase 1-2完了（約4時間）、Phase 3-5: 1-2週間
+- **実装時間**: Phase 1-4完了（2025年1月18日完了、Phase 3-4: 約1時間）
+- **依存関係**: なし
+- **完成判定**: 全認証チェック処理の統一化、エラーメッセージの多言語化、パフォーマンス最適化完了
+- **技術成果**:
+  - **✅ 基盤ユーティリティ完成**: Server Actions/Components/Client Components用の統一認証システム構築
+  - **✅ 高優先度コンポーネント統一化**: 5つのServer Actions、4つのServer Components、2つのClient Componentsで統一化完了
+  - **✅ 認証ガードコンポーネント**: UserTypeGuard, AdminGuard実装完了
+  - **✅ エラーメッセージ統一化**: エラーコードベースのシステム構築、多言語化キー追加、クライアント側ユーティリティ関数作成
+  - **✅ パフォーマンス最適化**: プロフィール取得の共通化（fetchUserProfile関数）、重複削減
+  - **📋 残存タスク**: 残存箇所の段階的統一化（Server Actions: 38ファイル160箇所、Server Components: 15ファイル25箇所）
+
+---

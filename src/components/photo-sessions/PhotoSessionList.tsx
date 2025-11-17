@@ -25,11 +25,10 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { LoadingState } from '@/components/ui/loading-state';
 import { SearchIcon, Loader2, Plus, Camera } from 'lucide-react';
 import Link from 'next/link';
-import { createClient } from '@/lib/supabase/client';
 import { usePhotoSessions } from '@/hooks/usePhotoSessions';
+import { useAuth } from '@/hooks/useAuth';
 import type { PhotoSessionWithOrganizer, BookingType } from '@/types/database';
 import { useTranslations } from 'next-intl';
-import type { User } from '@supabase/supabase-js';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 
@@ -79,7 +78,7 @@ export function PhotoSessionList({
     'start_time' | 'price' | 'created_at' | 'popularity' | 'end_time'
   >('start_time');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const { user: currentUser } = useAuth();
   const [favoriteStates, setFavoriteStates] = useState<
     Record<string, { isFavorited: boolean; favoriteCount: number }>
   >({});
@@ -141,14 +140,6 @@ export function PhotoSessionList({
     isLoading: swrLoading,
     error: swrError,
   } = usePhotoSessions(swrParams);
-
-  // マウント時に認証ユーザー取得（isOwner判定用）
-  useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => {
-      setCurrentUser(data.user ?? null);
-    });
-  }, []);
 
   // SWRデータ反映
   useEffect(() => {

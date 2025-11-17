@@ -1,8 +1,8 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/utils/logger';
 import { revalidatePath } from 'next/cache';
+import { requireAuthForAction } from '@/lib/auth/server-actions';
 import {
   Conversation,
   ConversationWithUsers,
@@ -17,15 +17,11 @@ export async function createOrGetConversation(
   recipientId: string
 ): Promise<MessageActionResult> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return { success: false, message: 'ログインが必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, message: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     if (user.id === recipientId) {
       return {
@@ -86,15 +82,11 @@ export async function sendMessage(
   request: SendMessageRequest
 ): Promise<MessageActionResult> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return { success: false, message: 'ログインが必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, message: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     let conversationId = request.conversation_id;
 
@@ -205,15 +197,11 @@ export async function getConversations(
   filter: ConversationFilter = {}
 ): Promise<ConversationWithUsers[]> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
       return [];
     }
+    const { user, supabase } = authResult.data;
 
     // ユーザーが参加している会話IDを取得
     const { data: userConversations } = await supabase
@@ -326,15 +314,11 @@ export async function getConversationMessages(
   offset: number = 0
 ): Promise<MessageWithUser[]> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
       return [];
     }
+    const { user, supabase } = authResult.data;
 
     // 会話のアクセス権限をチェック
     const { data: conversation } = await supabase
@@ -384,15 +368,11 @@ export async function markMessagesAsRead(
   conversationId: string
 ): Promise<MessageActionResult> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return { success: false, message: 'ログインが必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, message: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     // 既読処理（ストアドプロシージャを使用）
     const { data: markedCount, error: markError } = await supabase.rpc(
@@ -427,15 +407,11 @@ export async function editMessage(
   newContent: string
 ): Promise<MessageActionResult> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return { success: false, message: 'ログインが必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, message: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     // メッセージを更新
     const { data: message, error: updateError } = await supabase
@@ -474,15 +450,11 @@ export async function deleteMessage(
   messageId: string
 ): Promise<MessageActionResult> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return { success: false, message: 'ログインが必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, message: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     // メッセージを削除
     const { error: deleteError } = await supabase
@@ -518,15 +490,11 @@ export async function createGroupConversation(
   photoSessionId?: string
 ): Promise<MessageActionResult> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return { success: false, message: 'ログインが必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, message: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     if (!name.trim()) {
       return { success: false, message: 'グループ名を入力してください' };
@@ -630,15 +598,11 @@ export async function addGroupMembers(
   memberIds: string[]
 ): Promise<MessageActionResult> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return { success: false, message: 'ログインが必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, message: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     // グループの管理権限をチェック
     const { data: member } = await supabase
@@ -713,15 +677,11 @@ export async function removeGroupMember(
   isLeaving: boolean = false
 ): Promise<MessageActionResult> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return { success: false, message: 'ログインが必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, message: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     // 自分の退出の場合は権限チェック不要
     if (!isLeaving || memberId !== user.id) {
@@ -785,15 +745,11 @@ export async function updateGroupSettings(
   }
 ): Promise<MessageActionResult> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return { success: false, message: 'ログインが必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, message: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     // 管理権限をチェック
     const { data: member } = await supabase
@@ -855,15 +811,11 @@ export async function updateGroupSettings(
 // グループメンバー一覧取得
 export async function getGroupMembers(conversationId: string) {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
       return [];
     }
+    const { user, supabase } = authResult.data;
 
     // アクセス権限をチェック
     const { data: member } = await supabase
@@ -906,15 +858,11 @@ export async function getGroupMembers(conversationId: string) {
 // 総未読メッセージ数取得
 export async function getTotalUnreadCount(): Promise<number> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
       return 0;
     }
+    const { user, supabase } = authResult.data;
 
     const { data: conversations } = await supabase
       .from('conversations')
