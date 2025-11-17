@@ -26,7 +26,7 @@ export async function createPaymentIntent(
     if (!authResult.success) {
       return { success: false, error: authResult.error };
     }
-    const { supabase } = authResult.data;
+    const { user, supabase } = authResult.data;
 
     // 予約の確認
     const { data: booking, error: bookingError } = await supabase
@@ -336,7 +336,7 @@ export async function getUserPayments(): Promise<{
     if (!authResult.success) {
       return { success: false, error: authResult.error };
     }
-    const { supabase } = authResult.data;
+    const { user, supabase } = authResult.data;
 
     const { data: payments, error } = await supabase
       .from('payments')
@@ -379,7 +379,7 @@ export async function getOrganizerRevenue(): Promise<{
     if (!authResult.success) {
       return { success: false, error: authResult.error };
     }
-    const { supabase } = authResult.data;
+    const { user, supabase } = authResult.data;
 
     // 主催者の決済統計を取得
     const { data: stats, error } = await supabase.rpc(
