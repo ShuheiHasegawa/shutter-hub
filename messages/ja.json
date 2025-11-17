@@ -1709,5 +1709,21 @@
         "message": "{photographerName}さんから写真が配信されました。"
       }
     }
+  },
+  "auth": {
+    "required": "認証が必要です",
+    "insufficientPermissions": "権限が不足しています",
+    "invalidUserType": "この機能は{userType}のみ利用可能です",
+    "adminRequired": "管理者権限が必要です",
+    "loginRequired": "ログインが必要です",
+    "authCheckError": "認証チェック中にエラーが発生しました",
+    "profileFetchError": "プロフィールの取得に失敗しました",
+    "userTypeCheckError": "ユーザータイプチェック中にエラーが発生しました",
+    "adminCheckError": "管理者権限チェック中にエラーが発生しました",
+    "userTypes": {
+      "model": "モデル",
+      "photographer": "カメラマン",
+      "organizer": "運営者"
+    }
   }
 }

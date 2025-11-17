@@ -13,7 +13,7 @@ import {
   getOrganizerInvitationsAction,
 } from '@/app/actions/organizer-model';
 import { checkModelLimit } from '@/lib/subscription-limits';
-import { createClient } from '@/lib/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 import type {
   OrganizerModelWithProfile,
   OrganizerModelInvitationWithProfiles,
@@ -81,14 +81,11 @@ export function OrganizerModelManagement({
     }
   }, [toast]);
 
+  const { user } = useAuth();
+
   // 制限情報を読み込み
   const loadLimitCheck = useCallback(async () => {
     try {
-      // 現在のユーザーIDを取得
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
       if (!user) return;
 
       const limitInfo = await checkModelLimit(user.id);
@@ -96,7 +93,7 @@ export function OrganizerModelManagement({
     } catch (error) {
       logger.error('制限情報読み込みエラー:', error);
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     loadData();

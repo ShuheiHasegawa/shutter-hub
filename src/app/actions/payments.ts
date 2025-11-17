@@ -1,9 +1,9 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/utils/logger';
 import { stripe, calculateTotalFees } from '@/lib/stripe/config';
 import { revalidatePath } from 'next/cache';
+import { requireAuthForAction } from '@/lib/auth/server-actions';
 import type {
   CreatePaymentIntentData,
   PaymentResult,
@@ -22,16 +22,11 @@ export async function createPaymentIntent(
       return { success: false, error: 'Stripe not initialized on server' };
     }
 
-    const supabase = await createClient();
-
-    // 認証チェック
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { success: false, error: 'Authentication required' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
     }
+    const { supabase } = authResult.data;
 
     // 予約の確認
     const { data: booking, error: bookingError } = await supabase
@@ -114,16 +109,11 @@ export async function confirmPayment(
       return { success: false, error: 'Stripe not initialized on server' };
     }
 
-    const supabase = await createClient();
-
-    // 認証チェック
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { success: false, error: 'Authentication required' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
     }
+    const { supabase } = authResult.data;
 
     // Stripeから決済状況を取得
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
@@ -260,16 +250,11 @@ export async function processRefund(data: RefundData): Promise<PaymentResult> {
       return { success: false, error: 'Stripe not initialized on server' };
     }
 
-    const supabase = await createClient();
-
-    // 認証チェック
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { success: false, error: 'Authentication required' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
     }
+    const { supabase } = authResult.data;
 
     // 決済レコードを取得
     const { data: payment, error: paymentError } = await supabase
@@ -347,16 +332,11 @@ export async function getUserPayments(): Promise<{
   error?: string;
 }> {
   try {
-    const supabase = await createClient();
-
-    // 認証チェック
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { success: false, error: 'Authentication required' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
     }
+    const { supabase } = authResult.data;
 
     const { data: payments, error } = await supabase
       .from('payments')
@@ -395,16 +375,11 @@ export async function getOrganizerRevenue(): Promise<{
   error?: string;
 }> {
   try {
-    const supabase = await createClient();
-
-    // 認証チェック
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { success: false, error: 'Authentication required' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
     }
+    const { supabase } = authResult.data;
 
     // 主催者の決済統計を取得
     const { data: stats, error } = await supabase.rpc(

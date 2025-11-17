@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { logger } from '@/lib/utils/logger';
+import { requireUserType } from '@/lib/auth/server-actions';
 import { createClient } from '@/lib/supabase/server';
 import { createNotification } from '@/app/actions/notifications';
 import { canInviteModel } from '@/lib/subscription-limits';
@@ -9,6 +10,8 @@ import type {
   CreateInvitationData,
   InvitationResponse,
   OrganizerModelResponse,
+  OrganizerModelWithProfile,
+  OrganizerModelInvitationWithProfiles,
 } from '@/types/organizer-model';
 
 /**
@@ -18,26 +21,11 @@ export async function createModelInvitationAction(
   data: CreateInvitationData
 ): Promise<InvitationResponse> {
   try {
-    const supabase = await createClient();
-
-    // 認証チェック
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      return { success: false, error: '認証が必要です' };
+    const typeResult = await requireUserType('organizer');
+    if (!typeResult.success) {
+      return { success: false, error: typeResult.error };
     }
-
-    // 運営権限チェック
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('user_type')
-      .eq('id', user.id)
-      .single();
-
-    if (profile?.user_type !== 'organizer') {
-      return { success: false, error: '運営者のみが招待を送信できます' };
-    }
+    const { user, supabase } = typeResult.data;
 
     // 所属モデル上限チェック
     const inviteCheck = await canInviteModel(user.id);
@@ -184,26 +172,11 @@ export async function createModelInvitationAction(
  */
 export async function getOrganizerModelsAction(): Promise<OrganizerModelResponse> {
   try {
-    const supabase = await createClient();
-
-    // 認証チェック
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      return { success: false, error: '認証が必要です' };
+    const typeResult = await requireUserType('organizer');
+    if (!typeResult.success) {
+      return { success: false, error: typeResult.error };
     }
-
-    // 運営権限チェック
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('user_type')
-      .eq('id', user.id)
-      .single();
-
-    if (profile?.user_type !== 'organizer') {
-      return { success: false, error: '運営者のみがアクセスできます' };
-    }
+    const { user, supabase } = typeResult.data;
 
     // 所属モデル基本情報を取得
     const { data: models, error } = await supabase
@@ -260,26 +233,11 @@ export async function getOrganizerModelsAction(): Promise<OrganizerModelResponse
  */
 export async function getOrganizerInvitationsAction(): Promise<InvitationResponse> {
   try {
-    const supabase = await createClient();
-
-    // 認証チェック
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      return { success: false, error: '認証が必要です' };
+    const typeResult = await requireUserType('organizer');
+    if (!typeResult.success) {
+      return { success: false, error: typeResult.error };
     }
-
-    // 運営権限チェック
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('user_type')
-      .eq('id', user.id)
-      .single();
-
-    if (profile?.user_type !== 'organizer') {
-      return { success: false, error: '運営者のみがアクセスできます' };
-    }
+    const { user, supabase } = typeResult.data;
 
     // 招待基本情報を取得
     const { data: invitations, error } = await supabase
@@ -317,8 +275,8 @@ export async function getOrganizerInvitationsAction(): Promise<InvitationRespons
 
     // model_idが存在する招待のプロフィールを取得
     const modelIds = invitations
-      .filter(inv => inv.model_id)
-      .map(inv => inv.model_id);
+      .filter((inv: { model_id?: string | null }) => inv.model_id)
+      .map((inv: { model_id: string }) => inv.model_id);
 
     if (modelIds.length > 0) {
       const { data: modelProfiles } = await supabase
@@ -333,7 +291,8 @@ export async function getOrganizerInvitationsAction(): Promise<InvitationRespons
 
     // emailのみの招待に対してもプロフィールを取得
     const emailOnlyInvitations = invitations.filter(
-      inv => !inv.model_id && inv.email
+      (inv: { model_id?: string | null; email?: string | null }) =>
+        !inv.model_id && inv.email
     );
 
     for (const invitation of emailOnlyInvitations) {
@@ -351,13 +310,16 @@ export async function getOrganizerInvitationsAction(): Promise<InvitationRespons
     }
 
     // データを結合
-    const invitationsWithProfiles = invitations.map(invitation => ({
-      ...invitation,
-      model_profile:
-        profiles.find(
-          p => p.id === invitation.model_id || p.email === invitation.email
-        ) || null,
-    }));
+    const invitationsWithProfiles = invitations.map(
+      (invitation: { model_id?: string | null; email?: string | null }) => ({
+        ...invitation,
+        model_profile:
+          profiles.find(
+            (p: { id: string; email?: string | null }) =>
+              p.id === invitation.model_id || p.email === invitation.email
+          ) || null,
+      })
+    ) as unknown as OrganizerModelInvitationWithProfiles[];
 
     return { success: true, data: invitationsWithProfiles };
   } catch (error) {
@@ -373,26 +335,11 @@ export async function removeOrganizerModelAction(
   modelRelationId: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const supabase = await createClient();
-
-    // 認証チェック
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      return { success: false, error: '認証が必要です' };
+    const typeResult = await requireUserType('organizer');
+    if (!typeResult.success) {
+      return { success: false, error: typeResult.error };
     }
-
-    // 運営権限チェック
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('user_type')
-      .eq('id', user.id)
-      .single();
-
-    if (profile?.user_type !== 'organizer') {
-      return { success: false, error: '運営者のみが削除できます' };
-    }
+    const { user, supabase } = typeResult.data;
 
     // 削除実行
     const { error } = await supabase
@@ -421,26 +368,11 @@ export async function cancelModelInvitationAction(
   invitationId: string
 ): Promise<InvitationResponse> {
   try {
-    const supabase = await createClient();
-
-    // 認証チェック
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      return { success: false, error: '認証が必要です' };
+    const typeResult = await requireUserType('organizer');
+    if (!typeResult.success) {
+      return { success: false, error: typeResult.error };
     }
-
-    // 運営権限チェック
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('user_type')
-      .eq('id', user.id)
-      .single();
-
-    if (profile?.user_type !== 'organizer') {
-      return { success: false, error: '運営者のみが招待をキャンセルできます' };
-    }
+    const { user, supabase } = typeResult.data;
 
     // 招待の存在確認と権限チェック
     const { data: invitation } = await supabase
@@ -487,16 +419,13 @@ export async function cancelModelInvitationAction(
  */
 export async function getModelInvitationsAction(): Promise<InvitationResponse> {
   try {
-    const supabase = await createClient();
-
-    // 認証チェック
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
+    const { requireAuthForAction } = await import('@/lib/auth/server-actions');
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
       logger.error('getModelInvitationsAction: 認証されていません');
-      return { success: false, error: '認証が必要です' };
+      return { success: false, error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     logger.info('getModelInvitationsAction: 招待検索開始', {
       userId: user.id,
@@ -555,26 +484,11 @@ export async function acceptModelInvitationAction(
   invitationId: string
 ): Promise<InvitationResponse> {
   try {
-    const supabase = await createClient();
-
-    // 認証チェック
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      return { success: false, error: '認証が必要です' };
+    const typeResult = await requireUserType('model');
+    if (!typeResult.success) {
+      return { success: false, error: typeResult.error };
     }
-
-    // モデル権限チェック
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('user_type, email, display_name')
-      .eq('id', user.id)
-      .single();
-
-    if (profile?.user_type !== 'model') {
-      return { success: false, error: 'モデルのみが招待を受諾できます' };
-    }
+    const { user, profile, supabase } = typeResult.data;
 
     // 招待の存在確認と権限チェック（emailベース検索に簡略化）
     const { data: invitation } = await supabase
@@ -685,26 +599,11 @@ export async function rejectModelInvitationAction(
   rejectionReason?: string
 ): Promise<InvitationResponse> {
   try {
-    const supabase = await createClient();
-
-    // 認証チェック
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      return { success: false, error: '認証が必要です' };
+    const typeResult = await requireUserType('model');
+    if (!typeResult.success) {
+      return { success: false, error: typeResult.error };
     }
-
-    // モデル権限チェック
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('user_type, email, display_name')
-      .eq('id', user.id)
-      .single();
-
-    if (profile?.user_type !== 'model') {
-      return { success: false, error: 'モデルのみが招待を拒否できます' };
-    }
+    const { user, profile, supabase } = typeResult.data;
 
     // 招待の存在確認と権限チェック（emailベース検索に簡略化）
     const { data: invitation } = await supabase
@@ -849,7 +748,7 @@ export async function getOrganizerModelsByUserIdAction(
     }
 
     // モデルのプロフィール情報を別途取得
-    const modelIds = models.map(m => m.model_id);
+    const modelIds = models.map((m: { model_id: string }) => m.model_id);
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
       .select('id, display_name, avatar_url, user_type')
@@ -861,10 +760,11 @@ export async function getOrganizerModelsByUserIdAction(
     }
 
     // データを結合
-    const modelsWithProfiles = models.map(model => ({
+    const modelsWithProfiles = models.map((model: { model_id: string }) => ({
       ...model,
-      model_profile: profiles?.find(p => p.id === model.model_id) || null,
-    }));
+      model_profile:
+        profiles?.find((p: { id: string }) => p.id === model.model_id) || null,
+    })) as OrganizerModelWithProfile[];
 
     return { success: true, data: modelsWithProfiles };
   } catch (error) {
@@ -908,7 +808,7 @@ export async function getOrganizersOfModelAction(modelUserId: string): Promise<{
 
     // 重複する所属レコード対策でorganizer_idをユニーク化
     const organizerIds = Array.from(
-      new Set((data || []).map(d => d.organizer_id))
+      new Set((data || []).map((d: { organizer_id: string }) => d.organizer_id))
     );
 
     const { data: organizers, error: orgErr } = await supabase
@@ -922,13 +822,16 @@ export async function getOrganizersOfModelAction(modelUserId: string): Promise<{
     }
 
     const result = (organizers || [])
-      .map(o => ({
+      .map((o: { id: string; display_name?: string | null }) => ({
         organizer_id: o.id,
         organizer_name: o.display_name ?? null,
       }))
       // 表示の安定化（名称でソート）
-      .sort((a, b) =>
-        (a.organizer_name || '').localeCompare(b.organizer_name || '')
+      .sort(
+        (
+          a: { organizer_name: string | null },
+          b: { organizer_name: string | null }
+        ) => (a.organizer_name || '').localeCompare(b.organizer_name || '')
       );
 
     return { success: true, data: result };

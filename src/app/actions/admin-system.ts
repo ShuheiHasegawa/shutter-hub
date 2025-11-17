@@ -1,8 +1,11 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/utils/logger';
 import { revalidatePath } from 'next/cache';
+import {
+  requireAuthForAction,
+  requireAdminRole,
+} from '@/lib/auth/server-actions';
 
 export interface ActionResult<T> {
   success: boolean;
@@ -48,16 +51,11 @@ export async function createInitialAdmin(
   email: string
 ): Promise<ActionResult<void>> {
   try {
-    const supabase = await createClient();
-
-    // 現在のユーザーを取得
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { success: false, error: '認証が必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     // ユーザーのメールアドレスが一致するかチェック
     if (user.email !== email) {
@@ -99,26 +97,11 @@ export async function inviteAdmin(
   role: 'admin' | 'super_admin'
 ): Promise<ActionResult<{ invitationToken: string }>> {
   try {
-    const supabase = await createClient();
-
-    // 管理者権限チェック
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { success: false, error: '認証が必要です' };
+    const adminResult = await requireAdminRole();
+    if (!adminResult.success) {
+      return { success: false, error: adminResult.error };
     }
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    if (!profile || !['admin', 'super_admin'].includes(profile.role || '')) {
-      return { success: false, error: '管理者権限が必要です' };
-    }
+    const { user, profile, supabase } = adminResult.data;
 
     // super_admin権限でない場合、super_adminは招待できない
     if (role === 'super_admin' && profile.role !== 'super_admin') {
@@ -163,16 +146,11 @@ export async function acceptAdminInvitation(
   invitationToken: string
 ): Promise<ActionResult<void>> {
   try {
-    const supabase = await createClient();
-
-    // 認証チェック
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { success: false, error: '認証が必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     // ストアドプロシージャを呼び出し
     const { data, error } = await supabase.rpc('accept_admin_invitation', {
@@ -209,26 +187,11 @@ export async function getAdminInvitations(): Promise<
   ActionResult<AdminInvitation[]>
 > {
   try {
-    const supabase = await createClient();
-
-    // 管理者権限チェック
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { success: false, error: '認証が必要です' };
+    const adminResult = await requireAdminRole();
+    if (!adminResult.success) {
+      return { success: false, error: adminResult.error };
     }
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    if (!profile || !['admin', 'super_admin'].includes(profile.role || '')) {
-      return { success: false, error: '管理者権限が必要です' };
-    }
+    const { supabase } = adminResult.data;
 
     // 招待一覧を取得
     const { data: invitations, error } = await supabase
@@ -260,26 +223,11 @@ export async function deleteAdminInvitation(
   invitationId: string
 ): Promise<ActionResult<void>> {
   try {
-    const supabase = await createClient();
-
-    // 管理者権限チェック
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { success: false, error: '認証が必要です' };
+    const adminResult = await requireAdminRole();
+    if (!adminResult.success) {
+      return { success: false, error: adminResult.error };
     }
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    if (!profile || !['admin', 'super_admin'].includes(profile.role || '')) {
-      return { success: false, error: '管理者権限が必要です' };
-    }
+    const { supabase } = adminResult.data;
 
     // 招待を削除
     const { error } = await supabase
@@ -307,26 +255,11 @@ export async function getAdminActivityLogs(
   limit: number = 50
 ): Promise<ActionResult<AdminActivityLog[]>> {
   try {
-    const supabase = await createClient();
-
-    // 管理者権限チェック
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { success: false, error: '認証が必要です' };
+    const adminResult = await requireAdminRole();
+    if (!adminResult.success) {
+      return { success: false, error: adminResult.error };
     }
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    if (!profile || !['admin', 'super_admin'].includes(profile.role || '')) {
-      return { success: false, error: '管理者権限が必要です' };
-    }
+    const { supabase } = adminResult.data;
 
     // アクティビティログを取得
     const { data: logs, error } = await supabase
@@ -363,26 +296,11 @@ export async function updateUserRole(
   newRole: 'user' | 'admin' | 'super_admin'
 ): Promise<ActionResult<void>> {
   try {
-    const supabase = await createClient();
-
-    // 管理者権限チェック
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { success: false, error: '認証が必要です' };
+    const adminResult = await requireAdminRole();
+    if (!adminResult.success) {
+      return { success: false, error: adminResult.error };
     }
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    if (!profile || !['admin', 'super_admin'].includes(profile.role || '')) {
-      return { success: false, error: '管理者権限が必要です' };
-    }
+    const { user, profile, supabase } = adminResult.data;
 
     // super_admin権限でない場合、super_adminは設定できない
     if (newRole === 'super_admin' && profile.role !== 'super_admin') {
@@ -457,26 +375,11 @@ export async function getAdminUsers(): Promise<
   >
 > {
   try {
-    const supabase = await createClient();
-
-    // 管理者権限チェック
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { success: false, error: '認証が必要です' };
+    const adminResult = await requireAdminRole();
+    if (!adminResult.success) {
+      return { success: false, error: adminResult.error };
     }
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    if (!profile || !['admin', 'super_admin'].includes(profile.role || '')) {
-      return { success: false, error: '管理者権限が必要です' };
-    }
+    const { supabase } = adminResult.data;
 
     // 管理者一覧を取得
     const { data: adminUsers, error } = await supabase

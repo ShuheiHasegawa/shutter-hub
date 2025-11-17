@@ -1,217 +1,275 @@
 <!-- e0886681-d901-414b-9665-abd88298f162 0776ffe5-b202-448c-ade1-e9b6428963d0 -->
-# `<img>`タグのNext.js Imageコンポーネントへの置き換え計画
-
-## 目標
-
-すべての`<img>`タグをNext.js `Image`コンポーネントに置き換え、パフォーマンス最適化（LCP改善、帯域幅削減）を実現する。
+# 認証状態確認統一化実装計画
 
 ## 現状分析
 
-### 対象ファイル（14ファイル、合計約20箇所）
+### 問題点
 
-#### 本番コンポーネント（11ファイル）
+1. **認証チェックの分散**: 808箇所で`createClient`や`supabase.auth.getUser`を直接使用
+2. **エラーハンドリングの不統一**: エラーメッセージが多様（「認証が必要です」「ログインが必要です」「Authentication required」など）
+3. **権限チェックの重複**: プロフィール取得が各所で個別に実行され、パフォーマンス問題
+4. **パターンの混在**: 同じ目的で異なる実装パターンが使用されている
 
-1. `src/components/social/PostCard.tsx` - 2箇所（投稿画像サムネイル・ダイアログ表示）
-2. `src/components/ui/image-upload-common.tsx` - 1箇所（画像プレビュー、aspect-square）
-3. `src/components/ui/image-upload.tsx` - 1箇所（画像プレビュー、aspect-square）
-4. `src/components/social/CreatePostForm.tsx` - 1箇所（Blob URLプレビュー、固定サイズ96x96）
-5. `src/components/social/MessageAttachment.tsx` - 3箇所（メッセージ添付画像、aspect-video）
-6. `src/components/photo-sessions/PhotoSessionSlotCard.tsx` - 1箇所（衣装プレビュー、ダイアログ内）
-7. `src/components/social/ChatWindow.tsx` - 1箇所（メッセージ画像、動的サイズ）
-8. `src/components/photo-sessions/PhotoSessionDetail.tsx` - 2箇所（撮影会画像ギャラリー、aspect-video）
-9. `src/components/admin/AdminDisputeManagement.tsx` - 1箇所（証拠画像、固定高さ）
-10. `src/components/instant/GuestApprovalPanel.tsx` - 1箇所（アバター画像、固定サイズ64x64）
-11. `src/components/photobook/QuickPhotobookImageManager.tsx` - 1箇所（画像プレビュー、固定サイズ80x80）
-12. `src/components/photobook/editor/DraggableElements.tsx` - 1箇所（ドラッグ可能な画像要素、固定サイズ96x96）
+### 現状の使用状況
 
-#### 開発・テスト用ファイル（2ファイル）
+- **Server Actions**: 51ファイルで185箇所の`supabase.auth.getUser`使用
+- **Server Components**: 直接`createClient`と`supabase.auth.getUser`を使用するパターンが多数
+- **Client Components**: `useAuth`フックが存在するが、直接`createClient`を使用する箇所も存在
 
-13. `src/app/[locale]/performance-test/page.tsx` - 4箇所（パフォーマンステスト用サンプル画像）
-14. `src/app/[locale]/dev/sample.html` - 1箇所（HTMLファイル、除外対象）
+## 理想的な構造設計
+
+### 1. Server Actions用認証ユーティリティ
+
+**ファイル**: `src/lib/auth/server-actions.ts`
+
+```typescript
+// 統一的な認証チェック関数
+export async function requireAuthForAction(): Promise<{ user: User; supabase: SupabaseClient }>
+
+// 統一的な権限チェック関数
+export async function requireUserType(userType: 'model' | 'photographer' | 'organizer'): Promise<{ user: User; profile: Profile }>
+export async function requireAdminRole(): Promise<{ user: User; profile: Profile }>
+
+// 統一的なエラーレスポンス
+export type AuthActionResult<T> = { success: true; data: T } | { success: false; error: string; code: string }
+```
+
+### 2. Server Components用認証ユーティリティ（拡張）
+
+**ファイル**: `src/lib/auth/server.ts`（既存を拡張）
+
+```typescript
+// 既存: getCurrentUser(), requireAuth(), getCurrentUserProfile()
+
+// 新規追加
+export async function requireUserType(userType: 'model' | 'photographer' | 'organizer'): Promise<{ user: User; profile: Profile }>
+export async function requireAdminRole(): Promise<{ user: User; profile: Profile }>
+export async function getUserWithProfile(): Promise<{ user: User; profile: Profile | null } | null>
+```
+
+### 3. Client Components用認証フック（拡張）
+
+**ファイル**: `src/hooks/useAuth.ts`（既存を拡張）
+
+```typescript
+// 既存: useAuth() - { user, loading, logout }
+
+// 新規追加
+export function useUserProfile(): { profile: Profile | null; loading: boolean }
+export function useRequireAuth(): { user: User; loading: boolean }
+export function useRequireUserType(userType: 'model' | 'photographer' | 'organizer'): { user: User; profile: Profile; loading: boolean }
+```
+
+### 4. 認証ガードコンポーネント（拡張）
+
+**ファイル**: `src/components/auth/auth-guard.tsx`（既存を拡張）
+
+```typescript
+// 既存: AuthGuard
+
+// 新規追加
+export function UserTypeGuard({ userType, children }: { userType: 'model' | 'photographer' | 'organizer'; children: React.ReactNode })
+export function AdminGuard({ children }: { children: React.ReactNode })
+```
 
 ## 実装ステップ
 
-### Phase 1: 固定サイズ画像の置き換え（優先度：高）
+### Phase 1: 基盤ユーティリティの作成
 
-#### 1.1 小さい固定サイズ画像（64x64, 80x80, 96x96）
+1. **Server Actions用認証ユーティリティ作成**
 
-- `GuestApprovalPanel.tsx` - アバター画像（64x64）
-- `QuickPhotobookImageManager.tsx` - 画像プレビュー（80x80）
-- `CreatePostForm.tsx` - Blob URLプレビュー（96x96）
-- `DraggableElements.tsx` - ドラッグ可能な画像要素（96x96）
+   - `src/lib/auth/server-actions.ts`を作成
+   - `requireAuthForAction()`関数を実装
+   - `requireUserType()`関数を実装
+   - `requireAdminRole()`関数を実装
+   - 統一的なエラーレスポンス型を定義
 
-**置き換え方法**: `width`と`height`を明示的に指定
+2. **Server Components用認証ユーティリティ拡張**
 
-```tsx
-<Image
-  src={imageUrl}
-  alt={altText}
-  width={96}
-  height={96}
-  className="object-cover rounded-lg"
-/>
-```
+   - `src/lib/auth/server.ts`に新規関数を追加
+   - `requireUserType()`関数を実装
+   - `requireAdminRole()`関数を実装
+   - `getUserWithProfile()`関数を実装（プロフィール取得の最適化）
 
-#### 1.2 固定高さの画像
+3. **Client Components用認証フック拡張**
 
-- `AdminDisputeManagement.tsx` - 証拠画像（h-32 = 128px）
+   - `src/hooks/useAuth.ts`に新規フックを追加
+   - `useUserProfile()`フックを実装
+   - `useRequireAuth()`フックを実装
+   - `useRequireUserType()`フックを実装
 
-**置き換え方法**: 親要素のサイズに合わせて`fill`を使用
+4. **認証ガードコンポーネント拡張**
 
-```tsx
-<div className="relative h-32 w-full">
-  <Image
-    src={url}
-    alt={altText}
-    fill
-    className="object-cover rounded"
-  />
-</div>
-```
+   - `src/components/auth/auth-guard.tsx`に新規コンポーネントを追加
+   - `UserTypeGuard`コンポーネントを実装
+   - `AdminGuard`コンポーネントを実装
 
-### Phase 2: アスペクト比固定画像の置き換え（優先度：高）
+### Phase 2: Server Actionsの統一化
 
-#### 2.1 aspect-square（1:1）
+1. **高優先度Server Actionsから順次置き換え**
 
-- `image-upload-common.tsx` - 画像プレビュー
-- `image-upload.tsx` - 画像プレビュー
+   - `src/app/actions/payments.ts`
+   - `src/app/actions/message.ts`
+   - `src/app/actions/organizer-model.ts`
+   - `src/app/actions/admin-system.ts`
+   - `src/app/actions/bulk-photo-sessions.ts`
 
-**置き換え方法**: 親要素で`aspect-square`を維持し、`fill`を使用
+2. **置き換えパターン**
+   ```typescript
+   // Before
+   const supabase = await createClient();
+   const { data: { user }, error: authError } = await supabase.auth.getUser();
+   if (authError || !user) {
+     return { success: false, error: '認証が必要です' };
+   }
+   
+   // After
+   const authResult = await requireAuthForAction();
+   if (!authResult.success) {
+     return authResult;
+   }
+   const { user, supabase } = authResult.data;
+   ```
 
-```tsx
-<div className="aspect-square relative rounded-lg overflow-hidden bg-muted">
-  <Image
-    src={url}
-    alt={altText}
-    fill
-    className="object-cover"
-  />
-</div>
-```
+3. **権限チェックの統一化**
+   ```typescript
+   // Before
+   const { data: profile } = await supabase.from('profiles').select('user_type').eq('id', user.id).single();
+   if (profile?.user_type !== 'organizer') {
+     return { success: false, error: '運営者のみが利用できます' };
+   }
+   
+   // After
+   const typeResult = await requireUserType('organizer');
+   if (!typeResult.success) {
+     return typeResult;
+   }
+   const { user, profile } = typeResult.data;
+   ```
 
-#### 2.2 aspect-video（16:9）
 
-- `MessageAttachment.tsx` - メッセージ添付画像（3箇所）
-- `PhotoSessionDetail.tsx` - 撮影会画像ギャラリー（2箇所）
+### Phase 3: Server Componentsの統一化
 
-**置き換え方法**: 親要素で`aspect-video`を維持し、`fill`を使用
+1. **高優先度Server Componentsから順次置き換え**
 
-```tsx
-<div className="aspect-video rounded-lg overflow-hidden bg-gray-100">
-  <Image
-    src={image}
-    alt={altText}
-    fill
-    className="object-cover"
-  />
-</div>
-```
+   - `src/app/[locale]/admin/page.tsx`
+   - `src/app/[locale]/admin/users/page.tsx`
+   - `src/app/[locale]/admin/disputes/page.tsx`
+   - `src/app/[locale]/subscription/page.tsx`
+   - `src/app/[locale]/photo-sessions/[id]/reviews/page.tsx`
 
-### Phase 3: 動的サイズ画像の置き換え（優先度：中）
+2. **置き換えパターン**
+   ```typescript
+   // Before
+   const supabase = await createClient();
+   const { data: { user }, error: authError } = await supabase.auth.getUser();
+   if (authError || !user) {
+     return <Alert>認証が必要です</Alert>;
+   }
+   
+   // After
+   const user = await getCurrentUser();
+   if (!user) {
+     redirect('/auth/signin');
+   }
+   ```
 
-#### 3.1 最大サイズ制限付き画像
+3. **権限チェックの統一化**
+   ```typescript
+   // Before
+   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+   if (!profile?.role || !['admin', 'super_admin'].includes(profile.role)) {
+     return <Alert>管理者権限が必要です</Alert>;
+   }
+   
+   // After
+   const { user, profile } = await requireAdminRole();
+   ```
 
-- `PostCard.tsx` - 投稿画像サムネイル（max-h-[400px]）
-- `PostCard.tsx` - ダイアログ内画像（max-h-[70vh]）
-- `ChatWindow.tsx` - メッセージ画像（max-w-[280px] sm:max-w-[320px] max-h-[200px] sm:max-h-[240px]）
-- `PhotoSessionSlotCard.tsx` - 衣装プレビュー（max-h-96）
 
-**置き換え方法**: 親要素でサイズ制限を設定し、`fill`または適切な`width`/`height`を使用
+### Phase 4: Client Componentsの統一化
 
-```tsx
-// サムネイルの場合
-<div className="relative max-h-[400px] w-full">
-  <Image
-    src={imageUrl}
-    alt={altText}
-    fill
-    className="object-cover rounded-lg"
-    sizes="(max-width: 768px) 100vw, 50vw"
-  />
-</div>
+1. **高優先度Client Componentsから順次置き換え**
 
-// ダイアログ内の場合
-<div className="relative max-h-[70vh] w-full">
-  <Image
-    src={imageUrl}
-    alt={altText}
-    fill
-    className="object-contain"
-    sizes="100vw"
-  />
-</div>
-```
+   - 直接`createClient`を使用しているコンポーネントを特定
+   - `useAuth`フックを使用するように置き換え
 
-### Phase 4: 特殊ケースの対応（優先度：中）
+2. **置き換えパターン**
+   ```typescript
+   // Before
+   const supabase = createClient();
+   const { data: { user } } = await supabase.auth.getUser();
+   
+   // After
+   const { user, loading } = useAuth();
+   ```
 
-#### 4.1 Blob URL（URL.createObjectURL）
 
-- `CreatePostForm.tsx` - ファイルプレビュー
+### Phase 5: エラーメッセージの統一化
 
-**対応方法**: Next.js ImageはBlob URLを直接サポートしているため、通常通り`Image`コンポーネントを使用可能
+1. **多言語化対応**
 
-```tsx
-<Image
-  src={URL.createObjectURL(file)}
-  alt={`Preview ${index + 1}`}
-  width={96}
-  height={96}
-  className="rounded-md object-cover"
-/>
-```
+   - `messages/ja.json`と`messages/en.json`に認証エラーメッセージを追加
+   - 統一的なエラーメッセージキーを定義
 
-**注意**: Blob URLはメモリリークを防ぐため、`useEffect`のクリーンアップで`revokeObjectURL`を呼び出す必要がある（既存コードで対応済みか確認）
+2. **エラーメッセージの標準化**
 
-#### 4.2 パフォーマンステストページ
+   - 認証エラー: `auth.required`
+   - 権限エラー: `auth.insufficientPermissions`
+   - ユーザータイプエラー: `auth.invalidUserType`
 
-- `performance-test/page.tsx` - 4箇所のサンプル画像
+### Phase 6: パフォーマンス最適化
 
-**対応方法**: 固定サイズまたは`fill`を使用して置き換え
+1. **プロフィール取得の最適化**
 
-### Phase 5: 開発・テスト用ファイル（優先度：低）
+   - 複数回のプロフィール取得を1回に統合
+   - キャッシュ戦略の検討
 
-#### 5.1 HTMLファイル
+2. **認証チェックの最適化**
 
-- `dev/sample.html` - HTMLファイルのため除外（Next.js Imageは使用不可）
+   - 重複した認証チェックを削減
+   - 認証状態のキャッシュ（適切な範囲で）
 
 ## 実装時の注意事項
 
-### 必須対応
+### 1. 段階的な移行
 
-1. **import文の追加**: 各ファイルに`import Image from 'next/image'`を追加
-2. **未使用importの削除**: 既存の`Image`インポートがある場合は確認
-3. **親要素の`relative`指定**: `fill`を使用する場合は親要素に`relative`クラスが必要
-4. **適切な`sizes`属性**: レスポンシブ画像には`sizes`属性を設定
-5. **Blob URLのクリーンアップ**: `URL.createObjectURL`使用箇所でメモリリーク防止
+- 一度にすべてを置き換えるのではなく、高優先度から順次実施
+- 各Phase完了後に動作確認を実施
 
-### パフォーマンス最適化
+### 2. 後方互換性
 
-- `priority`属性: ビューポート内の重要な画像に設定
-- `loading="lazy"`: ビューポート外の画像に設定（デフォルト）
-- `sizes`属性: レスポンシブ画像に適切な値を設定
+- 既存の関数（`getCurrentUser()`、`useAuth()`など）は維持
+- 新規関数は既存関数を内部で使用
 
-### エラーハンドリング
+### 3. エラーハンドリング
 
-- 画像読み込みエラー時のフォールバック表示（必要に応じて`onError`ハンドラーを追加）
+- 統一的なエラーレスポンス型を使用
+- エラーメッセージは多言語化対応
+
+### 4. 型安全性
+
+- TypeScriptの型定義を適切に設定
+- プロフィール型の統一
+
+### 5. テスト
+
+- 各ユーティリティ関数の単体テスト
+- 統合テスト（認証フローの確認）
 
 ## 期待される成果
 
-1. **パフォーマンス改善**: LCP（Largest Contentful Paint）の改善
-2. **帯域幅削減**: 自動的な画像最適化（WebP/AVIF変換）
-3. **レスポンシブ対応**: デバイスに応じた最適サイズ配信
-4. **コード品質**: 統一された画像表示パターン
-5. **ESLint警告解消**: `@next/next/no-img-element`警告の解消
+1. **コードの一貫性**: 認証チェックが統一され、保守性が向上
+2. **パフォーマンス向上**: プロフィール取得の最適化により、重複クエリを削減
+3. **エラーハンドリングの統一**: 一貫したエラーメッセージと処理
+4. **開発効率向上**: 新しい機能実装時の認証チェックが簡潔に
+5. **セキュリティ向上**: 認証チェックの漏れを防止
 
-## テスト計画
+## 参考資料
 
-1. **ビジュアル回帰テスト**: 各コンポーネントで画像表示が正しく動作することを確認
-2. **レスポンシブテスト**: モバイル・タブレット・デスクトップでの表示確認
-3. **パフォーマンステスト**: Lighthouseスコアの改善確認
-4. **Blob URLテスト**: ファイルアップロード時のプレビュー表示確認
-
-## ドキュメント更新
-
-- `development.mdc`の「Next.js Image最適化ルール」セクションに実装完了状況を追記
+- 既存実装: `src/lib/auth/server.ts`, `src/hooks/useAuth.ts`
+- エラーハンドラー: `src/lib/server-action-error-handler.ts`
+- 多言語化: `messages/ja.json`, `messages/en.json`
 
 ### To-dos
 
