@@ -10,6 +10,7 @@ import { SWRProvider } from '@/components/providers/swr-provider';
 import { Toaster } from '@/components/ui/toaster';
 import { PerformanceDashboard } from '@/components/dev/performance-dashboard';
 import { enableQueryStatistics } from '@/lib/supabase/query-wrapper';
+import { Analytics } from '@vercel/analytics/react';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -126,6 +127,7 @@ export default async function LocaleLayout({
               {children}
               <Toaster />
               <PerformanceDashboard />
+              <Analytics />
             </ThemeProvider>
           </SWRProvider>
         </NextIntlClientProvider>
