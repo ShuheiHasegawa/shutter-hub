@@ -1,9 +1,9 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/utils/logger';
 import { ConsentStatus } from '@/types/photo-consent';
 import { revalidatePath } from 'next/cache';
+import { requireAuthForAction } from '@/lib/auth/server-actions';
 
 export async function updateConsentStatus(
   consentId: string,
@@ -11,14 +11,11 @@ export async function updateConsentStatus(
   message?: string
 ) {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      throw new Error('認証が必要です');
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      throw new Error(authResult.error);
     }
+    const { user, supabase } = authResult.data;
 
     const updateData: Record<string, unknown> = {
       consent_status: status,
@@ -54,14 +51,11 @@ export async function batchUpdateConsent(
   message?: string
 ) {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      throw new Error('認証が必要です');
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      throw new Error(authResult.error);
     }
+    const { user: _user, supabase: _supabase } = authResult.data;
 
     const results = await Promise.all(
       consentIds.map(id => updateConsentStatus(id, status, message))

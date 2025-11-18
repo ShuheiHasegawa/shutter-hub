@@ -1,10 +1,10 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/utils/logger';
 import { revalidatePath } from 'next/cache';
 import { CreatePhotoSessionSlotData } from '@/types/photo-session';
 import { getCurrentSubscription } from '@/app/actions/subscription-management';
+import { requireAuthForAction } from '@/lib/auth/server-actions';
 
 export interface PhotoSessionWithSlotsData {
   title: string;
@@ -28,15 +28,11 @@ export async function createPhotoSessionWithSlotsAction(
   data: PhotoSessionWithSlotsData
 ) {
   try {
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return { success: false, error: '認証が必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     // スロット必須のため、常にスロットから参加者数と料金を計算
     const maxParticipants = data.slots.reduce(
@@ -116,15 +112,11 @@ export async function updatePhotoSessionWithSlotsAction(
   data: PhotoSessionWithSlotsData
 ) {
   try {
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return { success: false, error: '認証が必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     // 撮影会の所有者確認
     const { data: existingSession } = await supabase

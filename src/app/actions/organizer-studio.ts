@@ -1,8 +1,8 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/utils/logger';
 import { revalidatePath } from 'next/cache';
+import { requireAuthForAction } from '@/lib/auth/server-actions';
 import {
   OrganizerStudio,
   SelectedStudio,
@@ -20,19 +20,15 @@ export async function getOrganizerStudiosAction(
   organizerId?: string
 ): Promise<{ success: boolean; studios?: SelectedStudio[]; error?: string }> {
   try {
-    const supabase = await createClient();
-
     // ユーザー認証チェック
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
       return {
         success: false,
-        error: 'ログインが必要です。',
+        error: authResult.error,
       };
     }
+    const { user, supabase } = authResult.data;
 
     const targetOrganizerId = organizerId || user.id;
 
@@ -126,19 +122,15 @@ export async function addOrganizerStudioAction(
   error?: string;
 }> {
   try {
-    const supabase = await createClient();
-
     // ユーザー認証チェック
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
       return {
         success: false,
-        error: 'ログインが必要です。',
+        error: authResult.error,
       };
     }
+    const { user, supabase } = authResult.data;
 
     // 運営者権限チェック
     const { data: userProfile } = await supabase
@@ -245,19 +237,15 @@ export async function updateOrganizerStudioAction(
   error?: string;
 }> {
   try {
-    const supabase = await createClient();
-
     // ユーザー認証チェック
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
       return {
         success: false,
-        error: 'ログインが必要です。',
+        error: authResult.error,
       };
     }
+    const { user, supabase } = authResult.data;
 
     // 権限チェック
     const { data: existing, error: fetchError } = await supabase
@@ -324,19 +312,15 @@ export async function removeOrganizerStudioAction(
   organizerStudioId: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const supabase = await createClient();
-
     // ユーザー認証チェック
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
       return {
         success: false,
-        error: 'ログインが必要です。',
+        error: authResult.error,
       };
     }
+    const { user, supabase } = authResult.data;
 
     // 権限チェック
     const { data: existing, error: fetchError } = await supabase
@@ -402,19 +386,15 @@ export async function searchAvailableStudiosAction(
   excludeIds: string[] = []
 ): Promise<{ success: boolean; studios?: SelectedStudio[]; error?: string }> {
   try {
-    const supabase = await createClient();
-
     // ユーザー認証チェック
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
       return {
         success: false,
-        error: 'ログインが必要です。',
+        error: authResult.error,
       };
     }
+    const { user, supabase } = authResult.data;
 
     // 専属スタジオ取得
     const { data: organizerStudios } = await supabase
@@ -497,19 +477,15 @@ export async function searchAvailableStudiosAction(
  */
 export async function getOrganizerStudioStatsAction(organizerId?: string) {
   try {
-    const supabase = await createClient();
-
     // ユーザー認証チェック
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
       return {
         success: false,
-        error: 'ログインが必要です。',
+        error: authResult.error,
       };
     }
+    const { user, supabase } = authResult.data;
 
     const targetOrganizerId = organizerId || user.id;
 
@@ -609,19 +585,15 @@ export async function linkPhotoSessionStudioAction(
   }
 ) {
   try {
-    const supabase = await createClient();
-
     // ユーザー認証チェック
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
       return {
         success: false,
-        error: 'ログインが必要です。',
+        error: authResult.error,
       };
     }
+    const { user, supabase } = authResult.data;
 
     // 撮影会の所有者確認
     const { data: photoSession, error: sessionError } = await supabase

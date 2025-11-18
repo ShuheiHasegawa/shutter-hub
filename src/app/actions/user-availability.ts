@@ -1,8 +1,8 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { logger } from '@/lib/utils/logger';
+import { requireAuthForAction } from '@/lib/auth/server-actions';
 import {
   validateTimeRange,
   validateDateString,
@@ -32,16 +32,11 @@ export async function createUserAvailability(
   data: CreateUserAvailabilityData
 ): Promise<ActionResult<UserAvailability>> {
   try {
-    const supabase = await createClient();
-
-    // ユーザー認証確認
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-    if (userError || !user) {
-      return { success: false, error: '認証が必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     // 入力値検証
     const dateValidation = validateDateString(data.available_date);
@@ -121,16 +116,11 @@ export async function getUserAvailability(
   endDate: string
 ): Promise<ActionResult<TimeSlot[]>> {
   try {
-    const supabase = await createClient();
-
-    // ユーザー認証確認
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-    if (userError || !user) {
-      return { success: false, error: '認証が必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
     }
+    const { user: _user, supabase } = authResult.data;
 
     // 権限管理はRLSポリシーに委任
 
@@ -177,16 +167,11 @@ export async function updateUserAvailability(
   data: UpdateUserAvailabilityData
 ): Promise<ActionResult<UserAvailability>> {
   try {
-    const supabase = await createClient();
-
-    // ユーザー認証確認
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-    if (userError || !user) {
-      return { success: false, error: '認証が必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     // 既存データの確認（権限チェック含む）
     const { data: existing, error: fetchError } = await supabase
@@ -270,16 +255,11 @@ export async function deleteUserAvailability(
   slotId: string
 ): Promise<ActionResult> {
   try {
-    const supabase = await createClient();
-
-    // ユーザー認証確認
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-    if (userError || !user) {
-      return { success: false, error: '認証が必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     // 論理削除（is_active = false）
     const { error } = await supabase
@@ -310,16 +290,11 @@ export async function copyAvailabilityToOtherDates(
   request: CopyAvailabilityRequest
 ): Promise<ActionResult<TimeSlot[]>> {
   try {
-    const supabase = await createClient();
-
-    // ユーザー認証確認
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-    if (userError || !user) {
-      return { success: false, error: '認証が必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     // 元データの取得
     const { data: sourceSlots, error: fetchError } = await supabase
@@ -420,16 +395,11 @@ export async function getOrganizerOverlaps(
   date: string
 ): Promise<ActionResult<OrganizerOverlap[]>> {
   try {
-    const supabase = await createClient();
-
-    // ユーザー認証確認
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-    if (userError || !user) {
-      return { success: false, error: '認証が必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
     }
+    const { user: _user, supabase } = authResult.data;
 
     // 権限管理はRLSポリシーに委任
 
@@ -497,16 +467,11 @@ export async function getUserAvailabilityStats(
   }>
 > {
   try {
-    const supabase = await createClient();
-
-    // ユーザー認証確認
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-    if (userError || !user) {
-      return { success: false, error: '認証が必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     // 権限確認
     if (user.id !== userId) {

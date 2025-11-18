@@ -1,8 +1,9 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/utils/logger';
 import { revalidatePath } from 'next/cache';
+import { requireAuthForAction } from '@/lib/auth/server-actions';
+import { createClient } from '@/lib/supabase/server';
 
 // レビューシステムのServer Actions
 
@@ -69,16 +70,11 @@ export async function createPhotoSessionReview(
   data: CreatePhotoSessionReviewData
 ) {
   try {
-    const supabase = await createClient();
-
-    // 認証チェック
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { error: 'Authentication required' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     // 予約の確認（実際に参加したかチェック）
     const { data: booking, error: bookingError } = await supabase
@@ -166,16 +162,11 @@ export async function createPhotoSessionReview(
 // ユーザーレビューを作成
 export async function createUserReview(data: CreateUserReviewData) {
   try {
-    const supabase = await createClient();
-
-    // 認証チェック
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { error: 'Authentication required' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     // 予約の確認
     const { data: booking, error: bookingError } = await supabase
@@ -290,16 +281,11 @@ export async function createUserReview(data: CreateUserReviewData) {
 // レビューの役立ち評価を投票
 export async function voteReviewHelpful(data: ReviewHelpfulVoteData) {
   try {
-    const supabase = await createClient();
-
-    // 認証チェック
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { error: 'Authentication required' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     // 既存の投票をチェック
     const { data: existingVote, error: checkError } = await supabase
@@ -359,16 +345,11 @@ export async function voteReviewHelpful(data: ReviewHelpfulVoteData) {
 // レビューを報告
 export async function reportReview(data: ReviewReportData) {
   try {
-    const supabase = await createClient();
-
-    // 認証チェック
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { error: 'Authentication required' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     // 重複報告チェック
     const { data: existingReport, error: checkError } = await supabase
@@ -566,16 +547,11 @@ export async function updatePhotoSessionReview(
   data: UpdatePhotoSessionReviewData
 ) {
   try {
-    const supabase = await createClient();
-
-    // 認証チェック
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { error: 'Authentication required' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     // 既存レビューの確認（自分のレビューかチェック）
     const { data: existingReview, error: reviewError } = await supabase

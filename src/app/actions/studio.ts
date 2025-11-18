@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import Logger from '@/lib/logger';
+import { requireAuthForAction } from '@/lib/auth/server-actions';
 import {
   Studio,
   StudioPhoto,
@@ -447,17 +448,12 @@ export async function createStudioAction(formData: Partial<Studio>): Promise<{
   error?: string;
 }> {
   try {
-    const supabase = await createClient();
-
     // ユーザー認証チェック
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return { success: false, error: '認証が必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     // 正規化データの準備
     if (!formData.name || !formData.address) {
@@ -516,17 +512,12 @@ export async function updateStudioAction(
   error?: string;
 }> {
   try {
-    const supabase = await createClient();
-
     // ユーザー認証チェック
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return { success: false, error: '認証が必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     // 既存スタジオの確認
     Logger.info('スタジオ存在確認開始:', { studioId });
@@ -814,17 +805,12 @@ export async function deleteStudioAction(studioId: string): Promise<{
   error?: string;
 }> {
   try {
-    const supabase = await createClient();
-
     // ユーザー認証チェック
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return { success: false, error: '認証が必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     // 管理者権限チェック（実装予定）
     // TODO: ユーザーの権限確認
@@ -892,17 +878,12 @@ export async function createStudioPhotoAction(
   error?: string;
 }> {
   try {
-    const supabase = await createClient();
-
     // ユーザー認証チェック
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return { success: false, error: '認証が必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     // スタジオの存在確認
     const { data: studio, error: studioError } = await supabase
@@ -966,17 +947,12 @@ export async function deleteStudioPhotoAction(photoId: string): Promise<{
   error?: string;
 }> {
   try {
-    const supabase = await createClient();
-
     // ユーザー認証チェック
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return { success: false, error: '認証が必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
     }
+    const { user: _user, supabase } = authResult.data;
 
     // 画像の存在確認
     const { data: photo, error: photoError } = await supabase
@@ -1028,17 +1004,12 @@ export async function updateStudioPhotoOrderAction(
   error?: string;
 }> {
   try {
-    const supabase = await createClient();
-
     // ユーザー認証チェック
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return { success: false, error: '認証が必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
     }
+    const { user: _user, supabase } = authResult.data;
 
     // 画像の存在確認
     const { data: photo, error: photoError } = await supabase
@@ -1090,17 +1061,12 @@ export async function reportStudioAction(
   autoHidden?: boolean;
 }> {
   try {
-    const supabase = await createClient();
-
     // ユーザー認証チェック
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return { success: false, error: '認証が必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     // スタジオの存在確認
     const { data: studio, error: studioError } = await supabase

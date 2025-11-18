@@ -1,8 +1,9 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/utils/logger';
 import { revalidatePath } from 'next/cache';
+import { requireAuthForAction } from '@/lib/auth/server-actions';
+import { createClient } from '@/lib/supabase/server';
 import {
   CreatePostData,
   PostWithUser,
@@ -28,15 +29,11 @@ export async function createPost(
   postData: CreatePostData
 ): Promise<{ success: boolean; data?: PostWithUser; message?: string }> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return { success: false, message: 'ログインが必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, message: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     // ハッシュタグを抽出してマスターに登録
     const hashtags = postData.hashtags || [];
@@ -163,15 +160,11 @@ export async function likePost(
   postId: string
 ): Promise<{ success: boolean; isLiked: boolean; message?: string }> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return { success: false, isLiked: false, message: 'ログインが必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, isLiked: false, message: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     // 既存のいいねをチェック
     const { data: existingLike } = await supabase
@@ -233,15 +226,11 @@ export async function commentOnPost(
   parentCommentId?: string
 ): Promise<{ success: boolean; data?: CommentWithUser; message?: string }> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return { success: false, message: 'ログインが必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, message: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     const { data: comment, error: commentError } = await supabase
       .from('sns_post_comments')
@@ -294,15 +283,11 @@ export async function repostPost(
   comment?: string
 ): Promise<{ success: boolean; data?: PostWithUser; message?: string }> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return { success: false, message: 'ログインが必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, message: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     // 既にリポストしているかチェック
     const { data: existingRepost } = await supabase
@@ -370,15 +355,11 @@ export async function getTimelinePosts(
   limit = 20
 ): Promise<{ success: boolean; data?: TimelinePost[]; message?: string }> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return { success: false, message: 'ログインが必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, message: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     const offset = (page - 1) * limit;
 
@@ -713,15 +694,11 @@ export async function deletePost(
   postId: string
 ): Promise<{ success: boolean; message?: string }> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return { success: false, message: 'ログインが必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, message: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     // 投稿の所有者確認
     const { data: post, error: postError } = await supabase
@@ -763,15 +740,11 @@ export async function getTrendingPosts(
   limit = 20
 ): Promise<{ success: boolean; data?: TimelinePost[]; message?: string }> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return { success: false, message: 'ログインが必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, message: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     const offset = (page - 1) * limit;
 
