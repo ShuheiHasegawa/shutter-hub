@@ -190,7 +190,7 @@ export async function followUser(
     if (!authResult.success) {
       return { success: false, message: authResult.error };
     }
-    const { user: _user, supabase } = authResult.data;
+    const { user, supabase } = authResult.data;
 
     if (user.id === targetUserId) {
       return { success: false, message: '自分をフォローすることはできません' };
@@ -262,7 +262,7 @@ export async function unfollowUser(
     if (!authResult.success) {
       return { success: false, message: authResult.error };
     }
-    const { user: _user, supabase } = authResult.data;
+    const { user, supabase } = authResult.data;
 
     const { error } = await supabase
       .from('follows')
@@ -296,7 +296,7 @@ export async function approveFollowRequest(
     if (!authResult.success) {
       return { success: false, message: authResult.error };
     }
-    const { user: _user, supabase } = authResult.data;
+    const { user, supabase } = authResult.data;
 
     const { error } = await supabase
       .from('follows')
@@ -328,7 +328,7 @@ export async function rejectFollowRequest(
     if (!authResult.success) {
       return { success: false, message: authResult.error };
     }
-    const { user: _user, supabase } = authResult.data;
+    const { user, supabase } = authResult.data;
 
     const { error } = await supabase
       .from('follows')
@@ -362,7 +362,7 @@ export async function blockUser(
     if (!authResult.success) {
       return { success: false, message: authResult.error };
     }
-    const { user: _user, supabase } = authResult.data;
+    const { user, supabase } = authResult.data;
 
     if (user.id === targetUserId) {
       return { success: false, message: '自分をブロックすることはできません' };
@@ -416,7 +416,7 @@ export async function unblockUser(
     if (!authResult.success) {
       return { success: false, message: authResult.error };
     }
-    const { user: _user, supabase } = authResult.data;
+    const { user, supabase } = authResult.data;
 
     const { error } = await supabase
       .from('user_blocks')
@@ -602,7 +602,7 @@ export async function updatePrivacySettings(
     if (!authResult.success) {
       return { success: false, message: authResult.error };
     }
-    const { user: _user, supabase } = authResult.data;
+    const { user, supabase } = authResult.data;
 
     const { error } = await supabase.from('user_preferences').upsert(
       {
@@ -636,7 +636,7 @@ export async function updateNotificationSettings(
     if (!authResult.success) {
       return { success: false, message: authResult.error };
     }
-    const { user: _user, supabase } = authResult.data;
+    const { user, supabase } = authResult.data;
 
     const { error } = await supabase.from('user_preferences').upsert(
       {
@@ -673,7 +673,7 @@ export async function searchUsers(
     if (!authResult.success) {
       return { users: [], total_count: 0, has_more: false };
     }
-    const { user: _user, supabase } = authResult.data;
+    const { user, supabase } = authResult.data;
 
     const searchTerm = `%${query}%`;
     const usernameQuery = query.replace('@', '').toLowerCase();
