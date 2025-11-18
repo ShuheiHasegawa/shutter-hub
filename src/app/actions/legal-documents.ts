@@ -8,6 +8,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Logger from '@/lib/logger';
+import { requireAuthForAction } from '@/lib/auth/server-actions';
 import {
   ConsentUpdate,
   GdprRequestCreate,
@@ -125,20 +126,16 @@ export async function getLegalDocument(
  */
 export async function createOrUpdateLegalDocument(formData: LegalDocumentForm) {
   try {
-    const supabase = await createClient();
-
     // 認証確認
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
       Logger.warning('Unauthorized access to legal document management', {
         component: 'legal-documents',
         action: 'createOrUpdateLegalDocument',
       });
       redirect('/login');
     }
+    const { user, supabase } = authResult.data;
 
     // 管理者権限確認
     const { data: profile } = await supabase
@@ -210,19 +207,18 @@ export async function createOrUpdateLegalDocument(formData: LegalDocumentForm) {
  */
 export async function getUserConsentStatus(userId?: string) {
   try {
-    const supabase = await createClient();
-
     // 認証確認
     let targetUserId = userId;
+    let supabase;
     if (!targetUserId) {
-      const {
-        data: { user },
-        error: authError,
-      } = await supabase.auth.getUser();
-      if (authError || !user) {
+      const authResult = await requireAuthForAction();
+      if (!authResult.success) {
         redirect('/login');
       }
-      targetUserId = user.id;
+      targetUserId = authResult.data.user.id;
+      supabase = authResult.data.supabase;
+    } else {
+      supabase = await createClient();
     }
 
     // 最新の公開文書を取得
@@ -299,16 +295,12 @@ export async function getUserConsentStatus(userId?: string) {
  */
 export async function updateUserConsent(consentData: ConsentUpdate) {
   try {
-    const supabase = await createClient();
-
     // 認証確認
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
       redirect('/login');
     }
+    const { user, supabase } = authResult.data;
 
     // IPアドレスとUser-Agentを取得（クライアント側で渡す必要がある）
     const consentRecord = {
@@ -365,16 +357,12 @@ export async function updateUserConsent(consentData: ConsentUpdate) {
  */
 export async function createGdprRequest(requestData: GdprRequestCreate) {
   try {
-    const supabase = await createClient();
-
     // 認証確認
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
       redirect('/login');
     }
+    const { user, supabase } = authResult.data;
 
     const gdprRequest = {
       user_id: user.id,
@@ -425,16 +413,12 @@ export async function createGdprRequest(requestData: GdprRequestCreate) {
  */
 export async function getUserGdprRequests() {
   try {
-    const supabase = await createClient();
-
     // 認証確認
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
       redirect('/login');
     }
+    const { user, supabase } = authResult.data;
 
     const { data, error } = await supabase
       .from('gdpr_requests')
@@ -479,16 +463,12 @@ export async function getUserGdprRequests() {
  */
 export async function exportUserData() {
   try {
-    const supabase = await createClient();
-
     // 認証確認
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
       redirect('/login');
     }
+    const { user, supabase } = authResult.data;
 
     // ユーザーの全データを収集
     const [profileData, bookingsData, messagesData, consentsData] =
@@ -572,16 +552,12 @@ export async function deleteAccount(): Promise<{
   error?: string;
 }> {
   try {
-    const supabase = await createClient();
-
     // 認証確認
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
       redirect('/login');
     }
+    const { user, supabase: _supabase } = authResult.data;
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -659,16 +635,12 @@ export async function deleteAccount(): Promise<{
  */
 export async function requestAccountDeletion(reason?: string) {
   try {
-    const supabase = await createClient();
-
     // 認証確認
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
       redirect('/login');
     }
+    const { user, supabase } = authResult.data;
 
     // GDPR削除要求を作成
     const deletionRequest = {

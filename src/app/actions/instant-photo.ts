@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/utils/logger';
 import { revalidatePath } from 'next/cache';
+import { requireAuthForAction } from '@/lib/auth/server-actions';
 import type {
   CreateInstantPhotoRequestData,
   UpdatePhotographerLocationData,
@@ -90,15 +91,11 @@ export async function updatePhotographerLocation(
   data: UpdatePhotographerLocationData
 ): Promise<ApiResponse<PhotographerLocation>> {
   try {
-    const supabase = await createClient();
-
-    // 認証チェック
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      return { success: false, error: '認証が必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     const { data: location, error } = await supabase
       .from('photographer_locations')
@@ -291,16 +288,11 @@ export async function togglePhotographerOnlineStatus(
   isOnline: boolean
 ): Promise<ActionResult<PhotographerLocation | null>> {
   try {
-    const supabase = await createClient();
-
-    // 認証チェック
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { success: false, error: '認証が必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     if (isOnline) {
       // オンラインにする場合は位置情報が必要
@@ -336,16 +328,11 @@ export async function togglePhotographerOnlineStatusWithLocation(
   longitude?: number
 ): Promise<ActionResult<PhotographerLocation | null>> {
   try {
-    const supabase = await createClient();
-
-    // 認証チェック
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { success: false, error: '認証が必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     if (isOnline) {
       if (!latitude || !longitude) {
@@ -399,17 +386,12 @@ export async function getPhotographerRequests(): Promise<
   ActionResult<InstantPhotoRequest[]>
 > {
   try {
-    const supabase = await createClient();
-
-    // 認証チェック
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
-      logger.warn('認証エラー:', authError);
-      return { success: false, error: '認証が必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      logger.warn('認証エラー:', authResult.error);
+      return { success: false, error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     logger.info('フォトグラファーリクエスト取得開始:', { userId: user.id });
 
@@ -605,16 +587,11 @@ export async function respondToRequest(
   estimatedArrivalTime?: number
 ): Promise<ActionResult<void>> {
   try {
-    const supabase = await createClient();
-
-    // 認証チェック
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { success: false, error: '認証が必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     if (responseType === 'accept') {
       // リクエスト情報を取得
@@ -951,16 +928,11 @@ export async function updateRequestStatus(
   status: 'in_progress' | 'completed' | 'cancelled'
 ): Promise<ActionResult<void>> {
   try {
-    const supabase = await createClient();
-
-    // 認証チェック
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { success: false, error: '認証が必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     // リクエスト情報を取得
     const { data: request, error: requestError } = await supabase

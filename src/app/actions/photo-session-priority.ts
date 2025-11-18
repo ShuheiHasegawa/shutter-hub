@@ -1,8 +1,9 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/utils/logger';
 import { revalidatePath } from 'next/cache';
+import { requireAuthForAction } from '@/lib/auth/server-actions';
+import { createClient } from '@/lib/supabase/server';
 
 export interface PriorityBookingSettings {
   id?: string;
@@ -60,14 +61,11 @@ export async function createOrUpdatePriorityBookingSettings(
   data?: PriorityBookingSettings;
 }> {
   try {
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      return { success: false, error: '認証が必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     // 撮影会の開催者かチェック
     const { data: photoSession } = await supabase
@@ -137,14 +135,11 @@ export async function createPriorityTicket(
   ticket: PriorityTicket
 ): Promise<{ success: boolean; error?: string; data?: PriorityTicket }> {
   try {
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      return { success: false, error: '認証が必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     // 撮影会の開催者かチェック
     const { data: photoSession } = await supabase
@@ -215,17 +210,17 @@ export async function getUserRank(
   userId?: string
 ): Promise<{ success: boolean; error?: string; data?: UserRank }> {
   try {
-    const supabase = await createClient();
-
     let targetUserId = userId;
+    let supabase;
     if (!targetUserId) {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) {
-        return { success: false, error: '認証が必要です' };
+      const authResult = await requireAuthForAction();
+      if (!authResult.success) {
+        return { success: false, error: authResult.error };
       }
-      targetUserId = user.id;
+      targetUserId = authResult.data.user.id;
+      supabase = authResult.data.supabase;
+    } else {
+      supabase = await createClient();
     }
 
     const { data, error } = await supabase
@@ -254,17 +249,17 @@ export async function calculateUserRank(userId?: string): Promise<{
   data?: { new_rank: string; points_earned: number; rank_changed: boolean };
 }> {
   try {
-    const supabase = await createClient();
-
     let targetUserId = userId;
+    let supabase;
     if (!targetUserId) {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) {
-        return { success: false, error: '認証が必要です' };
+      const authResult = await requireAuthForAction();
+      if (!authResult.success) {
+        return { success: false, error: authResult.error };
       }
-      targetUserId = user.id;
+      targetUserId = authResult.data.user.id;
+      supabase = authResult.data.supabase;
+    } else {
+      supabase = await createClient();
     }
 
     const { data, error } = await supabase.rpc('calculate_user_rank', {
@@ -293,17 +288,17 @@ export async function checkPriorityBookingEligibility(
   data?: PriorityBookingEligibility;
 }> {
   try {
-    const supabase = await createClient();
-
     let targetUserId = userId;
+    let supabase;
     if (!targetUserId) {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) {
-        return { success: false, error: '認証が必要です' };
+      const authResult = await requireAuthForAction();
+      if (!authResult.success) {
+        return { success: false, error: authResult.error };
       }
-      targetUserId = user.id;
+      targetUserId = authResult.data.user.id;
+      supabase = authResult.data.supabase;
+    } else {
+      supabase = await createClient();
     }
 
     const { data, error } = await supabase.rpc(
@@ -335,14 +330,11 @@ export async function createPriorityBooking(
   bookingType: 'ticket_priority' | 'rank_priority' | 'general'
 ): Promise<{ success: boolean; error?: string; data?: unknown }> {
   try {
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      return { success: false, error: '認証が必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     // 優先予約可能性をチェック
     const eligibilityResult = await checkPriorityBookingEligibility(
@@ -420,14 +412,11 @@ export async function setUserRankManually(
   reason: string
 ): Promise<{ success: boolean; error?: string; data?: UserRank }> {
   try {
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      return { success: false, error: '認証が必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     // 管理者権限チェック
     const { data: profile } = await supabase

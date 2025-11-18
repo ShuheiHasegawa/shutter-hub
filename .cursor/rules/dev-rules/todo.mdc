@@ -901,9 +901,11 @@
   - [x] Client Componentsの統一化（PhotoSessionList, OrganizerModelManagement）✅
 - [x] **Phase 3**: エラーメッセージの統一化と多言語化対応 ✅
 - [x] **Phase 4**: パフォーマンス最適化（プロフィール取得の最適化、認証チェックの重複削減）✅
-- [ ] **Phase 5**: 残存する直接使用箇所の統一化（段階的）← **次期実装タスク**
-  - [ ] Server Actions: 38ファイルで160箇所（高優先度5ファイルは完了）
-  - [ ] Server Components: 15ファイルで25箇所（高優先度4ファイルは完了）
+- [x] **Phase 5**: 残存する直接使用箇所の統一化（段階的）✅
+  - [x] Server Actions: 認証チェック目的の直接使用箇所を統一化（23ファイル完了: photo-session, bookings, instant-photo, reviews, favorites, posts, photo-session-waitlist, follow, settings, studio, legal-documents, photo-session-slots, user-availability, organizer-studio, username, instant-payment, photo-session-participants, photo-session-priority, photo-session-lottery, photo-consent, admin-lottery, admin-dispute、統一化ユーティリティ使用: 約60箇所）✅
+  - [ ] Server Components: 認証チェック目的の直接使用箇所を特定・統一化（高優先度4ファイルは完了、統一化ユーティリティ使用: 19箇所）
+  - **注意**: `createClient()`の使用はデータベース操作目的も含むため、認証チェック目的の箇所のみを統一化対象とする
+  - **残存**: `photobook-social.ts`の`getPhotobookDetails`関数のみ（認証不要の公開フォトブックアクセス対応のため条件付き認証チェック、直接使用を維持）✅
 - **優先度**: 🟡 高（認証処理の統一化・保守性向上）
 - **見積時間**: Phase 1-2完了（約4時間）、Phase 3-5: 1-2週間
 - **実装時間**: Phase 1-4完了（2025年1月18日完了、Phase 3-4: 約1時間）

@@ -1,8 +1,9 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { logger } from '@/lib/utils/logger';
+import { requireAuthForAction } from '@/lib/auth/server-actions';
+import { createClient } from '@/lib/supabase/server';
 
 // ユーザーハンドルバリデーション結果の型定義
 export interface UsernameValidationResult {
@@ -187,16 +188,11 @@ export async function setUsername(
   username: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const supabase = await createClient();
-
-    // 現在のユーザーを取得
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { success: false, error: '認証が必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     // バリデーション
     const validation = await validateUsername(username);
@@ -250,15 +246,11 @@ export async function setUsername(
  */
 export async function getCurrentUsername(): Promise<string | null> {
   try {
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
       return null;
     }
+    const { user, supabase } = authResult.data;
 
     const { data, error } = await supabase
       .from('profiles')
@@ -472,15 +464,11 @@ export async function getUsernameStatus(): Promise<{
   lastUpdated?: string;
 }> {
   try {
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
       return { hasUsername: false, canChange: false };
     }
+    const { user, supabase } = authResult.data;
 
     const { data, error } = await supabase
       .from('profiles')

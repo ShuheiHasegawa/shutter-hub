@@ -1,9 +1,9 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/utils/logger';
 import { revalidatePath } from 'next/cache';
 import Stripe from 'stripe';
+import { requireAuthForAction } from '@/lib/auth/server-actions';
 
 // Stripe初期化を条件付きにする
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
@@ -83,16 +83,12 @@ export async function getAdminDisputes(): Promise<
   ActionResult<AdminDispute[]>
 > {
   try {
-    const supabase = await createClient();
-
     // 管理者権限チェック
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { success: false, error: '認証が必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     const { data: profile } = await supabase
       .from('profiles')
@@ -222,16 +218,12 @@ export async function resolveDispute(
   data: ResolveDisputeData
 ): Promise<ActionResult<void>> {
   try {
-    const supabase = await createClient();
-
     // 管理者権限チェック
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { success: false, error: '認証が必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     const { data: profile } = await supabase
       .from('profiles')
@@ -360,16 +352,12 @@ export async function updateDisputeStatus(
   status: 'pending' | 'investigating' | 'escalated'
 ): Promise<ActionResult<void>> {
   try {
-    const supabase = await createClient();
-
     // 管理者権限チェック
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { success: false, error: '認証が必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     const { data: profile } = await supabase
       .from('profiles')
@@ -410,16 +398,12 @@ export async function getDisputeStats(): Promise<
   }>
 > {
   try {
-    const supabase = await createClient();
-
     // 管理者権限チェック
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { success: false, error: '認証が必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     const { data: profile } = await supabase
       .from('profiles')

@@ -1,8 +1,9 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/utils/logger';
 import { revalidatePath } from 'next/cache';
+import { requireAuthForAction } from '@/lib/auth/server-actions';
+import { createClient } from '@/lib/supabase/server';
 import {
   UserPreferences,
   UserFollowStats,
@@ -23,15 +24,11 @@ export async function getFollowingUsers(userId: string): Promise<{
   message?: string;
 }> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return { success: false, message: 'ログインが必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, message: authResult.error };
     }
+    const { user: _user, supabase } = authResult.data;
 
     // まずフォロー中のユーザーIDを取得
     const { data: followData, error: followError } = await supabase
@@ -112,15 +109,11 @@ export async function getFollowerUsers(userId: string): Promise<{
   message?: string;
 }> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return { success: false, message: 'ログインが必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, message: authResult.error };
     }
+    const { user: _user, supabase } = authResult.data;
 
     // まずフォロワーのユーザーIDを取得
     const { data: followData, error: followError } = await supabase
@@ -193,15 +186,11 @@ export async function followUser(
   targetUserId: string
 ): Promise<FollowActionResult> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return { success: false, message: 'ログインが必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, message: authResult.error };
     }
+    const { user: _user, supabase } = authResult.data;
 
     if (user.id === targetUserId) {
       return { success: false, message: '自分をフォローすることはできません' };
@@ -269,15 +258,11 @@ export async function unfollowUser(
   targetUserId: string
 ): Promise<FollowActionResult> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return { success: false, message: 'ログインが必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, message: authResult.error };
     }
+    const { user: _user, supabase } = authResult.data;
 
     const { error } = await supabase
       .from('follows')
@@ -307,15 +292,11 @@ export async function approveFollowRequest(
   followerId: string
 ): Promise<FollowActionResult> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return { success: false, message: 'ログインが必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, message: authResult.error };
     }
+    const { user: _user, supabase } = authResult.data;
 
     const { error } = await supabase
       .from('follows')
@@ -343,15 +324,11 @@ export async function rejectFollowRequest(
   followerId: string
 ): Promise<FollowActionResult> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return { success: false, message: 'ログインが必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, message: authResult.error };
     }
+    const { user: _user, supabase } = authResult.data;
 
     const { error } = await supabase
       .from('follows')
@@ -381,15 +358,11 @@ export async function blockUser(
   description?: string
 ): Promise<BlockActionResult> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return { success: false, message: 'ログインが必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, message: authResult.error };
     }
+    const { user: _user, supabase } = authResult.data;
 
     if (user.id === targetUserId) {
       return { success: false, message: '自分をブロックすることはできません' };
@@ -439,15 +412,11 @@ export async function unblockUser(
   targetUserId: string
 ): Promise<BlockActionResult> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return { success: false, message: 'ログインが必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, message: authResult.error };
     }
+    const { user: _user, supabase } = authResult.data;
 
     const { error } = await supabase
       .from('user_blocks')
@@ -479,15 +448,11 @@ export async function getFollowList(
   filter: FollowListFilter
 ): Promise<UserSearchResult> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      throw new Error('認証が必要です');
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      throw new Error(authResult.error);
     }
+    const { user: _user, supabase } = authResult.data;
 
     const limit = filter.limit || 20;
     const offset = filter.offset || 0;
@@ -600,16 +565,15 @@ export async function getUserPreferences(
   userId?: string
 ): Promise<UserPreferences | null> {
   try {
-    const supabase = await createClient();
     let targetUserId = userId;
-
+    let supabase;
     if (!targetUserId) {
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
-      if (userError || !user) return null;
-      targetUserId = user.id;
+      const authResult = await requireAuthForAction();
+      if (!authResult.success) return null;
+      targetUserId = authResult.data.user.id;
+      supabase = authResult.data.supabase;
+    } else {
+      supabase = await createClient();
     }
 
     const { data, error } = await supabase
@@ -634,15 +598,11 @@ export async function updatePrivacySettings(
   settings: UpdatePrivacySettings
 ): Promise<{ success: boolean; message?: string }> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return { success: false, message: 'ログインが必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, message: authResult.error };
     }
+    const { user: _user, supabase } = authResult.data;
 
     const { error } = await supabase.from('user_preferences').upsert(
       {
@@ -672,15 +632,11 @@ export async function updateNotificationSettings(
   settings: UpdateNotificationSettings
 ): Promise<{ success: boolean; message?: string }> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return { success: false, message: 'ログインが必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, message: authResult.error };
     }
+    const { user: _user, supabase } = authResult.data;
 
     const { error } = await supabase.from('user_preferences').upsert(
       {
@@ -713,15 +669,11 @@ export async function searchUsers(
   offset = 0
 ): Promise<UserSearchResult> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
       return { users: [], total_count: 0, has_more: false };
     }
+    const { user: _user, supabase } = authResult.data;
 
     const searchTerm = `%${query}%`;
     const usernameQuery = query.replace('@', '').toLowerCase();

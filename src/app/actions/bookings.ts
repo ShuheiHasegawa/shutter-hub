@@ -1,8 +1,8 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/utils/logger';
 import { BookingWithDetails } from '@/types/database';
+import { requireAuthForAction } from '@/lib/auth/server-actions';
 
 export interface BookingsResult {
   success: boolean;
@@ -12,20 +12,14 @@ export interface BookingsResult {
 
 export async function getUserBookings(): Promise<BookingsResult> {
   try {
-    const supabase = await createClient();
-
-    // 現在のユーザーを取得
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
       return {
         success: false,
-        error: 'ユーザーが認証されていません',
+        error: authResult.error,
       };
     }
+    const { user, supabase } = authResult.data;
 
     // ユーザーの予約一覧を取得（撮影会情報と主催者情報を含む）
     const { data: bookings, error } = await supabase
@@ -75,20 +69,14 @@ export async function cancelBooking(
   bookingId: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const supabase = await createClient();
-
-    // 現在のユーザーを取得
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
       return {
         success: false,
-        error: 'ユーザーが認証されていません',
+        error: authResult.error,
       };
     }
+    const { user, supabase } = authResult.data;
 
     // 予約をキャンセル状態に更新
     const { error } = await supabase

@@ -1,8 +1,9 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/utils/logger';
 import { revalidatePath } from 'next/cache';
+import { requireAuthForAction } from '@/lib/auth/server-actions';
+import { createClient } from '@/lib/supabase/server';
 
 // 管理抽選システムのServer Actions
 
@@ -31,16 +32,12 @@ export async function createAdminLotterySession(
   data: CreateAdminLotterySessionData
 ) {
   try {
-    const supabase = await createClient();
-
     // 認証チェック
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { error: 'Authentication required' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     // 撮影会の所有者チェック
     const { data: photoSession, error: sessionError } = await supabase
@@ -88,16 +85,12 @@ export async function createAdminLotterySession(
 // 管理抽選に応募
 export async function applyToAdminLottery(data: AdminLotteryEntryData) {
   try {
-    const supabase = await createClient();
-
     // 認証チェック
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { error: 'Authentication required' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     // 管理抽選セッション情報取得
     const { data: adminLotterySession, error: sessionError } = await supabase
@@ -172,16 +165,12 @@ export async function applyToAdminLottery(data: AdminLotteryEntryData) {
 // 当選者を選出
 export async function selectAdminLotteryWinners(data: SelectWinnersData) {
   try {
-    const supabase = await createClient();
-
     // 認証チェック
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { error: 'Authentication required' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     // ストアドプロシージャを使用して当選者選出
     const { data: result, error } = await supabase.rpc(
@@ -214,16 +203,12 @@ export async function selectAdminLotteryWinners(data: SelectWinnersData) {
 // 選出を取り消し
 export async function undoAdminLotterySelection(data: SelectWinnersData) {
   try {
-    const supabase = await createClient();
-
     // 認証チェック
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { error: 'Authentication required' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     // ストアドプロシージャを使用して選出取り消し
     const { data: result, error } = await supabase.rpc(
@@ -283,16 +268,12 @@ export async function getAdminLotterySession(photoSessionId: string) {
 // 管理抽選応募一覧を取得
 export async function getAdminLotteryEntries(sessionId: string) {
   try {
-    const supabase = await createClient();
-
     // 認証チェック
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { error: 'Authentication required' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     // 管理抽選セッションの所有者チェック
     const { data: adminLotterySession, error: sessionError } = await supabase
@@ -341,16 +322,12 @@ export async function getAdminLotteryEntries(sessionId: string) {
 // ユーザーの管理抽選応募状況を取得
 export async function getUserAdminLotteryEntry(sessionId: string) {
   try {
-    const supabase = await createClient();
-
     // 認証チェック
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { error: 'Authentication required' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     const { data: entry, error } = await supabase
       .from('admin_lottery_entries')
@@ -377,16 +354,12 @@ export async function updateAdminLotterySessionStatus(
   status: 'upcoming' | 'accepting' | 'selecting' | 'completed'
 ) {
   try {
-    const supabase = await createClient();
-
     // 認証チェック
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { error: 'Authentication required' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     // 管理抽選セッションの所有者チェック
     const { data: adminLotterySession, error: sessionError } = await supabase
@@ -432,16 +405,12 @@ export async function updateAdminLotterySessionStatus(
 // 選出履歴を取得
 export async function getAdminLotterySelectionHistory(sessionId: string) {
   try {
-    const supabase = await createClient();
-
     // 認証チェック
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { error: 'Authentication required' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     // 管理抽選セッションの所有者チェック
     const { data: adminLotterySession, error: sessionError } = await supabase

@@ -1,8 +1,9 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/utils/logger';
 import { createNotification } from '@/app/actions/notifications';
+import { requireAuthForAction } from '@/lib/auth/server-actions';
+import { createClient } from '@/lib/supabase/server';
 
 export interface PhotoSessionParticipant {
   id: string;
@@ -94,15 +95,11 @@ export async function sendParticipantMessage(
   message: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const supabase = await createClient();
-
-    // 認証チェック
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      return { success: false, error: '認証が必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     // 撮影会情報と運営者情報を取得
     const { data: photoSession, error: sessionError } = await supabase

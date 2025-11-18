@@ -1,9 +1,10 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/utils/logger';
 import { stripe } from '@/lib/stripe/config';
 import { revalidatePath } from 'next/cache';
+import { requireAuthForAction } from '@/lib/auth/server-actions';
+import { createClient } from '@/lib/supabase/server';
 import type {
   EscrowPayment,
   ConfirmDeliveryData,
@@ -233,16 +234,11 @@ export async function deliverPhotos(
   data: DeliverPhotosData
 ): Promise<ActionResult<PhotoDelivery>> {
   try {
-    const supabase = await createClient();
-
-    // 認証チェック
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { success: false, error: '認証が必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     // 予約情報確認（カメラマン本人のみ）
     const { data: booking, error: bookingError } = await supabase

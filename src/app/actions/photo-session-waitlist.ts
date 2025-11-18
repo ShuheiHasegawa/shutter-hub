@@ -1,10 +1,11 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/utils/logger';
 import { revalidatePath } from 'next/cache';
 import { createNotification } from '@/app/actions/notifications';
 import { getNotificationMessage } from '@/lib/utils/notification-i18n';
+import { requireAuthForAction } from '@/lib/auth/server-actions';
+import { createClient } from '@/lib/supabase/server';
 
 export interface WaitlistEntry {
   id?: string;
@@ -64,14 +65,11 @@ export async function joinWaitlist(
   data?: { position: number; waitlist_entry_id: string };
 }> {
   try {
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      return { success: false, error: '認証が必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     const { data, error } = await supabase.rpc('join_waitlist', {
       target_photo_session_id: photoSessionId,
@@ -113,14 +111,11 @@ export async function cancelWaitlistEntry(
   waitlistEntryId: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      return { success: false, error: '認証が必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     const { data, error } = await supabase.rpc('cancel_waitlist_entry', {
       target_waitlist_entry_id: waitlistEntryId,
@@ -159,17 +154,17 @@ export async function getUserWaitlistEntry(
   userId?: string
 ): Promise<{ success: boolean; error?: string; data?: WaitlistEntry }> {
   try {
-    const supabase = await createClient();
-
     let targetUserId = userId;
+    let supabase;
     if (!targetUserId) {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) {
-        return { success: false, error: '認証が必要です' };
+      const authResult = await requireAuthForAction();
+      if (!authResult.success) {
+        return { success: false, error: authResult.error };
       }
-      targetUserId = user.id;
+      targetUserId = authResult.data.user.id;
+      supabase = authResult.data.supabase;
+    } else {
+      supabase = await createClient();
     }
 
     const { data, error } = await supabase
@@ -264,14 +259,11 @@ export async function createOrUpdateWaitlistSettings(
   settings: WaitlistSettings
 ): Promise<{ success: boolean; error?: string; data?: WaitlistSettings }> {
   try {
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      return { success: false, error: '認証が必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     // 撮影会の開催者かチェック
     const { data: photoSession } = await supabase
@@ -319,14 +311,11 @@ export async function promoteFromWaitlist(
   data?: { promoted_count: number; promoted_users: string[] };
 }> {
   try {
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      return { success: false, error: '認証が必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     // 撮影会の開催者かチェック
     const { data: photoSession } = await supabase
@@ -422,14 +411,11 @@ export async function confirmPromotedBooking(
   waitlistEntryId: string
 ): Promise<{ success: boolean; error?: string; data?: unknown }> {
   try {
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      return { success: false, error: '認証が必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     // キャンセル待ちエントリーを取得
     const { data: waitlistEntry, error: waitlistError } = await supabase
@@ -502,17 +488,17 @@ export async function getUserWaitlistNotifications(userId?: string): Promise<{
   data?: WaitlistNotification[];
 }> {
   try {
-    const supabase = await createClient();
-
     let targetUserId = userId;
+    let supabase;
     if (!targetUserId) {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) {
-        return { success: false, error: '認証が必要です' };
+      const authResult = await requireAuthForAction();
+      if (!authResult.success) {
+        return { success: false, error: authResult.error };
       }
-      targetUserId = user.id;
+      targetUserId = authResult.data.user.id;
+      supabase = authResult.data.supabase;
+    } else {
+      supabase = await createClient();
     }
 
     const { data, error } = await supabase
@@ -547,14 +533,11 @@ export async function markNotificationAsRead(
   notificationId: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      return { success: false, error: '認証が必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     const { error } = await supabase
       .from('waitlist_notifications')
@@ -643,17 +626,17 @@ export async function getUserWaitlistEntries(userId?: string): Promise<{
   })[];
 }> {
   try {
-    const supabase = await createClient();
-
     let targetUserId = userId;
+    let supabase;
     if (!targetUserId) {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) {
-        return { success: false, error: '認証が必要です' };
+      const authResult = await requireAuthForAction();
+      if (!authResult.success) {
+        return { success: false, error: authResult.error };
       }
-      targetUserId = user.id;
+      targetUserId = authResult.data.user.id;
+      supabase = authResult.data.supabase;
+    } else {
+      supabase = await createClient();
     }
 
     const { data, error } = await supabase

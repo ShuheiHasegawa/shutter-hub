@@ -1,12 +1,13 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/utils/logger';
 import { revalidatePath } from 'next/cache';
 import {
   checkFeatureLimit,
   recordFeatureUsage,
 } from './subscription-management';
+import { requireAuthForAction } from '@/lib/auth/server-actions';
+import { createClient } from '@/lib/supabase/server';
 
 export interface PhotoSessionData {
   title: string;
@@ -26,15 +27,11 @@ export interface PhotoSessionData {
 
 export async function createPhotoSessionAction(data: PhotoSessionData) {
   try {
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return { success: false, error: '認証が必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     // Phase 1: 運営者の撮影会作成制限チェック
     const { data: profile } = await supabase
@@ -107,15 +104,11 @@ export async function updatePhotoSessionAction(
   data: PhotoSessionData
 ) {
   try {
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return { success: false, error: '認証が必要です' };
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
     }
+    const { user, supabase } = authResult.data;
 
     // 撮影会の所有者確認
     const { data: existingSession } = await supabase

@@ -1,8 +1,9 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { createClient } from '@/lib/supabase/server';
 import Logger from '@/lib/logger';
+import { requireAuthForAction } from '@/lib/auth/server-actions';
+import { createClient } from '@/lib/supabase/server';
 
 // お気に入り追加/削除（トグル）
 export async function toggleFavoriteAction(
@@ -10,21 +11,15 @@ export async function toggleFavoriteAction(
   favoriteId: string
 ) {
   try {
-    const supabase = await createClient();
-
-    // 認証確認
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
       return {
         success: false,
-        error: '認証が必要です',
+        error: authResult.error,
         isAuthenticated: false,
       };
     }
+    const { user, supabase } = authResult.data;
 
     // PostgreSQL関数を使用してお気に入りをトグル
     const { data, error } = await supabase.rpc('toggle_favorite', {
@@ -96,45 +91,36 @@ export async function checkFavoriteStatusAction(
       return errorResponse;
     }
 
+    // お気に入り数を取得（認証不要）
     const supabase = await createClient();
+    const { data: countData, error: countError } = await supabase
+      .from('favorite_statistics')
+      .select('total_favorites')
+      .eq('target_type', favoriteType)
+      .eq('target_id', favoriteId)
+      .maybeSingle();
 
-    if (!supabase) {
-      Logger.error(
-        'checkFavoriteStatusAction: Supabaseクライアントの作成に失敗'
-      );
-      const errorResponse = {
-        success: false,
-        error: 'データベース接続に失敗しました',
-        isAuthenticated: false,
-        isFavorited: false,
-        favoriteCount: 0,
-      };
-      Logger.debug(
-        '[checkFavoriteStatusAction] エラーレスポンス返却（Supabase接続失敗）',
-        errorResponse
-      );
-      return errorResponse;
+    if (countError && countError.code !== 'PGRST116') {
+      Logger.error('Get favorite count error:', {
+        error: countError,
+        favoriteType,
+        favoriteId,
+      });
+      // エラーでもカウントは0として扱う
     }
 
-    Logger.debug('[checkFavoriteStatusAction] Supabaseクライアント作成成功');
-
     // 認証確認
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
+    const authResult = await requireAuthForAction();
     Logger.debug('[checkFavoriteStatusAction] 認証チェック結果', {
-      hasUser: !!user,
-      userId: user?.id,
-      authError: authError?.message,
+      success: authResult.success,
+      error: authResult.success ? undefined : authResult.error,
     });
 
-    if (authError || !user) {
+    if (!authResult.success) {
       const unauthResponse = {
         success: true,
         isFavorited: false,
-        favoriteCount: 0,
+        favoriteCount: countData?.total_favorites || 0,
         isAuthenticated: false,
       };
       Logger.debug(
@@ -143,9 +129,10 @@ export async function checkFavoriteStatusAction(
       );
       return unauthResponse;
     }
+    const { user, supabase: authSupabase } = authResult.data;
 
     // お気に入り状態を確認
-    const { data: favoriteData, error: favoriteError } = await supabase
+    const { data: favoriteData, error: favoriteError } = await authSupabase
       .from('user_favorites')
       .select('id')
       .eq('user_id', user.id)
@@ -165,25 +152,8 @@ export async function checkFavoriteStatusAction(
         error: 'お気に入り状態の確認に失敗しました',
         isAuthenticated: true,
         isFavorited: false,
-        favoriteCount: 0,
+        favoriteCount: countData?.total_favorites || 0,
       };
-    }
-
-    // お気に入り数を取得
-    const { data: countData, error: countError } = await supabase
-      .from('favorite_statistics')
-      .select('total_favorites')
-      .eq('target_type', favoriteType)
-      .eq('target_id', favoriteId)
-      .maybeSingle();
-
-    if (countError && countError.code !== 'PGRST116') {
-      Logger.error('Get favorite count error:', {
-        error: countError,
-        favoriteType,
-        favoriteId,
-      });
-      // エラーでもカウントは0として扱う
     }
 
     const result = {
@@ -231,20 +201,16 @@ export async function getUserFavoritesAction(
   limit: number = 20
 ) {
   try {
-    const supabase = await createClient();
-
     // 認証確認
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
       return {
         success: false,
-        error: '認証が必要です',
+        error: authResult.error,
         isAuthenticated: false,
       };
     }
+    const { user, supabase } = authResult.data;
 
     const offset = (page - 1) * limit;
 
@@ -526,23 +492,20 @@ export async function getBulkFavoriteStatusAction(
       itemsLength: items.length,
     });
 
-    const supabase = await createClient();
-
     // 認証確認
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      Logger.error('[getBulkFavoriteStatusAction] 認証エラー', { authError });
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      Logger.error('[getBulkFavoriteStatusAction] 認証エラー', {
+        error: authResult.error,
+      });
       return {
         success: false,
-        error: '認証が必要です',
+        error: authResult.error,
         isAuthenticated: false,
         favoriteStates: {},
       };
     }
+    const { user, supabase } = authResult.data;
 
     Logger.debug('[getBulkFavoriteStatusAction] 認証成功', { userId: user.id });
 
