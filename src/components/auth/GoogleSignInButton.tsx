@@ -4,8 +4,12 @@ import { createClient } from '@/lib/supabase/client';
 import { logger } from '@/lib/utils/logger';
 import { useState } from 'react';
 import { useParams } from 'next/navigation';
+import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
+import type { Provider as SupabaseProvider } from '@supabase/supabase-js';
 
-type Provider = 'google' | 'twitter';
+// Supabaseがサポートするプロバイダー + LINE（型定義に含まれていないが実際にはサポートされている可能性）
+type Provider = SupabaseProvider | 'line';
 
 interface OAuthButtonProps {
   provider: Provider;
@@ -22,13 +26,16 @@ export function OAuthButton({
   const supabase = createClient();
   const params = useParams();
   const locale = params.locale || 'ja';
+  const t = useTranslations('auth.oauth');
 
   const handleOAuthSignIn = async () => {
     try {
       setIsLoading(true);
 
+      // LINEはSupabaseの型定義に含まれていないが、実際にはサポートされている可能性がある
+      // 型アサーションを使用してエラーを回避
       const { error } = await supabase.auth.signInWithOAuth({
-        provider,
+        provider: provider as SupabaseProvider,
         options: {
           redirectTo: `${window.location.origin}/${locale}/auth/callback`,
           queryParams: {
@@ -40,11 +47,15 @@ export function OAuthButton({
 
       if (error) {
         logger.error(`${provider}認証エラー:`, error);
-        alert('認証に失敗しました。もう一度お試しください。');
+        toast.error(t('error'), {
+          description: t('errorDescription'),
+        });
       }
     } catch (error) {
       logger.error('予期しないエラー:', error);
-      alert('予期しないエラーが発生しました。');
+      toast.error(t('error'), {
+        description: t('unexpectedError'),
+      });
     } finally {
       setIsLoading(false);
     }

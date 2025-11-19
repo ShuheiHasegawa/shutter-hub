@@ -1673,6 +1673,46 @@
       "model": "Model",
       "photographer": "Photographer",
       "organizer": "Organizer"
+    },
+    "oauth": {
+      "google": "Sign in with Google",
+      "twitter": "Sign in with X (Twitter)",
+      "apple": "Sign in with Apple",
+      "line": "Sign in with LINE",
+      "signInWith": "Sign in with {provider}",
+      "error": "Authentication Error",
+      "errorDescription": "Authentication failed. Please try again.",
+      "unexpectedError": "An unexpected error occurred."
+    },
+    "onboarding": {
+      "title": "Account Setup",
+      "subtitle": "Please select your type",
+      "model": {
+        "title": "Model",
+        "description": "Participate in photo sessions and build your portfolio"
+      },
+      "photographer": {
+        "title": "Photographer",
+        "description": "Host photo sessions and collaborate with models"
+      },
+      "organizer": {
+        "title": "Organizer",
+        "description": "Plan and manage photo sessions to activate the community"
+      },
+      "continue": "Continue",
+      "skip": "Skip (set later)"
+    },
+    "twoFactor": {
+      "title": "Two-Factor Authentication",
+      "enable": "Enable Two-Factor Authentication",
+      "disable": "Disable Two-Factor Authentication",
+      "setup": "Setup",
+      "qrCode": "QR Code",
+      "backupCodes": "Backup Codes",
+      "verifyCode": "Enter verification code",
+      "codePlaceholder": "6-digit code",
+      "enabled": "Two-factor authentication is enabled",
+      "disabled": "Two-factor authentication is disabled"
     }
   }
 }
