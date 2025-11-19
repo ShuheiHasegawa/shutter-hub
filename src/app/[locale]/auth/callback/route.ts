@@ -16,7 +16,7 @@ export async function GET(
     const { error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error) {
-      // 認証成功後、プロフィールの存在をチェック
+      // 認証成功後、プロフィールの存在とuser_typeをチェック
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -24,15 +24,18 @@ export async function GET(
       if (user) {
         const { data: profile } = await supabase
           .from('profiles')
-          .select('id')
+          .select('id, user_type')
           .eq('id', user.id)
           .single();
 
         // プロフィールが存在しない場合は設定ページにリダイレクト
         if (!profile) {
           next = `/${locale}/auth/setup-profile`;
+        } else if (!profile.user_type) {
+          // user_typeが未設定の場合はオンボーディングページにリダイレクト
+          next = `/${locale}/auth/onboarding`;
         } else if (next === `/${locale}`) {
-          // プロフィールが存在する場合はダッシュボードにリダイレクト
+          // プロフィールが存在し、user_typeも設定されている場合はダッシュボードにリダイレクト
           next = `/${locale}/dashboard`;
         }
       }

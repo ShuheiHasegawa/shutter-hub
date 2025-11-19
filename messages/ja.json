@@ -1724,6 +1724,46 @@
       "model": "モデル",
       "photographer": "カメラマン",
       "organizer": "運営者"
+    },
+    "oauth": {
+      "google": "Googleでサインイン",
+      "twitter": "X (Twitter)でサインイン",
+      "apple": "Appleでサインイン",
+      "line": "LINEでログイン",
+      "signInWith": "{provider}でサインイン",
+      "error": "認証エラー",
+      "errorDescription": "認証に失敗しました。もう一度お試しください。",
+      "unexpectedError": "予期しないエラーが発生しました。"
+    },
+    "onboarding": {
+      "title": "アカウント設定",
+      "subtitle": "あなたのタイプを選択してください",
+      "model": {
+        "title": "モデル",
+        "description": "撮影会に参加して、ポートフォリオを充実させます"
+      },
+      "photographer": {
+        "title": "カメラマン",
+        "description": "撮影会を開催して、モデルとコラボレーションします"
+      },
+      "organizer": {
+        "title": "運営者",
+        "description": "撮影会を企画・運営して、コミュニティを活性化します"
+      },
+      "continue": "続ける",
+      "skip": "スキップ（後で設定）"
+    },
+    "twoFactor": {
+      "title": "2段階認証",
+      "enable": "2段階認証を有効にする",
+      "disable": "2段階認証を無効にする",
+      "setup": "セットアップ",
+      "qrCode": "QRコード",
+      "backupCodes": "バックアップコード",
+      "verifyCode": "認証コードを入力",
+      "codePlaceholder": "6桁のコード",
+      "enabled": "2段階認証が有効です",
+      "disabled": "2段階認証が無効です"
     }
   }
 }

@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useLocale } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
+import { logger } from '@/lib/utils/logger';
 
 // 日時表示の種類
 export type DateTimeFormat =
@@ -91,25 +92,52 @@ export function FormattedDateTime({
   }, [user, propTimeZone]);
 
   // 日時の正規化（datetime-local形式やISO文字列をDateオブジェクトに変換）
-  const normalizeDate = (dateValue: Date | string): Date => {
+  const normalizeDate = (dateValue: Date | string): Date | null => {
+    let date: Date;
+
     if (dateValue instanceof Date) {
-      return dateValue;
+      date = dateValue;
+    } else if (typeof dateValue === 'string') {
+      // 空文字列やnull/undefined文字列のチェック
+      if (
+        !dateValue ||
+        dateValue.trim() === '' ||
+        dateValue === 'null' ||
+        dateValue === 'undefined'
+      ) {
+        return null;
+      }
+
+      // datetime-local形式（YYYY-MM-DDTHH:mm）の場合
+      if (dateValue.includes('T') && !dateValue.includes('Z')) {
+        date = new Date(dateValue + ':00'); // 秒を追加
+      } else {
+        date = new Date(dateValue);
+      }
+    } else {
+      return null;
     }
 
-    // datetime-local形式（YYYY-MM-DDTHH:mm）の場合
-    if (
-      typeof dateValue === 'string' &&
-      dateValue.includes('T') &&
-      !dateValue.includes('Z')
-    ) {
-      return new Date(dateValue + ':00'); // 秒を追加
+    // 無効な日付のチェック
+    if (isNaN(date.getTime())) {
+      return null;
     }
 
-    return new Date(dateValue);
+    return date;
   };
 
   const startDate = normalizeDate(value);
-  const endDate = endValue ? normalizeDate(endValue) : undefined;
+  const normalizedEndDate = endValue ? normalizeDate(endValue) : null;
+  const endDate = normalizedEndDate || undefined;
+
+  // 無効な日付の場合はフォールバック表示
+  if (!startDate) {
+    return (
+      <time className={cn('inline-block', className)} aria-label={ariaLabel}>
+        <span className="text-muted-foreground">日時不明</span>
+      </time>
+    );
+  }
 
   // フォーマット別の表示処理
   const formatDateTime = (): string => {
@@ -170,7 +198,12 @@ export function FormattedDateTime({
 
       case 'time-range':
         if (!endDate) {
-          return formatDateTime(); // フォールバック
+          // endDateが無効な場合はstartDateのみを表示
+          return new Intl.DateTimeFormat(displayLocale, {
+            ...options,
+            hour: '2-digit',
+            minute: '2-digit',
+          }).format(startDate);
         }
         const startTime = new Intl.DateTimeFormat(displayLocale, {
           ...options,
@@ -218,17 +251,31 @@ export function FormattedDateTime({
     }
   };
 
-  const formattedText = formatDateTime();
+  try {
+    const formattedText = formatDateTime();
 
-  return (
-    <time
-      dateTime={startDate.toISOString()}
-      className={cn('inline-block', className)}
-      aria-label={ariaLabel}
-    >
-      {formattedText}
-    </time>
-  );
+    return (
+      <time
+        dateTime={startDate.toISOString()}
+        className={cn('inline-block', className)}
+        aria-label={ariaLabel}
+      >
+        {formattedText}
+      </time>
+    );
+  } catch (error) {
+    // フォーマットエラーが発生した場合のフォールバック
+    logger.error(
+      'FormattedDateTime format error',
+      String(error),
+      `value: ${String(value)}, format: ${format}, endValue: ${endValue ? String(endValue) : 'none'}`
+    );
+    return (
+      <time className={cn('inline-block', className)} aria-label={ariaLabel}>
+        <span className="text-muted-foreground">日時不明</span>
+      </time>
+    );
+  }
 }
 
 /**

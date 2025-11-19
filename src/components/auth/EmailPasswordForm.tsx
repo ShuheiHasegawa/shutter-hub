@@ -137,7 +137,7 @@ export function EmailPasswordForm() {
         </Alert>
       )}
 
-      <TabsContent value="signin" className="space-y-4">
+      <TabsContent value="signin" className="space-y-4 mt-4">
         <form onSubmit={handleSignIn} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="signin-email">メールアドレス</Label>
@@ -182,7 +182,12 @@ export function EmailPasswordForm() {
             </div>
           </div>
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button
+            type="submit"
+            className="w-full"
+            size="lg"
+            disabled={isLoading}
+          >
             {isLoading ? (
               <Loader2 className="h-4 w-4 animate-spin mr-2" />
             ) : null}
