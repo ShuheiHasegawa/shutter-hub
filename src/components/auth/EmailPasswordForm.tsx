@@ -9,6 +9,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Eye, EyeOff, Mail, Lock, User, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -20,7 +27,20 @@ interface FormData {
   userType: 'photographer' | 'model' | 'organizer';
 }
 
-export function EmailPasswordForm() {
+interface EmailPasswordFormProps {
+  value?: 'signin' | 'signup';
+  onValueChange?: (value: 'signin' | 'signup') => void;
+}
+
+export function EmailPasswordForm({
+  value,
+  onValueChange,
+}: EmailPasswordFormProps = {}) {
+  const handleValueChange = (newValue: string) => {
+    if (newValue === 'signin' || newValue === 'signup') {
+      onValueChange?.(newValue);
+    }
+  };
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -49,6 +69,17 @@ export function EmailPasswordForm() {
     setError(null);
 
     try {
+      // 既存セッションをチェック（警告ログ用）
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (session) {
+        logger.warn('既存セッションが存在する状態でサインインを試行:', {
+          existingUserId: session.user.id,
+          newEmail: formData.email,
+        });
+      }
+
       const { error } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password,
@@ -125,10 +156,25 @@ export function EmailPasswordForm() {
   };
 
   return (
-    <Tabs defaultValue="signin" className="w-full">
-      <TabsList className="grid w-full grid-cols-2">
-        <TabsTrigger value="signin">サインイン</TabsTrigger>
-        <TabsTrigger value="signup">新規登録</TabsTrigger>
+    <Tabs
+      value={value}
+      onValueChange={handleValueChange}
+      defaultValue={value ? undefined : 'signin'}
+      className="w-full"
+    >
+      <TabsList className="grid w-full grid-cols-2 surface-neutral p-1">
+        <TabsTrigger
+          value="signin"
+          className="data-[state=active]:bg-surface-primary-0 data-[state=active]:text-surface-primary-0-text data-[state=active]:shadow-sm transition-all"
+        >
+          サインイン
+        </TabsTrigger>
+        <TabsTrigger
+          value="signup"
+          className="data-[state=active]:bg-surface-primary-0 data-[state=active]:text-surface-primary-0-text data-[state=active]:shadow-sm transition-all"
+        >
+          新規登録
+        </TabsTrigger>
       </TabsList>
 
       {error && (
@@ -168,26 +214,26 @@ export function EmailPasswordForm() {
                 className="pl-10 pr-10"
                 required
               />
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="icon"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-3"
+                className="absolute right-1 top-1 h-7 w-7"
+                aria-label={
+                  showPassword ? 'パスワードを非表示' : 'パスワードを表示'
+                }
               >
                 {showPassword ? (
                   <EyeOff className="h-4 w-4" />
                 ) : (
                   <Eye className="h-4 w-4" />
                 )}
-              </button>
+              </Button>
             </div>
           </div>
 
-          <Button
-            type="submit"
-            className="w-full"
-            size="lg"
-            disabled={isLoading}
-          >
+          <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? (
               <Loader2 className="h-4 w-4 animate-spin mr-2" />
             ) : null}
@@ -196,7 +242,7 @@ export function EmailPasswordForm() {
         </form>
       </TabsContent>
 
-      <TabsContent value="signup" className="space-y-4">
+      <TabsContent value="signup" className="space-y-4 mt-4">
         <form onSubmit={handleSignUp} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="signup-name">お名前</Label>
@@ -244,17 +290,22 @@ export function EmailPasswordForm() {
                 required
                 minLength={6}
               />
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="icon"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-3"
+                className="absolute right-1 top-1 h-7 w-7"
+                aria-label={
+                  showPassword ? 'パスワードを非表示' : 'パスワードを表示'
+                }
               >
                 {showPassword ? (
                   <EyeOff className="h-4 w-4" />
                 ) : (
                   <Eye className="h-4 w-4" />
                 )}
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -273,38 +324,44 @@ export function EmailPasswordForm() {
                 className="pl-10 pr-10"
                 required
               />
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="icon"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-3"
+                className="absolute right-1 top-1 h-7 w-7"
+                aria-label={
+                  showConfirmPassword
+                    ? 'パスワード確認を非表示'
+                    : 'パスワード確認を表示'
+                }
               >
                 {showConfirmPassword ? (
                   <EyeOff className="h-4 w-4" />
                 ) : (
                   <Eye className="h-4 w-4" />
                 )}
-              </button>
+              </Button>
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-2 mb-4">
             <Label htmlFor="signup-user-type">ユーザータイプ</Label>
-            <select
-              id="signup-user-type"
+            <Select
               value={formData.userType}
-              onChange={e =>
-                handleInputChange(
-                  'userType',
-                  e.target.value as FormData['userType']
-                )
+              onValueChange={value =>
+                handleInputChange('userType', value as FormData['userType'])
               }
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              required
             >
-              <option value="photographer">フォトグラファー</option>
-              <option value="model">モデル</option>
-              <option value="organizer">撮影会主催者</option>
-            </select>
+              <SelectTrigger id="signup-user-type">
+                <SelectValue placeholder="ユーザータイプを選択" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="photographer">フォトグラファー</SelectItem>
+                <SelectItem value="model">モデル</SelectItem>
+                <SelectItem value="organizer">撮影会主催者</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <Button type="submit" className="w-full" disabled={isLoading}>
