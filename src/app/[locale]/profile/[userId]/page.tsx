@@ -388,13 +388,6 @@ export default function UserProfilePage() {
                           <Pencil className="w-4 h-4 mr-2" />
                           編集
                         </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => router.push(`/${locale}/subscription`)}
-                        >
-                          サブスクリプション
-                        </Button>
                       </>
                     ) : (
                       user &&
