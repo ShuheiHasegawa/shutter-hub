@@ -7,15 +7,31 @@ export async function GET(
 ) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
+  const error = searchParams.get('error');
+  const errorDescription = searchParams.get('error_description');
+  const errorCode = searchParams.get('error_code');
   const { locale } = await params;
   // if "next" is in param, use it as the redirect URL
   let next = searchParams.get('next') ?? `/${locale}`;
 
+  // エラーパラメータがある場合はエラーページにリダイレクト
+  if (error) {
+    const errorParams = new URLSearchParams({
+      error,
+      ...(errorCode && { error_code: errorCode }),
+      ...(errorDescription && { error_description: errorDescription }),
+    });
+    return NextResponse.redirect(
+      `${origin}/${locale}/auth/auth-code-error?${errorParams.toString()}`
+    );
+  }
+
   if (code) {
     const supabase = await createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { error: exchangeError } =
+      await supabase.auth.exchangeCodeForSession(code);
 
-    if (!error) {
+    if (!exchangeError) {
       // 認証成功後、プロフィールの存在とuser_typeをチェック
       const {
         data: { user },
