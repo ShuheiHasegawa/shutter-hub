@@ -170,14 +170,14 @@ export function PhotoSessionCalendar({ sessions }: PhotoSessionCalendarProps) {
               <CalendarItem
                 feature={feature}
                 key={feature.id}
-                className="hover:bg-accent/50 rounded px-1 py-0.5 transition-colors"
+                className="hover:bg-accent/50 rounded px-0.5 py-0.5 transition-colors"
               />
             )}
           </CalendarBody>
         </CalendarProvider>
 
         {/* 凡例 */}
-        <div className="mt-4 flex flex-wrap gap-4 text-sm">
+        <div className="py-4 flex flex-wrap gap-4 text-sm">
           <div className="flex items-center gap-2">
             <div className="h-3 w-3 rounded-full bg-green-500" />
             <span>{tStatus('firstCome')}</span>
