@@ -48,7 +48,7 @@ function PhotobookHeader({
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           {/* 上部: 戻るボタンとタイトル部分 */}
           <div className="flex items-start gap-3 flex-1 min-w-0">
-            <BackButton href="/photobooks/quick" size="sm" />
+            <BackButton href="/photobooks" size="sm" />
 
             <div className="flex-1 min-w-0">
               {/* タイトルとアイコン */}
