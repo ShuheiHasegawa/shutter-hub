@@ -380,6 +380,41 @@ export async function togglePhotographerOnlineStatusWithLocation(
 }
 
 /**
+ * カメラマンの現在のオンライン状態を取得
+ */
+export async function getPhotographerOnlineStatus(): Promise<
+  ActionResult<boolean>
+> {
+  try {
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
+    }
+    const { user, supabase } = authResult.data;
+
+    const { data: photographerLocation, error } = await supabase
+      .from('photographer_locations')
+      .select('is_online')
+      .eq('photographer_id', user.id)
+      .single();
+
+    if (error) {
+      // 位置情報が存在しない場合はオフラインとみなす
+      if (error.code === 'PGRST116') {
+        return { success: true, data: false };
+      }
+      logger.warn('オンライン状態取得エラー:', error);
+      return { success: false, error: 'オンライン状態の取得に失敗しました' };
+    }
+
+    return { success: true, data: photographerLocation?.is_online === true };
+  } catch (error) {
+    logger.error('オンライン状態取得エラー（例外）:', error);
+    return { success: false, error: '予期しないエラーが発生しました' };
+  }
+}
+
+/**
  * カメラマンが受信したリクエスト一覧を取得
  */
 export async function getPhotographerRequests(): Promise<
