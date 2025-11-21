@@ -137,7 +137,7 @@ export function UserReviewList({ userId }: UserReviewListProps) {
         <CardContent className="p-6">
           <div className="flex items-center justify-center">
             <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-            <span className="ml-2">{tCommon('loading')}</span>
+            <span className="ml-2">{tCommon('loading.default')}</span>
           </div>
         </CardContent>
       </Card>
