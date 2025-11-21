@@ -24,17 +24,16 @@ import {
   Upload,
   ArrowRight,
   Send,
-  RefreshCw,
 } from 'lucide-react';
 import {
   togglePhotographerOnlineStatusWithLocation,
   getPhotographerRequests,
+  getPhotographerOnlineStatus,
   respondToRequest,
   updateRequestStatus,
 } from '@/app/actions/instant-photo';
 import { createClient } from '@/lib/supabase/client';
 import { useGeolocation } from '@/hooks/useGeolocation';
-import { NotificationCenter } from '@/components/instant/NotificationCenter';
 import { useRouter } from 'next/navigation';
 import {
   FormattedPrice,
@@ -253,8 +252,24 @@ export function PhotographerInstantDashboard({
     }
   };
 
+  // オンライン状態を読み込み
+  const loadOnlineStatus = async () => {
+    try {
+      const result = await getPhotographerOnlineStatus();
+      if (result.success) {
+        setIsOnline(result.data || false);
+        logger.info('オンライン状態を読み込み:', { isOnline: result.data });
+      } else {
+        logger.warn('オンライン状態取得失敗:', result.error);
+      }
+    } catch (error) {
+      logger.error('オンライン状態取得エラー（例外）:', error);
+    }
+  };
+
   // 初回読み込み
   useEffect(() => {
+    loadOnlineStatus();
     loadRequests();
   }, []);
 
@@ -263,13 +278,10 @@ export function PhotographerInstantDashboard({
       {/* オンライン状態管理 */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <Zap className="h-5 w-5" />
-              即座撮影対応状態
-            </CardTitle>
-            <NotificationCenter userType="photographer" enableSound={true} />
-          </div>
+          <CardTitle className="flex items-center gap-2">
+            <Zap className="h-5 w-5" />
+            即座撮影対応状態
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* 位置情報状態 */}
@@ -334,24 +346,10 @@ export function PhotographerInstantDashboard({
       {/* リクエスト一覧 */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <Camera className="h-5 w-5" />
-              即座撮影リクエスト
-            </CardTitle>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={loadRequests}
-              disabled={requestsLoading}
-            >
-              {requestsLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <RefreshCw className="h-4 w-4" />
-              )}
-            </Button>
-          </div>
+          <CardTitle className="flex items-center gap-2">
+            <Camera className="h-5 w-5" />
+            即座撮影リクエスト
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {requestsLoading ? (
@@ -509,9 +507,9 @@ export function PhotographerInstantDashboard({
                     </div>
 
                     {/* アクションボタンセクション */}
-                    <div className="flex gap-2 pt-4">
+                    <div className="pt-4">
                       {request.status === 'pending' && (
-                        <>
+                        <div className="flex gap-2">
                           <Button
                             variant="neutral"
                             onClick={() =>
@@ -536,7 +534,7 @@ export function PhotographerInstantDashboard({
                             <CheckCircle className="h-4 w-4 mr-2" />
                             受諾する
                           </Button>
-                        </>
+                        </div>
                       )}
 
                       {request.status === 'photographer_accepted' &&
@@ -552,7 +550,7 @@ export function PhotographerInstantDashboard({
                             onClick={() =>
                               handleUpdateStatus(request.id, 'in_progress')
                             }
-                            className="flex-1"
+                            className="w-full"
                             variant="cta"
                           >
                             <Camera className="h-4 w-4 mr-2" />
@@ -564,7 +562,7 @@ export function PhotographerInstantDashboard({
                         request.matched_photographer_id === userId && (
                           <Button
                             onClick={() => handleMarkCompleted(request.id)}
-                            className="flex-1 bg-green-600 hover:bg-green-700"
+                            className="w-full bg-green-600 hover:bg-green-700"
                           >
                             <CheckCircle className="h-4 w-4 mr-2" />
                             撮影完了
@@ -573,9 +571,9 @@ export function PhotographerInstantDashboard({
 
                       {request.status === 'completed' &&
                         request.matched_photographer_id === userId && (
-                          <div className="flex flex-col gap-4">
+                          <div className="flex flex-col gap-4 w-full">
                             {/* 撮影完了メッセージ */}
-                            <div className="bg-success/10 border border-success/20 rounded-lg p-4">
+                            <div className="bg-success/10 border border-success/20 rounded-lg p-4 w-full">
                               <div className="flex items-center gap-2 text-success mb-2">
                                 <CheckCircle className="h-4 w-4" />
                                 <span className="font-medium">撮影完了</span>
@@ -601,9 +599,9 @@ export function PhotographerInstantDashboard({
 
                       {request.status === 'delivered' &&
                         request.matched_photographer_id === userId && (
-                          <div className="flex flex-col gap-4">
+                          <div className="flex flex-col gap-4 w-full">
                             {/* 撮影完了メッセージ */}
-                            <div className="bg-success/10 border border-success/20 rounded-lg p-4">
+                            <div className="bg-success/10 border border-success/20 rounded-lg p-4 w-full">
                               <div className="flex items-center gap-2 text-success mb-2">
                                 <CheckCircle className="h-4 w-4" />
                                 <span className="font-medium">撮影完了</span>
@@ -614,7 +612,7 @@ export function PhotographerInstantDashboard({
                             </div>
 
                             {/* 配信完了メッセージ */}
-                            <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                            <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 w-full">
                               <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 mb-2">
                                 <Send className="h-4 w-4" />
                                 <span className="font-medium">
