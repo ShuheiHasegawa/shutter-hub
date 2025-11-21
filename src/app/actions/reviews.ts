@@ -38,10 +38,10 @@ export interface CreateUserReviewData {
   is_anonymous?: boolean;
 }
 
-export interface ReviewHelpfulVoteData {
+export interface ReviewReactionData {
   review_id: string;
   review_type: 'photo_session' | 'user';
-  is_helpful: boolean;
+  reaction_type: '👍' | '❤️' | '😂' | '😮' | '😢' | '😡';
 }
 
 export interface ReviewReportData {
@@ -49,6 +49,13 @@ export interface ReviewReportData {
   review_type: 'photo_session' | 'user';
   reason: 'spam' | 'inappropriate' | 'fake' | 'harassment' | 'other';
   description?: string;
+}
+
+// レビューにリアクション情報を追加するための型
+interface ReviewWithReactions {
+  user_reaction?: { reaction_type: string } | null;
+  reaction_counts?: Record<string, number>;
+  [key: string]: unknown;
 }
 
 export interface UpdatePhotoSessionReviewData {
@@ -278,8 +285,8 @@ export async function createUserReview(data: CreateUserReviewData) {
   }
 }
 
-// レビューの役立ち評価を投票
-export async function voteReviewHelpful(data: ReviewHelpfulVoteData) {
+// レビューに絵文字リアクションを追加・更新
+export async function addReviewReaction(data: ReviewReactionData) {
   try {
     const authResult = await requireAuthForAction();
     if (!authResult.success) {
@@ -287,9 +294,15 @@ export async function voteReviewHelpful(data: ReviewHelpfulVoteData) {
     }
     const { user, supabase } = authResult.data;
 
-    // 既存の投票をチェック
-    const { data: existingVote, error: checkError } = await supabase
-      .from('review_helpful_votes')
+    // リアクションタイプのバリデーション
+    const validReactions = ['👍', '❤️', '😂', '😮', '😢', '😡'] as const;
+    if (!validReactions.includes(data.reaction_type)) {
+      return { error: 'Invalid reaction type' };
+    }
+
+    // 既存のリアクションをチェック
+    const { data: existingReaction, error: checkError } = await supabase
+      .from('review_reactions')
       .select('*')
       .eq('review_id', data.review_id)
       .eq('review_type', data.review_type)
@@ -297,45 +310,79 @@ export async function voteReviewHelpful(data: ReviewHelpfulVoteData) {
       .single();
 
     if (checkError && checkError.code !== 'PGRST116') {
-      logger.error('投票チェックエラー:', checkError);
-      return { error: 'Failed to check existing vote' };
+      logger.error('リアクションチェックエラー:', checkError);
+      return { error: 'Failed to check existing reaction' };
     }
 
-    if (existingVote) {
-      // 既存の投票を更新
-      const { data: vote, error: updateError } = await supabase
-        .from('review_helpful_votes')
-        .update({ is_helpful: data.is_helpful })
-        .eq('id', existingVote.id)
+    if (existingReaction) {
+      // 既存のリアクションを更新
+      const { data: reaction, error: updateError } = await supabase
+        .from('review_reactions')
+        .update({ reaction_type: data.reaction_type })
+        .eq('id', existingReaction.id)
         .select()
         .single();
 
       if (updateError) {
-        logger.error('投票更新エラー:', updateError);
-        return { error: 'Failed to update vote' };
+        logger.error('リアクション更新エラー:', updateError);
+        return { error: 'Failed to update reaction' };
       }
 
-      return { data: vote };
+      return { data: reaction };
     } else {
-      // 新しい投票を作成
-      const { data: vote, error: createError } = await supabase
-        .from('review_helpful_votes')
+      // 新しいリアクションを作成
+      const { data: reaction, error: createError } = await supabase
+        .from('review_reactions')
         .insert({
           review_id: data.review_id,
           review_type: data.review_type,
           voter_id: user.id,
-          is_helpful: data.is_helpful,
+          reaction_type: data.reaction_type,
         })
         .select()
         .single();
 
       if (createError) {
-        logger.error('投票作成エラー:', createError);
-        return { error: 'Failed to create vote' };
+        logger.error('リアクション作成エラー:', createError);
+        return { error: 'Failed to create reaction' };
       }
 
-      return { data: vote };
+      return { data: reaction };
     }
+  } catch (error) {
+    logger.error('予期しないエラー:', error);
+    return { error: 'Unexpected error occurred' };
+  }
+}
+
+// レビューのリアクション数を取得
+export async function getReviewReactionCounts(
+  reviewId: string,
+  reviewType: 'photo_session' | 'user'
+) {
+  try {
+    const supabase = await createClient();
+
+    const { data: counts, error } = await supabase
+      .from('review_reaction_counts')
+      .select('reaction_type, count')
+      .eq('review_id', reviewId)
+      .eq('review_type', reviewType);
+
+    if (error) {
+      logger.error('リアクション数取得エラー:', error);
+      return { error: 'Failed to fetch reaction counts' };
+    }
+
+    // リアクションタイプごとのカウントをオブジェクトに変換
+    const reactionCounts: Record<string, number> = {};
+    if (counts) {
+      counts.forEach(({ reaction_type, count }) => {
+        reactionCounts[reaction_type] = count;
+      });
+    }
+
+    return { data: reactionCounts };
   } catch (error) {
     logger.error('予期しないエラー:', error);
     return { error: 'Unexpected error occurred' };
@@ -400,6 +447,11 @@ export async function getPhotoSessionReviews(photoSessionId: string) {
   try {
     const supabase = await createClient();
 
+    // 現在のユーザーIDを取得
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
     const { data: reviews, error } = await supabase
       .from('photo_session_reviews')
       .select(
@@ -421,6 +473,41 @@ export async function getPhotoSessionReviews(photoSessionId: string) {
       return { error: 'Failed to fetch reviews' };
     }
 
+    // 各レビューのリアクション状態とリアクション数を取得
+    if (reviews && user) {
+      for (const review of reviews) {
+        // 現在のユーザーのリアクション状態を取得
+        const { data: userReaction } = await supabase
+          .from('review_reactions')
+          .select('reaction_type')
+          .eq('review_id', review.id)
+          .eq('review_type', 'photo_session')
+          .eq('voter_id', user.id)
+          .maybeSingle();
+
+        // リアクション数を取得
+        const countsResult = await getReviewReactionCounts(
+          review.id,
+          'photo_session'
+        );
+
+        (review as ReviewWithReactions).user_reaction = userReaction;
+        (review as ReviewWithReactions).reaction_counts =
+          countsResult.data || {};
+      }
+    } else if (reviews) {
+      // 未ログイン時はリアクション数のみ取得
+      for (const review of reviews) {
+        const countsResult = await getReviewReactionCounts(
+          review.id,
+          'photo_session'
+        );
+        (review as ReviewWithReactions).user_reaction = null;
+        (review as ReviewWithReactions).reaction_counts =
+          countsResult.data || {};
+      }
+    }
+
     return { data: reviews };
   } catch (error) {
     logger.error('予期しないエラー:', error);
@@ -432,6 +519,11 @@ export async function getPhotoSessionReviews(photoSessionId: string) {
 export async function getUserReviews(userId: string) {
   try {
     const supabase = await createClient();
+
+    // 現在のユーザーIDを取得
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
     const { data: reviews, error } = await supabase
       .from('user_reviews')
@@ -457,6 +549,35 @@ export async function getUserReviews(userId: string) {
     if (error) {
       logger.error('ユーザーレビュー取得エラー:', error);
       return { data: null, error: error.message };
+    }
+
+    // 各レビューのリアクション状態とリアクション数を取得
+    if (reviews && user) {
+      for (const review of reviews) {
+        // 現在のユーザーのリアクション状態を取得
+        const { data: userReaction } = await supabase
+          .from('review_reactions')
+          .select('reaction_type')
+          .eq('review_id', review.id)
+          .eq('review_type', 'user')
+          .eq('voter_id', user.id)
+          .maybeSingle();
+
+        // リアクション数を取得
+        const countsResult = await getReviewReactionCounts(review.id, 'user');
+
+        (review as ReviewWithReactions).user_reaction = userReaction;
+        (review as ReviewWithReactions).reaction_counts =
+          countsResult.data || {};
+      }
+    } else if (reviews) {
+      // 未ログイン時はリアクション数のみ取得
+      for (const review of reviews) {
+        const countsResult = await getReviewReactionCounts(review.id, 'user');
+        (review as ReviewWithReactions).user_reaction = null;
+        (review as ReviewWithReactions).reaction_counts =
+          countsResult.data || {};
+      }
     }
 
     return { data: reviews || [], error: null };

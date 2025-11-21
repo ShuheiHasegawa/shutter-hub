@@ -37,8 +37,11 @@ interface UserReview {
   reviewer_role: 'organizer' | 'participant';
   reviewee_role: 'organizer' | 'participant';
   is_anonymous: boolean;
-  helpful_count: number;
   created_at: string;
+  user_reaction?: {
+    reaction_type: '👍' | '❤️' | '😂' | '😮' | '😢' | '😡';
+  } | null;
+  reaction_counts?: Record<string, number>;
   reviewer?: {
     id: string;
     display_name: string;
@@ -64,8 +67,11 @@ interface PhotoSessionReview {
   cons?: string;
   is_anonymous: boolean;
   is_verified: boolean;
-  helpful_count: number;
   created_at: string;
+  user_reaction?: {
+    reaction_type: '👍' | '❤️' | '😂' | '😮' | '😢' | '😡';
+  } | null;
+  reaction_counts?: Record<string, number>;
   reviewer?: {
     id: string;
     display_name: string;
@@ -287,10 +293,20 @@ export function UserReviewList({ userId }: UserReviewListProps) {
                                   format="date-short"
                                 />
                               </span>
-                              {review.helpful_count > 0 && (
-                                <span>
-                                  {review.helpful_count}人が参考になったと評価
-                                </span>
+                              {review.reaction_counts && (
+                                <div className="flex items-center gap-1">
+                                  {Object.entries(review.reaction_counts)
+                                    .filter(([_, count]) => count > 0)
+                                    .map(([emoji, count]) => (
+                                      <span
+                                        key={emoji}
+                                        className="flex items-center gap-1"
+                                      >
+                                        <span>{emoji}</span>
+                                        <span>{count}</span>
+                                      </span>
+                                    ))}
+                                </div>
                               )}
                             </div>
                           </div>
