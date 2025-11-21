@@ -7,6 +7,8 @@ import { useParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import type { Provider as SupabaseProvider } from '@supabase/supabase-js';
+import { Button } from '@/components/ui/button';
+import { Loader2 } from 'lucide-react';
 
 // Supabaseがサポートするプロバイダー + LINE（型定義に含まれていないが実際にはサポートされている可能性）
 type Provider = SupabaseProvider | 'line';
@@ -32,23 +34,66 @@ export function OAuthButton({
     try {
       setIsLoading(true);
 
+      // 既存セッションをチェック
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (session) {
+        // ログイン済みの場合は自動ログアウト
+        toast.info('現在のアカウントからログアウトしています...');
+        const { error: signOutError } = await supabase.auth.signOut();
+
+        if (signOutError) {
+          logger.error('ログアウトエラー:', signOutError);
+          toast.error('ログアウトに失敗しました');
+          setIsLoading(false);
+          return;
+        }
+
+        // 少し待機してセッションクリアを確実にする
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+
       // LINEはSupabaseの型定義に含まれていないが、実際にはサポートされている可能性がある
       // 型アサーションを使用してエラーを回避
-      const { error } = await supabase.auth.signInWithOAuth({
+      const options: {
+        redirectTo: string;
+        queryParams?: Record<string, string>;
+      } = {
+        redirectTo: `${window.location.origin}/${locale}/auth/callback`,
+      };
+
+      // Google専用のqueryParams（X/Twitterでは不要）
+      if (provider === 'google') {
+        options.queryParams = {
+          access_type: 'offline',
+          prompt: 'consent',
+        };
+      }
+
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: provider as SupabaseProvider,
-        options: {
-          redirectTo: `${window.location.origin}/${locale}/auth/callback`,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          },
-        },
+        options,
       });
 
       if (error) {
-        logger.error(`${provider}認証エラー:`, error);
+        logger.error(`${provider}認証エラー:`, {
+          error,
+          message: error.message,
+          status: error.status,
+          provider,
+          redirectTo: options.redirectTo,
+        });
         toast.error(t('error'), {
-          description: t('errorDescription'),
+          description: error.message || t('errorDescription'),
+        });
+      } else if (data?.url) {
+        // OAuth認証が正常に開始された場合、リダイレクトURLをログに記録
+        logger.info(`${provider}認証開始:`, {
+          provider,
+          redirectTo: options.redirectTo,
+          oauthUrl: data.url,
         });
       }
     } catch (error) {
@@ -61,21 +106,16 @@ export function OAuthButton({
     }
   };
 
-  const baseClassName =
-    'w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors';
-
   return (
-    <button
+    <Button
+      type="button"
+      variant="outline"
       onClick={handleOAuthSignIn}
       disabled={isLoading}
-      className={`${baseClassName} ${className}`}
+      className={`w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-50 text-gray-700 ${className}`}
     >
-      {isLoading ? (
-        <div className="w-5 h-5 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin" />
-      ) : (
-        children
-      )}
-    </button>
+      {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : children}
+    </Button>
   );
 }
 
