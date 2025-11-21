@@ -1314,12 +1314,17 @@
     "display": {
       "anonymousUser": "匿名ユーザー",
       "verified": "参加確認済み",
-      "detailedRatings": "詳細評価",
-      "helpfulCount": "{count}人が参考になったと評価"
+      "detailedRatings": "詳細評価"
+    },
+    "reactions": {
+      "thumbsUp": "いいね",
+      "heart": "好き",
+      "laugh": "面白い",
+      "surprised": "驚き",
+      "sad": "悲しい",
+      "angry": "怒り"
     },
     "actions": {
-      "helpful": "参考になった",
-      "notHelpful": "参考にならない",
       "report": "報告する"
     },
     "validation": {
@@ -1374,8 +1379,7 @@
         "newest": "新しい順",
         "oldest": "古い順",
         "highest": "評価の高い順",
-        "lowest": "評価の低い順",
-        "helpful": "参考になった順"
+        "lowest": "評価の低い順"
       }
     }
   },

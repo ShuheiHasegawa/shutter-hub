@@ -50,8 +50,11 @@ interface Review {
   cons?: string;
   is_anonymous: boolean;
   is_verified: boolean;
-  helpful_count: number;
   created_at: string;
+  user_reaction?: {
+    reaction_type: '👍' | '❤️' | '😂' | '😮' | '😢' | '😡';
+  } | null;
+  reaction_counts?: Record<string, number>;
   reviewer?: {
     id: string;
     display_name: string;
@@ -85,7 +88,7 @@ export function ReviewList({
   const [stats, setStats] = useState<RatingStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [sortBy, setSortBy] = useState<
-    'newest' | 'oldest' | 'highest' | 'lowest' | 'helpful'
+    'newest' | 'oldest' | 'highest' | 'lowest'
   >('newest');
   const [filterRating, setFilterRating] = useState<string>('all');
 
@@ -135,8 +138,6 @@ export function ReviewList({
           return b.overall_rating - a.overall_rating;
         case 'lowest':
           return a.overall_rating - b.overall_rating;
-        case 'helpful':
-          return b.helpful_count - a.helpful_count;
         default:
           return 0;
       }
@@ -393,9 +394,6 @@ export function ReviewList({
                   </SelectItem>
                   <SelectItem value="lowest">
                     {t('list.sort.lowest')}
-                  </SelectItem>
-                  <SelectItem value="helpful">
-                    {t('list.sort.helpful')}
                   </SelectItem>
                 </SelectContent>
               </Select>

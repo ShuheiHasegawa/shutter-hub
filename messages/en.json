@@ -1181,12 +1181,17 @@
     "display": {
       "anonymousUser": "Anonymous User",
       "verified": "Verified Participant",
-      "detailedRatings": "Detailed Ratings",
-      "helpfulCount": "{count} people found this helpful"
+      "detailedRatings": "Detailed Ratings"
+    },
+    "reactions": {
+      "thumbsUp": "Like",
+      "heart": "Love",
+      "laugh": "Funny",
+      "surprised": "Surprised",
+      "sad": "Sad",
+      "angry": "Angry"
     },
     "actions": {
-      "helpful": "Helpful",
-      "notHelpful": "Not Helpful",
       "report": "Report"
     },
     "validation": {
@@ -1241,8 +1246,7 @@
         "newest": "Newest",
         "oldest": "Oldest",
         "highest": "Highest Rated",
-        "lowest": "Lowest Rated",
-        "helpful": "Most Helpful"
+        "lowest": "Lowest Rated"
       }
     }
   },

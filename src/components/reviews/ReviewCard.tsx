@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { logger } from '@/lib/utils/logger';
 import { useTranslations } from 'next-intl';
 import { FormattedDateTime } from '@/components/ui/formatted-display';
@@ -10,7 +10,12 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { voteReviewHelpful, reportReview } from '@/app/actions/reviews';
+import { addReviewReaction, reportReview } from '@/app/actions/reviews';
+import {
+  REACTION_TYPES,
+  REACTION_LABELS,
+  type ReactionType,
+} from '@/constants/reactions';
 import {
   ThumbsUp,
   ThumbsDown,
@@ -52,8 +57,11 @@ interface ReviewCardProps {
     cons?: string;
     is_anonymous: boolean;
     is_verified: boolean;
-    helpful_count: number;
     created_at: string;
+    user_reaction?: {
+      reaction_type: ReactionType;
+    } | null;
+    reaction_counts?: Record<string, number>;
     reviewer?: {
       id: string;
       display_name: string;
@@ -77,14 +85,34 @@ export function ReviewCard({
   const [reportReason, setReportReason] = useState<string>('');
   const [reportDescription, setReportDescription] = useState('');
   const [isSubmittingReport, setIsSubmittingReport] = useState(false);
-  const [userVote, setUserVote] = useState<boolean | null>(null);
+  const [userReaction, setUserReaction] = useState<ReactionType | null>(
+    review.user_reaction?.reaction_type || null
+  );
+  const [reactionCounts, setReactionCounts] = useState<Record<string, number>>(
+    review.reaction_counts || {}
+  );
 
-  const handleHelpfulVote = async (isHelpful: boolean) => {
+  // レビューのリアクション状態が更新されたときに状態を同期
+  useEffect(() => {
+    if (review.user_reaction) {
+      setUserReaction(review.user_reaction.reaction_type);
+    } else {
+      setUserReaction(null);
+    }
+  }, [review.user_reaction]);
+
+  useEffect(() => {
+    if (review.reaction_counts) {
+      setReactionCounts(review.reaction_counts);
+    }
+  }, [review.reaction_counts]);
+
+  const handleReaction = async (reactionType: ReactionType) => {
     try {
-      const result = await voteReviewHelpful({
+      const result = await addReviewReaction({
         review_id: review.id,
         review_type: type,
-        is_helpful: isHelpful,
+        reaction_type: reactionType,
       });
 
       if (result.error) {
@@ -96,13 +124,36 @@ export function ReviewCard({
         return;
       }
 
-      setUserVote(isHelpful);
+      // 既存のリアクションと同じ場合は削除、違う場合は更新
+      if (userReaction === reactionType) {
+        setUserReaction(null);
+        // リアクション数を減らす
+        setReactionCounts(prev => ({
+          ...prev,
+          [reactionType]: Math.max(0, (prev[reactionType] || 0) - 1),
+        }));
+      } else {
+        // 以前のリアクションがあれば減らす
+        if (userReaction) {
+          setReactionCounts(prev => ({
+            ...prev,
+            [userReaction]: Math.max(0, (prev[userReaction] || 0) - 1),
+          }));
+        }
+        setUserReaction(reactionType);
+        // 新しいリアクション数を増やす
+        setReactionCounts(prev => ({
+          ...prev,
+          [reactionType]: (prev[reactionType] || 0) + 1,
+        }));
+      }
+
       toast({
         title: tCommon('success'),
         description: t('success.voteSubmitted'),
       });
     } catch (error) {
-      logger.error('投票エラー:', error);
+      logger.error('リアクションエラー:', error);
       toast({
         title: t('error.voteFailed'),
         description: t('error.unexpectedError'),
@@ -383,36 +434,28 @@ export function ReviewCard({
             <>
               <Separator />
 
-              {/* アクション */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant={userVote === true ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => handleHelpfulVote(true)}
-                  >
-                    <ThumbsUp className="h-4 w-4 mr-1" />
-                    {t('actions.helpful')}
-                  </Button>
-                  <Button
-                    variant={userVote === false ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => handleHelpfulVote(false)}
-                  >
-                    <ThumbsDown className="h-4 w-4 mr-1" />
-                    {t('actions.notHelpful')}
-                  </Button>
-                </div>
+              {/* リアクション */}
+              <div className="flex items-center gap-2 flex-wrap">
+                {REACTION_TYPES.map(emoji => {
+                  const count = reactionCounts[emoji] || 0;
+                  const isSelected = userReaction === emoji;
 
-                <div className="text-sm text-muted-foreground">
-                  {review.helpful_count > 0 && (
-                    <span>
-                      {t('display.helpfulCount', {
-                        count: review.helpful_count,
-                      })}
-                    </span>
-                  )}
-                </div>
+                  return (
+                    <Button
+                      key={emoji}
+                      variant={isSelected ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => handleReaction(emoji)}
+                      className="flex items-center gap-1"
+                      title={t(`reactions.${REACTION_LABELS[emoji]}`)}
+                    >
+                      <span className="text-lg">{emoji}</span>
+                      {count > 0 && (
+                        <span className="text-xs ml-1">{count}</span>
+                      )}
+                    </Button>
+                  );
+                })}
               </div>
             </>
           )}
