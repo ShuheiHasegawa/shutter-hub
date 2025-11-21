@@ -1,6 +1,6 @@
 'use client';
 
-import { getDay, getDaysInMonth, isSameDay } from 'date-fns';
+import { getDay, getDaysInMonth } from 'date-fns';
 import { atom, useAtom } from 'jotai';
 import {
   Check,
@@ -178,7 +178,7 @@ type OutOfBoundsDayProps = {
 };
 
 const OutOfBoundsDay = ({ day }: OutOfBoundsDayProps) => (
-  <div className="relative h-full w-full bg-secondary p-1 text-muted-foreground text-xs">
+  <div className="relative h-full w-full bg-secondary/50 p-0.5 md:p-1 text-muted-foreground/50 text-[10px] md:text-xs">
     {day}
   </div>
 );
@@ -244,8 +244,33 @@ export const CalendarBody = ({
   const featuresByDay = useMemo(() => {
     const result: { [day: number]: Feature[] } = {};
     for (let day = 1; day <= daysInMonth; day++) {
+      const currentDate = new Date(year, month, day);
       result[day] = features.filter(feature => {
-        return isSameDay(new Date(feature.endAt), new Date(year, month, day));
+        // 日付のみで比較（時刻を無視）
+        const startDate = new Date(feature.startAt);
+        const endDate = new Date(feature.endAt);
+
+        // 日付部分のみを取得
+        const currentDateOnly = new Date(
+          currentDate.getFullYear(),
+          currentDate.getMonth(),
+          currentDate.getDate()
+        );
+        const startDateOnly = new Date(
+          startDate.getFullYear(),
+          startDate.getMonth(),
+          startDate.getDate()
+        );
+        const endDateOnly = new Date(
+          endDate.getFullYear(),
+          endDate.getMonth(),
+          endDate.getDate()
+        );
+
+        // その日が開始日と終了日の間にあるかチェック（日付のみ）
+        return (
+          currentDateOnly >= startDateOnly && currentDateOnly <= endDateOnly
+        );
       });
     }
     return result;
@@ -269,11 +294,11 @@ export const CalendarBody = ({
     const featuresForDay = featuresByDay[day] || [];
     days.push(
       <div
-        className="relative flex h-full w-full flex-col gap-1 p-1 text-muted-foreground text-xs"
+        className="relative flex h-full w-full flex-col gap-0.5 p-0.5 md:gap-1 md:p-1 text-muted-foreground text-[10px] md:text-xs"
         key={day}
       >
         {day}
-        <div className="space-y-1">
+        <div className="space-y-0.5 md:space-y-1">
           {featuresForDay.slice(0, 3).map(feature => (
             <div
               key={feature.id}
@@ -285,7 +310,7 @@ export const CalendarBody = ({
           ))}
         </div>
         {featuresForDay.length > 3 && (
-          <span className="block text-muted-foreground text-xs">
+          <span className="block text-muted-foreground text-[10px] md:text-xs">
             +{featuresForDay.length - 3} more
           </span>
         )}
@@ -305,7 +330,7 @@ export const CalendarBody = ({
   }
 
   return (
-    <div className="grid flex-grow grid-cols-7">
+    <div className="grid grid-cols-7 w-full overflow-hidden">
       {days.map((day, index) => (
         <div
           className={cn(
@@ -476,17 +501,26 @@ export type CalendarItemProps = {
 };
 
 export const CalendarItem = memo(
-  ({ feature, className }: CalendarItemProps) => (
-    <div className={cn('flex items-center gap-2', className)}>
-      <div
-        className="h-2 w-2 shrink-0 rounded-full"
-        style={{
-          backgroundColor: feature.status.color,
-        }}
-      />
-      <span className="truncate text-xs">{feature.name}</span>
-    </div>
-  )
+  ({ feature, className }: CalendarItemProps) => {
+    // スマホ表示用に3文字まで表示
+    const displayName =
+      feature.name.length > 3 ? `${feature.name.slice(0, 3)}...` : feature.name;
+
+    return (
+      <div className={cn('flex items-start gap-1', className)}>
+        <div
+          className="h-1.5 w-1.5 shrink-0 rounded-full mt-0.5"
+          style={{
+            backgroundColor: feature.status.color,
+          }}
+        />
+        <span className="text-[10px] md:text-xs md:line-clamp-2 leading-tight break-all md:break-normal">
+          <span className="md:hidden">{displayName}</span>
+          <span className="hidden md:inline">{feature.name}</span>
+        </span>
+      </div>
+    );
+  }
 );
 
 CalendarItem.displayName = 'CalendarItem';
@@ -505,7 +539,12 @@ export const CalendarProvider = ({
   className,
 }: CalendarProviderProps) => (
   <CalendarContext.Provider value={{ locale, startDay }}>
-    <div className={cn('relative flex flex-col border rounded-lg', className)}>
+    <div
+      className={cn(
+        'relative flex flex-col border rounded-lg overflow-hidden',
+        className
+      )}
+    >
       {children}
     </div>
   </CalendarContext.Provider>
