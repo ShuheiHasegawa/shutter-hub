@@ -44,7 +44,7 @@ function EditorHeader({
     <div className="border-b px-4 py-3 flex items-center justify-between">
       {/* 左側：戻るボタンとタイトル */}
       <div className="flex items-center gap-4">
-        <BackButton href="/photobooks/quick" />
+        <BackButton href="/photobooks" />
 
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-lg">
