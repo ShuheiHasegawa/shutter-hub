@@ -32,6 +32,18 @@ import { useTranslations } from 'next-intl';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { CreditCard, Wallet } from 'lucide-react';
+import { MultiSlotLotteryEntryForm } from '@/components/lottery/MultiSlotLotteryEntryForm';
+import { LotteryEntryConfirmation } from '@/components/lottery/LotteryEntryConfirmation';
+import { getLotterySession } from '@/app/actions/photo-session-lottery';
+import {
+  getUserLotteryEntry,
+  getLotteryEntryCount,
+} from '@/app/actions/multi-slot-lottery';
+import type {
+  LotterySessionWithSettings,
+  LotteryEntryGroup,
+  LotterySlotEntry,
+} from '@/types/multi-slot-lottery';
 
 interface SlotBookingFlowProps {
   session: PhotoSessionWithOrganizer;
@@ -62,6 +74,24 @@ export function SlotBookingFlow({
     null
   );
   const [totalAmount, setTotalAmount] = useState<number>(0);
+  // 抽選セッション情報
+  const [lotterySession, setLotterySession] =
+    useState<LotterySessionWithSettings | null>(null);
+  const [userLotteryEntry, setUserLotteryEntry] = useState<{
+    group: LotteryEntryGroup;
+    slot_entries: LotterySlotEntry[];
+  } | null>(null);
+  const [isLoadingLottery, setIsLoadingLottery] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
+  // エントリー上限情報（抽選の場合）
+  const [lotteryEntryCount, setLotteryEntryCount] = useState<{
+    entries_by_slot: Array<{
+      slot_id: string;
+      slot_number: number;
+      entry_count: number;
+    }>;
+    max_entries: number | null;
+  } | null>(null);
 
   const currentStep = (searchParams.get('step') as BookingStep) || 'select';
   const hasSlots = slots && slots.length > 0;
@@ -96,6 +126,49 @@ export function SlotBookingFlow({
       }
     }
   }, [searchParams, allowMultiple]);
+
+  // 抽選セッション情報を取得
+  useEffect(() => {
+    const loadLotterySession = async () => {
+      if (session.booking_type !== 'lottery' || lotterySession) {
+        return;
+      }
+
+      setIsLoadingLottery(true);
+      try {
+        const result = await getLotterySession(session.id);
+        if (result.data) {
+          setLotterySession(result.data as LotterySessionWithSettings);
+
+          // ユーザーのエントリー情報を取得
+          if (result.data.id) {
+            const entryResult = await getUserLotteryEntry(result.data.id);
+            if (entryResult.success && entryResult.data) {
+              setUserLotteryEntry(entryResult.data);
+            }
+
+            // エントリー上限情報を取得
+            const entryCountResult = await getLotteryEntryCount(result.data.id);
+            if (entryCountResult.success && entryCountResult.data) {
+              const lotterySessionData =
+                result.data as LotterySessionWithSettings;
+              setLotteryEntryCount({
+                entries_by_slot: entryCountResult.data.entries_by_slot || [],
+                max_entries: lotterySessionData.max_entries ?? null,
+              });
+            }
+          }
+        }
+      } catch (error) {
+        logger.error('抽選セッション取得エラー:', error);
+      } finally {
+        setIsLoadingLottery(false);
+      }
+    };
+
+    loadLotterySession();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session.id, session.booking_type]);
 
   // ステップ遷移関数
   const navigateToStep = useCallback(
@@ -474,6 +547,83 @@ export function SlotBookingFlow({
 
   // ステップ1: 時間枠選択
   if (currentStep === 'select') {
+    // 抽選方式で複数スロットの場合は専用フォームを表示
+    if (session.booking_type === 'lottery' && allowMultiple) {
+      if (isLoadingLottery) {
+        return (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin" />
+          </div>
+        );
+      }
+
+      if (!lotterySession) {
+        return (
+          <Alert variant="destructive">
+            <p>抽選セッション情報の取得に失敗しました</p>
+          </Alert>
+        );
+      }
+
+      return (
+        <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 mt-4">
+          {userLotteryEntry && !showEditForm ? (
+            <LotteryEntryConfirmation
+              confirmation={{
+                group: userLotteryEntry.group,
+                slot_entries: userLotteryEntry.slot_entries,
+              }}
+              lotterySession={lotterySession}
+              onEdit={() => {
+                // 編集モードに切り替え
+                setShowEditForm(true);
+              }}
+            />
+          ) : (
+            <MultiSlotLotteryEntryForm
+              lotterySession={lotterySession}
+              slots={slots}
+              organizerId={session.organizer_id}
+              existingEntry={userLotteryEntry}
+              entryCount={lotteryEntryCount}
+              onEntrySuccess={() => {
+                // エントリー情報を再取得
+                if (lotterySession.id) {
+                  getUserLotteryEntry(lotterySession.id).then(result => {
+                    if (result.success && result.data) {
+                      setUserLotteryEntry(result.data);
+                      setShowEditForm(false); // 確認画面に戻る
+                    }
+                  });
+                  // エントリー上限情報も再取得
+                  getLotteryEntryCount(lotterySession.id).then(result => {
+                    if (result.success && result.data) {
+                      const lotterySessionData =
+                        lotterySession as LotterySessionWithSettings;
+                      setLotteryEntryCount({
+                        entries_by_slot: result.data.entries_by_slot || [],
+                        max_entries: lotterySessionData.max_entries ?? null,
+                      });
+                    }
+                  });
+                }
+              }}
+              onCancel={() => {
+                if (userLotteryEntry) {
+                  // 既存エントリーがある場合は確認画面に戻る
+                  setShowEditForm(false);
+                } else {
+                  // 新規エントリーの場合は撮影会詳細ページに戻る
+                  router.push(`/ja/photo-sessions/${session.id}`);
+                }
+              }}
+            />
+          )}
+        </div>
+      );
+    }
+
+    // 通常の先着順予約フロー
     return (
       <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         {/* ステップインジケーター */}
@@ -496,24 +646,46 @@ export function SlotBookingFlow({
                     💡&nbsp;この撮影会では複数の時間枠を選択できます。お好みの枠を複数選んでください。
                   </Alert>
                 )}
-                {slots.map((slot, index) => (
-                  <SlotCard
-                    key={slot.id}
-                    slot={slot}
-                    index={index}
-                    isSelected={
-                      allowMultiple
-                        ? selectedSlotIds.includes(slot.id)
-                        : selectedSlotId === slot.id
-                    }
-                    allowMultiple={allowMultiple}
-                    onSelect={
-                      allowMultiple
-                        ? () => handleMultipleSlotToggle(slot.id)
-                        : () => handleSlotSelect(slot.id)
-                    }
-                  />
-                ))}
+                {slots.map((slot, index) => {
+                  // 抽選の場合、エントリー上限をチェック
+                  const isEntryFull =
+                    session.booking_type === 'lottery' &&
+                    lotteryEntryCount &&
+                    lotteryEntryCount.max_entries !== null
+                      ? (() => {
+                          const slotEntry =
+                            lotteryEntryCount.entries_by_slot.find(
+                              e => e.slot_id === slot.id
+                            );
+                          return (
+                            slotEntry &&
+                            slotEntry.entry_count >=
+                              lotteryEntryCount.max_entries
+                          );
+                        })()
+                      : false;
+
+                  return (
+                    <SlotCard
+                      key={slot.id}
+                      slot={slot}
+                      index={index}
+                      isSelected={
+                        allowMultiple
+                          ? selectedSlotIds.includes(slot.id)
+                          : selectedSlotId === slot.id
+                      }
+                      allowMultiple={allowMultiple}
+                      onSelect={
+                        allowMultiple
+                          ? () => handleMultipleSlotToggle(slot.id)
+                          : () => handleSlotSelect(slot.id)
+                      }
+                      isEntryFull={isEntryFull}
+                      isLottery={session.booking_type === 'lottery'}
+                    />
+                  );
+                })}
                 {allowMultiple && (
                   <div className="mt-4 p-3 card-neutral-1 rounded-lg">
                     <p className="text-sm text-theme-text-secondary">
@@ -941,28 +1113,33 @@ function SlotCard({
   isSelected,
   allowMultiple,
   onSelect,
+  isEntryFull = false,
+  isLottery = false,
 }: {
   slot: PhotoSessionSlot;
   index: number;
   isSelected: boolean;
   allowMultiple: boolean;
   onSelect: () => void;
+  isEntryFull?: boolean;
+  isLottery?: boolean;
 }) {
   const isSlotFull = slot.current_participants >= slot.max_participants;
+  const isDisabled = isSlotFull || (isLottery && isEntryFull);
   const slotStartTime = new Date(slot.start_time);
   const slotEndTime = new Date(slot.end_time);
 
   return (
     <button
       className={`w-full p-4 border-2 rounded-lg transition-all duration-200 text-left ${
-        isSlotFull
+        isDisabled
           ? 'bg-card-neutral-1 opacity-50 cursor-not-allowed'
           : isSelected
             ? 'bg-card-primary border-theme-primary cursor-pointer'
             : 'bg-card-neutral-0 border-border hover:bg-card-primary hover:border-theme-primary/50 cursor-pointer'
       }`}
       onClick={onSelect}
-      disabled={isSlotFull}
+      disabled={isDisabled}
     >
       <div className="flex items-center justify-between mb-3">
         <h5 className="font-semibold text-sm">枠 {index + 1}</h5>
@@ -978,10 +1155,10 @@ function SlotCard({
             </Badge>
           )}
           <Badge
-            variant={isSlotFull ? 'destructive' : 'outline'}
+            variant={isDisabled ? 'destructive' : 'outline'}
             className="text-sm"
           >
-            {isSlotFull ? '満席' : '空きあり'}
+            {isSlotFull ? '満席' : isEntryFull ? 'エントリー上限' : '空きあり'}
           </Badge>
         </div>
       </div>

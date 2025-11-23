@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { logger } from '@/lib/utils/logger';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
@@ -45,6 +45,11 @@ import { BackButton } from '../ui/back-button';
 import { ReviewList } from '@/components/reviews/ReviewList';
 import { createClient } from '@/lib/supabase/client';
 import Image from 'next/image';
+import {
+  getLotteryEntryCount,
+  getLotteryStatistics,
+} from '@/app/actions/multi-slot-lottery';
+import { getLotterySession } from '@/app/actions/photo-session-lottery';
 
 interface PhotoSessionDetailProps {
   session: PhotoSessionWithOrganizer;
@@ -93,6 +98,18 @@ export function PhotoSessionDetail({
   const [loading, setLoading] = useState(true);
   const [isLoadingData, setIsLoadingData] = useState(false);
   const [hasExistingReview, setHasExistingReview] = useState(false);
+  const [lotteryEntryCount, setLotteryEntryCount] = useState<{
+    total_entries: number;
+    total_groups: number;
+    entries_by_slot?: Array<{
+      slot_id: string;
+      slot_number: number;
+      entry_count: number;
+    }>;
+  } | null>(null);
+  const [lotterySession, setLotterySession] = useState<{
+    max_entries: number | null;
+  } | null>(null);
 
   // 予約状態を管理するhook
   const {
@@ -108,8 +125,10 @@ export function PhotoSessionDetail({
   const isOngoing = startDate <= now && endDate > now;
   const isPast = endDate <= now;
 
-  // 開催者判定
-  const isOrganizer = user?.id === session.organizer_id;
+  // 開催者判定（メモ化して安定化）
+  const isOrganizer = useMemo(() => {
+    return user?.id === session.organizer_id;
+  }, [user?.id, session.organizer_id]);
 
   // URLパラメータから予約フローの状態を取得
   const bookingStep = searchParams.get('step');
@@ -161,6 +180,8 @@ export function PhotoSessionDetail({
     loadParticipantsData();
   }, [session.id, user?.id]);
 
+  const hasSlots = slots && slots.length > 0;
+
   const getStatusBadge = () => {
     if (isPast) {
       return (
@@ -197,8 +218,6 @@ export function PhotoSessionDetail({
     };
     return bookingTypes[bookingType] || bookingType;
   };
-
-  const hasSlots = slots && slots.length > 0;
 
   // 予約可能状態の判定（hookの結果を使用）
   const canBook = !isOrganizer && canBookFromHook;
@@ -295,6 +314,52 @@ export function PhotoSessionDetail({
   // レビュー可能かチェック（予約済みで撮影会終了後）
   const canReview = !!userBooking && isPast;
 
+  // 抽選エントリー数を取得
+  useEffect(() => {
+    const loadLotteryEntryCount = async () => {
+      // 抽選方式以外はスキップ
+      if (session.booking_type !== 'lottery' || !user) {
+        return;
+      }
+
+      try {
+        // 抽選セッション情報を取得
+        const lotterySessionResult = await getLotterySession(session.id);
+        if (!lotterySessionResult.data?.id) {
+          return;
+        }
+
+        const lotterySessionId = lotterySessionResult.data.id;
+
+        // max_entriesを保存
+        setLotterySession({
+          max_entries: lotterySessionResult.data?.max_entries ?? null,
+        });
+
+        // 開催者は統計情報、一般ユーザーはエントリー数を取得
+        if (isOrganizer) {
+          const result = await getLotteryStatistics(lotterySessionId);
+          if (result.success && result.data) {
+            setLotteryEntryCount({
+              total_groups: result.data.total_groups,
+              total_entries: result.data.total_entries,
+              entries_by_slot: result.data.entries_by_slot || [],
+            });
+          }
+        } else {
+          const result = await getLotteryEntryCount(lotterySessionId);
+          if (result.success && result.data) {
+            setLotteryEntryCount(result.data);
+          }
+        }
+      } catch (error) {
+        logger.error('エントリー数取得エラー:', error);
+      }
+    };
+
+    loadLotteryEntryCount();
+  }, [session.id, session.booking_type, user?.id, isOrganizer]);
+
   // 既存レビューのチェック
   useEffect(() => {
     const checkExistingReview = async () => {
@@ -330,12 +395,32 @@ export function PhotoSessionDetail({
 
     const buttons: ActionBarButton[] = [];
 
+    // 抽選の場合、全てのスロットがエントリー上限に達しているかチェック
+    const allSlotsEntryFull =
+      session.booking_type === 'lottery' &&
+      lotterySession?.max_entries !== null &&
+      lotterySession?.max_entries !== undefined &&
+      lotteryEntryCount?.entries_by_slot &&
+      slots.length > 0 &&
+      slots.every(slot => {
+        const slotEntry = lotteryEntryCount.entries_by_slot!.find(
+          e => e.slot_id === slot.id
+        );
+        return (
+          slotEntry && slotEntry.entry_count >= lotterySession.max_entries!
+        );
+      });
+
     // 予約可能な場合は予約ボタンを追加
     if (canBook) {
       if (hasSlots) {
         buttons.push({
           id: 'select-slot',
-          label: bookingLoading ? '確認中...' : '時間枠を選択',
+          label: bookingLoading
+            ? '確認中...'
+            : allSlotsEntryFull
+              ? 'エントリー上限'
+              : '時間枠を選択',
           variant: 'accent',
           onClick: async () => {
             const canProceed = await handleRatingCheck();
@@ -343,7 +428,7 @@ export function PhotoSessionDetail({
               router.push(`?step=select`, { scroll: false });
             }
           },
-          disabled: bookingLoading,
+          disabled: bookingLoading || allSlotsEntryFull,
           icon: <Calendar className="h-4 w-4" />,
         });
       } else {
@@ -467,13 +552,13 @@ export function PhotoSessionDetail({
                   className="flex items-center gap-2"
                 >
                   <CalendarPlus className="h-4 w-4" />
-                  <span>カレンダーに追加</span>
+                  <span className="text-sm">カレンダーに追加</span>
                 </Button>
                 {getStatusBadge()}
               </div>
             </div>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="p-4">
             {session.description && (
               <div>
                 <h3 className="font-semibold mb-2">撮影会について</h3>
@@ -483,7 +568,7 @@ export function PhotoSessionDetail({
               </div>
             )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-4">
               <div className="space-y-4">
                 <h3 className="font-semibold">開催詳細</h3>
                 <div className="space-y-3">
@@ -583,7 +668,12 @@ export function PhotoSessionDetail({
 
       {/* 開催者管理機能（撮影会情報の後） */}
       {isOrganizer && (
-        <OrganizerManagementPanel session={session} slots={slots} />
+        <OrganizerManagementPanel
+          session={session}
+          slots={slots}
+          lotteryEntryCount={lotteryEntryCount}
+          lotterySession={lotterySession}
+        />
       )}
 
       {/* 参加者・未参加者向け撮影会情報 */}
@@ -632,7 +722,7 @@ export function PhotoSessionDetail({
               </div>
             </div>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="p-4">
             {session.description && (
               <div>
                 <h3 className="font-semibold mb-2">撮影会について</h3>
@@ -642,7 +732,7 @@ export function PhotoSessionDetail({
               </div>
             )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-4">
               <div className="space-y-4">
                 <h3 className="font-semibold">開催詳細</h3>
                 <div className="space-y-3">
@@ -802,6 +892,61 @@ export function PhotoSessionDetail({
                         {isSlotFull ? '満席' : '空きあり'}
                       </Badge>
                     </div>
+
+                    {/* 抽選エントリー数表示（抽選方式の場合） */}
+                    {session.booking_type === 'lottery' && (
+                      <div className="mb-4 p-3 bg-muted/50 rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <UsersIcon className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm font-medium">
+                            エントリー数
+                          </span>
+                        </div>
+                        <div className="space-y-1">
+                          {(() => {
+                            if (!lotteryEntryCount) {
+                              return (
+                                <div className="text-sm text-muted-foreground">
+                                  エントリー数: 取得中...
+                                </div>
+                              );
+                            }
+
+                            const slotEntry =
+                              lotteryEntryCount.entries_by_slot?.find(
+                                e => e.slot_id === slot.id
+                              );
+
+                            if (slotEntry) {
+                              return (
+                                <div className="flex items-center gap-2 text-sm">
+                                  <span>
+                                    エントリー数: {slotEntry.entry_count} 件
+                                    {lotterySession?.max_entries &&
+                                      ` / ${lotterySession.max_entries} 件上限`}
+                                  </span>
+                                  {lotterySession?.max_entries &&
+                                    slotEntry.entry_count >=
+                                      lotterySession.max_entries && (
+                                      <Badge
+                                        variant="destructive"
+                                        className="text-xs"
+                                      >
+                                        上限到達
+                                      </Badge>
+                                    )}
+                                </div>
+                              );
+                            }
+                            return (
+                              <div className="text-sm text-muted-foreground">
+                                エントリー数: 0 件
+                              </div>
+                            );
+                          })()}
+                        </div>
+                      </div>
+                    )}
 
                     {/* 詳細情報グリッド */}
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
