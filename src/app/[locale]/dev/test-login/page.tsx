@@ -194,6 +194,16 @@ const testAccounts = [
     icon: Users,
     description: '中部地区最大のポートレート撮影会',
   },
+  {
+    id: '33cf6da6-9572-4473-aa10-1cc8eeaf258d',
+    email: 'malymoon@shutterhub.test',
+    password: 'Malymoon2025!',
+    name: 'Malymoon撮影会',
+    userType: 'organizer' as const,
+    icon: Users,
+    description:
+      '中規模撮影会（50-100人）を主催する運営会社。抽選方式の撮影会を開催',
+  },
 ];
 
 export default function TestLoginPage() {
@@ -427,313 +437,317 @@ export default function TestLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-4">
-      <div className="max-w-4xl mx-auto py-8">
-        {/* 警告バナー */}
-        <Alert className="mb-6 border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950">
-          <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
-          <AlertDescription className="text-orange-800 dark:text-orange-200">
-            <strong>開発環境専用機能</strong> - 本番環境では利用できません
-          </AlertDescription>
-        </Alert>
+    <div className="flex flex-col h-screen overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+      <div className="flex-1 min-h-0 overflow-hidden">
+        <div className="h-full overflow-y-auto">
+          <div className="max-w-4xl mx-auto p-4 py-8 pb-16">
+            {/* 警告バナー */}
+            <Alert className="mb-6 border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950">
+              <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+              <AlertDescription className="text-orange-800 dark:text-orange-200">
+                <strong>開発環境専用機能</strong> - 本番環境では利用できません
+              </AlertDescription>
+            </Alert>
 
-        {/* ヘッダー */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            テストログイン
-          </h1>
-          <p className="text-gray-600 dark:text-gray-300">
-            開発・テスト用のアカウントでログインできます
-          </p>
-        </div>
+            {/* ヘッダー */}
+            <div className="text-center mb-8">
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                テストログイン
+              </h1>
+              <p className="text-gray-600 dark:text-gray-300">
+                開発・テスト用のアカウントでログインできます
+              </p>
+            </div>
 
-        {/* 現在のログイン状態 */}
-        {user && (
-          <Card className="mb-6 border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950">
-            <CardHeader>
-              <CardTitle className="text-green-800 dark:text-green-200">
-                現在ログイン中
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium text-green-900 dark:text-green-100">
-                    {user.user_metadata?.full_name || user.email}
-                  </p>
-                  <p className="text-sm text-green-700 dark:text-green-300">
-                    {user.email}
-                  </p>
-                  {user.user_metadata?.user_type && (
-                    <Badge variant="secondary" className="mt-1">
-                      {user.user_metadata.user_type}
-                    </Badge>
-                  )}
+            {/* 現在のログイン状態 */}
+            {user && (
+              <Card className="mb-6 border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950">
+                <CardHeader>
+                  <CardTitle className="text-green-800 dark:text-green-200">
+                    現在ログイン中
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-green-900 dark:text-green-100">
+                        {user.user_metadata?.full_name || user.email}
+                      </p>
+                      <p className="text-sm text-green-700 dark:text-green-300">
+                        {user.email}
+                      </p>
+                      {user.user_metadata?.user_type && (
+                        <Badge variant="secondary" className="mt-1">
+                          {user.user_metadata.user_type}
+                        </Badge>
+                      )}
+                    </div>
+                    <Button
+                      onClick={handleLogout}
+                      disabled={isLoading}
+                      variant="outline"
+                      size="sm"
+                      className="border-green-300 text-green-700 hover:bg-green-100 dark:border-green-700 dark:text-green-300 dark:hover:bg-green-900"
+                    >
+                      {isLoading ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <>
+                          <LogOut className="h-4 w-4 mr-2" />
+                          ログアウト
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* テストアカウント一覧 */}
+            <div className="space-y-8">
+              {/* カメラマンセクション */}
+              <section>
+                <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                  <Camera className="h-6 w-6 mr-2 text-blue-600" />
+                  📸 有名カメラマン（6名）
+                </h2>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {testAccounts
+                    .filter(account => account.userType === 'photographer')
+                    .map(account => {
+                      const Icon = account.icon;
+                      const isCurrentLoading = loadingAccount === account.id;
+
+                      return (
+                        <Card
+                          key={account.id}
+                          className="hover:shadow-lg transition-shadow border-blue-200 dark:border-blue-800"
+                        >
+                          <CardHeader className="text-center pb-3">
+                            <div className="mx-auto mb-3 p-2 rounded-full bg-blue-100 dark:bg-blue-900">
+                              <Icon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                            </div>
+                            <CardTitle className="text-lg">
+                              {account.name}
+                            </CardTitle>
+                            <CardDescription className="text-xs">
+                              {account.description}
+                            </CardDescription>
+                            <Badge
+                              variant="outline"
+                              className="border-blue-300 text-blue-700"
+                            >
+                              {account.userType}
+                            </Badge>
+                          </CardHeader>
+                          <CardContent className="space-y-3">
+                            <div className="text-xs text-muted-foreground space-y-1">
+                              <p>
+                                <strong>Email:</strong> {account.email}
+                              </p>
+                              <p>
+                                <strong>Password:</strong> {account.password}
+                              </p>
+                            </div>
+                            <Button
+                              onClick={() => handleQuickLogin(account)}
+                              disabled={isLoading}
+                              className="w-full"
+                              size="sm"
+                            >
+                              {isCurrentLoading ? (
+                                <>
+                                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                  ログイン中...
+                                </>
+                              ) : (
+                                `${account.name}でログイン`
+                              )}
+                            </Button>
+                            <Button
+                              onClick={() => handleDeleteUser(account.email)}
+                              disabled={isLoading}
+                              variant="destructive"
+                              size="sm"
+                              className="w-full"
+                            >
+                              ユーザーを削除
+                            </Button>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
                 </div>
-                <Button
-                  onClick={handleLogout}
-                  disabled={isLoading}
-                  variant="outline"
-                  size="sm"
-                  className="border-green-300 text-green-700 hover:bg-green-100 dark:border-green-700 dark:text-green-300 dark:hover:bg-green-900"
-                >
-                  {isLoading ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <>
-                      <LogOut className="h-4 w-4 mr-2" />
-                      ログアウト
-                    </>
-                  )}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+              </section>
 
-        {/* テストアカウント一覧 */}
-        <div className="space-y-8">
-          {/* カメラマンセクション */}
-          <section>
-            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-              <Camera className="h-6 w-6 mr-2 text-blue-600" />
-              📸 有名カメラマン（6名）
-            </h2>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {testAccounts
-                .filter(account => account.userType === 'photographer')
-                .map(account => {
-                  const Icon = account.icon;
-                  const isCurrentLoading = loadingAccount === account.id;
+              {/* モデルセクション */}
+              <section>
+                <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                  <User className="h-6 w-6 mr-2 text-pink-600" />
+                  🌟 有名モデル・女優（6名）
+                </h2>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {testAccounts
+                    .filter(account => account.userType === 'model')
+                    .map(account => {
+                      const Icon = account.icon;
+                      const isCurrentLoading = loadingAccount === account.id;
 
-                  return (
-                    <Card
-                      key={account.id}
-                      className="hover:shadow-lg transition-shadow border-blue-200 dark:border-blue-800"
-                    >
-                      <CardHeader className="text-center pb-3">
-                        <div className="mx-auto mb-3 p-2 rounded-full bg-blue-100 dark:bg-blue-900">
-                          <Icon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                        </div>
-                        <CardTitle className="text-lg">
-                          {account.name}
-                        </CardTitle>
-                        <CardDescription className="text-xs">
-                          {account.description}
-                        </CardDescription>
-                        <Badge
-                          variant="outline"
-                          className="border-blue-300 text-blue-700"
+                      return (
+                        <Card
+                          key={account.id}
+                          className="hover:shadow-lg transition-shadow border-pink-200 dark:border-pink-800"
                         >
-                          {account.userType}
-                        </Badge>
-                      </CardHeader>
-                      <CardContent className="space-y-3">
-                        <div className="text-xs text-muted-foreground space-y-1">
-                          <p>
-                            <strong>Email:</strong> {account.email}
-                          </p>
-                          <p>
-                            <strong>Password:</strong> {account.password}
-                          </p>
-                        </div>
-                        <Button
-                          onClick={() => handleQuickLogin(account)}
-                          disabled={isLoading}
-                          className="w-full"
-                          size="sm"
+                          <CardHeader className="text-center pb-3">
+                            <div className="mx-auto mb-3 p-2 rounded-full bg-pink-100 dark:bg-pink-900">
+                              <Icon className="h-6 w-6 text-pink-600 dark:text-pink-400" />
+                            </div>
+                            <CardTitle className="text-lg">
+                              {account.name}
+                            </CardTitle>
+                            <CardDescription className="text-xs">
+                              {account.description}
+                            </CardDescription>
+                            <Badge
+                              variant="outline"
+                              className="border-pink-300 text-pink-700"
+                            >
+                              {account.userType}
+                            </Badge>
+                          </CardHeader>
+                          <CardContent className="space-y-3">
+                            <div className="text-xs text-muted-foreground space-y-1">
+                              <p>
+                                <strong>Email:</strong> {account.email}
+                              </p>
+                              <p>
+                                <strong>Password:</strong> {account.password}
+                              </p>
+                            </div>
+                            <Button
+                              onClick={() => handleQuickLogin(account)}
+                              disabled={isLoading}
+                              className="w-full"
+                              size="sm"
+                            >
+                              {isCurrentLoading ? (
+                                <>
+                                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                  ログイン中...
+                                </>
+                              ) : (
+                                `${account.name}でログイン`
+                              )}
+                            </Button>
+                            <Button
+                              onClick={() => handleDeleteUser(account.email)}
+                              disabled={isLoading}
+                              variant="destructive"
+                              size="sm"
+                              className="w-full"
+                            >
+                              ユーザーを削除
+                            </Button>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                </div>
+              </section>
+
+              {/* 運営者セクション */}
+              <section>
+                <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                  <Users className="h-6 w-6 mr-2 text-purple-600" />
+                  🎬 撮影会運営者（7名）
+                </h2>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {testAccounts
+                    .filter(account => account.userType === 'organizer')
+                    .map(account => {
+                      const Icon = account.icon;
+                      const isCurrentLoading = loadingAccount === account.id;
+
+                      return (
+                        <Card
+                          key={account.id}
+                          className="hover:shadow-lg transition-shadow border-purple-200 dark:border-purple-800"
                         >
-                          {isCurrentLoading ? (
-                            <>
-                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                              ログイン中...
-                            </>
-                          ) : (
-                            `${account.name}でログイン`
-                          )}
-                        </Button>
-                        <Button
-                          onClick={() => handleDeleteUser(account.email)}
-                          disabled={isLoading}
-                          variant="destructive"
-                          size="sm"
-                          className="w-full"
-                        >
-                          ユーザーを削除
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
+                          <CardHeader className="text-center pb-3">
+                            <div className="mx-auto mb-3 p-2 rounded-full bg-purple-100 dark:bg-purple-900">
+                              <Icon className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                            </div>
+                            <CardTitle className="text-lg">
+                              {account.name}
+                            </CardTitle>
+                            <CardDescription className="text-xs">
+                              {account.description}
+                            </CardDescription>
+                            <Badge
+                              variant="outline"
+                              className="border-purple-300 text-purple-700"
+                            >
+                              {account.userType}
+                            </Badge>
+                          </CardHeader>
+                          <CardContent className="space-y-3">
+                            <div className="text-xs text-muted-foreground space-y-1">
+                              <p>
+                                <strong>Email:</strong> {account.email}
+                              </p>
+                              <p>
+                                <strong>Password:</strong> {account.password}
+                              </p>
+                            </div>
+                            <Button
+                              onClick={() => handleQuickLogin(account)}
+                              disabled={isLoading}
+                              className="w-full"
+                              size="sm"
+                            >
+                              {isCurrentLoading ? (
+                                <>
+                                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                  ログイン中...
+                                </>
+                              ) : (
+                                `${account.name}でログイン`
+                              )}
+                            </Button>
+                            <Button
+                              onClick={() => handleDeleteUser(account.email)}
+                              disabled={isLoading}
+                              variant="destructive"
+                              size="sm"
+                              className="w-full"
+                            >
+                              ユーザーを削除
+                            </Button>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                </div>
+              </section>
             </div>
-          </section>
 
-          {/* モデルセクション */}
-          <section>
-            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-              <User className="h-6 w-6 mr-2 text-pink-600" />
-              🌟 有名モデル・女優（6名）
-            </h2>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {testAccounts
-                .filter(account => account.userType === 'model')
-                .map(account => {
-                  const Icon = account.icon;
-                  const isCurrentLoading = loadingAccount === account.id;
-
-                  return (
-                    <Card
-                      key={account.id}
-                      className="hover:shadow-lg transition-shadow border-pink-200 dark:border-pink-800"
-                    >
-                      <CardHeader className="text-center pb-3">
-                        <div className="mx-auto mb-3 p-2 rounded-full bg-pink-100 dark:bg-pink-900">
-                          <Icon className="h-6 w-6 text-pink-600 dark:text-pink-400" />
-                        </div>
-                        <CardTitle className="text-lg">
-                          {account.name}
-                        </CardTitle>
-                        <CardDescription className="text-xs">
-                          {account.description}
-                        </CardDescription>
-                        <Badge
-                          variant="outline"
-                          className="border-pink-300 text-pink-700"
-                        >
-                          {account.userType}
-                        </Badge>
-                      </CardHeader>
-                      <CardContent className="space-y-3">
-                        <div className="text-xs text-muted-foreground space-y-1">
-                          <p>
-                            <strong>Email:</strong> {account.email}
-                          </p>
-                          <p>
-                            <strong>Password:</strong> {account.password}
-                          </p>
-                        </div>
-                        <Button
-                          onClick={() => handleQuickLogin(account)}
-                          disabled={isLoading}
-                          className="w-full"
-                          size="sm"
-                        >
-                          {isCurrentLoading ? (
-                            <>
-                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                              ログイン中...
-                            </>
-                          ) : (
-                            `${account.name}でログイン`
-                          )}
-                        </Button>
-                        <Button
-                          onClick={() => handleDeleteUser(account.email)}
-                          disabled={isLoading}
-                          variant="destructive"
-                          size="sm"
-                          className="w-full"
-                        >
-                          ユーザーを削除
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-            </div>
-          </section>
-
-          {/* 運営者セクション */}
-          <section>
-            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-              <Users className="h-6 w-6 mr-2 text-purple-600" />
-              🎬 撮影会運営者（6名）
-            </h2>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {testAccounts
-                .filter(account => account.userType === 'organizer')
-                .map(account => {
-                  const Icon = account.icon;
-                  const isCurrentLoading = loadingAccount === account.id;
-
-                  return (
-                    <Card
-                      key={account.id}
-                      className="hover:shadow-lg transition-shadow border-purple-200 dark:border-purple-800"
-                    >
-                      <CardHeader className="text-center pb-3">
-                        <div className="mx-auto mb-3 p-2 rounded-full bg-purple-100 dark:bg-purple-900">
-                          <Icon className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-                        </div>
-                        <CardTitle className="text-lg">
-                          {account.name}
-                        </CardTitle>
-                        <CardDescription className="text-xs">
-                          {account.description}
-                        </CardDescription>
-                        <Badge
-                          variant="outline"
-                          className="border-purple-300 text-purple-700"
-                        >
-                          {account.userType}
-                        </Badge>
-                      </CardHeader>
-                      <CardContent className="space-y-3">
-                        <div className="text-xs text-muted-foreground space-y-1">
-                          <p>
-                            <strong>Email:</strong> {account.email}
-                          </p>
-                          <p>
-                            <strong>Password:</strong> {account.password}
-                          </p>
-                        </div>
-                        <Button
-                          onClick={() => handleQuickLogin(account)}
-                          disabled={isLoading}
-                          className="w-full"
-                          size="sm"
-                        >
-                          {isCurrentLoading ? (
-                            <>
-                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                              ログイン中...
-                            </>
-                          ) : (
-                            `${account.name}でログイン`
-                          )}
-                        </Button>
-                        <Button
-                          onClick={() => handleDeleteUser(account.email)}
-                          disabled={isLoading}
-                          variant="destructive"
-                          size="sm"
-                          className="w-full"
-                        >
-                          ユーザーを削除
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-            </div>
-          </section>
+            {/* 使用方法 */}
+            <Card className="mt-8">
+              <CardHeader>
+                <CardTitle>使用方法</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 text-sm text-muted-foreground">
+                <p>
+                  1.
+                  上記のテストアカウントから任意のアカウントを選択してログインボタンをクリック
+                </p>
+                <p>2. アカウントが存在しない場合は自動的に作成されます</p>
+                <p>3. ログイン後、ダッシュボードページにリダイレクトされます</p>
+                <p>4. 開発・テスト作業が完了したらログアウトしてください</p>
+              </CardContent>
+            </Card>
+          </div>
         </div>
-
-        {/* 使用方法 */}
-        <Card className="mt-8">
-          <CardHeader>
-            <CardTitle>使用方法</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 text-sm text-muted-foreground">
-            <p>
-              1.
-              上記のテストアカウントから任意のアカウントを選択してログインボタンをクリック
-            </p>
-            <p>2. アカウントが存在しない場合は自動的に作成されます</p>
-            <p>3. ログイン後、ダッシュボードページにリダイレクトされます</p>
-            <p>4. 開発・テスト作業が完了したらログアウトしてください</p>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );

@@ -292,7 +292,7 @@ export function PhotoSessionGroupChat({
         </CardHeader>
         <CardContent>
           {!conversation ? (
-            <div className="text-center space-y-4">
+            <div className="text-center p-4">
               <div className="space-y-2">
                 <MessageCircle className="h-12 w-12 text-muted-foreground mx-auto" />
                 <h3 className="text-lg font-medium">{t('noGroupChatYet')}</h3>
@@ -310,7 +310,8 @@ export function PhotoSessionGroupChat({
                       participants.filter(p => p.status === 'confirmed')
                         .length === 0
                     }
-                    className="w-full max-w-sm"
+                    className="w-full max-w-sm mt-4"
+                    variant="navigation"
                   >
                     {creating ? (
                       <>
