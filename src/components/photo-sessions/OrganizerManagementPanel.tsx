@@ -1,8 +1,20 @@
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { logger } from '@/lib/utils/logger';
+import { useToast } from '@/hooks/use-toast';
 import {
   SettingsIcon,
   UsersIcon,
@@ -11,23 +23,52 @@ import {
   CalendarIcon,
   CopyIcon,
   Clock,
+  Shuffle,
 } from 'lucide-react';
 import { PhotoSessionWithOrganizer } from '@/types/database';
 import { PhotoSessionSlot } from '@/types/photo-session';
 import { useRouter } from 'next/navigation';
 import { formatTime } from '@/lib/utils/date';
+import { LotterySettingsForm } from '@/components/organizer/LotterySettingsForm';
+import { LotteryStatistics } from '@/components/organizer/LotteryStatistics';
+import { LotteryWinnersList } from '@/components/organizer/LotteryWinnersList';
+import { executeWeightedLottery } from '@/app/actions/multi-slot-lottery';
+import { getLotterySession } from '@/app/actions/photo-session-lottery';
+import type { LotterySessionWithSettings } from '@/types/multi-slot-lottery';
 
 interface OrganizerManagementPanelProps {
   session: PhotoSessionWithOrganizer;
   slots: PhotoSessionSlot[];
+  lotteryEntryCount?: {
+    total_entries: number;
+    total_groups: number;
+    entries_by_slot?: Array<{
+      slot_id: string;
+      slot_number: number;
+      entry_count: number;
+    }>;
+  } | null;
+  lotterySession?: {
+    max_entries: number | null;
+  } | null;
 }
 
 export function OrganizerManagementPanel({
   session,
   slots,
+  lotteryEntryCount,
+  lotterySession: lotterySessionProp,
 }: OrganizerManagementPanelProps) {
   const router = useRouter();
+  const { toast } = useToast();
   const hasSlots = slots && slots.length > 0;
+  const [lotterySession, setLotterySession] =
+    useState<LotterySessionWithSettings | null>(null);
+  const [isLoadingLottery, setIsLoadingLottery] = useState(false);
+  const [isExecutingLottery, setIsExecutingLottery] = useState(false);
+  const [showLotterySettings, setShowLotterySettings] = useState(false);
+  const [showLotteryStatistics, setShowLotteryStatistics] = useState(false);
+  const [showExecuteConfirm, setShowExecuteConfirm] = useState(false);
 
   // 撮影会の日時状態を判定
   const endDate = new Date(session.end_time);
@@ -73,6 +114,78 @@ export function OrganizerManagementPanel({
     if (rate >= 70) return 'bg-warning';
     if (rate >= 50) return 'bg-info';
     return 'bg-gray-400';
+  };
+
+  // 抽選セッション情報を取得
+  useEffect(() => {
+    const loadLotterySession = async () => {
+      if (session.booking_type !== 'lottery') {
+        return;
+      }
+
+      setIsLoadingLottery(true);
+      try {
+        const result = await getLotterySession(session.id);
+        if (result.data) {
+          setLotterySession(result.data as LotterySessionWithSettings);
+        }
+      } catch (error) {
+        logger.error('抽選セッション取得エラー:', error);
+      } finally {
+        setIsLoadingLottery(false);
+      }
+    };
+
+    loadLotterySession();
+  }, [session.id, session.booking_type]);
+
+  // 抽選実行確認ダイアログを表示
+  const handleExecuteLotteryClick = () => {
+    setShowExecuteConfirm(true);
+  };
+
+  // 抽選実行
+  const handleExecuteLottery = async () => {
+    if (!lotterySession || isExecutingLottery) return;
+
+    setShowExecuteConfirm(false);
+    setIsExecutingLottery(true);
+
+    try {
+      const result = await executeWeightedLottery(lotterySession.id);
+      if (result.success) {
+        // 即座に抽選セッションの状態を更新（リロード前にボタンを無効化）
+        setLotterySession(prev => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            status: 'completed',
+          };
+        });
+
+        toast({
+          title: '抽選完了',
+          description: `${result.total_winners}名が当選しました`,
+        });
+        // ページをリロードして最新状態を表示
+        router.refresh();
+      } else {
+        toast({
+          title: 'エラー',
+          description: result.message || '抽選の実行に失敗しました',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      logger.error('抽選実行エラー:', error);
+      toast({
+        title: 'エラー',
+        description: '抽選の実行中にエラーが発生しました',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsExecutingLottery(false);
+    }
   };
 
   return (
@@ -193,6 +306,104 @@ export function OrganizerManagementPanel({
         </CardContent>
       </Card>
 
+      {/* 抽選管理機能（抽選方式の場合のみ） */}
+      {session.booking_type === 'lottery' && hasSlots && slots.length > 1 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Shuffle className="h-5 w-5" />
+              複数スロット抽選管理
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {isLoadingLottery ? (
+              <div className="text-center py-4 text-muted-foreground">
+                読み込み中...
+              </div>
+            ) : lotterySession ? (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Button
+                    variant="outline"
+                    className="h-auto p-4 flex-col gap-2"
+                    onClick={() => setShowLotterySettings(!showLotterySettings)}
+                  >
+                    <SettingsIcon className="h-5 w-5" />
+                    <span className="text-sm">抽選設定</span>
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    className="h-auto p-4 flex-col gap-2"
+                    onClick={() =>
+                      setShowLotteryStatistics(!showLotteryStatistics)
+                    }
+                  >
+                    <BarChart3Icon className="h-5 w-5" />
+                    <span className="text-sm">集計・統計</span>
+                  </Button>
+
+                  {lotterySession.status === 'accepting' && (
+                    <Button
+                      variant="default"
+                      className="h-auto p-4 flex-col gap-2"
+                      onClick={handleExecuteLotteryClick}
+                      disabled={isExecutingLottery}
+                    >
+                      <Shuffle className="h-5 w-5" />
+                      <span className="text-sm">
+                        {isExecutingLottery ? '抽選実行中...' : '抽選実行'}
+                      </span>
+                    </Button>
+                  )}
+                </div>
+
+                {showLotterySettings && (
+                  <div className="mt-4">
+                    <LotterySettingsForm
+                      lotterySessionId={lotterySession.id}
+                      lotteryStatus={lotterySession.status}
+                      onSave={() => {
+                        setShowLotterySettings(false);
+                        // 抽選セッション情報を再取得
+                        getLotterySession(session.id).then(result => {
+                          if (result.data) {
+                            setLotterySession(
+                              result.data as LotterySessionWithSettings
+                            );
+                          }
+                        });
+                      }}
+                    />
+                  </div>
+                )}
+
+                {showLotteryStatistics && (
+                  <div className="mt-4">
+                    <LotteryStatistics lotterySessionId={lotterySession.id} />
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="text-center py-4 text-muted-foreground">
+                抽選セッションが見つかりません
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* 当選者リスト（抽選完了後） */}
+      {session.booking_type === 'lottery' &&
+        hasSlots &&
+        slots.length > 1 &&
+        lotterySession &&
+        lotterySession.status === 'completed' && (
+          <div className="mt-6">
+            <LotteryWinnersList lotterySessionId={lotterySession.id} />
+          </div>
+        )}
+
       {/* タイムライン型レイアウト（スロット制の場合） */}
       {hasSlots && (
         <Card>
@@ -271,6 +482,55 @@ export function OrganizerManagementPanel({
                             </Badge>
                           </div>
 
+                          {/* 抽選エントリー数表示（抽選方式の場合） */}
+                          {session.booking_type === 'lottery' &&
+                            lotteryEntryCount?.entries_by_slot && (
+                              <div className="mb-3 p-3 bg-muted/50 rounded-lg">
+                                <div className="flex items-center gap-2">
+                                  <UsersIcon className="h-4 w-4 text-muted-foreground" />
+                                  <span className="text-sm font-medium">
+                                    エントリー数
+                                  </span>
+                                </div>
+                                <div className="mt-1">
+                                  {(() => {
+                                    const slotEntry =
+                                      lotteryEntryCount.entries_by_slot?.find(
+                                        e => e.slot_id === slot.id
+                                      );
+
+                                    if (slotEntry) {
+                                      return (
+                                        <div className="flex items-center gap-2 text-sm">
+                                          <span>
+                                            エントリー数:{' '}
+                                            {slotEntry.entry_count} 件
+                                            {lotterySessionProp?.max_entries &&
+                                              ` / ${lotterySessionProp.max_entries} 件上限`}
+                                          </span>
+                                          {lotterySessionProp?.max_entries &&
+                                            slotEntry.entry_count >=
+                                              lotterySessionProp.max_entries && (
+                                              <Badge
+                                                variant="destructive"
+                                                className="text-xs"
+                                              >
+                                                上限到達
+                                              </Badge>
+                                            )}
+                                        </div>
+                                      );
+                                    }
+                                    return (
+                                      <div className="text-sm text-muted-foreground">
+                                        エントリー数: 0 件
+                                      </div>
+                                    );
+                                  })()}
+                                </div>
+                              </div>
+                            )}
+
                           <div
                             className={`grid ${showProgress ? 'grid-cols-2 md:grid-cols-4' : 'grid-cols-1 md:grid-cols-3'} gap-4 mt-3`}
                           >
@@ -340,6 +600,33 @@ export function OrganizerManagementPanel({
           </CardContent>
         </Card>
       )}
+
+      {/* 抽選実行確認ダイアログ */}
+      <AlertDialog
+        open={showExecuteConfirm}
+        onOpenChange={setShowExecuteConfirm}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>抽選を実行しますか？</AlertDialogTitle>
+            <AlertDialogDescription>
+              この操作は取り消せません。抽選を実行すると、当選者が確定し、自動的に予約が作成されます。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>キャンセル</AlertDialogCancel>
+            <AlertDialogAction asChild>
+              <Button
+                variant="cta"
+                onClick={handleExecuteLottery}
+                disabled={isExecutingLottery}
+              >
+                {isExecutingLottery ? '抽選実行中...' : '抽選実行'}
+              </Button>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
