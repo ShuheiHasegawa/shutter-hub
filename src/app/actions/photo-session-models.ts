@@ -53,7 +53,7 @@ export async function getPhotoSessionModelsAction(
 
     // SelectedModel形式に変換
     const models: SelectedModel[] = sessionModels.map(sm => {
-      const profile = sm.profiles as Profile | null;
+      const profile = sm.profiles as unknown as Profile | null;
       return {
         model_id: sm.model_id,
         display_name: profile?.display_name || '名前未設定',

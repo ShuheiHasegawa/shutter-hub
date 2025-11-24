@@ -87,7 +87,7 @@ export function LotteryEntryConfirmation({
           {/* エントリー概要 */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">応募スロット数</span>
+              <span className="text-sm font-medium">応募枠数</span>
               <Badge variant="secondary">{group.total_slots_applied}枠</Badge>
             </div>
             <div className="flex items-center justify-between">
@@ -131,7 +131,7 @@ export function LotteryEntryConfirmation({
 
           {/* スロット詳細 */}
           <div className="space-y-4">
-            <h3 className="text-base font-semibold">応募スロット詳細</h3>
+            <h3 className="text-base font-semibold">応募枠詳細</h3>
             <div className="space-y-3">
               {slot_entries.map(entry => (
                 <Card key={entry.id} className="border-l-4 border-l-primary">
@@ -142,7 +142,7 @@ export function LotteryEntryConfirmation({
                         <div className="flex items-center gap-2">
                           <Calendar className="h-4 w-4 text-muted-foreground" />
                           <span className="font-medium">
-                            スロット{entry.slot?.slot_number || 'N/A'}
+                            枠{entry.slot?.slot_number || 'N/A'}
                           </span>
                         </div>
                         <Badge
@@ -268,13 +268,11 @@ export function LotteryEntryConfirmation({
                   <li>抽選結果は抽選日時に発表されます</li>
                   {group.cancellation_policy === 'all_or_nothing' && (
                     <li>
-                      全スロットが当選しない場合、全てのエントリーがキャンセルされます
+                      全枠が当選しない場合、全てのエントリーがキャンセルされます
                     </li>
                   )}
                   {group.cancellation_policy === 'partial_ok' && (
-                    <li>
-                      一部のスロットが落選しても、当選したスロットには参加できます
-                    </li>
+                    <li>一部の枠が落選しても、当選した枠には参加できます</li>
                   )}
                 </ul>
               </div>

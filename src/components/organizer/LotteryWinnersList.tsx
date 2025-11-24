@@ -15,7 +15,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getLotteryWinners } from '@/app/actions/multi-slot-lottery';
 import { logger } from '@/lib/utils/logger';
-import { Trophy, Calendar, Clock } from 'lucide-react';
+import { Trophy, Clock } from 'lucide-react';
 
 interface LotteryWinnersListProps {
   lotterySessionId: string;
@@ -136,7 +136,7 @@ export function LotteryWinnersList({
                 value={slot.slot_id}
                 className="flex items-center gap-2"
               >
-                <Calendar className="h-4 w-4" />枠{slot.slot_number}
+                <span>枠{slot.slot_number}</span>
                 <Badge variant="secondary" className="ml-1 text-xs">
                   {slot.winners.length}
                 </Badge>

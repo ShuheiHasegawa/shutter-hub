@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -43,24 +43,48 @@ interface PhotoSessionSlotFormProps {
 
 export default function PhotoSessionSlotForm({
   photoSessionId,
+  slots,
   onSlotsChange,
   baseDate,
   allowMultipleBookings = false,
 }: PhotoSessionSlotFormProps) {
   const t = useTranslations('photoSessionSlotForm');
 
-  const [slotForms, setSlotForms] = useState<SlotFormData[]>([
-    {
-      slot_number: 1,
-      start_time: '10:00',
-      shooting_duration_minutes: 50,
-      break_duration_minutes: 10,
-      price_per_person: 0,
-      max_participants: 1,
-      discount_type: 'none',
-      discount_value: 0,
+  // スロット情報をSlotFormData形式に変換する関数
+  const convertSlotsToForms = useCallback(
+    (slotsToConvert: PhotoSessionSlot[]): SlotFormData[] => {
+      return slotsToConvert.map(slot => {
+        // start_timeから時刻部分を抽出（HH:mm形式）
+        const startTimeStr = slot.start_time.includes('T')
+          ? slot.start_time.split('T')[1]?.slice(0, 5) || '10:00'
+          : slot.start_time.slice(0, 5) || '10:00';
+
+        // end_timeからstart_timeを引いて撮影時間を計算
+        const startTime = new Date(slot.start_time);
+        const endTime = new Date(slot.end_time);
+        const shootingDurationMinutes = Math.round(
+          (endTime.getTime() - startTime.getTime()) / (1000 * 60)
+        );
+
+        return {
+          slot_number: slot.slot_number,
+          start_time: startTimeStr,
+          shooting_duration_minutes: shootingDurationMinutes,
+          break_duration_minutes: slot.break_duration_minutes || 10,
+          price_per_person: slot.price_per_person,
+          max_participants: slot.max_participants,
+          costume_image_url: slot.costume_image_url,
+          costume_image_hash: slot.costume_image_hash,
+          costume_description: slot.costume_description,
+          discount_type: slot.discount_type || 'none',
+          discount_value: slot.discount_value || 0,
+          discount_condition: slot.discount_condition,
+          notes: slot.notes,
+        };
+      });
     },
-  ]);
+    []
+  );
 
   // 終了時刻を計算
   const calculateEndTime = (
@@ -75,6 +99,26 @@ export default function PhotoSessionSlotForm({
       return '';
     }
   };
+
+  const [slotForms, setSlotForms] = useState<SlotFormData[]>(() => {
+    // 編集時にスロット情報が渡されている場合はそれを使用
+    if (slots && slots.length > 0) {
+      return convertSlotsToForms(slots);
+    }
+    // 新規作成時はデフォルト値を返す
+    return [
+      {
+        slot_number: 1,
+        start_time: '10:00',
+        shooting_duration_minutes: 50,
+        break_duration_minutes: 10,
+        price_per_person: 0,
+        max_participants: 1,
+        discount_type: 'none',
+        discount_value: 0,
+      },
+    ];
+  });
 
   // 次の撮影枠の開始時刻を計算
   const calculateNextStartTime = (
@@ -128,8 +172,20 @@ export default function PhotoSessionSlotForm({
 
       onSlotsChange(convertedSlots);
     },
-    [baseDate, onSlotsChange, photoSessionId]
+    [baseDate, onSlotsChange, photoSessionId, calculateEndTime]
   );
+
+  // 編集時にスロット情報が変更された場合に復元（初回のみ）
+  const hasRestoredSlots = useRef(false);
+  useEffect(() => {
+    if (slots && slots.length > 0 && !hasRestoredSlots.current) {
+      // 初回のみ復元（無限ループを防ぐ）
+      const convertedForms = convertSlotsToForms(slots);
+      setSlotForms(convertedForms);
+      hasRestoredSlots.current = true;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slots]);
 
   const addSlot = () => {
     const newSlotNumber = slotForms.length + 1;
@@ -226,12 +282,13 @@ export default function PhotoSessionSlotForm({
     toast.success(t('copySuccess'));
   };
 
-  // 初期化時と撮影枠変更時に親に通知
+  // 初期化時と撮影枠変更時に親に通知（初回復元時を除く）
   useEffect(() => {
-    if (slotForms.length > 0) {
+    if (slotForms.length > 0 && hasRestoredSlots.current) {
       updateParentSlots(slotForms);
     }
-  }, [slotForms, updateParentSlots]); // slotFormsとupdateParentSlotsの変更を監視
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slotForms]); // updateParentSlotsを依存配列から削除（無限ループ防止）
 
   // 複数予約許可設定による将来の機能拡張用
   // allowMultipleBookingsがtrueの場合、将来的に撮影枠レベルでの割引設定UIを表示する予定
@@ -401,7 +458,7 @@ export default function PhotoSessionSlotForm({
                   <Input
                     type="number"
                     min="1"
-                    max="20"
+                    max="200"
                     step="1"
                     value={slot.max_participants}
                     onChange={e =>

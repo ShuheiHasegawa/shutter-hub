@@ -110,6 +110,7 @@ export async function createBulkPhotoSessionsAction(
         p_booking_settings: data.booking_settings,
         p_is_published: data.is_published,
         p_image_urls: data.image_urls,
+        p_studio_id: data.studio_id || null,
         p_selected_models: data.selected_models.map(model => ({
           model_id: model.model_id,
           fee_amount: model.fee_amount,
@@ -155,6 +156,56 @@ export async function createBulkPhotoSessionsAction(
 
         if (slotsError) {
           logger.error(`セッション${sessionId}の撮影枠作成エラー:`, slotsError);
+        }
+      }
+    }
+
+    // photo_session_studios に関連付けを作成（スタジオが選択されている場合）
+    if (data.studio_id && createdSessions.length > 0) {
+      const studioLinks = createdSessions.map(sessionId => ({
+        photo_session_id: sessionId,
+        studio_id: data.studio_id!,
+        usage_start_time: data.start_time,
+        usage_end_time: data.end_time,
+      }));
+
+      const { error: studioLinksError } = await supabase
+        .from('photo_session_studios')
+        .insert(studioLinks);
+
+      if (studioLinksError) {
+        logger.error(
+          'photo_session_studios 一括関連付けエラー:',
+          studioLinksError
+        );
+        // エラーが発生しても撮影会とスロットは残す
+      }
+    }
+
+    // モデル情報を保存（モデルが選択されている場合）
+    if (
+      data.selected_models &&
+      data.selected_models.length > 0 &&
+      createdSessions.length > 0
+    ) {
+      for (const sessionId of createdSessions) {
+        const modelsToInsert = data.selected_models.map((model, index) => ({
+          photo_session_id: sessionId,
+          model_id: model.model_id,
+          fee_amount: model.fee_amount,
+          display_order: index,
+        }));
+
+        const { error: modelsError } = await supabase
+          .from('photo_session_models')
+          .insert(modelsToInsert);
+
+        if (modelsError) {
+          logger.error(
+            `セッション${sessionId}のモデル情報保存エラー:`,
+            modelsError
+          );
+          // エラーが発生しても撮影会とスロットは残す
         }
       }
     }

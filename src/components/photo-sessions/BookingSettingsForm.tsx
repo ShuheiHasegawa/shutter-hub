@@ -1,6 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { useCallback, memo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -17,7 +18,7 @@ interface BookingSettingsFormProps {
   disabled?: boolean;
 }
 
-export function BookingSettingsForm({
+export const BookingSettingsForm = memo(function BookingSettingsForm({
   bookingType,
   settings,
   onChange,
@@ -25,12 +26,19 @@ export function BookingSettingsForm({
 }: BookingSettingsFormProps) {
   const t = useTranslations('photoSessions');
 
-  const updateSetting = (key: string, value: unknown) => {
-    onChange({
-      ...settings,
-      [key]: value,
-    });
-  };
+  const updateSetting = useCallback(
+    (key: keyof BookingSettings, value: unknown) => {
+      // 同じ値の場合は更新しない（無限ループ防止）
+      if (settings[key] === value) {
+        return;
+      }
+      onChange({
+        ...settings,
+        [key]: value,
+      });
+    },
+    [settings, onChange]
+  );
 
   const renderFirstComeSettings = () => (
     <div className="space-y-4">
@@ -393,4 +401,4 @@ export function BookingSettingsForm({
       </CardContent>
     </Card>
   );
-}
+});
