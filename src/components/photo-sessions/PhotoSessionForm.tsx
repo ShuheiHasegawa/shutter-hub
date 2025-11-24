@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { logger } from '@/lib/utils/logger';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -49,6 +49,9 @@ import { checkCanEnableCashOnSite } from '@/app/actions/photo-session-slots';
 import { CreditCard, Wallet } from 'lucide-react';
 interface PhotoSessionFormProps {
   initialData?: PhotoSessionWithOrganizer;
+  initialModels?: SelectedModel[];
+  initialSlots?: PhotoSessionSlot[];
+  initialStudioId?: string | null;
   isEditing?: boolean;
   isDuplicating?: boolean;
   onSuccess?: () => void;
@@ -56,6 +59,9 @@ interface PhotoSessionFormProps {
 
 export function PhotoSessionForm({
   initialData,
+  initialModels = [],
+  initialSlots = [],
+  initialStudioId = null,
   isEditing = false,
   isDuplicating = false,
   onSuccess,
@@ -93,14 +99,18 @@ export function PhotoSessionForm({
     image_urls: isDuplicating ? [] : initialData?.image_urls || [],
   });
 
-  // スタジオ選択状態（編集時は初期値から取得する必要があるが、現時点ではphoto_sessionsテーブルにstudio_idがないため空）
-  const [selectedStudioId, setSelectedStudioId] = useState<string | null>(null);
+  // スタジオ選択状態（編集時は初期値から取得）
+  const [selectedStudioId, setSelectedStudioId] = useState<string | null>(
+    initialStudioId || null
+  );
 
   const [bookingSettings, setBookingSettings] = useState<BookingSettings>({});
   const [photoSessionSlots, setPhotoSessionSlots] = useState<
     PhotoSessionSlot[]
-  >([]);
-  const [selectedModels, setSelectedModels] = useState<SelectedModel[]>([]);
+  >(initialSlots || []);
+  const [selectedModels, setSelectedModels] = useState<SelectedModel[]>(
+    initialModels || []
+  );
 
   // サブスクリプション状態を取得（将来の拡張用）
   const {
@@ -199,17 +209,42 @@ export function PhotoSessionForm({
     }
   };
 
-  const handleSwitchChange = (name: string, checked: boolean) => {
-    setFormData(prev => ({ ...prev, [name]: checked }));
-  };
+  const handleSwitchChange = useCallback((name: string, checked: boolean) => {
+    setFormData(prev => {
+      // 同じ値の場合は更新しない（無限ループ防止）
+      if (prev[name as keyof typeof prev] === checked) {
+        return prev;
+      }
+      return { ...prev, [name]: checked };
+    });
+  }, []);
 
-  const handleImageUrlsChange = (urls: string[]) => {
+  const handleImageUrlsChange = useCallback((urls: string[]) => {
     setFormData(prev => ({ ...prev, image_urls: urls }));
-  };
+  }, []);
 
-  const handleBookingTypeChange = (bookingType: BookingType) => {
-    setFormData(prev => ({ ...prev, booking_type: bookingType }));
-  };
+  const handleBookingTypeChange = useCallback((bookingType: BookingType) => {
+    setFormData(prev => {
+      // 同じ値の場合は更新しない（無限ループ防止）
+      if (prev.booking_type === bookingType) {
+        return prev;
+      }
+      return { ...prev, booking_type: bookingType };
+    });
+  }, []);
+
+  const handleBookingSettingsChange = useCallback(
+    (newSettings: BookingSettings) => {
+      setBookingSettings(prev => {
+        // 同じ値の場合は更新しない（無限ループ防止）
+        if (JSON.stringify(prev) === JSON.stringify(newSettings)) {
+          return prev;
+        }
+        return newSettings;
+      });
+    },
+    []
+  );
 
   // 撮影枠から日時を自動計算
   const calculateDateTimeFromSlots = (slots: PhotoSessionSlot[]) => {
@@ -238,6 +273,29 @@ export function PhotoSessionForm({
       end_time: endTime,
     };
   };
+
+  // 編集時にモデル情報を復元（初回のみ）
+  const hasRestoredModels = useRef(false);
+  useEffect(() => {
+    if (
+      isEditing &&
+      initialModels &&
+      initialModels.length > 0 &&
+      !hasRestoredModels.current
+    ) {
+      setSelectedModels(initialModels);
+      hasRestoredModels.current = true;
+    }
+  }, [isEditing, initialModels]);
+
+  // 編集時にスタジオ情報を復元（初回のみ）
+  const hasRestoredStudio = useRef(false);
+  useEffect(() => {
+    if (isEditing && initialStudioId && !hasRestoredStudio.current) {
+      setSelectedStudioId(initialStudioId);
+      hasRestoredStudio.current = true;
+    }
+  }, [isEditing, initialStudioId]);
 
   // 撮影枠変更時に自動で日時を更新
   useEffect(() => {
@@ -361,6 +419,7 @@ export function PhotoSessionForm({
           booking_settings: bookingSettings as Record<string, unknown>,
           is_published: formData.is_published,
           image_urls: formData.image_urls,
+          studio_id: selectedStudioId || undefined,
           selected_models: selectedModels,
           slots: photoSessionSlots.map(slot => ({
             slot_number: slot.slot_number,
@@ -418,6 +477,8 @@ export function PhotoSessionForm({
         booking_settings: bookingSettings as Record<string, unknown>,
         is_published: formData.is_published,
         image_urls: formData.image_urls,
+        studio_id: selectedStudioId || undefined,
+        selected_models: isOrganizer ? selectedModels : undefined,
         slots: photoSessionSlots.map(slot => ({
           slot_number: slot.slot_number,
           start_time: slot.start_time,
@@ -749,7 +810,7 @@ export function PhotoSessionForm({
 
             {/* 予約方式選択 */}
             <BookingTypeSelector
-              value={formData.booking_type}
+              value={formData.booking_type || 'first_come'}
               onChange={handleBookingTypeChange}
               disabled={isLoading}
             />
@@ -758,7 +819,7 @@ export function PhotoSessionForm({
             <BookingSettingsForm
               bookingType={formData.booking_type}
               settings={bookingSettings}
-              onChange={setBookingSettings}
+              onChange={handleBookingSettingsChange}
               disabled={isLoading}
             />
 
@@ -843,6 +904,7 @@ export function PhotoSessionForm({
 
               <PhotoSessionSlotForm
                 photoSessionId={initialData?.id || 'temp'}
+                slots={isEditing ? photoSessionSlots : undefined}
                 onSlotsChange={setPhotoSessionSlots}
                 baseDate={
                   formData.start_time
@@ -932,7 +994,10 @@ export function PhotoSessionForm({
                 onValueChange={(value: 'prepaid' | 'cash_on_site') => {
                   // 環境変数で現地払いが無効化されている場合は、強制的にprepaidに戻す
                   if (value === 'cash_on_site' && !ENABLE_CASH_ON_SITE) {
-                    setFormData(prev => ({ ...prev, payment_timing: 'prepaid' }));
+                    setFormData(prev => ({
+                      ...prev,
+                      payment_timing: 'prepaid',
+                    }));
                     toast({
                       title: '現地払い機能は現在無効化されています',
                       variant: 'default',

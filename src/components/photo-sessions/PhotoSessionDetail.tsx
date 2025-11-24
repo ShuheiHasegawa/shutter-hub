@@ -50,6 +50,8 @@ import {
   getLotteryStatistics,
 } from '@/app/actions/multi-slot-lottery';
 import { getLotterySession } from '@/app/actions/photo-session-lottery';
+import { getPhotoSessionStudioAction } from '@/app/actions/photo-session-studio';
+import Link from 'next/link';
 
 interface PhotoSessionDetailProps {
   session: PhotoSessionWithOrganizer;
@@ -109,6 +111,10 @@ export function PhotoSessionDetail({
   } | null>(null);
   const [lotterySession, setLotterySession] = useState<{
     max_entries: number | null;
+  } | null>(null);
+  const [studio, setStudio] = useState<{
+    id: string;
+    name: string;
   } | null>(null);
 
   // 予約状態を管理するhook
@@ -360,6 +366,25 @@ export function PhotoSessionDetail({
     loadLotteryEntryCount();
   }, [session.id, session.booking_type, user?.id, isOrganizer]);
 
+  // スタジオ情報を取得
+  useEffect(() => {
+    const loadStudio = async () => {
+      try {
+        const result = await getPhotoSessionStudioAction(session.id);
+        if (result.success && result.studio) {
+          setStudio(result.studio);
+        } else {
+          setStudio(null);
+        }
+      } catch (error) {
+        logger.error('スタジオ情報取得エラー:', error);
+        setStudio(null);
+      }
+    };
+
+    loadStudio();
+  }, [session.id]);
+
   // 既存レビューのチェック
   useEffect(() => {
     const checkExistingReview = async () => {
@@ -485,7 +510,7 @@ export function PhotoSessionDetail({
   }
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+    <div className="w-full max-w-6xl mx-auto space-y-6">
       {/* 開催者ヘッダー（主催者の場合、最上部に表示） */}
       {isOrganizer && (
         <Card className="border-blue-200 bg-blue-50/50">
@@ -592,7 +617,16 @@ export function PhotoSessionDetail({
                   </div>
                   <div className="flex items-center gap-3">
                     <MapPinIcon className="h-5 w-5 text-muted-foreground" />
-                    <span>{session.location}</span>
+                    {studio ? (
+                      <Link
+                        href={`/${locale}/studios/${studio.id}`}
+                        className="text-primary hover:underline"
+                      >
+                        {studio.name}
+                      </Link>
+                    ) : (
+                      <span>{session.location}</span>
+                    )}
                   </div>
                   <div className="flex items-center gap-3">
                     <UsersIcon className="h-5 w-5 text-muted-foreground" />
@@ -756,7 +790,16 @@ export function PhotoSessionDetail({
                   </div>
                   <div className="flex items-center gap-3">
                     <MapPinIcon className="h-5 w-5 text-muted-foreground" />
-                    <span>{session.location}</span>
+                    {studio ? (
+                      <Link
+                        href={`/${locale}/studios/${studio.id}`}
+                        className="text-primary hover:underline"
+                      >
+                        {studio.name}
+                      </Link>
+                    ) : (
+                      <span>{session.location}</span>
+                    )}
                   </div>
                   <div className="flex items-center gap-3">
                     <UsersIcon className="h-5 w-5 text-muted-foreground" />
@@ -873,16 +916,7 @@ export function PhotoSessionDetail({
                   >
                     {/* ヘッダー部分 */}
                     <div className="flex items-center justify-between mb-4">
-                      <Badge
-                        variant="outline"
-                        className={`font-medium ${
-                          isSlotFull
-                            ? 'border-error/30 text-error bg-error/10 dark:border-error/70 dark:text-error dark:bg-error/30'
-                            : participationRate >= 70
-                              ? 'border-warning/30 text-warning bg-warning/10 dark:border-warning/70 dark:text-warning dark:bg-warning/30'
-                              : 'border-green-300 text-green-700 bg-green-100 dark:border-green-700 dark:text-green-300 dark:bg-green-900/30'
-                        }`}
-                      >
+                      <Badge variant="outline" className="font-medium">
                         枠 {index + 1}
                       </Badge>
                       <Badge

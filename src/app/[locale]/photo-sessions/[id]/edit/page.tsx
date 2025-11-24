@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { logger } from '@/lib/utils/logger';
 import { useAuth } from '@/hooks/useAuth';
 import { useParams, useRouter } from 'next/navigation';
@@ -13,6 +13,9 @@ import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Edit } from 'lucide-react';
 import type { PhotoSessionWithOrganizer } from '@/types/database';
+import { getPhotoSessionModelsAction } from '@/app/actions/photo-session-models';
+import { getPhotoSessionStudioAction } from '@/app/actions/photo-session-studio';
+import type { SelectedModel, PhotoSessionSlot } from '@/types/photo-session';
 
 export default function EditPhotoSessionPage() {
   const { user, loading: authLoading } = useAuth();
@@ -22,9 +25,12 @@ export default function EditPhotoSessionPage() {
   const [session, setSession] = useState<PhotoSessionWithOrganizer | null>(
     null
   );
+  const [sessionModels, setSessionModels] = useState<SelectedModel[]>([]);
+  const [sessionSlots, setSessionSlots] = useState<PhotoSessionSlot[]>([]);
+  const [sessionStudioId, setSessionStudioId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isLoadingSession, setIsLoadingSession] = useState(false);
+  const isLoadingRef = useRef(false);
   const t = useTranslations('photoSessions.form');
   const tCommon = useTranslations('common');
   useEffect(() => {
@@ -37,7 +43,7 @@ export default function EditPhotoSessionPage() {
   useEffect(() => {
     const loadSessionData = async () => {
       // 既に実行中の場合は重複実行を防ぐ
-      if (isLoadingSession || !user || !sessionId) {
+      if (isLoadingRef.current || !user || !sessionId || authLoading) {
         return;
       }
 
@@ -47,8 +53,8 @@ export default function EditPhotoSessionPage() {
       });
 
       try {
+        isLoadingRef.current = true;
         setLoading(true);
-        setIsLoadingSession(true);
         const supabase = createClient();
         const { data, error } = await supabase
           .from('photo_sessions')
@@ -94,17 +100,56 @@ export default function EditPhotoSessionPage() {
         logger.debug('[EditPhotoSessionPage] セッション設定完了');
         setSession(data as PhotoSessionWithOrganizer);
         setError(null);
+
+        // スロット情報を取得
+        const { data: slots, error: slotsError } = await supabase
+          .from('photo_session_slots')
+          .select('*')
+          .eq('photo_session_id', sessionId)
+          .order('slot_number', { ascending: true });
+
+        if (slotsError) {
+          logger.error(
+            '[EditPhotoSessionPage] スロット取得エラー:',
+            slotsError
+          );
+        } else if (slots) {
+          setSessionSlots(slots as PhotoSessionSlot[]);
+        }
+
+        // スタジオ情報を取得
+        const studioResult = await getPhotoSessionStudioAction(sessionId);
+        if (studioResult.success && studioResult.studio) {
+          setSessionStudioId(studioResult.studio.id);
+        }
+
+        // 運営アカウントの場合、モデル情報を取得
+        const { data: userProfile } = await supabase
+          .from('profiles')
+          .select('user_type')
+          .eq('id', user.id)
+          .single();
+
+        if (userProfile?.user_type === 'organizer') {
+          const modelsResult = await getPhotoSessionModelsAction(sessionId);
+          if (modelsResult.success && modelsResult.models) {
+            setSessionModels(modelsResult.models);
+          } else {
+            // モデル情報が取得できない場合、空配列を設定
+            setSessionModels([]);
+          }
+        }
       } catch (error) {
         logger.error('[EditPhotoSessionPage] 予期しないエラー:', error);
         setError('撮影会の読み込み中にエラーが発生しました');
       } finally {
         setLoading(false);
-        setIsLoadingSession(false);
+        isLoadingRef.current = false;
       }
     };
 
     loadSessionData();
-  }, [user?.id, sessionId, authLoading, isLoadingSession, user]);
+  }, [user?.id, sessionId, authLoading]);
 
   if (authLoading || loading) {
     return (
@@ -161,6 +206,9 @@ export default function EditPhotoSessionPage() {
 
         <PhotoSessionForm
           initialData={session}
+          initialModels={sessionModels}
+          initialSlots={sessionSlots}
+          initialStudioId={sessionStudioId}
           isEditing={true}
           onSuccess={() => router.push(`/ja/photo-sessions/${sessionId}`)}
         />

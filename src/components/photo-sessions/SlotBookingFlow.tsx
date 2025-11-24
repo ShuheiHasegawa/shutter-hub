@@ -566,7 +566,7 @@ export function SlotBookingFlow({
       }
 
       return (
-        <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 mt-4">
+        <div className="w-full max-w-6xl mx-auto space-y-6 mt-4">
           {userLotteryEntry && !showEditForm ? (
             <LotteryEntryConfirmation
               confirmation={{
@@ -584,6 +584,7 @@ export function SlotBookingFlow({
               lotterySession={lotterySession}
               slots={slots}
               organizerId={session.organizer_id}
+              photoSessionId={session.id}
               existingEntry={userLotteryEntry}
               entryCount={lotteryEntryCount}
               onEntrySuccess={() => {
@@ -625,7 +626,7 @@ export function SlotBookingFlow({
 
     // 通常の先着順予約フロー
     return (
-      <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+      <div className="w-full max-w-6xl mx-auto space-y-6">
         {/* ステップインジケーター */}
         <StepIndicator />
 
@@ -726,7 +727,7 @@ export function SlotBookingFlow({
   // ステップ2: 予約確認
   if (currentStep === 'confirm') {
     return (
-      <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+      <div className="w-full max-w-6xl mx-auto space-y-6">
         {/* ステップインジケーター */}
         <StepIndicator />
 
@@ -1038,7 +1039,7 @@ export function SlotBookingFlow({
   // ステップ3: 決済
   if (currentStep === 'payment' && paymentClientSecret && pendingBookingId) {
     return (
-      <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+      <div className="w-full max-w-6xl mx-auto space-y-6">
         {/* ステップインジケーター */}
         <StepIndicator />
 
@@ -1075,7 +1076,7 @@ export function SlotBookingFlow({
   // ステップ4: 完了
   if (currentStep === 'complete') {
     return (
-      <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+      <div className="w-full max-w-6xl mx-auto space-y-6">
         <StepIndicator />
 
         <Card>

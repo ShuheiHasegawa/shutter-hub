@@ -2,7 +2,10 @@
 
 import { logger } from '@/lib/utils/logger';
 import { revalidatePath } from 'next/cache';
-import { CreatePhotoSessionSlotData } from '@/types/photo-session';
+import {
+  CreatePhotoSessionSlotData,
+  SelectedModel,
+} from '@/types/photo-session';
 import { getCurrentSubscription } from '@/app/actions/subscription-management';
 import { requireAuthForAction } from '@/lib/auth/server-actions';
 
@@ -22,6 +25,8 @@ export interface PhotoSessionWithSlotsData {
   is_published: boolean;
   image_urls?: string[];
   slots: CreatePhotoSessionSlotData[]; // 必須に変更
+  studio_id?: string; // スタジオID（任意）
+  selected_models?: SelectedModel[]; // 選択されたモデル（任意）
 }
 
 export async function createPhotoSessionWithSlotsAction(
@@ -69,6 +74,7 @@ export async function createPhotoSessionWithSlotsAction(
         image_urls: data.image_urls || [],
         organizer_id: user.id,
         current_participants: 0,
+        studio_id: data.studio_id || null,
       })
       .select()
       .single();
@@ -94,6 +100,44 @@ export async function createPhotoSessionWithSlotsAction(
         // 撮影会は作成されているので削除
         await supabase.from('photo_sessions').delete().eq('id', session.id);
         return { success: false, error: 'スロットの作成に失敗しました' };
+      }
+    }
+
+    // スタジオ情報を保存（スタジオが選択されている場合）
+    if (data.studio_id) {
+      const { error: studioError } = await supabase
+        .from('photo_session_studios')
+        .insert({
+          photo_session_id: session.id,
+          studio_id: data.studio_id,
+          usage_start_time: data.start_time,
+          usage_end_time: data.end_time,
+        });
+
+      if (studioError) {
+        logger.error('スタジオ関連付けエラー:', studioError);
+        // エラーはログに記録するが、撮影会作成は成功とする（スタジオ情報は任意のため）
+      }
+    }
+
+    // モデル情報を保存（モデルが選択されている場合）
+    if (data.selected_models && data.selected_models.length > 0) {
+      const modelsToInsert = data.selected_models.map(
+        (model: SelectedModel, index: number) => ({
+          photo_session_id: session.id,
+          model_id: model.model_id,
+          fee_amount: model.fee_amount,
+          display_order: index,
+        })
+      );
+
+      const { error: modelsError } = await supabase
+        .from('photo_session_models')
+        .insert(modelsToInsert);
+
+      if (modelsError) {
+        logger.error('モデル情報保存エラー:', modelsError);
+        // エラーはログに記録するが、撮影会作成は成功とする（モデル情報は任意のため）
       }
     }
 
@@ -162,6 +206,7 @@ export async function updatePhotoSessionWithSlotsAction(
         booking_settings: data.booking_settings || {},
         is_published: data.is_published,
         image_urls: data.image_urls || [],
+        studio_id: data.studio_id || null,
       })
       .eq('id', sessionId)
       .select()
@@ -192,6 +237,59 @@ export async function updatePhotoSessionWithSlotsAction(
       if (slotsError) {
         logger.error('スロット更新エラー:', slotsError);
         return { success: false, error: 'スロットの更新に失敗しました' };
+      }
+    }
+
+    // スタジオ情報を更新（スタジオが選択されている場合）
+    if (data.studio_id) {
+      // 既存のスタジオ関連付けを削除
+      await supabase
+        .from('photo_session_studios')
+        .delete()
+        .eq('photo_session_id', sessionId);
+
+      const { error: studioError } = await supabase
+        .from('photo_session_studios')
+        .insert({
+          photo_session_id: sessionId,
+          studio_id: data.studio_id,
+          usage_start_time: data.start_time,
+          usage_end_time: data.end_time,
+        });
+
+      if (studioError) {
+        logger.error('スタジオ関連付けエラー:', studioError);
+        // エラーはログに記録するが、撮影会更新は成功とする（スタジオ情報は任意のため）
+      }
+    } else {
+      // スタジオが選択されていない場合、既存のスタジオ関連付けを削除
+      await supabase
+        .from('photo_session_studios')
+        .delete()
+        .eq('photo_session_id', sessionId);
+    }
+
+    // モデル情報を更新（既存を削除して新規作成）
+    await supabase
+      .from('photo_session_models')
+      .delete()
+      .eq('photo_session_id', sessionId);
+
+    if (data.selected_models && data.selected_models.length > 0) {
+      const modelsToInsert = data.selected_models.map((model, index) => ({
+        photo_session_id: sessionId,
+        model_id: model.model_id,
+        fee_amount: model.fee_amount,
+        display_order: index,
+      }));
+
+      const { error: modelsError } = await supabase
+        .from('photo_session_models')
+        .insert(modelsToInsert);
+
+      if (modelsError) {
+        logger.error('モデル情報更新エラー:', modelsError);
+        // エラーはログに記録するが、撮影会更新は成功とする（モデル情報は任意のため）
       }
     }
 

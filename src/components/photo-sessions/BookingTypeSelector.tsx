@@ -1,6 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { useCallback, memo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
@@ -14,12 +15,24 @@ interface BookingTypeSelectorProps {
   disabled?: boolean;
 }
 
-export function BookingTypeSelector({
+export const BookingTypeSelector = memo(function BookingTypeSelector({
   value,
   onChange,
   disabled = false,
 }: BookingTypeSelectorProps) {
   const t = useTranslations('photoSessions');
+
+  // onChangeをメモ化して無限ループを防止
+  const handleValueChange = useCallback(
+    (newValue: string) => {
+      // 同じ値の場合は何もしない（無限ループ防止）
+      if (newValue === value) {
+        return;
+      }
+      onChange(newValue as BookingType);
+    },
+    [value, onChange]
+  );
 
   const bookingTypes = [
     {
@@ -78,7 +91,7 @@ export function BookingTypeSelector({
 
       <RadioGroup
         value={value}
-        onValueChange={newValue => onChange(newValue as BookingType)}
+        onValueChange={handleValueChange}
         disabled={disabled}
         className="space-y-4"
       >
@@ -148,4 +161,4 @@ export function BookingTypeSelector({
       </RadioGroup>
     </div>
   );
-}
+});

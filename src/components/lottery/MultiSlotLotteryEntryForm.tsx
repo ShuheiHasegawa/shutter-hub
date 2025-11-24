@@ -29,7 +29,7 @@ import {
   createMultiSlotLotteryEntry,
   updateMultiSlotLotteryEntry,
 } from '@/app/actions/multi-slot-lottery';
-import { getOrganizerModelsByUserIdAction } from '@/app/actions/organizer-model';
+import { getPhotoSessionModelsAction } from '@/app/actions/photo-session-models';
 import type {
   LotterySessionWithSettings,
   SlotEntryData,
@@ -38,7 +38,6 @@ import type {
   LotterySlotEntry,
 } from '@/types/multi-slot-lottery';
 import type { PhotoSessionSlot } from '@/types/photo-session';
-import type { OrganizerModelWithProfile } from '@/types/organizer-model';
 import { Plus, Minus, ArrowLeft, Check } from 'lucide-react';
 import { format } from 'date-fns';
 import { ja, enUS } from 'date-fns/locale';
@@ -50,6 +49,7 @@ interface MultiSlotLotteryEntryFormProps {
   lotterySession: LotterySessionWithSettings;
   slots: PhotoSessionSlot[];
   organizerId: string;
+  photoSessionId: string;
   existingEntry?: {
     group: LotteryEntryGroup;
     slot_entries: LotterySlotEntry[];
@@ -69,7 +69,8 @@ interface MultiSlotLotteryEntryFormProps {
 export function MultiSlotLotteryEntryForm({
   lotterySession,
   slots,
-  organizerId,
+  organizerId: _organizerId,
+  photoSessionId,
   existingEntry,
   onEntrySuccess,
   onCancel,
@@ -116,8 +117,12 @@ export function MultiSlotLotteryEntryForm({
     useState<CancellationPolicy>(initialCancellationPolicy);
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [organizerModels, setOrganizerModels] = useState<
-    OrganizerModelWithProfile[]
+  const [sessionModels, setSessionModels] = useState<
+    Array<{
+      model_id: string;
+      display_name: string;
+      avatar_url?: string;
+    }>
   >([]);
   const [isLoadingModels, setIsLoadingModels] = useState(false);
 
@@ -127,38 +132,34 @@ export function MultiSlotLotteryEntryForm({
     ? Math.max(0, 3 - (existingEntry.group.update_count || 0))
     : 3;
 
-  // 運営者所属モデルを取得
+  // 撮影会に紐づくモデルを取得
   useEffect(() => {
     if (
       lotterySession.enable_model_selection &&
-      organizerId &&
-      organizerModels.length === 0 &&
+      photoSessionId &&
+      sessionModels.length === 0 &&
       !isLoadingModels
     ) {
       setIsLoadingModels(true);
-      getOrganizerModelsByUserIdAction(organizerId)
+      getPhotoSessionModelsAction(photoSessionId)
         .then(result => {
-          if (result.success && result.data) {
-            const models = Array.isArray(result.data)
-              ? result.data
-              : [result.data];
-            setOrganizerModels(
-              models.filter(
-                (model: OrganizerModelWithProfile) =>
-                  model.status === 'active' && model.model_profile
-              )
-            );
+          if (result && result.success && result.models) {
+            setSessionModels(result.models);
+          } else {
+            logger.warn('モデル情報が取得できませんでした:', result?.error);
+            setSessionModels([]);
           }
         })
         .catch(error => {
           logger.error('モデル取得エラー:', error);
+          setSessionModels([]);
         })
         .finally(() => {
           setIsLoadingModels(false);
         });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lotterySession.enable_model_selection, organizerId]);
+  }, [lotterySession.enable_model_selection, photoSessionId]);
 
   // スロットがエントリー上限に達しているかチェック
   const isSlotEntryFull = useCallback(
@@ -186,7 +187,7 @@ export function MultiSlotLotteryEntryForm({
       if (isSlotEntryFull(slotId)) {
         toast({
           title: 'エントリー上限',
-          description: 'このスロットのエントリー上限に達しています',
+          description: 'この枠のエントリー上限に達しています',
           variant: 'destructive',
         });
         return;
@@ -274,7 +275,7 @@ export function MultiSlotLotteryEntryForm({
     if (selectedSlotIds.size === 0) {
       toast({
         title: tErrors('title'),
-        description: '少なくとも1つのスロットを選択してください',
+        description: '少なくとも1つの枠を選択してください',
         variant: 'destructive',
       });
       return;
@@ -383,7 +384,7 @@ export function MultiSlotLotteryEntryForm({
   );
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+    <div className="w-full max-w-6xl mx-auto space-y-6">
       {/* ステップインジケーター */}
       <div className="space-y-4 py-6">
         <div className="space-y-2">
@@ -415,9 +416,9 @@ export function MultiSlotLotteryEntryForm({
 
       <Card className="p-4">
         <CardHeader>
-          <CardTitle className="text-lg">複数スロット抽選エントリー</CardTitle>
+          <CardTitle className="text-lg">複数枠抽選エントリー</CardTitle>
           <CardDescription>
-            複数のスロットに同時にエントリーできます。応募数が多いほど当選確率が高くなります。
+            複数の枠に同時にエントリーできます。応募数が多いほど当選確率が高くなります。
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -428,9 +429,7 @@ export function MultiSlotLotteryEntryForm({
           >
             {/* スロット選択 */}
             <div className="space-y-4">
-              <Label className="text-base font-medium">
-                応募するスロットを選択
-              </Label>
+              <Label className="text-base font-medium">応募する枠を選択</Label>
               <div className="grid gap-4">
                 {slots.map(slot => {
                   const isSelected = selectedSlotIds.has(slot.id);
@@ -486,7 +485,7 @@ export function MultiSlotLotteryEntryForm({
                                     : 'cursor-pointer'
                                 }`}
                               >
-                                スロット{slot.slot_number}
+                                枠{slot.slot_number}
                               </Label>
                               <Badge variant="outline">
                                 {format(new Date(slot.start_time), 'HH:mm', {
@@ -516,7 +515,7 @@ export function MultiSlotLotteryEntryForm({
                               {slot.price_per_person?.toLocaleString()}
                             </p>
 
-                            {/* スロット詳細設定（選択時のみ表示） */}
+                            {/* 枠詳細設定（選択時のみ表示） */}
                             {isSelected &&
                               ((lotterySession.enable_model_selection &&
                                 (lotterySession.model_selection_scope ===
@@ -558,13 +557,13 @@ export function MultiSlotLotteryEntryForm({
                                             <SelectItem value="none">
                                               選択しない
                                             </SelectItem>
-                                            {organizerModels.map(model => (
+                                            {sessionModels.map(model => (
                                               <SelectItem
                                                 key={model.model_id}
                                                 value={model.model_id}
                                               >
-                                                {model.model_profile
-                                                  ?.display_name || 'Unknown'}
+                                                {model.display_name ||
+                                                  'Unknown'}
                                               </SelectItem>
                                             ))}
                                           </SelectContent>
@@ -572,7 +571,7 @@ export function MultiSlotLotteryEntryForm({
                                       </div>
                                     )}
 
-                                  {/* チェキ枚数選択（スロットごと） */}
+                                  {/* チェキ枚数選択（枠ごと） */}
                                   {lotterySession.enable_cheki_selection &&
                                     lotterySession.cheki_selection_scope ===
                                       'per_slot' && (
@@ -751,9 +750,9 @@ export function MultiSlotLotteryEntryForm({
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="none">選択しない</SelectItem>
-                      {organizerModels.map(model => (
+                      {sessionModels.map(model => (
                         <SelectItem key={model.model_id} value={model.model_id}>
-                          {model.model_profile?.display_name || 'Unknown'}
+                          {model.display_name || 'Unknown'}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -917,7 +916,7 @@ export function MultiSlotLotteryEntryForm({
                       B. 一部落選しても当選した部があれば参加したい
                     </Label>
                     <p className="text-sm text-muted-foreground mt-1">
-                      一部のスロットが落選しても、当選したスロットには参加します。
+                      一部の枠が落選しても、当選した枠には参加します。
                     </p>
                   </div>
                 </div>
@@ -939,7 +938,7 @@ export function MultiSlotLotteryEntryForm({
                       A. 一部でも落選の場合は全てキャンセルしたい
                     </Label>
                     <p className="text-sm text-muted-foreground mt-1">
-                      応募した全てのスロットが当選しない場合、全てキャンセルします。
+                      応募した全ての枠が当選しない場合、全てキャンセルします。
                     </p>
                   </div>
                 </div>
