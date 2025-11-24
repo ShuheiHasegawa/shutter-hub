@@ -134,6 +134,7 @@ export interface BulkPhotoSessionData {
   booking_settings: Record<string, unknown>;
   is_published: boolean;
   image_urls: string[];
+  studio_id?: string; // スタジオID（任意）
 
   // 一括作成用
   selected_models: SelectedModel[];
