@@ -1120,7 +1120,23 @@ export async function getLotteryWinners(lotterySessionId: string): Promise<{
     );
 
     // スロット番号でソートし、各スロット内で当選日時でソート
-    const sortedWinners = Object.values(winnersBySlot)
+    type SlotWinnerGroup = {
+      slot_id: string;
+      slot_number: number;
+      winners: Array<{
+        user_id: string;
+        display_name: string;
+        email: string;
+        avatar_url?: string;
+        booking_id?: string;
+        booking_status?: string;
+        preferred_model_name?: string;
+        cheki_unsigned_count: number;
+        cheki_signed_count: number;
+        won_at?: string;
+      }>;
+    };
+    const sortedWinners = (Object.values(winnersBySlot) as SlotWinnerGroup[])
       .sort((a, b) => a.slot_number - b.slot_number)
       .map(slot => ({
         ...slot,
