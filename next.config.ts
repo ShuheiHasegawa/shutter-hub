@@ -104,6 +104,27 @@ const nextConfig: NextConfig = {
       config.externals.push('canvas');
     }
 
+    // クライアント側のwebpack設定（ブラウザ互換性向上）
+    if (!isServer) {
+      // webpackチャンク読み込み時のエラーハンドリング
+      // Operaブラウザなどでoptions.factoryがundefinedになる問題を回避
+      config.optimization = config.optimization || {};
+      config.optimization.moduleIds = 'deterministic';
+
+      // チャンク読み込み時のエラーハンドリングを追加
+      config.output = config.output || {};
+      config.output.chunkLoadTimeout = 120000; // 2分
+
+      // ブラウザ互換性のための設定
+      config.resolve = config.resolve || {};
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+      };
+    }
+
     // プロダクション時のバンドル分析・最適化
     if (!dev && !isServer) {
       config.optimization.splitChunks = {

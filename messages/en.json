@@ -599,9 +599,6 @@
       "priority": {
         "title": "Priority Booking Settings",
         "bookingStartTime": "Booking Start Time",
-        "vipSlots": "VIP Slots",
-        "platinumSlots": "Platinum Slots",
-        "goldSlots": "Gold Slots",
         "enableGeneralBooking": "Enable General Booking",
         "enableGeneralBookingHelp": "Allow general users to book after priority slots end",
         "generalBookingStartTime": "General Booking Start Time"
