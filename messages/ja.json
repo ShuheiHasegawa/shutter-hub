@@ -638,9 +638,6 @@
       "priority": {
         "title": "優先予約設定",
         "bookingStartTime": "予約開始時刻",
-        "vipSlots": "VIP枠数",
-        "platinumSlots": "プラチナ枠数",
-        "goldSlots": "ゴールド枠数",
         "enableGeneralBooking": "一般予約を有効にする",
         "enableGeneralBookingHelp": "優先枠終了後に一般ユーザーも予約可能にします",
         "generalBookingStartTime": "一般予約開始時刻"
