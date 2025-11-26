@@ -7,8 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ArrowLeftIcon, UsersIcon } from 'lucide-react';
-import Link from 'next/link';
+import { PageTitleHeader } from '@/components/ui/page-title-header';
+import { UsersIcon } from 'lucide-react';
 import { getPhotoSessionParticipants } from '@/app/actions/photo-session-participants';
 
 interface ParticipantPageProps {
@@ -70,7 +70,7 @@ export default async function ParticipantsPage({
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'confirmed':
-        return <Badge className="bg-green-100 text-green-800">確定</Badge>;
+        return <Badge variant="brand-success">確定</Badge>;
       case 'pending':
         return <Badge variant="outline">保留</Badge>;
       case 'cancelled':
@@ -86,54 +86,86 @@ export default async function ParticipantsPage({
     <AuthenticatedLayout>
       <div>
         {/* ヘッダー */}
-        <div className="flex items-center gap-4 mb-6">
-          <Link href={`/photo-sessions/${id}`}>
-            <Button variant="outline" size="sm">
-              <ArrowLeftIcon className="h-4 w-4 mr-2" />
-              撮影会に戻る
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-2xl font-bold">参加者管理</h1>
-            <p className="text-muted-foreground">{session.title}</p>
-          </div>
-        </div>
+        <PageTitleHeader
+          title="参加者管理"
+          description={session.title}
+          icon={<UsersIcon className="h-5 w-5" />}
+          backButton={{
+            href: `/photo-sessions/${id}`,
+            variant: 'ghost',
+          }}
+        />
 
         {/* 統計カード */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <Card>
             <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-green-600">
+              <div className="text-2xl font-bold brand-success">
                 {statusCounts.confirmed}
               </div>
-              <div className="text-sm text-green-700">確定</div>
+              <div className="text-sm text-muted-foreground">確定</div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-yellow-600">
+              <div className="text-2xl font-bold brand-warning">
                 {statusCounts.pending}
               </div>
-              <div className="text-sm text-yellow-700">保留</div>
+              <div className="text-sm text-muted-foreground">保留</div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-red-600">
+              <div className="text-2xl font-bold brand-error">
                 {statusCounts.cancelled}
               </div>
-              <div className="text-sm text-red-700">キャンセル</div>
+              <div className="text-sm text-muted-foreground">キャンセル</div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-gray-600">
+              <div className="text-2xl font-bold text-muted-foreground">
                 {statusCounts.waitlisted}
               </div>
-              <div className="text-sm text-gray-700">待機中</div>
+              <div className="text-sm text-muted-foreground">待機中</div>
             </CardContent>
           </Card>
         </div>
+
+        {/* 管理アクション */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>管理アクション</CardTitle>
+          </CardHeader>
+          <CardContent className="px-2 sm:px-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+              <Button
+                variant="outline"
+                className="w-full justify-center sm:justify-start"
+              >
+                一斉メッセージ送信
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full justify-center sm:justify-start"
+              >
+                出欠確認送信
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full justify-center sm:justify-start"
+              >
+                リマインダー送信
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full justify-center sm:justify-start"
+              >
+                参加者データエクスポート
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* 参加者一覧 */}
         <Card>
@@ -143,7 +175,7 @@ export default async function ParticipantsPage({
               参加者一覧 ({participants.length}名)
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-2 sm:px-6">
             <Suspense fallback={<LoadingCard />}>
               <div className="space-y-3">
                 {participants.length === 0 ? (
@@ -154,10 +186,10 @@ export default async function ParticipantsPage({
                   participants.map(participant => (
                     <div
                       key={participant.id}
-                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
+                      className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 sm:p-4 border rounded-lg hover:bg-muted/50 transition-colors"
                     >
-                      <div className="flex items-center gap-3">
-                        <Avatar>
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <Avatar className="flex-shrink-0">
                           <AvatarImage
                             src={participant.user.avatar_url || ''}
                           />
@@ -166,17 +198,17 @@ export default async function ParticipantsPage({
                               participant.user.email[0]}
                           </AvatarFallback>
                         </Avatar>
-                        <div>
-                          <div className="font-medium">
+                        <div className="min-w-0 flex-1">
+                          <div className="font-medium truncate">
                             {participant.user.display_name ||
                               participant.user.email}
                           </div>
-                          <div className="text-sm text-muted-foreground">
+                          <div className="text-sm text-muted-foreground truncate">
                             {participant.user.email}
                           </div>
-                          <div className="flex items-center gap-2 mt-1">
+                          <div className="flex flex-wrap items-center gap-2 mt-1">
                             {getStatusBadge(participant.status)}
-                            <span className="text-xs text-muted-foreground">
+                            <span className="text-xs text-muted-foreground whitespace-nowrap">
                               予約:{' '}
                               {new Date(
                                 participant.created_at
@@ -186,11 +218,19 @@ export default async function ParticipantsPage({
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm">
+                      <div className="flex items-center gap-2 flex-shrink-0 sm:ml-4">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1 sm:flex-none"
+                        >
                           詳細
                         </Button>
-                        <Button variant="outline" size="sm">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1 sm:flex-none"
+                        >
                           メッセージ
                         </Button>
                       </div>
@@ -199,21 +239,6 @@ export default async function ParticipantsPage({
                 )}
               </div>
             </Suspense>
-          </CardContent>
-        </Card>
-
-        {/* 管理アクション */}
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle>管理アクション</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-4">
-              <Button variant="outline">一斉メッセージ送信</Button>
-              <Button variant="outline">出欠確認送信</Button>
-              <Button variant="outline">リマインダー送信</Button>
-              <Button variant="outline">参加者データエクスポート</Button>
-            </div>
           </CardContent>
         </Card>
       </div>
