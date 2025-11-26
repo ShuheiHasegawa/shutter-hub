@@ -37,6 +37,8 @@ export type NotificationType =
   | 'organizer_invitation_accepted'
   | 'organizer_invitation_rejected'
   | 'organizer_invitation_expired'
+  | 'admin_lottery_auto_selection'
+  | 'admin_lottery_selection_reminder'
   | 'system_maintenance'
   | 'system_update'
   | 'system_security_alert'
@@ -359,20 +361,33 @@ export const getNotificationStats = withServerActionErrorHandler(
       .eq('archived', false);
 
     if (error) {
-      logger.error('通知統計取得エラー:', error);
-      throw new Error(`通知統計の取得に失敗しました: ${error.message}`);
+      // すべてのエラーで空の統計を返す（非致命的エラーとして扱う）
+      logger.warn('通知統計取得エラー（非致命的）:', {
+        code: error.code,
+        message: error.message,
+        userId,
+      });
+      return {
+        totalCount: 0,
+        unreadCount: 0,
+        highPriorityUnread: 0,
+        categories: {},
+      };
     }
 
-    const totalCount = stats.length;
-    const unreadCount = stats.filter(n => !n.read).length;
-    const highPriorityUnread = stats.filter(
+    // statsがnullまたはundefinedの場合の処理
+    const safeStats = stats || [];
+
+    const totalCount = safeStats.length;
+    const unreadCount = safeStats.filter(n => !n.read).length;
+    const highPriorityUnread = safeStats.filter(
       n => !n.read && (n.priority === 'high' || n.priority === 'urgent')
     ).length;
 
     // カテゴリ別統計
-    const categories = stats.reduce(
+    const categories = safeStats.reduce(
       (acc, notification) => {
-        const category = notification.category;
+        const category = notification.category || 'other';
         if (!acc[category]) {
           acc[category] = { total: 0, unread: 0 };
         }
