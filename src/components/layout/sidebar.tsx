@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { usePathname, useRouter } from '@/i18n/routing';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -31,6 +31,7 @@ import {
   Code,
   Heart,
   Zap,
+  Ticket,
 } from 'lucide-react';
 import { useProfile } from '@/hooks/useSimpleProfile';
 import {
@@ -112,6 +113,11 @@ export function Sidebar({ className }: SidebarProps) {
           title: t('bookings'),
           href: '/bookings',
           icon: Calendar,
+        },
+        {
+          title: '優先チケット管理',
+          href: '/priority-tickets',
+          icon: Ticket,
         },
       ],
     },
@@ -335,6 +341,11 @@ export function MobileSidebarTrigger() {
           title: t('bookings'),
           href: '/bookings',
           icon: Calendar,
+        },
+        {
+          title: '優先チケット管理',
+          href: '/priority-tickets',
+          icon: Ticket,
         },
       ],
     },

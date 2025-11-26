@@ -1,22 +1,27 @@
 // テスト用の共通データとヘルパー関数
 
 import { Page } from '@playwright/test';
+import { getTestUser } from '../e2e/config/test-users';
 
+/**
+ * @deprecated 新しいテストでは `getTestUser()` を使用してください
+ * 後方互換性のため保持
+ */
 export const TEST_USERS = {
   photographer: {
-    email: 'test@example.com',
-    password: 'password123',
-    userType: 'photographer',
+    email: getTestUser('photographer').email,
+    password: getTestUser('photographer').password,
+    userType: 'photographer' as const,
   },
   organizer: {
-    email: 'organizer@example.com',
-    password: 'password123',
-    userType: 'organizer',
+    email: getTestUser('organizer').email,
+    password: getTestUser('organizer').password,
+    userType: 'organizer' as const,
   },
   admin: {
-    email: 'admin@example.com',
-    password: 'password123',
-    userType: 'admin',
+    email: getTestUser('organizer').email, // adminはorganizerと同じユーザーを使用
+    password: getTestUser('organizer').password,
+    userType: 'admin' as const,
   },
 } as const;
 
