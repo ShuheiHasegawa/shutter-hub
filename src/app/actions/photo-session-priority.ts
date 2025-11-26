@@ -25,12 +25,15 @@ export interface PriorityBookingSettings {
 
 export interface PriorityTicket {
   id?: string;
-  photo_session_id: string;
+  photo_session_id?: string | null; // 使用時に設定、配布時はNULL
   user_id: string;
-  granted_by: string;
-  ticket_type: 'general' | 'vip' | 'special';
+  issued_by?: string; // チケットを配布した主催者ID
+  ticket_type: 'general';
   expires_at: string;
   notes?: string;
+  used_at?: string | null; // 使用日時
+  is_active?: boolean;
+  created_at?: string;
 }
 
 export interface UserRank {
@@ -130,9 +133,9 @@ export async function getPriorityBookingSettings(
   }
 }
 
-// 優先チケットの作成
+// 優先チケットの作成（主催者が配布）
 export async function createPriorityTicket(
-  ticket: PriorityTicket
+  ticket: Omit<PriorityTicket, 'photo_session_id' | 'issued_by'>
 ): Promise<{ success: boolean; error?: string; data?: PriorityTicket }> {
   try {
     const authResult = await requireAuthForAction();
@@ -141,22 +144,28 @@ export async function createPriorityTicket(
     }
     const { user, supabase } = authResult.data;
 
-    // 撮影会の開催者かチェック
-    const { data: photoSession } = await supabase
-      .from('photo_sessions')
-      .select('organizer_id')
-      .eq('id', ticket.photo_session_id)
+    // 主催者権限チェック（user_typeが'organizer'であることを確認）
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('user_type')
+      .eq('id', user.id)
       .single();
 
-    if (!photoSession || photoSession.organizer_id !== user.id) {
-      return { success: false, error: '権限がありません' };
+    if (!profile || profile.user_type !== 'organizer') {
+      return { success: false, error: '主催者のみがチケットを配布できます' };
     }
 
     const { data, error } = await supabase
       .from('priority_tickets')
       .insert({
-        ...ticket,
-        granted_by: user.id,
+        user_id: ticket.user_id,
+        ticket_type: ticket.ticket_type,
+        expires_at: ticket.expires_at,
+        notes: ticket.notes,
+        issued_by: user.id, // 主催者IDを記録
+        photo_session_id: null, // 配布時はNULL
+        used_at: null,
+        is_active: true,
       })
       .select()
       .single();
@@ -166,7 +175,7 @@ export async function createPriorityTicket(
       return { success: false, error: '優先チケットの作成に失敗しました' };
     }
 
-    revalidatePath('/photo-sessions');
+    revalidatePath('/priority-tickets');
     return { success: true, data };
   } catch (error) {
     logger.error('優先チケット作成エラー:', error);
@@ -174,23 +183,35 @@ export async function createPriorityTicket(
   }
 }
 
-// 優先チケットの一覧取得
-export async function getPriorityTickets(
-  photoSessionId: string
+// 主催者が配布した優先チケットの一覧取得
+export async function getPriorityTicketsByOrganizer(
+  organizerId?: string
 ): Promise<{ success: boolean; error?: string; data?: PriorityTicket[] }> {
   try {
-    const supabase = await createClient();
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
+    }
+    const { user, supabase } = authResult.data;
+
+    // organizerIdが指定されていない場合は現在のユーザーのチケットを取得
+    const targetOrganizerId = organizerId || user.id;
+
+    // 主催者権限チェック
+    if (targetOrganizerId !== user.id) {
+      return { success: false, error: '権限がありません' };
+    }
 
     const { data, error } = await supabase
       .from('priority_tickets')
       .select(
         `
         *,
-        user:profiles!priority_tickets_user_id_fkey(display_name, avatar_url),
-        granted_by_user:profiles!priority_tickets_granted_by_fkey(display_name)
+        user:profiles!priority_tickets_user_id_fkey(display_name, avatar_url, username),
+        issued_by_user:profiles!priority_tickets_issued_by_fkey(display_name)
       `
       )
-      .eq('photo_session_id', photoSessionId)
+      .eq('issued_by', targetOrganizerId)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -201,6 +222,56 @@ export async function getPriorityTickets(
     return { success: true, data: data || [] };
   } catch (error) {
     logger.error('優先チケット取得エラー:', error);
+    return { success: false, error: '予期しないエラーが発生しました' };
+  }
+}
+
+// 優先チケットの削除
+export async function deletePriorityTicket(
+  ticketId: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const authResult = await requireAuthForAction();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
+    }
+    const { user, supabase } = authResult.data;
+
+    // チケットが自分が配布したものか確認
+    const { data: ticket, error: ticketError } = await supabase
+      .from('priority_tickets')
+      .select('issued_by, used_at')
+      .eq('id', ticketId)
+      .single();
+
+    if (ticketError || !ticket) {
+      return { success: false, error: 'チケットが見つかりません' };
+    }
+
+    if (ticket.issued_by !== user.id) {
+      return { success: false, error: '権限がありません' };
+    }
+
+    // 使用済みチケットは削除不可
+    if (ticket.used_at) {
+      return { success: false, error: '使用済みチケットは削除できません' };
+    }
+
+    // チケットを削除
+    const { error } = await supabase
+      .from('priority_tickets')
+      .delete()
+      .eq('id', ticketId);
+
+    if (error) {
+      logger.error('優先チケット削除エラー:', error);
+      return { success: false, error: '優先チケットの削除に失敗しました' };
+    }
+
+    revalidatePath('/priority-tickets');
+    return { success: true };
+  } catch (error) {
+    logger.error('優先チケット削除エラー:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }

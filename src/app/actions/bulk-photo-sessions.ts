@@ -86,60 +86,87 @@ export async function createBulkPhotoSessionsAction(
     const bulkGroupId = nanoid();
     const createdSessions: string[] = [];
 
-    // トランザクション内で一括作成
-    const { error: transactionError } = await supabase.rpc(
-      'create_bulk_photo_sessions',
-      {
-        p_bulk_group_id: bulkGroupId,
-        p_organizer_id: user.id,
-        p_title: data.title,
-        p_description: data.description || null,
-        p_location: data.location,
-        p_address: data.address || null,
-        p_start_time: data.start_time,
-        p_end_time: data.end_time,
-        p_max_participants: data.slots.reduce(
-          (total, slot) => total + slot.max_participants,
-          0
-        ),
-        p_booking_type: data.booking_type,
-        p_allow_multiple_bookings: data.allow_multiple_bookings,
-        p_block_users_with_bad_ratings:
-          data.block_users_with_bad_ratings || false,
-        p_payment_timing: data.payment_timing || 'prepaid',
-        p_booking_settings: data.booking_settings,
-        p_is_published: data.is_published,
-        p_image_urls: data.image_urls,
-        p_studio_id: data.studio_id || null,
-        p_selected_models: data.selected_models.map(model => ({
-          model_id: model.model_id,
-          fee_amount: model.fee_amount,
-        })),
-      }
+    // モデルごとに個別撮影会を作成
+    const maxParticipants = data.slots.reduce(
+      (total, slot) => total + slot.max_participants,
+      0
+    );
+    const avgPricePerPerson =
+      data.slots.length > 0
+        ? Math.round(
+            data.slots.reduce((sum, slot) => sum + slot.price_per_person, 0) /
+              data.slots.length
+          )
+        : 0;
+
+    // モデル名を取得（タイトルに追加するため）
+    const { data: modelProfiles } = await supabase
+      .from('profiles')
+      .select('id, display_name')
+      .in(
+        'id',
+        data.selected_models.map(m => m.model_id)
+      );
+
+    const modelNameMap = new Map(
+      modelProfiles?.map(p => [p.id, p.display_name]) || []
     );
 
-    if (transactionError) {
-      logger.error('一括作成トランザクションエラー:', transactionError);
+    // 各モデルごとに撮影会を作成
+    for (const model of data.selected_models) {
+      const modelName = modelNameMap.get(model.model_id) || 'Unknown';
+      const sessionTitle = `${data.title} - ${modelName}`;
+
+      // 撮影会を作成
+      const { data: session, error: sessionError } = await supabase
+        .from('photo_sessions')
+        .insert({
+          title: sessionTitle,
+          description: data.description || null,
+          location: data.location,
+          address: data.address || null,
+          start_time: data.start_time,
+          end_time: data.end_time,
+          max_participants: maxParticipants,
+          price_per_person: avgPricePerPerson,
+          booking_type: data.booking_type,
+          allow_multiple_bookings: data.allow_multiple_bookings,
+          block_users_with_bad_ratings:
+            data.block_users_with_bad_ratings || false,
+          payment_timing: data.payment_timing || 'prepaid',
+          booking_settings: data.booking_settings || {},
+          is_published: data.is_published,
+          image_urls: data.image_urls || [],
+          organizer_id: user.id,
+          current_participants: 0,
+          studio_id: data.studio_id || null,
+          session_type: 'individual',
+          bulk_group_id: bulkGroupId,
+          featured_model_id: model.model_id,
+        })
+        .select()
+        .single();
+
+      if (sessionError) {
+        logger.error(
+          `モデル${model.model_id}の撮影会作成エラー:`,
+          sessionError
+        );
+        continue;
+      }
+
+      if (session) {
+        createdSessions.push(session.id);
+      }
+    }
+
+    if (createdSessions.length === 0) {
       return {
         success: false,
         created_sessions: [],
         bulk_group_id: '',
         error: '撮影会の作成に失敗しました',
       };
-    }
-
-    // 作成された撮影会IDを取得
-    const { data: createdSessionsData, error: fetchError } = await supabase
-      .from('photo_sessions')
-      .select('id')
-      .eq('bulk_group_id', bulkGroupId);
-
-    if (fetchError) {
-      logger.error('作成されたセッション取得エラー:', fetchError);
-    } else if (createdSessionsData) {
-      createdSessions.push(
-        ...createdSessionsData.map((session: { id: string }) => session.id)
-      );
     }
 
     // 撮影枠も一括作成（スロットが設定されている場合）
@@ -182,23 +209,29 @@ export async function createBulkPhotoSessionsAction(
       }
     }
 
-    // モデル情報を保存（モデルが選択されている場合）
+    // モデル情報を保存（各撮影会に1つのモデルを紐づけ）
     if (
       data.selected_models &&
       data.selected_models.length > 0 &&
       createdSessions.length > 0
     ) {
-      for (const sessionId of createdSessions) {
-        const modelsToInsert = data.selected_models.map((model, index) => ({
-          photo_session_id: sessionId,
-          model_id: model.model_id,
-          fee_amount: model.fee_amount,
-          display_order: index,
-        }));
+      // 各撮影会には対応するモデルを1つだけ紐づける
+      for (
+        let i = 0;
+        i < createdSessions.length && i < data.selected_models.length;
+        i++
+      ) {
+        const sessionId = createdSessions[i];
+        const model = data.selected_models[i];
 
         const { error: modelsError } = await supabase
           .from('photo_session_models')
-          .insert(modelsToInsert);
+          .insert({
+            photo_session_id: sessionId,
+            model_id: model.model_id,
+            fee_amount: model.fee_amount,
+            display_order: 0,
+          });
 
         if (modelsError) {
           logger.error(
