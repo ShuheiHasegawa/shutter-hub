@@ -32,8 +32,11 @@ import { formatTime } from '@/lib/utils/date';
 import { LotterySettingsForm } from '@/components/organizer/LotterySettingsForm';
 import { LotteryStatistics } from '@/components/organizer/LotteryStatistics';
 import { LotteryWinnersList } from '@/components/organizer/LotteryWinnersList';
+import { AdminLotterySelection } from '@/components/organizer/AdminLotterySelection';
+import { AdminLotteryWinnersList } from '@/components/organizer/AdminLotteryWinnersList';
 import { executeWeightedLottery } from '@/app/actions/multi-slot-lottery';
 import { getLotterySession } from '@/app/actions/photo-session-lottery';
+import { getAdminLotterySession } from '@/app/actions/admin-lottery';
 import type { LotterySessionWithSettings } from '@/types/multi-slot-lottery';
 
 interface OrganizerManagementPanelProps {
@@ -64,7 +67,14 @@ export function OrganizerManagementPanel({
   const hasSlots = slots && slots.length > 0;
   const [lotterySession, setLotterySession] =
     useState<LotterySessionWithSettings | null>(null);
+  const [adminLotterySession, setAdminLotterySession] = useState<{
+    id: string;
+    max_selections: number;
+    status: string;
+    enable_lottery_weight?: boolean;
+  } | null>(null);
   const [isLoadingLottery, setIsLoadingLottery] = useState(false);
+  const [isLoadingAdminLottery, setIsLoadingAdminLottery] = useState(false);
   const [isExecutingLottery, setIsExecutingLottery] = useState(false);
   const [showLotterySettings, setShowLotterySettings] = useState(false);
   const [showLotteryStatistics, setShowLotteryStatistics] = useState(false);
@@ -137,6 +147,56 @@ export function OrganizerManagementPanel({
     };
 
     loadLotterySession();
+  }, [session.id, session.booking_type]);
+
+  // 管理抽選セッション情報を取得
+  useEffect(() => {
+    const loadAdminLotterySession = async () => {
+      if (session.booking_type !== 'admin_lottery') {
+        return;
+      }
+
+      setIsLoadingAdminLottery(true);
+      try {
+        const result = await getAdminLotterySession(session.id);
+        logger.info('管理抽選セッション取得結果:', {
+          hasData: !!result.data,
+          hasError: !!result.error,
+          error: result.error,
+          data: result.data,
+        });
+
+        if (result.error) {
+          logger.error('管理抽選セッション取得エラー:', result.error);
+          setAdminLotterySession(null);
+          return;
+        }
+
+        if (result.data) {
+          logger.info('管理抽選セッション設定:', {
+            id: result.data.id,
+            max_selections: result.data.max_selections,
+            status: result.data.status,
+            enable_lottery_weight: result.data.enable_lottery_weight,
+          });
+          setAdminLotterySession({
+            id: result.data.id,
+            max_selections: result.data.max_selections,
+            status: result.data.status,
+            enable_lottery_weight: result.data.enable_lottery_weight,
+          });
+        } else {
+          logger.warn('管理抽選セッションが見つかりません:', session.id);
+          setAdminLotterySession(null);
+        }
+      } catch (error) {
+        logger.error('管理抽選セッション取得エラー:', error);
+      } finally {
+        setIsLoadingAdminLottery(false);
+      }
+    };
+
+    loadAdminLotterySession();
   }, [session.id, session.booking_type]);
 
   // 抽選実行確認ダイアログを表示
@@ -393,17 +453,6 @@ export function OrganizerManagementPanel({
         </Card>
       )}
 
-      {/* 当選者リスト（抽選完了後） */}
-      {session.booking_type === 'lottery' &&
-        hasSlots &&
-        slots.length > 1 &&
-        lotterySession &&
-        lotterySession.status === 'completed' && (
-          <div className="mt-6">
-            <LotteryWinnersList lotterySessionId={lotterySession.id} />
-          </div>
-        )}
-
       {/* タイムライン型レイアウト（スロット制の場合） */}
       {hasSlots && (
         <Card>
@@ -600,6 +649,90 @@ export function OrganizerManagementPanel({
           </CardContent>
         </Card>
       )}
+
+      {/* 当選者リスト（抽選完了後） */}
+      {session.booking_type === 'lottery' &&
+        hasSlots &&
+        slots.length > 1 &&
+        lotterySession &&
+        lotterySession.status === 'completed' && (
+          <div className="mt-6">
+            <LotteryWinnersList lotterySessionId={lotterySession.id} />
+          </div>
+        )}
+
+      {/* 管理抽選：応募者リスト・当選者選択 */}
+      {session.booking_type === 'admin_lottery' && (
+        <div className="mt-6">
+          {isLoadingAdminLottery ? (
+            <Card>
+              <CardContent className="p-6">
+                <div className="text-center text-muted-foreground">
+                  管理抽選セッション情報を読み込み中...
+                </div>
+              </CardContent>
+            </Card>
+          ) : !hasSlots ? (
+            <Card>
+              <CardContent className="p-6">
+                <div className="text-center text-muted-foreground">
+                  スロットが設定されていません
+                </div>
+              </CardContent>
+            </Card>
+          ) : !adminLotterySession ? (
+            <Card>
+              <CardContent className="p-6">
+                <div className="text-center text-muted-foreground">
+                  管理抽選セッションが見つかりません
+                </div>
+              </CardContent>
+            </Card>
+          ) : adminLotterySession.status === 'completed' ? null : (
+            <AdminLotterySelection
+              adminLotterySessionId={adminLotterySession.id}
+              maxSelections={adminLotterySession.max_selections}
+              slots={slots.map(slot => ({
+                id: slot.id,
+                slot_number: slot.slot_number,
+                max_participants: slot.max_participants,
+              }))}
+              enableLotteryWeight={adminLotterySession.enable_lottery_weight}
+              onSelectionComplete={() => {
+                // 管理抽選セッション情報を再取得
+                getAdminLotterySession(session.id).then(result => {
+                  if (result.data) {
+                    setAdminLotterySession({
+                      id: result.data.id,
+                      max_selections: result.data.max_selections,
+                      status: result.data.status,
+                      enable_lottery_weight: result.data.enable_lottery_weight,
+                    });
+                  }
+                });
+                router.refresh();
+              }}
+            />
+          )}
+        </div>
+      )}
+
+      {/* 管理抽選：当選者リスト（確定後） */}
+      {session.booking_type === 'admin_lottery' &&
+        hasSlots &&
+        adminLotterySession &&
+        adminLotterySession.status === 'completed' && (
+          <div className="mt-6">
+            <AdminLotteryWinnersList
+              adminLotterySessionId={adminLotterySession.id}
+              slots={slots.map(slot => ({
+                id: slot.id,
+                slot_number: slot.slot_number,
+                max_participants: slot.max_participants,
+              }))}
+            />
+          </div>
+        )}
 
       {/* 抽選実行確認ダイアログ */}
       <AlertDialog

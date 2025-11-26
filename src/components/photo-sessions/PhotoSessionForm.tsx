@@ -35,7 +35,7 @@ import { Label } from '@/components/ui/label';
 import { FormattedDateTime } from '@/components/ui/formatted-display';
 import { PageTitleHeader } from '@/components/ui/page-title-header';
 // PriceInput は不要（スロットで料金設定するため）
-import { Check, CameraIcon } from 'lucide-react';
+import { Check, CameraIcon, ArrowLeft } from 'lucide-react';
 import {
   ActionBar,
   ActionBarButton,
@@ -55,6 +55,7 @@ interface PhotoSessionFormProps {
   isEditing?: boolean;
   isDuplicating?: boolean;
   onSuccess?: () => void;
+  onBack?: () => void;
 }
 
 export function PhotoSessionForm({
@@ -65,6 +66,7 @@ export function PhotoSessionForm({
   isEditing = false,
   isDuplicating = false,
   onSuccess,
+  onBack,
 }: PhotoSessionFormProps) {
   const { user } = useAuth();
   const { profile } = useProfile();
@@ -494,6 +496,7 @@ export function PhotoSessionForm({
           discount_condition: slot.discount_condition || undefined,
           notes: slot.notes || undefined,
         })),
+        session_type: 'individual', // 個別撮影会として設定
       };
 
       let result;
@@ -543,10 +546,21 @@ export function PhotoSessionForm({
 
   // 下部固定アクションバー用ボタン
   const actionBarButtons: ActionBarButton[] = [
+    ...(onBack && !isEditing
+      ? [
+          {
+            id: 'back',
+            label: '戻る',
+            variant: 'outline' as const,
+            onClick: onBack,
+            icon: <ArrowLeft className="h-4 w-4" />,
+          },
+        ]
+      : []),
     {
       id: 'submit',
       label: isEditing ? t('form.updateButton') : t('form.createButton'),
-      variant: 'cta',
+      variant: 'cta' as const,
       onClick: () => formRef.current?.requestSubmit(),
       loading: isLoading,
       disabled: isLoading,
@@ -797,6 +811,11 @@ export function PhotoSessionForm({
                 <p className="text-sm text-muted-foreground">
                   各モデルを検索して追加し、個別に料金を設定してください（最大
                   {MAX_MODELS}人）
+                </p>
+                <p className="text-sm text-blue-600 dark:text-blue-400">
+                  ※
+                  個別撮影会では、選択した各モデルごとに別々の撮影会が作成されます。
+                  タイトルには「- モデル名」が自動的に追加されます。
                 </p>
 
                 <ModelSelectionForm
@@ -1171,7 +1190,7 @@ export function PhotoSessionForm({
       {/* 下部固定ActionBar（Sentinel非表示時のみ表示） */}
       <ActionBar
         actions={actionBarButtons}
-        maxColumns={1}
+        maxColumns={onBack && !isEditing ? 2 : 1}
         background="blur"
         sticky={true}
         autoHide={true}

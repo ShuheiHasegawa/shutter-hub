@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { logger } from '@/lib/utils/logger';
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
+import { useLocale } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -15,7 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
-import { Settings, Ticket, Crown, Clock } from 'lucide-react';
+import { Settings, Ticket, Crown, Clock, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   createOrUpdatePriorityBookingSettings,
@@ -31,6 +33,8 @@ export function PriorityBookingSettingsComponent({
   photoSessionId,
 }: PriorityBookingSettingsProps) {
   const t = useTranslations('priority_settings');
+  const router = useRouter();
+  const locale = useLocale();
   const [settings, setSettings] = useState<PriorityBookingSettings>({
     photo_session_id: photoSessionId,
     ticket_priority_enabled: false,
@@ -179,6 +183,16 @@ export function PriorityBookingSettingsComponent({
               <p className="text-sm text-muted-foreground">
                 {t('ticket_priority.description')}
               </p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => router.push(`/${locale}/priority-tickets`)}
+                className="w-full mt-2"
+              >
+                <Ticket className="h-4 w-4 mr-2" />
+                チケット管理ページへ
+                <ExternalLink className="h-3 w-3 ml-2" />
+              </Button>
             </div>
           )}
         </div>
