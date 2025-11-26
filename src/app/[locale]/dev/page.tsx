@@ -140,9 +140,9 @@ const devTools: DevTool[] = [
 ];
 
 const categoryLabels = {
+  auth: '認証',
   ui: 'UI/UX',
   payment: '決済',
-  auth: '認証',
   testing: 'テスト',
   demo: 'デモ',
 };
@@ -162,9 +162,14 @@ export default function DevToolsPage() {
       setToday(new Date().toLocaleDateString('ja-JP'));
     } catch {}
   }, []);
-  const categories = Object.keys(categoryLabels) as Array<
-    keyof typeof categoryLabels
-  >;
+  // 認証を一番上に配置するため、明示的に順序を指定
+  const categories: Array<keyof typeof categoryLabels> = [
+    'auth',
+    'ui',
+    'payment',
+    'testing',
+    'demo',
+  ];
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
