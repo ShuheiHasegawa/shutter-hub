@@ -17,11 +17,48 @@ export function useAuth() {
   useEffect(() => {
     // 初期認証状態を取得
     const getUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      setUser(user);
-      setLoading(false);
+      try {
+        const {
+          data: { user },
+          error,
+        } = await supabase.auth.getUser();
+
+        if (error) {
+          // セッションがない状態（AuthSessionMissingError）は正常な状態なのでエラーログを出力しない
+          if (
+            error.name === 'AuthSessionMissingError' ||
+            error.message?.includes('Auth session missing') ||
+            error.message?.includes('session')
+          ) {
+            // セッションがない場合はユーザーをnullに設定して続行（正常な状態）
+            setUser(null);
+            setLoading(false);
+            return;
+          }
+
+          // ネットワークエラーなどの場合はログを出力しない（過度なログを避ける）
+          if (
+            error.message?.includes('fetch') ||
+            error.message?.includes('network')
+          ) {
+            // ネットワークエラーの場合はユーザーをnullに設定して続行
+            setUser(null);
+            setLoading(false);
+            return;
+          }
+
+          // その他のエラーのみログ出力
+          logger.error('認証状態取得エラー:', error);
+        }
+
+        setUser(user);
+      } catch (error) {
+        // 予期しないエラー（ネットワークエラーなど）
+        logger.error('認証状態取得中の予期しないエラー:', error);
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
     };
 
     getUser();

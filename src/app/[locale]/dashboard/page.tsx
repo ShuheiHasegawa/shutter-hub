@@ -28,10 +28,12 @@ import {
   type PhotoSessionCalendarData,
 } from '@/app/actions/photo-sessions-calendar';
 import { adaptUpcomingEventsToCalendarData } from '@/lib/utils/calendar-data-adapter';
-import { CheckCircle, X } from 'lucide-react';
+import { CheckCircle, X, AlertTriangle } from 'lucide-react';
 import { PageTitleHeader } from '@/components/ui/page-title-header';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
+import { getPendingAdminLotterySelections } from '@/app/actions/admin-lottery';
+import Link from 'next/link';
 
 interface Profile {
   id: string;
@@ -64,21 +66,51 @@ export default function DashboardPage() {
     PhotoSessionCalendarData[]
   >([]);
   const [dashboardLoading, setDashboardLoading] = useState(true);
+  const [pendingAdminLotteries, setPendingAdminLotteries] = useState<
+    Array<{
+      id: string;
+      photoSessionId: string;
+      photoSessionTitle: string;
+      eventDate: string;
+      selectionDeadline: string;
+      maxSelections: number;
+      status: string;
+      isOverdue: boolean;
+      daysUntilDeadline: number;
+    }>
+  >([]);
 
   const loadProfile = useCallback(async () => {
-    if (!user) return;
+    if (!user) {
+      setProfileLoading(false);
+      return;
+    }
 
     try {
       const { data, error } = await getProfile(user.id);
 
       if (error) {
+        // ネットワークエラーなどの場合はエラーログを出力しない（過度なログを避ける）
+        if (
+          error.code === 'UNEXPECTED_ERROR' ||
+          error.message?.includes('fetch')
+        ) {
+          logger.error('プロフィール取得エラー（ネットワークエラー）:', {
+            code: error.code,
+            message: error.message,
+          });
+          // ネットワークエラーの場合は再試行しない（ユーザーに通知する）
+          setProfileLoading(false);
+          return;
+        }
+
         logger.error('プロフィール取得エラー:', error);
         // プロフィールが存在しない場合は設定ページにリダイレクト
         if (error.code === 'PGRST116' || error.code === 'PROFILE_NOT_FOUND') {
           router.push(`/${locale}/auth/setup-profile`);
           return;
         }
-      } else {
+      } else if (data) {
         setProfile(data);
       }
     } catch (error) {
@@ -161,6 +193,15 @@ export default function DashboardPage() {
         shouldShowInvitations: profile.user_type === 'model',
       });
       loadDashboardData();
+
+      // 運営者の場合、未処理の管理抽選を取得
+      if (profile.user_type === 'organizer') {
+        getPendingAdminLotterySelections().then(result => {
+          if (result.data) {
+            setPendingAdminLotteries(result.data);
+          }
+        });
+      }
     }
   }, [profile, user, loadDashboardData]);
 
@@ -217,6 +258,45 @@ export default function DashboardPage() {
 
         {/* モデル向け招待通知 */}
         {profile.user_type === 'model' && <ModelInvitationNotifications />}
+
+        {/* 運営者向け：未処理の管理抽選警告 */}
+        {profile.user_type === 'organizer' &&
+          pendingAdminLotteries.length > 0 && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription className="flex flex-col gap-2">
+                <span className="font-medium">
+                  当選者選択が必要な管理抽選が{pendingAdminLotteries.length}
+                  件あります
+                </span>
+                <div className="space-y-1">
+                  {pendingAdminLotteries.slice(0, 3).map(lottery => (
+                    <Link
+                      key={lottery.id}
+                      href={`/${locale}/photo-sessions/${lottery.photoSessionId}`}
+                      className="block text-sm hover:underline"
+                    >
+                      • {lottery.photoSessionTitle}
+                      {lottery.isOverdue ? (
+                        <Badge variant="destructive" className="ml-2 text-xs">
+                          期限超過
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="ml-2 text-xs">
+                          あと{lottery.daysUntilDeadline}日
+                        </Badge>
+                      )}
+                    </Link>
+                  ))}
+                  {pendingAdminLotteries.length > 3 && (
+                    <span className="text-sm text-muted-foreground">
+                      ...他{pendingAdminLotteries.length - 3}件
+                    </span>
+                  )}
+                </div>
+              </AlertDescription>
+            </Alert>
+          )}
 
         {/* 統計カード */}
         {dashboardStats && !dashboardLoading && (
