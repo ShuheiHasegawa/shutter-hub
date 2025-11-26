@@ -1,5 +1,8 @@
 import { PhotoSession, Booking } from './database';
 
+// 撮影会タイプ
+export type PhotoSessionType = 'individual' | 'joint';
+
 // 割引タイプ
 export type DiscountType = 'none' | 'percentage' | 'fixed_amount';
 
