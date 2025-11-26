@@ -52,6 +52,10 @@ export const routing = defineRouting({
       ja: '/photo-sessions/create',
       en: '/photo-sessions/create',
     },
+    '/priority-tickets': {
+      ja: '/priority-tickets',
+      en: '/priority-tickets',
+    },
     '/studios': {
       ja: '/studios',
       en: '/studios',
