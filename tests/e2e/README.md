@@ -2,6 +2,43 @@
 
 ShutterHub v2のE2Eテストは、アプリケーションの構造に沿って整理されています。
 
+## テストユーザー設定
+
+すべてのE2Eテストで使用するテストユーザーは `tests/e2e/config/test-users.ts` で一元管理されています。
+
+### 現在のテストユーザー
+
+- **運営者**: `malymoon@shutterhub.test`
+- **フォトグラファー**: `ninagawa.mika@testdomain.com` (蜷川実花)
+- **モデル**: `yuka.kohinata@testdomain.com`
+
+### 使用方法
+
+```typescript
+import { getTestUser, getAllTestUsers } from './config/test-users';
+
+// 特定のユーザータイプを取得
+const organizer = getTestUser('organizer');
+console.log(organizer.email); // malymoon@shutterhub.test
+
+// すべてのテストユーザーを取得
+const allUsers = getAllTestUsers();
+```
+
+### パスワード設定
+
+パスワードは環境変数 `E2E_TEST_PASSWORD` から取得できます。設定されていない場合は、デフォルトのパスワード（`E2ETestPassword123!`）が使用されます。
+
+```bash
+# 環境変数でパスワードを設定
+export E2E_TEST_PASSWORD="your-password"
+npx playwright test
+```
+
+### テストユーザーの変更
+
+テストユーザーを変更する場合は、`tests/e2e/config/test-users.ts` を編集してください。すべてのE2Eテストが自動的に新しいユーザー情報を使用します。
+
 ## ディレクトリ構造
 
 ```
@@ -10,6 +47,8 @@ tests/
 │   ├── auth/                 # 認証関連のテスト
 │   │   ├── login.spec.ts     # ログイン・ログアウト
 │   │   └── permissions.spec.ts # 権限管理
+│   ├── config/                # テスト設定ファイル
+│   │   └── test-users.ts     # テストユーザー設定（一元管理）
 │   ├── dashboard/            # ダッシュボード関連
 │   │   └── dashboard-navigation.spec.ts
 │   ├── studios/              # スタジオ機能関連
@@ -18,7 +57,12 @@ tests/
 │   │   └── studio-list.spec.ts
 │   ├── instant/              # 即座撮影関連
 │   │   └── instant-request.spec.ts
+│   ├── priority-tickets/      # 優先チケット管理機能テスト
+│   │   └── priority-ticket-management.spec.ts
 │   ├── profile/              # プロフィール関連
+│   ├── utils/                # 共通ユーティリティ
+│   │   ├── photo-session-helpers.ts
+│   │   └── test-helpers.ts
 │   └── dev/                  # 開発・デバッグ用
 │       └── database-validation.spec.ts
 ├── helpers/                  # 共通ヘルパー
@@ -48,7 +92,16 @@ tests/
 - カメラマンマッチング
 - リクエスト処理
 
-### 5. 開発・デバッグテスト (`dev/`)
+### 5. 優先チケット管理テスト (`priority-tickets/`)
+- 優先チケット管理ページへのアクセス
+- ユーザー検索とチケット配布
+- フォームバリデーション
+- チケット一覧表示
+- チケット削除（使用前）
+- 使用済みチケットの削除ボタン無効化確認
+- サイドバーからのナビゲーション
+
+### 6. 開発・デバッグテスト (`dev/`)
 - データベース状態の確認
 - デバッグ情報の検証
 

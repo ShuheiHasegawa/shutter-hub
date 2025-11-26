@@ -7,9 +7,13 @@ import { Page, expect } from '@playwright/test';
 
 /**
  * ページの読み込み完了を待機する
+ *
+ * networkidleは長時間実行されるリクエストがあるとタイムアウトしやすいため、
+ * domcontentloadedのみを使用する
  */
 export async function waitForPageLoad(page: Page, timeout = 10000) {
-  await page.waitForLoadState('networkidle', { timeout });
+  // networkidleは削除（タイムアウトしやすいため）
+  // 必要に応じて、特定の要素の表示を待つ方が確実
   await page.waitForLoadState('domcontentloaded', { timeout });
 }
 

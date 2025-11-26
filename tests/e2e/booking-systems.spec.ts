@@ -5,6 +5,7 @@ import {
   makeBooking,
   simulateConcurrentBookings,
 } from './utils/test-helpers';
+import { authenticateTestUser } from './utils/photo-session-helpers';
 
 /**
  * 予約システム包括テスト
@@ -18,11 +19,11 @@ test.describe('予約システム包括テスト', () => {
   test.beforeEach(async ({ browser }) => {
     // 開催者用ページ
     organizerPage = await browser.newPage();
-    await organizerPage.goto('/auth/signin');
+    // 認証が必要なテストでは、各テスト内でauthenticateTestUserを呼び出す
 
     // 参加者用ページ
     userPage = await browser.newPage();
-    await userPage.goto('/auth/signin');
+    // 認証が必要なテストでは、各テスト内でauthenticateTestUserを呼び出す
   });
 
   test.afterEach(async () => {
@@ -32,6 +33,9 @@ test.describe('予約システム包括テスト', () => {
 
   test.describe('先着順予約システム', () => {
     test('基本的な先着順予約フロー', async () => {
+      // 開催者でログイン
+      await authenticateTestUser(organizerPage, 'organizer');
+
       // 撮影会作成
       await createPhotoSession(organizerPage, {
         title: 'E2Eテスト先着順撮影会',
@@ -48,6 +52,9 @@ test.describe('予約システム包括テスト', () => {
       const url = organizerPage.url();
       const sessionId = url.match(/\/photo-sessions\/(\d+)/)?.[1];
       expect(sessionId).toBeTruthy();
+
+      // 参加者でログイン
+      await authenticateTestUser(userPage, 'model');
 
       // 参加者による予約
       await makeBooking(userPage, sessionId!, 'first_come');
@@ -67,6 +74,9 @@ test.describe('予約システム包括テスト', () => {
     });
 
     test('同時アクセス競合状態テスト', async ({ browser }) => {
+      // 開催者でログイン
+      await authenticateTestUser(organizerPage, 'organizer');
+
       // 撮影会作成（定員2名）
       await createPhotoSession(organizerPage, {
         title: 'E2E同時アクセステスト',
@@ -103,6 +113,9 @@ test.describe('予約システム包括テスト', () => {
     });
 
     test('満席時のキャンセル待ち自動案内', async () => {
+      // 開催者でログイン
+      await authenticateTestUser(organizerPage, 'organizer');
+
       // 定員1名の撮影会作成
       await createPhotoSession(organizerPage, {
         title: 'E2E満席テスト',
@@ -118,12 +131,16 @@ test.describe('予約システム包括テスト', () => {
       const url = organizerPage.url();
       const sessionId = url.match(/\/photo-sessions\/(\d+)/)?.[1];
 
+      // 参加者でログイン
+      await authenticateTestUser(userPage, 'model');
+
       // 1件目の予約（成功）
       await makeBooking(userPage, sessionId!, 'first_come');
 
       // 2件目の予約試行（キャンセル待ち案内）
       const secondUserPage = await userPage.context().newPage();
-      await secondUserPage.goto(`/photo-sessions/${sessionId}`);
+      await authenticateTestUser(secondUserPage, 'photographer');
+      await secondUserPage.goto(`/ja/photo-sessions/${sessionId}`);
       await waitForPageLoad(secondUserPage);
 
       // 満席表示の確認
@@ -140,6 +157,9 @@ test.describe('予約システム包括テスト', () => {
 
   test.describe('抽選予約システム', () => {
     test('抽選応募から結果発表までのフロー', async () => {
+      // 開催者でログイン
+      await authenticateTestUser(organizerPage, 'organizer');
+
       // 抽選撮影会作成
       await createPhotoSession(organizerPage, {
         title: 'E2E抽選撮影会',
@@ -160,6 +180,9 @@ test.describe('予約システム包括テスト', () => {
         organizerPage.locator('[data-testid="lottery-period"]')
       ).toBeVisible();
 
+      // 参加者でログイン
+      await authenticateTestUser(userPage, 'model');
+
       // 参加者による抽選応募
       await makeBooking(userPage, sessionId!, 'lottery');
 
@@ -175,6 +198,9 @@ test.describe('予約システム包括テスト', () => {
     });
 
     test('抽選処理の実行と結果通知', async () => {
+      // 開催者でログイン
+      await authenticateTestUser(organizerPage, 'organizer');
+
       // 抽選撮影会作成
       await createPhotoSession(organizerPage, {
         title: 'E2E抽選処理テスト',
@@ -190,11 +216,14 @@ test.describe('予約システム包括テスト', () => {
       const url = organizerPage.url();
       const sessionId = url.match(/\/photo-sessions\/(\d+)/)?.[1];
 
+      // 参加者でログイン
+      await authenticateTestUser(userPage, 'model');
+
       // 複数ユーザーで応募
       await makeBooking(userPage, sessionId!, 'lottery');
 
       // 開催者による抽選実行
-      await organizerPage.goto(`/photo-sessions/${sessionId}/manage`);
+      await organizerPage.goto(`/ja/photo-sessions/${sessionId}/manage`);
       await waitForPageLoad(organizerPage);
 
       await organizerPage.click('button:has-text("抽選を実行")');
@@ -219,6 +248,9 @@ test.describe('予約システム包括テスト', () => {
 
   test.describe('管理抽選システム', () => {
     test('開催者による手動選出フロー', async () => {
+      // 開催者でログイン
+      await authenticateTestUser(organizerPage, 'organizer');
+
       // 管理抽選撮影会作成
       await createPhotoSession(organizerPage, {
         title: 'E2E管理抽選撮影会',
@@ -234,11 +266,14 @@ test.describe('予約システム包括テスト', () => {
       const url = organizerPage.url();
       const sessionId = url.match(/\/photo-sessions\/(\d+)/)?.[1];
 
+      // 参加者でログイン
+      await authenticateTestUser(userPage, 'model');
+
       // 参加者による応募
       await makeBooking(userPage, sessionId!, 'admin_lottery');
 
       // 開催者による応募者管理画面確認
-      await organizerPage.goto(`/photo-sessions/${sessionId}/admin-lottery`);
+      await organizerPage.goto(`/ja/photo-sessions/${sessionId}/admin-lottery`);
       await waitForPageLoad(organizerPage);
 
       // 応募者一覧の確認
@@ -268,6 +303,9 @@ test.describe('予約システム包括テスト', () => {
     });
 
     test('応募者検索・フィルタリング機能', async () => {
+      // 開催者でログイン
+      await authenticateTestUser(organizerPage, 'organizer');
+
       // 管理抽選撮影会作成
       await createPhotoSession(organizerPage, {
         title: 'E2E応募者管理テスト',
@@ -284,7 +322,7 @@ test.describe('予約システム包括テスト', () => {
       const sessionId = url.match(/\/photo-sessions\/(\d+)/)?.[1];
 
       // 管理画面での検索・フィルタリング機能確認
-      await organizerPage.goto(`/photo-sessions/${sessionId}/admin-lottery`);
+      await organizerPage.goto(`/ja/photo-sessions/${sessionId}/admin-lottery`);
       await waitForPageLoad(organizerPage);
 
       // 検索機能テスト
@@ -309,6 +347,9 @@ test.describe('予約システム包括テスト', () => {
 
   test.describe('優先予約システム', () => {
     test('ユーザーランク別アクセス制御', async () => {
+      // 開催者でログイン
+      await authenticateTestUser(organizerPage, 'organizer');
+
       // 優先予約撮影会作成
       await createPhotoSession(organizerPage, {
         title: 'E2E優先予約撮影会',
@@ -326,7 +367,7 @@ test.describe('予約システム包括テスト', () => {
 
       // 優先予約設定の確認
       await organizerPage.goto(
-        `/photo-sessions/${sessionId}/priority-settings`
+        `/ja/photo-sessions/${sessionId}/priority-settings`
       );
       await waitForPageLoad(organizerPage);
 
@@ -345,6 +386,9 @@ test.describe('予約システム包括テスト', () => {
     });
 
     test('優先チケット使用フロー', async () => {
+      // 開催者でログイン
+      await authenticateTestUser(organizerPage, 'organizer');
+
       // 優先予約撮影会作成
       await createPhotoSession(organizerPage, {
         title: 'E2E優先チケットテスト',
@@ -361,7 +405,10 @@ test.describe('予約システム包括テスト', () => {
       const sessionId = url.match(/\/photo-sessions\/(\d+)/)?.[1];
 
       // 参加者による優先予約
-      await userPage.goto(`/photo-sessions/${sessionId}`);
+      // 参加者でログイン
+      await authenticateTestUser(userPage, 'model');
+
+      await userPage.goto(`/ja/photo-sessions/${sessionId}`);
       await waitForPageLoad(userPage);
 
       // 優先チケット使用確認
@@ -383,6 +430,9 @@ test.describe('予約システム包括テスト', () => {
 
   test.describe('キャンセル待ちシステム', () => {
     test('自動繰り上げ処理フロー', async () => {
+      // 開催者でログイン
+      await authenticateTestUser(organizerPage, 'organizer');
+
       // キャンセル待ち対応撮影会作成
       await createPhotoSession(organizerPage, {
         title: 'E2Eキャンセル待ちテスト',
@@ -398,12 +448,16 @@ test.describe('予約システム包括テスト', () => {
       const url = organizerPage.url();
       const sessionId = url.match(/\/photo-sessions\/(\d+)/)?.[1];
 
+      // 参加者でログイン
+      await authenticateTestUser(userPage, 'model');
+
       // 定員まで予約を埋める
       await makeBooking(userPage, sessionId!, 'first_come');
 
       // 2人目のユーザーでキャンセル待ち登録
       const waitlistUserPage = await userPage.context().newPage();
-      await waitlistUserPage.goto(`/photo-sessions/${sessionId}`);
+      await authenticateTestUser(waitlistUserPage, 'photographer'); // 別ユーザーとしてphotographerを使用
+      await waitlistUserPage.goto(`/ja/photo-sessions/${sessionId}`);
       await waitForPageLoad(waitlistUserPage);
 
       await waitlistUserPage.click('button:has-text("キャンセル待ちに登録")');
@@ -412,7 +466,7 @@ test.describe('予約システム包括テスト', () => {
       ).toBeVisible();
 
       // 1人目のユーザーがキャンセル
-      await userPage.goto(`/bookings`);
+      await userPage.goto(`/ja/bookings`);
       await waitForPageLoad(userPage);
       await userPage.click('[data-testid="cancel-booking"]');
       await userPage.click('button:has-text("キャンセルを確定")');
@@ -448,6 +502,9 @@ test.describe('予約システム包括テスト', () => {
 
   test.describe('リアルタイム機能テスト', () => {
     test('在庫更新のリアルタイム反映', async ({ browser }) => {
+      // 開催者でログイン
+      await authenticateTestUser(organizerPage, 'organizer');
+
       // 撮影会作成
       await createPhotoSession(organizerPage, {
         title: 'E2Eリアルタイムテスト',
@@ -463,9 +520,13 @@ test.describe('予約システム包括テスト', () => {
       const url = organizerPage.url();
       const sessionId = url.match(/\/photo-sessions\/(\d+)/)?.[1];
 
+      // 参加者でログイン
+      await authenticateTestUser(userPage, 'model');
+
       // 2つ目のブラウザページで同じ撮影会を表示
       const observerPage = await browser.newPage();
-      await observerPage.goto(`/photo-sessions/${sessionId}`);
+      await authenticateTestUser(observerPage, 'photographer');
+      await observerPage.goto(`/ja/photo-sessions/${sessionId}`);
       await waitForPageLoad(observerPage);
 
       // 初期在庫確認
@@ -489,8 +550,11 @@ test.describe('予約システム包括テスト', () => {
     });
 
     test('通知システムのリアルタイム配信', async () => {
+      // 参加者でログイン
+      await authenticateTestUser(userPage, 'model');
+
       // 通知センターの確認
-      await userPage.goto('/dashboard');
+      await userPage.goto('/ja/dashboard');
       await waitForPageLoad(userPage);
 
       // 通知ベルアイコンの確認

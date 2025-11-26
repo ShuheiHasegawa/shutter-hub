@@ -10,6 +10,7 @@ import {
   BookingType,
 } from './utils/photo-session-helpers';
 import { waitForPageLoad } from './utils/test-helpers';
+import { getTestUser } from './config/test-users';
 // テスト環境用Logger（Sentryエラー回避）
 /* eslint-disable no-console */
 const Logger = {
@@ -367,7 +368,7 @@ test.describe('撮影会作成フロー - ユーザー役割別テスト', () =>
 
           // 運営特有: モデル選択手順
           await selectModelsForSession(organizerPage, [
-            'e2e-model@example.com',
+            getTestUser('model').email,
           ]);
 
           await configureSlots(organizerPage, sessionData.slots);

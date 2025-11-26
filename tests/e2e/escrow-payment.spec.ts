@@ -1,5 +1,6 @@
 import { test, expect, Page } from '@playwright/test';
 import { waitForPageLoad } from './utils/test-helpers';
+import { authenticateTestUser } from './utils/photo-session-helpers';
 
 /**
  * エスクロー決済システム包括テスト
@@ -12,16 +13,16 @@ test.describe('エスクロー決済システム包括テスト', () => {
   let adminPage: Page;
 
   test.beforeEach(async ({ browser }) => {
-    // クライアント用ページ
+    // クライアント用ページ（ゲストユーザーの場合は認証不要）
     clientPage = await browser.newPage();
 
-    // カメラマン用ページ
+    // カメラマン用ページ（認証が必要な場合はログイン）
     photographerPage = await browser.newPage();
-    await photographerPage.goto('/auth/signin');
+    // 認証が必要なテストでは、各テスト内でauthenticateTestUserを呼び出す
 
-    // 管理者用ページ
+    // 管理者用ページ（認証が必要な場合はログイン）
     adminPage = await browser.newPage();
-    await adminPage.goto('/auth/signin');
+    // 認証が必要なテストでは、各テスト内でauthenticateTestUserを呼び出す
   });
 
   test.afterEach(async () => {
@@ -63,8 +64,11 @@ test.describe('エスクロー決済システム包括テスト', () => {
     });
 
     test('カメラマンによるリクエスト受諾', async () => {
+      // カメラマンでログイン
+      await authenticateTestUser(photographerPage, 'photographer');
+
       // カメラマンダッシュボードに移動
-      await photographerPage.goto('/photographer/dashboard');
+      await photographerPage.goto('/ja/photographer/dashboard');
       await waitForPageLoad(photographerPage);
 
       // オンライン状態に設定
@@ -266,7 +270,10 @@ test.describe('エスクロー決済システム包括テスト', () => {
 
     test('管理者による争議解決', async () => {
       // 管理者ダッシュボードで争議確認
-      await adminPage.goto('/admin/disputes');
+      // 管理者でログイン（organizerユーザーを使用）
+      await authenticateTestUser(adminPage, 'organizer');
+
+      await adminPage.goto('/ja/admin/disputes');
       await waitForPageLoad(adminPage);
 
       // 新規争議の確認
@@ -359,7 +366,10 @@ test.describe('エスクロー決済システム包括テスト', () => {
 
     test('返金処理テスト', async () => {
       // 管理者による返金処理
-      await adminPage.goto('/admin/payments');
+      // 管理者でログイン（organizerユーザーを使用）
+      await authenticateTestUser(adminPage, 'organizer');
+
+      await adminPage.goto('/ja/admin/payments');
       await waitForPageLoad(adminPage);
 
       // 返金対象の決済選択
@@ -385,7 +395,10 @@ test.describe('エスクロー決済システム包括テスト', () => {
 
     test('手数料計算・分配テスト', async () => {
       // 決済完了後の手数料計算確認
-      await adminPage.goto('/admin/analytics');
+      // 管理者でログイン（organizerユーザーを使用）
+      await authenticateTestUser(adminPage, 'organizer');
+
+      await adminPage.goto('/ja/admin/analytics');
       await waitForPageLoad(adminPage);
 
       // 手数料統計の確認
@@ -441,7 +454,10 @@ test.describe('エスクロー決済システム包括テスト', () => {
 
     test('大量データ処理テスト', async () => {
       // 大量の決済履歴表示テスト
-      await adminPage.goto('/admin/payments?limit=1000');
+      // 管理者でログイン（organizerユーザーを使用）
+      await authenticateTestUser(adminPage, 'organizer');
+
+      await adminPage.goto('/ja/admin/payments?limit=1000');
       await waitForPageLoad(adminPage);
 
       // ページ読み込み時間の確認

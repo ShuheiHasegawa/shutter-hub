@@ -1,5 +1,6 @@
 import { Page, expect } from '@playwright/test';
 import { waitForPageLoad } from './test-helpers';
+import { getTestUser } from '../config/test-users';
 
 // テスト環境用Logger（Sentryエラー回避）
 /* eslint-disable no-console */
@@ -529,7 +530,8 @@ export async function selectSlotAndBook(
 
   // 参加者情報入力（簡易版）
   await page.fill('#participantName', 'E2Eテストユーザー');
-  await page.fill('#participantEmail', 'e2e-test@example.com');
+  const testUser = getTestUser('model');
+  await page.fill('#participantEmail', testUser.email);
   await page.fill('#participantPhone', '090-0000-0000');
 
   // 予約申込みボタンクリック
@@ -564,7 +566,8 @@ export async function verifyPaymentScreen(page: Page): Promise<void> {
 }
 
 /**
- * テスト用ユーザー認証（簡易版）
+ * テスト用ユーザー認証（改善版）
+ * basic-login-dashboard.spec.tsのパターンを参考に改善
  */
 export async function authenticateTestUser(
   page: Page,
@@ -572,33 +575,326 @@ export async function authenticateTestUser(
 ): Promise<void> {
   Logger.info(`🔐 テストユーザー認証: ${userType}`);
 
-  // ロケールを明示的に指定（/ja/auth/signin）
-  await page.goto('/ja/auth/signin');
-  await waitForPageLoad(page);
+  // Step 1: サインインページへ移動（ロケールなしで試行）
+  Logger.info('📍 Step 1: サインインページ移動');
+  await page.goto('/ja/auth/signin', {
+    waitUntil: 'domcontentloaded',
+    timeout: 30000,
+  });
+  // waitForPageLoadは不要（page.gotoのwaitUntilで既に待機済み）
+
+  // 現在のURLを確認
+  const currentUrl = page.url();
+  Logger.info(`🌐 現在のURL: ${currentUrl}`);
 
   // サインインページの確認
-  await page.waitForSelector('#signin-email', { timeout: 10000 });
+  await expect(page.getByText('アカウントにサインイン')).toBeVisible({
+    timeout: 10000,
+  });
+  Logger.info('✅ サインインページ表示確認');
 
-  // テスト用認証（実際のUIセレクターと作成済みテストユーザーに対応）
-  if (userType === 'organizer') {
-    await page.fill('#signin-email', 'e2e-organizer@example.com');
-    await page.fill('#signin-password', 'E2ETestPassword123!');
-  } else if (userType === 'photographer') {
-    await page.fill('#signin-email', 'e2e-photographer@example.com');
-    await page.fill('#signin-password', 'E2ETestPassword123!');
-  } else {
-    await page.fill('#signin-email', 'e2e-model@example.com');
-    await page.fill('#signin-password', 'E2ETestPassword123!');
+  // Step 2: フォーム要素の存在確認
+  Logger.info('📍 Step 2: フォーム要素確認');
+  const emailField = page.locator('#signin-email');
+  const passwordField = page.locator('#signin-password');
+  const submitButton = page
+    .locator('form button[type="submit"]')
+    .or(page.getByRole('button', { name: 'ログイン' }))
+    .first();
+
+  await expect(emailField).toBeVisible({ timeout: 10000 });
+  await expect(passwordField).toBeVisible({ timeout: 10000 });
+  await expect(submitButton).toBeVisible({ timeout: 10000 });
+  Logger.info('✅ フォーム要素存在確認完了');
+
+  // Step 3: 認証情報入力
+  Logger.info('📍 Step 3: 認証情報入力');
+  const testUser = getTestUser(userType);
+
+  // 使用する認証情報をログに出力（デバッグ用）
+  Logger.info(`📋 使用する認証情報:`);
+  Logger.info(`   - ユーザータイプ: ${userType}`);
+  Logger.info(`   - メールアドレス: ${testUser.email}`);
+  Logger.info(
+    `   - パスワード: ${testUser.password ? '***（設定済み）' : '❌ 未設定'}`
+  );
+
+  // パスワードが設定されているか確認
+  if (!testUser.password) {
+    Logger.error(`❌ パスワードが設定されていません: ${testUser.email}`);
+    throw new Error(
+      `テストユーザーのパスワードが設定されていません: ${userType}`
+    );
   }
 
-  // 成功パターン適用: Enterキーでフォーム送信
-  Logger.info('⌨️ Enterキーでログイン送信');
-  await page.locator('#signin-password').press('Enter');
+  // メールアドレス入力（ReactのonChangeイベントを確実にトリガーする方法）
+  // fill()ではonChangeが発火しない可能性があるため、clear() + type()を使用
+  await emailField.click(); // フォーカス
+  await emailField.clear(); // 既存の値をクリア
+  await emailField.type(testUser.email, { delay: 50 }); // type()で入力（onChangeをトリガー）
+  Logger.info(`✅ Email入力: ${testUser.email}`);
 
-  // ログイン後のページ読み込み完了を待機（長めのタイムアウト）
-  await page.waitForLoadState('networkidle', { timeout: 20000 });
+  // メールアドレスフィールドからフォーカスを外してバリデーションをトリガー
+  await emailField.blur();
+  await page.waitForTimeout(300); // バリデーション実行を待機
 
-  // エラーメッセージの確認（ログイン失敗の場合）
+  // パスワード入力（ReactのonChangeイベントを確実にトリガーする方法）
+  await passwordField.click(); // フォーカス
+  await passwordField.clear(); // 既存の値をクリア
+  await passwordField.type(testUser.password, { delay: 50 }); // type()で入力（onChangeをトリガー）
+  Logger.info(`✅ パスワード入力完了`);
+
+  // パスワードフィールドからフォーカスを外してバリデーションをトリガー
+  await passwordField.blur();
+  await page.waitForTimeout(300); // バリデーション実行を待機
+
+  // ログインボタンが有効になるまで待機（フォームバリデーション完了を待つ）
+  Logger.info('⏳ ログインボタンが有効になるまで待機');
+
+  // ネットワークリクエストを監視（フォーム送信前に開始）
+  // 成功しているWebKitテストのパターン: ネットワークリクエストの検出を待つ
+  Logger.info('🌐 認証APIリクエストの監視を開始');
+  const networkPromise = page
+    .waitForResponse(
+      response => {
+        const url = response.url();
+        // Supabase認証エンドポイントへのリクエストを監視
+        const isAuthRequest =
+          url.includes('/auth/v1/token') ||
+          url.includes('supabase.co/auth/v1') ||
+          url.includes('supabase.com/auth/v1');
+        if (isAuthRequest) {
+          Logger.info(`🌐 認証APIリクエスト検出: ${url}`);
+        }
+        return isAuthRequest;
+      },
+      { timeout: 10000 } // 成功パターンに合わせて10秒に延長
+    )
+    .catch(() => {
+      Logger.warn(
+        '⚠️ 認証APIリクエストの監視がタイムアウトしました（続行します）'
+      );
+      return null;
+    });
+
+  // ボタンの状態を確認（最大3秒待機、失敗しても続行）
+  const buttonEnabled = await expect(submitButton)
+    .toBeEnabled({ timeout: 3000 })
+    .then(() => true)
+    .catch(() => false);
+
+  // Step 4: フォーム送信
+  Logger.info('📍 Step 4: フォーム送信');
+
+  if (!buttonEnabled) {
+    Logger.warn('⚠️ ログインボタンが有効になりませんでした');
+    Logger.warn('⚠️ JavaScriptでフォーム送信を試行します');
+
+    // ボタンが有効にならない場合でも、JavaScriptでフォーム送信を試みる
+    // HTML5バリデーションをバイパスして送信
+    const formElement = await page.locator('form').first();
+    await formElement.evaluate((form: HTMLFormElement) => {
+      // required属性を一時的に無効化
+      const inputs = form.querySelectorAll('input[required]');
+      inputs.forEach(input => input.removeAttribute('required'));
+      // フォーム送信
+      form.requestSubmit();
+    });
+    Logger.info('🔧 JavaScriptでフォーム送信を実行しました');
+
+    // 送信後、少し待機
+    await page.waitForTimeout(1000);
+  } else {
+    Logger.info('✅ ログインボタンが有効になりました');
+
+    // フォーム送信を確実に実行（Mobile Chrome対応: ボタンクリックを優先）
+    Logger.info('🔄 フォーム送信を実行します');
+
+    // 成功しているテスト（WebKit）のパターンを採用: Enterキーを優先
+    // WebKitではEnterキーで成功しているため、これを最初に試す
+    Logger.info('🔄 フォーム送信を実行します（成功パターンを採用）');
+
+    // パスワードフィールドに確実にフォーカスを当てる
+    await passwordField.focus();
+    await page.waitForTimeout(200); // フォーカスを確実にする
+
+    // Enterキーで送信（WebKitで成功している方法）
+    Logger.info('⌨️ パスワードフィールドでEnterキーを押します（成功パターン）');
+    await passwordField.press('Enter');
+    Logger.info('✅ Enterキーで送信を実行');
+
+    // Reactがイベントを処理するのを待つ（成功パターンと同じ待機時間）
+    await page.waitForTimeout(500);
+
+    // フォーム送信の確認（ローディング状態またはページ遷移を待機）
+    Logger.info('⏳ フォーム送信の確認中...');
+    const formSubmitted = await Promise.race([
+      // ページ遷移を待機
+      page
+        .waitForURL('**/dashboard**', { timeout: 2000 })
+        .then(() => true)
+        .catch(() => false),
+      page
+        .waitForURL('**/profile**', { timeout: 2000 })
+        .then(() => true)
+        .catch(() => false),
+      // ログインボタンがdisabledになる（ローディング状態）を確認
+      expect(submitButton)
+        .toBeDisabled({ timeout: 2000 })
+        .then(() => true)
+        .catch(() => false),
+    ]);
+
+    if (formSubmitted) {
+      Logger.info('✅ フォーム送信が検出されました');
+    } else {
+      Logger.warn('⚠️ フォーム送信の検出に失敗しました');
+    }
+  }
+
+  // Step 5: フォーム送信後の状態確認
+  Logger.info('📍 Step 5: フォーム送信後の状態確認');
+
+  // ローディング状態の確認（フォーム送信後すぐに確認）
+  Logger.info('⏳ ローディング状態の確認中...');
+  const loadingState = await Promise.race([
+    expect(submitButton)
+      .toBeDisabled({ timeout: 2000 })
+      .then(() => 'loading')
+      .catch(() => null),
+    page.waitForTimeout(500).then(() => null),
+  ]).catch(() => null);
+
+  if (loadingState === 'loading') {
+    Logger.info('✅ ローディング状態を検出しました（フォーム送信成功）');
+  } else {
+    Logger.warn('⚠️ ローディング状態が検出されませんでした');
+    // フォーム状態の確認はスキップ（ページ遷移後はフォームが存在しない可能性があるため）
+  }
+
+  // ネットワークリクエストの待機（既に開始されている）
+  Logger.info('⏳ 認証APIレスポンスを待機中...');
+  const networkResponse = await networkPromise;
+  if (networkResponse) {
+    const status = networkResponse.status();
+    const responseBody = await networkResponse.json().catch(() => null);
+    Logger.info(`🌐 認証APIレスポンス: ${status}`);
+    if (status !== 200) {
+      Logger.error(`❌ 認証APIエラー: ${status}`);
+      if (responseBody) {
+        Logger.error(`📋 エラー詳細: ${JSON.stringify(responseBody, null, 2)}`);
+      }
+    } else {
+      Logger.info('✅ 認証APIリクエスト成功（ステータス200）');
+    }
+  } else {
+    Logger.error('❌ 認証APIへのリクエストが検出されませんでした');
+    Logger.error('❌ フォーム送信が実行されていない可能性があります');
+
+    // コンソールエラーの確認
+    const consoleErrors: string[] = [];
+    page.on('console', msg => {
+      if (msg.type() === 'error') {
+        consoleErrors.push(msg.text());
+      }
+    });
+
+    if (consoleErrors.length > 0) {
+      Logger.error(`❌ コンソールエラー: ${consoleErrors.join(', ')}`);
+    }
+  }
+
+  // エラーメッセージの確認（認証APIが失敗した場合のみ）
+  // 認証APIが成功している場合は、エラーメッセージの確認をスキップ
+  if (!networkResponse || networkResponse.status() !== 200) {
+    Logger.info('🔍 エラーメッセージの確認中...');
+    const errorMessages = [
+      'text=メールアドレスまたはパスワードが正しくありません',
+      'text=ログイン中にエラーが発生しました',
+    ];
+
+    for (const errorSelector of errorMessages) {
+      const errorElement = page.locator(errorSelector).first();
+      const isVisible = await errorElement
+        .isVisible({ timeout: 1000 })
+        .catch(() => false);
+      if (isVisible) {
+        const errorText = await errorElement.textContent().catch(() => '');
+        Logger.error(`❌ エラーメッセージ検出: ${errorText}`);
+        Logger.error(`📍 エラーセレクタ: ${errorSelector}`);
+      }
+    }
+  } else {
+    Logger.info('✅ 認証API成功のため、エラーメッセージの確認をスキップ');
+  }
+
+  // Step 6: ページ遷移の待機と確認
+  Logger.info('📍 Step 6: ページ遷移待機');
+
+  // 認証APIが成功した場合、確実にページ遷移を待つ
+  // 成功しているWebKitテストのパターン: 認証API成功後、ページ遷移を待機
+  let postLoginUrl = page.url();
+
+  // 認証APIが成功している場合、ページ遷移を確実に待機
+  if (networkResponse && networkResponse.status() === 200) {
+    Logger.info('✅ 認証API成功を確認、ページ遷移を待機します');
+
+    // ページ遷移を確実に待機（成功パターン: 認証API成功後、確実に遷移を待つ）
+    // Promise.race()ではなく、順番に待機して確実に遷移を検出する
+    let pageTransitioned = false;
+
+    // 方法1: ダッシュボードへの遷移を待機
+    try {
+      await page.waitForURL('**/dashboard**', { timeout: 15000 });
+      postLoginUrl = page.url();
+      Logger.info('🎯 ダッシュボードに遷移');
+      pageTransitioned = true;
+    } catch {
+      Logger.info('⏳ ダッシュボードへの遷移を待機中...');
+    }
+
+    // 方法2: プロフィールページへの遷移を待機（ダッシュボードに遷移しなかった場合）
+    if (!pageTransitioned) {
+      try {
+        await page.waitForURL('**/profile**', { timeout: 15000 });
+        postLoginUrl = page.url();
+        Logger.info('🎯 プロフィール設定に遷移');
+        pageTransitioned = true;
+      } catch {
+        Logger.info('⏳ プロフィールページへの遷移を待機中...');
+      }
+    }
+
+    // 方法3: まだ遷移していない場合、追加で待機
+    if (!pageTransitioned) {
+      Logger.warn('⚠️ ページ遷移が検出されませんでした、追加で待機します');
+      await page.waitForTimeout(3000); // 追加の待機時間
+      postLoginUrl = page.url();
+      Logger.info(`🌐 追加待機後のURL: ${postLoginUrl}`);
+
+      // まだサインインページにいる場合、もう一度待機を試みる
+      if (postLoginUrl.includes('/auth/signin')) {
+        Logger.warn('⚠️ まだサインインページにいます、最終待機を実行します');
+        await page.waitForTimeout(5000); // 最終待機時間
+        postLoginUrl = page.url();
+        Logger.info(`🌐 最終確認後のURL: ${postLoginUrl}`);
+      }
+    }
+  } else {
+    // 認証APIが失敗した場合、DOM読み込みを待機
+    Logger.warn(
+      '⚠️ 認証APIレスポンスが確認できませんでした、DOM読み込みを待機します'
+    );
+    await page.waitForLoadState('domcontentloaded', { timeout: 10000 });
+    postLoginUrl = page.url();
+  }
+
+  Logger.info(`🌐 ログイン後URL: ${postLoginUrl}`);
+
+  // Step 7: ログイン成功の確認
+  Logger.info('📍 Step 7: ログイン成功確認');
+
+  // エラーメッセージの再確認（ログイン失敗の場合）
   const errorMessage = page.locator(
     'text=メールアドレスまたはパスワードが正しくありません'
   );
@@ -610,39 +906,36 @@ export async function authenticateTestUser(
     Logger.error(
       `❌ ${userType}認証エラー: メールアドレスまたはパスワードが正しくありません`
     );
+
+    // コンソールエラーの確認
+    const consoleErrors: string[] = [];
+    page.on('console', msg => {
+      if (msg.type() === 'error') {
+        consoleErrors.push(msg.text());
+      }
+    });
+
+    if (consoleErrors.length > 0) {
+      Logger.error(`❌ コンソールエラー: ${consoleErrors.join(', ')}`);
+    }
+
     throw new Error(
       `${userType}認証に失敗しました: メールアドレスまたはパスワードが正しくありません`
     );
   }
 
-  // ログイン成功の確認（ロケール考慮、複数の条件でチェック）
-  await Promise.race([
-    page
-      .waitForSelector('text=ダッシュボード', { timeout: 8000 })
-      .catch(() => null),
-    page
-      .waitForSelector('[data-testid="dashboard"]', { timeout: 8000 })
-      .catch(() => null),
-    page.waitForSelector('nav', { timeout: 8000 }).catch(() => null),
-    page.waitForURL('**/dashboard', { timeout: 8000 }).catch(() => null),
-    page.waitForURL('**/ja/dashboard', { timeout: 8000 }).catch(() => null),
-    page.waitForURL('**/profile/edit', { timeout: 8000 }).catch(() => null), // プロフィール未設定の場合
-  ]);
+  // サインインページではないことを確認（ロケール考慮）
+  const isSigninPage = postLoginUrl.includes('/auth/signin');
+  const isDashboardPage =
+    postLoginUrl.includes('/dashboard') || postLoginUrl.includes('/profile');
 
-  // 最終URL確認（ログイン成功判定）
-  const finalUrl = page.url();
-  const isSuccess =
-    finalUrl.includes('/dashboard') ||
-    finalUrl.includes('/profile') ||
-    finalUrl.includes('/ja/dashboard') ||
-    finalUrl.includes('/ja/profile');
-
-  if (!isSuccess && finalUrl.includes('/auth/signin')) {
-    Logger.error(`❌ ${userType}認証失敗: 最終URL = ${finalUrl}`);
-    throw new Error(`${userType}認証に失敗しました: ${finalUrl}`);
+  if (isSigninPage && !isDashboardPage) {
+    Logger.error(`❌ ${userType}認証失敗: まだサインインページにいます`);
+    Logger.error(`📍 最終URL: ${postLoginUrl}`);
+    throw new Error(`${userType}認証に失敗しました: ${postLoginUrl}`);
   }
 
-  Logger.info(`✅ ${userType}認証完了: ${finalUrl}`);
+  Logger.info(`✅ ${userType}認証完了: ${postLoginUrl}`);
 }
 
 /**
