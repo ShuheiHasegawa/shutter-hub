@@ -9,6 +9,7 @@ import {
   cleanupPhotoSession,
 } from './utils/photo-session-helpers';
 import { waitForPageLoad } from './utils/test-helpers';
+import { getTestUser } from './config/test-users';
 import Logger from '../../src/lib/logger';
 
 /**
@@ -76,10 +77,8 @@ test.describe('撮影会予約フロー完全テスト', () => {
 
     // 参加者情報入力
     await participantPage.fill('#participantName', 'E2Eテスト参加者');
-    await participantPage.fill(
-      '#participantEmail',
-      'e2e-participant-test@example.com'
-    );
+    const testUser = getTestUser('model');
+    await participantPage.fill('#participantEmail', testUser.email);
     await participantPage.fill('#participantPhone', '090-1111-2222');
     await participantPage.fill(
       '#specialRequests',

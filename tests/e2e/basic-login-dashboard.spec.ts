@@ -1,6 +1,8 @@
 /* eslint-disable no-console */
 import { test, expect, Page } from '@playwright/test';
 import { waitForPageLoad } from './utils/test-helpers';
+import { getAllTestUsers, type TestUser } from './config/test-users';
+import { authenticateTestUser } from './utils/photo-session-helpers';
 // テスト環境ではconsoleを使用（Sentryエラー回避）
 const Logger = {
   info: (message: string) => console.log(`ℹ️ ${message}`),
@@ -9,136 +11,10 @@ const Logger = {
 
 /**
  * 基本ログイン〜ダッシュボード表示テスト
- * 段階的アプローチで認証フローを確立
+ * authenticateTestUserを使用した統一認証フロー
  */
 
-interface TestUser {
-  email: string;
-  password: string;
-  type: 'organizer' | 'photographer' | 'model';
-  displayName: string;
-}
-
-const testUsers: TestUser[] = [
-  {
-    email: 'e2e-organizer@example.com',
-    password: 'E2ETestPassword123!',
-    type: 'organizer',
-    displayName: 'E2Eテスト主催者',
-  },
-  {
-    email: 'e2e-photographer@example.com',
-    password: 'E2ETestPassword123!',
-    type: 'photographer',
-    displayName: 'E2Eテストフォトグラファー',
-  },
-  {
-    email: 'e2e-model@example.com',
-    password: 'E2ETestPassword123!',
-    type: 'model',
-    displayName: 'E2Eテストモデル',
-  },
-];
-
-/**
- * 段階的ログインテスト関数
- */
-async function performStepByStepLogin(
-  page: Page,
-  user: TestUser
-): Promise<void> {
-  Logger.info(`🔐 ${user.type}アカウントでのステップバイステップログイン開始`);
-
-  // Step 1: サインインページへ移動
-  Logger.info('📍 Step 1: サインインページ移動');
-  await page.goto('/auth/signin');
-  await waitForPageLoad(page);
-
-  // 現在のURLを確認
-  const currentUrl = page.url();
-  Logger.info(`🌐 現在のURL: ${currentUrl}`);
-
-  // サインインページの確認
-  await expect(page.getByText('アカウントにサインイン')).toBeVisible({
-    timeout: 10000,
-  });
-  Logger.info('✅ サインインページ表示確認');
-
-  // Step 2: フォーム要素の存在確認
-  Logger.info('📍 Step 2: フォーム要素確認');
-  const emailField = page.locator('#signin-email');
-  const passwordField = page.locator('#signin-password');
-
-  // より具体的なログインボタンセレクター（タブと区別するため）
-  const submitButton = page
-    .locator('form button[type="submit"]')
-    .or(
-      page
-        .locator('button[type="submit"]')
-        .filter({ hasText: 'ログイン' })
-        .last()
-    );
-
-  await expect(emailField).toBeVisible();
-  await expect(passwordField).toBeVisible();
-  await expect(submitButton).toBeVisible();
-  Logger.info('✅ フォーム要素存在確認完了');
-
-  // Step 3: 認証情報入力
-  Logger.info('📍 Step 3: 認証情報入力');
-  await emailField.fill(user.email);
-  await passwordField.fill(user.password);
-  Logger.info(`📧 Email入力: ${user.email}`);
-
-  // Step 4: ログインボタンクリック（成功パターン適用）
-  Logger.info('📍 Step 4: ログインボタンクリック');
-
-  // 調査テストで成功したパターンを適用：Enterキーを使用
-  Logger.info('⌨️ Enterキー送信を試行');
-  await passwordField.press('Enter');
-  Logger.info('🖱️ Enterキー送信完了');
-
-  // Step 5: ページ遷移の待機と確認
-  Logger.info('📍 Step 5: ページ遷移待機');
-
-  // 複数の遷移パターンに対応（ロケールプレフィックス考慮）
-  await Promise.race([
-    // ダッシュボードに直接遷移（ロケール付き）
-    page
-      .waitForURL('**/dashboard', { timeout: 15000 })
-      .then(() => Logger.info('🎯 ダッシュボードに遷移')),
-    // プロフィール設定に遷移（初回ログイン）
-    page
-      .waitForURL('**/profile/edit', { timeout: 15000 })
-      .then(() => Logger.info('🎯 プロフィール設定に遷移')),
-    // URLパラメータ付きダッシュボード
-    page
-      .waitForURL('**/dashboard**', { timeout: 15000 })
-      .then(() => Logger.info('🎯 ダッシュボード（パラメータ付き）に遷移')),
-    // その他の認証後ページ
-    page
-      .waitForLoadState('networkidle', { timeout: 15000 })
-      .then(() => Logger.info('🌐 ネットワーク待機完了')),
-  ]);
-
-  const postLoginUrl = page.url();
-  Logger.info(`🌐 ログイン後URL: ${postLoginUrl}`);
-
-  // Step 6: ログイン成功の確認
-  Logger.info('📍 Step 6: ログイン成功確認');
-
-  // サインインページではないことを確認（ロケール考慮）
-  const isSigninPage = postLoginUrl.includes('/auth/signin');
-  const isDashboardPage =
-    postLoginUrl.includes('/dashboard') || postLoginUrl.includes('/profile');
-
-  if (isSigninPage && !isDashboardPage) {
-    Logger.error('ログイン失敗: まだサインインページにいます');
-    throw new Error('ログインに失敗しました');
-  }
-
-  Logger.info(`✅ ${user.type}ログイン成功`);
-}
+const testUsers: TestUser[] = getAllTestUsers();
 
 /**
  * ダッシュボード画面の詳細確認
@@ -230,8 +106,9 @@ test.describe('基本ログイン〜ダッシュボード表示テスト', () =>
     test(`${user.type}ログイン〜ダッシュボード確認: ${user.displayName}`, async ({
       page,
     }) => {
-      // ステップ1: ログイン実行
-      await performStepByStepLogin(page, user);
+      // ステップ1: ログイン実行（authenticateTestUserを使用）
+      Logger.info(`🔐 ${user.type}アカウントでのログイン開始`);
+      await authenticateTestUser(page, user.type);
 
       // ステップ2: ダッシュボード確認
       await verifyDashboardContent(page, user);
@@ -248,7 +125,7 @@ test.describe('基本ログイン〜ダッシュボード表示テスト', () =>
         Logger.info('✅ ログアウト成功');
       } catch {
         // ログアウトボタンが見つからない場合は直接サインインページに移動
-        await page.goto('/auth/signin');
+        await page.goto('/ja/auth/signin');
         Logger.info('✅ サインインページに直接移動でセッションクリア');
       }
     });
@@ -262,14 +139,14 @@ test.describe('基本ログイン〜ダッシュボード表示テスト', () =>
       Logger.info(`🎭 ${user.type} (${user.displayName}) テスト開始`);
       Logger.info(`${'='.repeat(50)}`);
 
-      // ログイン実行
-      await performStepByStepLogin(page, user);
+      // ログイン実行（authenticateTestUserを使用）
+      await authenticateTestUser(page, user.type);
 
       // ダッシュボード確認
       await verifyDashboardContent(page, user);
 
       // セッションクリア（次のユーザーのため）
-      await page.goto('/auth/signin');
+      await page.goto('/ja/auth/signin');
       await waitForPageLoad(page);
 
       Logger.info(`✅ ${user.type}テスト完了\n`);
@@ -281,9 +158,8 @@ test.describe('基本ログイン〜ダッシュボード表示テスト', () =>
   test('ログイン後の各種ページアクセステスト', async ({ page }) => {
     Logger.info('🌐 ログイン後ページアクセステスト開始');
 
-    // organizerでログイン
-    const organizer = testUsers.find(u => u.type === 'organizer')!;
-    await performStepByStepLogin(page, organizer);
+    // organizerでログイン（authenticateTestUserを使用）
+    await authenticateTestUser(page, 'organizer');
 
     // 各種ページへのアクセステスト
     const pagesToTest = [
