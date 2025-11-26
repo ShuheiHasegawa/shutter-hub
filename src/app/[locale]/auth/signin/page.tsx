@@ -8,6 +8,7 @@ import { GalleryVerticalEnd } from 'lucide-react';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
+import { logger } from '@/lib/utils/logger';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -35,9 +36,16 @@ export default function SignInPage() {
 
   // ログアウトして続ける処理
   const handleLogoutAndContinue = async () => {
-    setShowWarning(false);
-    await logout();
-    // ログアウト後は自動的にサインインページにリダイレクトされる
+    try {
+      setShowWarning(false);
+      await logout();
+      // ログアウト後、ページをリロードして状態をクリア
+      window.location.href = `/${locale}/auth/signin`;
+    } catch (error) {
+      logger.error('ログアウトエラー:', error);
+      // エラーが発生してもページをリロード
+      window.location.href = `/${locale}/auth/signin`;
+    }
   };
 
   return (

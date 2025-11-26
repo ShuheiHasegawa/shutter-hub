@@ -192,31 +192,48 @@ export async function createProfile(
 }
 
 export async function getProfile(userId: string) {
-  const supabase = createClient();
+  try {
+    const supabase = createClient();
 
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', userId)
-    .single();
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
 
-  // プロフィールが存在しない場合は error が設定される（.single()使用時）
-  if (error && error.code === 'PGRST116') {
+    // プロフィールが存在しない場合は error が設定される（.single()使用時）
+    if (error && error.code === 'PGRST116') {
+      return {
+        data: null,
+        error: {
+          code: 'PROFILE_NOT_FOUND',
+          message: 'Profile not found',
+        },
+      };
+    }
+
+    // ネットワークエラーなどの場合
+    if (error) {
+      return { data: null, error };
+    }
+
+    // データが存在する場合は返す（.single()使用時は配列ではなく単一オブジェクト）
+    if (data) {
+      return { data, error: null };
+    }
+
+    return { data: null, error: null };
+  } catch (error) {
+    // 予期しないエラー（ネットワークエラーなど）
     return {
       data: null,
       error: {
-        code: 'PROFILE_NOT_FOUND',
-        message: 'Profile not found',
+        code: 'UNEXPECTED_ERROR',
+        message:
+          error instanceof Error ? error.message : 'Unexpected error occurred',
       },
     };
   }
-
-  // データが存在する場合は最初の要素を返す
-  if (!error && data && data.length > 0) {
-    return { data: data[0], error: null };
-  }
-
-  return { data, error };
 }
 
 export async function updateProfile(
