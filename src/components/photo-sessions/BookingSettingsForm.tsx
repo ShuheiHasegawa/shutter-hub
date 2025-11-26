@@ -271,51 +271,6 @@ export const BookingSettingsForm = memo(function BookingSettingsForm({
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <div>
-            <Label className="text-sm">
-              {t('bookingSettings.priority.vipSlots')}
-            </Label>
-            <Input
-              type="number"
-              min="0"
-              value={settings.vip_slots || 0}
-              onChange={e =>
-                updateSetting('vip_slots', parseInt(e.target.value) || 0)
-              }
-              disabled={disabled}
-            />
-          </div>
-          <div>
-            <Label className="text-sm">
-              {t('bookingSettings.priority.platinumSlots')}
-            </Label>
-            <Input
-              type="number"
-              min="0"
-              value={settings.platinum_slots || 0}
-              onChange={e =>
-                updateSetting('platinum_slots', parseInt(e.target.value) || 0)
-              }
-              disabled={disabled}
-            />
-          </div>
-          <div>
-            <Label className="text-sm">
-              {t('bookingSettings.priority.goldSlots')}
-            </Label>
-            <Input
-              type="number"
-              min="0"
-              value={settings.gold_slots || 0}
-              onChange={e =>
-                updateSetting('gold_slots', parseInt(e.target.value) || 0)
-              }
-              disabled={disabled}
-            />
-          </div>
-        </div>
-
         <div className="flex items-center justify-between">
           <div>
             <Label className="text-sm">

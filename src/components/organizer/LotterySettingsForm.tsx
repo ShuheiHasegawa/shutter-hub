@@ -204,6 +204,18 @@ export function LotterySettingsForm({
 
           {settings.enable_lottery_weight && (
             <div className="space-y-4 pt-4 border-t">
+              {/* 重み計算方法の説明 */}
+              <div className="p-3 bg-blue-50 dark:bg-blue-950 rounded-lg space-y-2">
+                <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                  💡 重み計算方法とは？
+                </p>
+                <p className="text-xs text-blue-800 dark:text-blue-200">
+                  応募枠数に応じて、抽選の当選確率を調整する仕組みです。
+                  <br />
+                  例：10枠中4枠に応募した場合
+                </p>
+              </div>
+
               <div className="space-y-2">
                 <Label>重み計算方法</Label>
                 <Select
@@ -230,14 +242,56 @@ export function LotterySettingsForm({
                     <SelectItem value="custom">カスタム</SelectItem>
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-muted-foreground">
-                  {settings.weight_calculation_method === 'linear' &&
-                    '4枠応募 = 4倍の確率'}
-                  {settings.weight_calculation_method === 'bonus' &&
-                    '4枠応募 = 基本確率 + ボーナス'}
-                  {settings.weight_calculation_method === 'custom' &&
-                    'カスタム計算式を使用'}
-                </p>
+
+                {/* 計算方法別の詳細説明 */}
+                <div className="p-3 bg-muted rounded-lg space-y-2">
+                  {settings.weight_calculation_method === 'linear' && (
+                    <>
+                      <p className="text-xs font-medium">
+                        📊 線形方式：応募枠数 = 当選確率の重み
+                      </p>
+                      <div className="text-xs text-muted-foreground space-y-1">
+                        <p>• Aさん（1枠応募）：重み = 1</p>
+                        <p>• Bさん（4枠応募）：重み = 4</p>
+                        <p>• Cさん（10枠応募）：重み = 10</p>
+                        <p className="pt-1 font-medium">
+                          → Cさんの当選確率はAさんの10倍
+                        </p>
+                      </div>
+                    </>
+                  )}
+                  {settings.weight_calculation_method === 'bonus' && (
+                    <>
+                      <p className="text-xs font-medium">
+                        🎁 ボーナス方式：基本重み1 + ボーナス重み
+                      </p>
+                      <div className="text-xs text-muted-foreground space-y-1">
+                        <p>• Aさん（1枠応募）：重み = 1 + 0 = 1</p>
+                        <p>• Bさん（4枠応募）：重み = 1 + 3 = 4</p>
+                        <p>• Cさん（10枠応募）：重み = 1 + 9 = 10</p>
+                        <p className="pt-1 font-medium">
+                          → 全員に基本確率を保証しつつ、多く応募した人にボーナス
+                        </p>
+                      </div>
+                    </>
+                  )}
+                  {settings.weight_calculation_method === 'custom' && (
+                    <>
+                      <p className="text-xs font-medium">
+                        ⚙️ カスタム方式：独自の計算式
+                      </p>
+                      <div className="text-xs text-muted-foreground space-y-1">
+                        <p>
+                          •
+                          重み倍率を使用して、応募数に対する重みの影響を調整できます
+                        </p>
+                        <p>
+                          • 例：倍率0.5の場合、4枠応募でも重みは2（4 × 0.5）
+                        </p>
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
 
               <div className="space-y-2">
@@ -256,9 +310,38 @@ export function LotterySettingsForm({
                   }
                   disabled={lotteryStatus === 'completed'}
                 />
-                <p className="text-xs text-muted-foreground">
-                  重みに掛ける倍率（デフォルト: 1.0）
+                <div className="p-3 bg-muted rounded-lg space-y-1">
+                  <p className="text-xs font-medium">
+                    🔢 重み倍率の効果（4枠応募の場合）
+                  </p>
+                  <div className="text-xs text-muted-foreground space-y-0.5">
+                    <p>• 倍率 0.5：重み = 4 × 0.5 = 2（控えめな調整）</p>
+                    <p>• 倍率 1.0：重み = 4 × 1.0 = 4（標準）</p>
+                    <p>• 倍率 2.0：重み = 4 × 2.0 = 8（強い調整）</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* 実際の当選確率シミュレーション */}
+              <div className="p-4 bg-green-50 dark:bg-green-950 rounded-lg space-y-2">
+                <p className="text-sm font-medium text-green-900 dark:text-green-100">
+                  📈 当選確率シミュレーション
                 </p>
+                <div className="text-xs text-green-800 dark:text-green-200 space-y-1">
+                  <p className="font-medium">例：10枠募集、3名応募の場合</p>
+                  <div className="pl-2 space-y-0.5">
+                    <p>• Aさん（1枠）：重み = 1</p>
+                    <p>• Bさん（4枠）：重み = 4</p>
+                    <p>• Cさん（5枠）：重み = 5</p>
+                    <p className="pt-1">合計重み = 1 + 4 + 5 = 10</p>
+                  </div>
+                  <div className="pl-2 space-y-0.5 pt-2 border-t border-green-200 dark:border-green-800">
+                    <p className="font-medium">当選確率：</p>
+                    <p>• Aさん：1/10 = 10%</p>
+                    <p>• Bさん：4/10 = 40%</p>
+                    <p>• Cさん：5/10 = 50%</p>
+                  </div>
+                </div>
               </div>
             </div>
           )}
