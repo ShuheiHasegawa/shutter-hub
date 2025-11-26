@@ -51,6 +51,7 @@ export interface PhotoSession {
   block_users_with_bad_ratings: boolean;
   payment_timing?: 'prepaid' | 'cash_on_site';
   is_published: boolean;
+  session_type?: 'individual' | 'joint';
   created_at: string;
   updated_at: string;
 }
@@ -138,7 +139,7 @@ export interface AdminLotteryPhotoSession {
 
 export interface AdminLotteryEntry {
   id: string;
-  admin_lottery_photo_session_id: string;
+  admin_lottery_session_id: string;
   user_id: string;
   application_message?: string;
   status: 'applied' | 'selected' | 'rejected';
@@ -146,7 +147,13 @@ export interface AdminLotteryEntry {
   selected_by?: string;
   selection_reason?: string;
   created_at: string;
-  updated_at: string;
+  updated_at?: string;
+  // 複数スロット対応フィールド
+  slot_id?: string;
+  preferred_model_id?: string;
+  cheki_unsigned_count?: number;
+  cheki_signed_count?: number;
+  lottery_weight?: number;
 }
 
 export interface SelectionCriteria {
@@ -242,9 +249,6 @@ export interface BookingSettings {
   application_message?: string;
 
   // 優先予約設定
-  vip_slots?: number;
-  platinum_slots?: number;
-  gold_slots?: number;
   enable_general_booking?: boolean;
   general_booking_start_time?: string;
 
