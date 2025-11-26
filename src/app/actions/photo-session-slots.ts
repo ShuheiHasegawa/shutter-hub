@@ -6,6 +6,11 @@ import {
   CreatePhotoSessionSlotData,
   SelectedModel,
 } from '@/types/photo-session';
+import type {
+  WeightCalculationMethod,
+  ModelSelectionScope,
+  ChekiSelectionScope,
+} from '@/types/multi-slot-lottery';
 import { getCurrentSubscription } from '@/app/actions/subscription-management';
 import { requireAuthForAction } from '@/lib/auth/server-actions';
 
@@ -27,6 +32,16 @@ export interface PhotoSessionWithSlotsData {
   slots: CreatePhotoSessionSlotData[]; // 必須に変更
   studio_id?: string; // スタジオID（任意）
   selected_models?: SelectedModel[]; // 選択されたモデル（任意）
+  session_type?: 'individual' | 'joint'; // 撮影会タイプ
+  lottery_settings?: {
+    enable_lottery_weight: boolean;
+    weight_calculation_method: WeightCalculationMethod;
+    weight_multiplier: number;
+    enable_model_selection: boolean;
+    model_selection_scope: ModelSelectionScope;
+    enable_cheki_selection: boolean;
+    cheki_selection_scope: ChekiSelectionScope;
+  }; // 抽選設定（抽選方式選択時のみ）
 }
 
 export async function createPhotoSessionWithSlotsAction(
@@ -75,6 +90,7 @@ export async function createPhotoSessionWithSlotsAction(
         organizer_id: user.id,
         current_participants: 0,
         studio_id: data.studio_id || null,
+        session_type: data.session_type || 'individual',
       })
       .select()
       .single();
@@ -122,11 +138,13 @@ export async function createPhotoSessionWithSlotsAction(
 
     // モデル情報を保存（モデルが選択されている場合）
     if (data.selected_models && data.selected_models.length > 0) {
+      // 合同撮影会の場合はfee_amountを0に設定
+      const isJointSession = data.session_type === 'joint';
       const modelsToInsert = data.selected_models.map(
         (model: SelectedModel, index: number) => ({
           photo_session_id: session.id,
           model_id: model.model_id,
-          fee_amount: model.fee_amount,
+          fee_amount: isJointSession ? 0 : model.fee_amount,
           display_order: index,
         })
       );
@@ -138,6 +156,149 @@ export async function createPhotoSessionWithSlotsAction(
       if (modelsError) {
         logger.error('モデル情報保存エラー:', modelsError);
         // エラーはログに記録するが、撮影会作成は成功とする（モデル情報は任意のため）
+      }
+    }
+
+    // 抽選方式・管理抽選の場合、lottery_sessions/admin_lottery_sessionsテーブルを作成
+    if (
+      (data.booking_type === 'lottery' ||
+        data.booking_type === 'admin_lottery') &&
+      data.booking_settings
+    ) {
+      const bookingSettings = data.booking_settings as {
+        application_start_time?: string;
+        application_end_time?: string;
+        lottery_date_time?: string;
+      };
+
+      // スロットのmax_participantsの合計をmax_winnersとして使用
+      const maxWinners = data.slots.reduce(
+        (sum, slot) => sum + slot.max_participants,
+        0
+      );
+
+      if (
+        bookingSettings.application_start_time &&
+        bookingSettings.application_end_time &&
+        bookingSettings.lottery_date_time
+      ) {
+        const lotterySessionData: {
+          photo_session_id: string;
+          entry_start_time: string;
+          entry_end_time: string;
+          lottery_date: string;
+          max_winners: number;
+          status: string;
+          enable_lottery_weight?: boolean;
+          weight_calculation_method?: string;
+          weight_multiplier?: number;
+          enable_model_selection?: boolean;
+          model_selection_scope?: string;
+          enable_cheki_selection?: boolean;
+          cheki_selection_scope?: string;
+        } = {
+          photo_session_id: session.id,
+          entry_start_time: new Date(
+            bookingSettings.application_start_time
+          ).toISOString(),
+          entry_end_time: new Date(
+            bookingSettings.application_end_time
+          ).toISOString(),
+          lottery_date: new Date(
+            bookingSettings.lottery_date_time
+          ).toISOString(),
+          max_winners: maxWinners,
+          status: 'upcoming',
+        };
+
+        // 抽選設定がある場合は追加
+        if (data.lottery_settings) {
+          lotterySessionData.enable_lottery_weight =
+            data.lottery_settings.enable_lottery_weight;
+          lotterySessionData.weight_calculation_method =
+            data.lottery_settings.weight_calculation_method;
+          lotterySessionData.weight_multiplier =
+            data.lottery_settings.weight_multiplier;
+          lotterySessionData.enable_model_selection =
+            data.lottery_settings.enable_model_selection;
+          lotterySessionData.model_selection_scope =
+            data.lottery_settings.model_selection_scope;
+          lotterySessionData.enable_cheki_selection =
+            data.lottery_settings.enable_cheki_selection;
+          lotterySessionData.cheki_selection_scope =
+            data.lottery_settings.cheki_selection_scope;
+        }
+
+        // 抽選方式と管理抽選で異なるテーブルに保存
+        if (data.booking_type === 'lottery') {
+          const { error: lotteryError } = await supabase
+            .from('lottery_sessions')
+            .insert(lotterySessionData);
+
+          if (lotteryError) {
+            logger.error('抽選セッション作成エラー:', lotteryError);
+            // エラーはログに記録するが、撮影会作成は成功とする
+            // （抽選セッションは後から作成可能なため）
+          }
+        } else if (data.booking_type === 'admin_lottery') {
+          // 管理抽選の場合、admin_lottery_sessionsテーブルに保存
+          const adminLotterySessionData: {
+            photo_session_id: string;
+            entry_start_time: string;
+            entry_end_time: string;
+            selection_deadline: string;
+            max_selections: number;
+            status: string;
+            enable_lottery_weight?: boolean;
+            weight_calculation_method?: string;
+            weight_multiplier?: number;
+            enable_model_selection?: boolean;
+            model_selection_scope?: string;
+            enable_cheki_selection?: boolean;
+            cheki_selection_scope?: string;
+          } = {
+            photo_session_id: session.id,
+            entry_start_time: new Date(
+              bookingSettings.application_start_time
+            ).toISOString(),
+            entry_end_time: new Date(
+              bookingSettings.application_end_time
+            ).toISOString(),
+            selection_deadline: new Date(
+              bookingSettings.lottery_date_time
+            ).toISOString(),
+            max_selections: maxWinners,
+            status: 'upcoming',
+          };
+
+          // 抽選設定がある場合は追加
+          if (data.lottery_settings) {
+            adminLotterySessionData.enable_lottery_weight =
+              data.lottery_settings.enable_lottery_weight;
+            adminLotterySessionData.weight_calculation_method =
+              data.lottery_settings.weight_calculation_method;
+            adminLotterySessionData.weight_multiplier =
+              data.lottery_settings.weight_multiplier;
+            adminLotterySessionData.enable_model_selection =
+              data.lottery_settings.enable_model_selection;
+            adminLotterySessionData.model_selection_scope =
+              data.lottery_settings.model_selection_scope;
+            adminLotterySessionData.enable_cheki_selection =
+              data.lottery_settings.enable_cheki_selection;
+            adminLotterySessionData.cheki_selection_scope =
+              data.lottery_settings.cheki_selection_scope;
+          }
+
+          const { error: adminLotteryError } = await supabase
+            .from('admin_lottery_sessions')
+            .insert(adminLotterySessionData);
+
+          if (adminLotteryError) {
+            logger.error('管理抽選セッション作成エラー:', adminLotteryError);
+            // エラーはログに記録するが、撮影会作成は成功とする
+            // （管理抽選セッションは後から作成可能なため）
+          }
+        }
       }
     }
 
@@ -207,6 +368,7 @@ export async function updatePhotoSessionWithSlotsAction(
         is_published: data.is_published,
         image_urls: data.image_urls || [],
         studio_id: data.studio_id || null,
+        session_type: data.session_type || 'individual',
       })
       .eq('id', sessionId)
       .select()
@@ -276,10 +438,12 @@ export async function updatePhotoSessionWithSlotsAction(
       .eq('photo_session_id', sessionId);
 
     if (data.selected_models && data.selected_models.length > 0) {
+      // 合同撮影会の場合はfee_amountを0に設定
+      const isJointSession = data.session_type === 'joint';
       const modelsToInsert = data.selected_models.map((model, index) => ({
         photo_session_id: sessionId,
         model_id: model.model_id,
-        fee_amount: model.fee_amount,
+        fee_amount: isJointSession ? 0 : model.fee_amount,
         display_order: index,
       }));
 
