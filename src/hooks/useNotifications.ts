@@ -188,7 +188,19 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
 
   // 通知統計を取得
   const fetchStats = useCallback(async () => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      // ユーザーが存在しない場合は空の統計を設定
+      setState(prev => ({
+        ...prev,
+        stats: {
+          total_count: 0,
+          unread_count: 0,
+          high_priority_unread: 0,
+          categories: {},
+        },
+      }));
+      return;
+    }
 
     try {
       const result = await getNotificationStats(user.id).catch(error => {
@@ -196,28 +208,57 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
           '[useNotifications] getNotificationStats Server Action Error:',
           error
         );
-        return { success: false, error: 'Server Action呼び出しエラー' };
+        // エラー時は空の統計を返す
+        return {
+          success: true,
+          data: {
+            totalCount: 0,
+            unreadCount: 0,
+            highPriorityUnread: 0,
+            categories: {},
+          },
+        };
       });
 
       // resultがundefinedでないことを確認
       if (result && result.success && 'data' in result && result.data) {
         // Server ActionからのレスポンスをNotificationStats形式に変換
         const stats: NotificationStats = {
-          total_count: result.data.totalCount,
-          unread_count: result.data.unreadCount,
-          high_priority_unread: result.data.highPriorityUnread,
-          categories: result.data.categories,
+          total_count: result.data.totalCount || 0,
+          unread_count: result.data.unreadCount || 0,
+          high_priority_unread: result.data.highPriorityUnread || 0,
+          categories: result.data.categories || {},
         };
         setState(prev => ({ ...prev, stats }));
         logger.debug('[useNotifications] 通知統計取得成功:', stats);
       } else {
+        // レスポンスが無効な場合は空の統計を設定
         logger.warn(
           '[useNotifications] 通知統計取得失敗 - レスポンスが無効:',
           result
         );
+        setState(prev => ({
+          ...prev,
+          stats: {
+            total_count: 0,
+            unread_count: 0,
+            high_priority_unread: 0,
+            categories: {},
+          },
+        }));
       }
     } catch (error) {
       logger.error('[useNotifications] 通知統計取得エラー:', error);
+      // エラー時は空の統計を設定
+      setState(prev => ({
+        ...prev,
+        stats: {
+          total_count: 0,
+          unread_count: 0,
+          high_priority_unread: 0,
+          categories: {},
+        },
+      }));
     }
   }, [user?.id]);
 
