@@ -2,10 +2,11 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { buttonVariants } from '@/components/ui/button';
 import { User, Camera, Users, Verified } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import type { VariantProps } from 'class-variance-authority';
 
 interface UserProfileDisplayProps {
   user: {
@@ -18,7 +19,7 @@ interface UserProfileDisplayProps {
   size?: 'sm' | 'md' | 'lg';
   showRole?: boolean;
   showVerified?: boolean;
-  clickable?: boolean;
+  variant?: VariantProps<typeof buttonVariants>['variant'];
   className?: string;
 }
 
@@ -27,15 +28,13 @@ export function UserProfileDisplay({
   size = 'md',
   showRole = true,
   showVerified = true,
-  clickable = true,
+  variant = 'navigation',
   className,
 }: UserProfileDisplayProps) {
   const router = useRouter();
 
   const handleClick = () => {
-    if (clickable) {
-      router.push(`/profile/${user.id}`);
-    }
+    router.push(`/profile/${user.id}`);
   };
 
   const getInitials = (name: string) => {
@@ -75,17 +74,17 @@ export function UserProfileDisplay({
 
   const sizeClasses = {
     sm: {
-      avatar: 'h-8 w-8',
+      avatar: 'h-4 w-4',
       text: 'text-sm',
       badge: 'text-xs px-2 py-0.5',
     },
     md: {
-      avatar: 'h-10 w-10',
+      avatar: 'h-6 w-6',
       text: 'text-base',
       badge: 'text-xs px-2 py-1',
     },
     lg: {
-      avatar: 'h-12 w-12',
+      avatar: 'h-8 w-8',
       text: 'text-lg',
       badge: 'text-sm px-3 py-1',
     },
@@ -93,8 +92,24 @@ export function UserProfileDisplay({
 
   const currentSize = sizeClasses[size];
 
+  // Buttonコンポーネントのバリアントスタイルを取得（variantのみ適用）
+  const buttonVariantClasses = buttonVariants({ variant, size: undefined });
+
   const content = (
-    <div className="flex items-center gap-3">
+    <div
+      className={cn(
+        'flex items-center gap-3 px-4 py-4 rounded-lg transition-all duration-200',
+        'cursor-pointer',
+        'hover:shadow-md',
+        'active:scale-[0.98]',
+        'focus-visible:outline-none',
+        'focus-visible:ring-2',
+        'focus-visible:ring-ring',
+        'focus-visible:ring-offset-2',
+        // Buttonコンポーネントのバリアントスタイルを適用
+        buttonVariantClasses
+      )}
+    >
       <Avatar className={currentSize.avatar}>
         <AvatarImage src={user.avatar_url || undefined} />
         <AvatarFallback className="text-xs">
@@ -129,22 +144,13 @@ export function UserProfileDisplay({
     </div>
   );
 
-  if (clickable) {
-    return (
-      <Button
-        variant="ghost"
-        className={cn(
-          'h-auto p-2 justify-start hover:bg-muted/50 transition-colors',
-          className
-        )}
-        onClick={handleClick}
-      >
-        {content}
-      </Button>
-    );
-  }
-
   return (
-    <div className={cn('flex items-center gap-3', className)}>{content}</div>
+    <button
+      type="button"
+      className={cn('w-full text-left', className)}
+      onClick={handleClick}
+    >
+      {content}
+    </button>
   );
 }

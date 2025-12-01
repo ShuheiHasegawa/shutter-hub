@@ -285,7 +285,6 @@ function UserList({
                 size="md"
                 showRole={true}
                 showVerified={true}
-                clickable={true}
                 className="flex-1"
               />
 
