@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { UserProfileDisplay } from '@/components/ui/user-profile-display';
+import { ClickableText } from '@/components/ui/clickable-text';
 import { ActionBar, ActionBarButton } from '@/components/ui/action-bar';
 import {
   CalendarIcon,
@@ -51,7 +52,6 @@ import {
 } from '@/app/actions/multi-slot-lottery';
 import { getLotterySession } from '@/app/actions/photo-session-lottery';
 import { getPhotoSessionStudioAction } from '@/app/actions/photo-session-studio';
-import Link from 'next/link';
 
 interface PhotoSessionDetailProps {
   session: PhotoSessionWithOrganizer;
@@ -618,12 +618,13 @@ export function PhotoSessionDetail({
                   <div className="flex items-center gap-3">
                     <MapPinIcon className="h-5 w-5 text-muted-foreground" />
                     {studio ? (
-                      <Link
+                      <ClickableText
                         href={`/${locale}/studios/${studio.id}`}
-                        className="text-primary hover:underline"
+                        variant="navigation"
+                        size="sm"
                       >
                         {studio.name}
-                      </Link>
+                      </ClickableText>
                     ) : (
                       <span>{session.location}</span>
                     )}
@@ -670,7 +671,6 @@ export function PhotoSessionDetail({
                   size="md"
                   showRole={true}
                   showVerified={true}
-                  clickable={true}
                 />
               </div>
             </div>
@@ -791,12 +791,13 @@ export function PhotoSessionDetail({
                   <div className="flex items-center gap-3">
                     <MapPinIcon className="h-5 w-5 text-muted-foreground" />
                     {studio ? (
-                      <Link
+                      <ClickableText
                         href={`/${locale}/studios/${studio.id}`}
-                        className="text-primary hover:underline"
+                        variant="navigation"
+                        size="sm"
                       >
                         {studio.name}
-                      </Link>
+                      </ClickableText>
                     ) : (
                       <span>{session.location}</span>
                     )}
@@ -854,7 +855,6 @@ export function PhotoSessionDetail({
                   size="md"
                   showRole={true}
                   showVerified={true}
-                  clickable={true}
                 />
               </div>
             </div>
