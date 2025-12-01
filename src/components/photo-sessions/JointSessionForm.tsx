@@ -5,7 +5,8 @@ import { logger } from '@/lib/utils/logger';
 import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -50,6 +51,8 @@ import { StudioSelectWithClear } from '@/components/studio/StudioSelectCombobox'
 import { getStudioForAutoFillAction } from '@/app/actions/studio';
 import { useSubscription } from '@/hooks/useSubscription';
 import { checkCanEnableCashOnSite } from '@/app/actions/photo-session-slots';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { CreditCard, Wallet } from 'lucide-react';
 
 interface JointSessionFormProps {
   initialData?: PhotoSessionWithOrganizer;
@@ -134,8 +137,8 @@ export function JointSessionForm({
   const CASH_ON_SITE_REQUIRES_SUBSCRIPTION =
     process.env.NEXT_PUBLIC_CASH_ON_SITE_REQUIRES_SUBSCRIPTION !== 'false';
 
-  // const [canEnableCashOnSite, setCanEnableCashOnSite] = useState(false);
-  // const [currentPlanName, setCurrentPlanName] = useState<string | undefined>();
+  const [canEnableCashOnSite, setCanEnableCashOnSite] = useState(false);
+  const [currentPlanName, setCurrentPlanName] = useState<string | undefined>();
 
   useEffect(() => {
     if (!ENABLE_CASH_ON_SITE) {
@@ -1005,6 +1008,145 @@ export function JointSessionForm({
                 onSlotsChange={setPhotoSessionSlots}
                 disabled={isLoading}
               />
+            </div>
+
+            {/* 支払い方法設定 */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">{t('form.paymentTiming')}</h3>
+              <p className="text-sm text-muted-foreground">
+                {t('form.paymentTimingDescription')}
+              </p>
+
+              <RadioGroup
+                value={formData.payment_timing}
+                onValueChange={(value: 'prepaid' | 'cash_on_site') => {
+                  // 環境変数で現地払いが無効化されている場合は、強制的にprepaidに戻す
+                  if (value === 'cash_on_site' && !ENABLE_CASH_ON_SITE) {
+                    setFormData(prev => ({
+                      ...prev,
+                      payment_timing: 'prepaid',
+                    }));
+                    toast({
+                      title: '現地払い機能は現在無効化されています',
+                      variant: 'default',
+                    });
+                    return;
+                  }
+                  setFormData(prev => ({ ...prev, payment_timing: value }));
+                }}
+                disabled={isLoading}
+                className="space-y-4"
+              >
+                {/* Stripe決済（事前決済） */}
+                <div className="relative">
+                  <RadioGroupItem
+                    value="prepaid"
+                    id="payment_prepaid"
+                    className="sr-only"
+                  />
+                  <Label
+                    htmlFor="payment_prepaid"
+                    className="block cursor-pointer transition-all duration-200"
+                  >
+                    <Card
+                      className={`transition-all duration-200 hover:shadow-md ${
+                        formData.payment_timing === 'prepaid'
+                          ? 'ring-2 ring-primary shadow-md'
+                          : 'hover:border-muted-foreground/20'
+                      }`}
+                    >
+                      <CardHeader className="pb-3">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-blue-100 text-blue-800 border-blue-200">
+                              <CreditCard className="h-5 w-5" />
+                            </div>
+                            <div>
+                              <CardTitle className="text-base">
+                                {t('form.paymentTimingPrepaid')}
+                              </CardTitle>
+                              <p className="text-sm text-muted-foreground mt-1">
+                                予約時にStripe決済を完了していただきます
+                              </p>
+                            </div>
+                          </div>
+                          {formData.payment_timing === 'prepaid' && (
+                            <Badge variant="default" className="ml-2">
+                              選択中
+                            </Badge>
+                          )}
+                        </div>
+                      </CardHeader>
+                    </Card>
+                  </Label>
+                </div>
+
+                {/* 現地払い（環境変数で制御） */}
+                {ENABLE_CASH_ON_SITE && (
+                  <div className="relative">
+                    <RadioGroupItem
+                      value="cash_on_site"
+                      id="payment_cash_on_site"
+                      className="sr-only"
+                      disabled={!canEnableCashOnSite}
+                    />
+                    <Label
+                      htmlFor="payment_cash_on_site"
+                      className={`block transition-all duration-200 ${
+                        !canEnableCashOnSite
+                          ? 'opacity-50 cursor-not-allowed'
+                          : 'cursor-pointer'
+                      }`}
+                    >
+                      <Card
+                        className={`transition-all duration-200 ${
+                          !canEnableCashOnSite
+                            ? 'opacity-50'
+                            : formData.payment_timing === 'cash_on_site'
+                              ? 'ring-2 ring-primary shadow-md'
+                              : 'hover:border-muted-foreground/20 hover:shadow-md'
+                        }`}
+                      >
+                        <CardHeader className="pb-3">
+                          <div className="flex items-start justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 rounded-lg bg-green-100 text-green-800 border-green-200">
+                                <Wallet className="h-5 w-5" />
+                              </div>
+                              <div>
+                                <CardTitle className="text-base">
+                                  {t('form.paymentTimingCashOnSite')}
+                                </CardTitle>
+                                <p className="text-sm text-muted-foreground mt-1">
+                                  撮影当日に現地でお支払いいただきます
+                                </p>
+                                {/* サブスクリプションチェックが必要な場合のみ警告を表示 */}
+                                {CASH_ON_SITE_REQUIRES_SUBSCRIPTION &&
+                                  !canEnableCashOnSite && (
+                                    <p className="text-xs text-orange-600 dark:text-orange-400 mt-2">
+                                      {t('form.cashOnSiteRequiresSubscription')}
+                                      {currentPlanName && (
+                                        <span className="ml-1">
+                                          （現在のプラン: {currentPlanName}）
+                                        </span>
+                                      )}
+                                    </p>
+                                  )}
+                              </div>
+                            </div>
+                            {formData.payment_timing === 'cash_on_site' &&
+                              canEnableCashOnSite && (
+                                <Badge variant="default" className="ml-2">
+                                  選択中
+                                </Badge>
+                              )}
+                          </div>
+                        </CardHeader>
+                      </Card>
+                    </Label>
+                  </div>
+                )}
+              </RadioGroup>
             </div>
 
             {/* 公開設定 */}
