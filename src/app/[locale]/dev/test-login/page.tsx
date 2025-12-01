@@ -729,6 +729,638 @@ export default function TestLoginPage() {
                     })}
                 </div>
               </section>
+
+              {/* Malymoon所属モデルセクション */}
+              <section>
+                <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                  <User className="h-6 w-6 mr-2 text-rose-600" />
+                  🌙 Malymoon（マリームーン）所属モデル（62名）
+                </h2>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {[
+                    {
+                      id: 'malymoon-zumi',
+                      email: 'zumi@malymoon.test',
+                      password: 'Model2025!',
+                      name: 'ズミ',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-daruma',
+                      email: 'daruma@malymoon.test',
+                      password: 'Model2025!',
+                      name: 'だるま',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-sakurai',
+                      email: 'sakurai@malymoon.test',
+                      password: 'Model2025!',
+                      name: '尊みを感じて桜井',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-sisuru',
+                      email: 'sisuru@malymoon.test',
+                      password: 'Model2025!',
+                      name: 'シスル',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-suzura',
+                      email: 'suzura@malymoon.test',
+                      password: 'Model2025!',
+                      name: 'すずら',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-tsukumi-tsukune',
+                      email: 'tsukumi_tsukune@malymoon.test',
+                      password: 'Model2025!',
+                      name: '月海つくね',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-reira',
+                      email: 'reira@malymoon.test',
+                      password: 'Model2025!',
+                      name: 'レイラ',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-kamomiru',
+                      email: 'kamomiru@malymoon.test',
+                      password: 'Model2025!',
+                      name: 'カモミール',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-suenaga-miyu',
+                      email: 'suenaga_miyu@malymoon.test',
+                      password: 'Model2025!',
+                      name: '末永みゆ',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-kipi',
+                      email: 'kipi@malymoon.test',
+                      password: 'Model2025!',
+                      name: 'kipi',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-dekamori-takane',
+                      email: 'dekamori_takane@malymoon.test',
+                      password: 'Model2025!',
+                      name: '凸守たかね',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-shiki',
+                      email: 'shiki@malymoon.test',
+                      password: 'Model2025!',
+                      name: 'し季',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-kureha-rio',
+                      email: 'kureha_rio@malymoon.test',
+                      password: 'Model2025!',
+                      name: '紅羽りお',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-honda-yuho',
+                      email: 'honda_yuho@malymoon.test',
+                      password: 'Model2025!',
+                      name: '本田夕歩',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-narukami-nagone',
+                      email: 'narukami_nagone@malymoon.test',
+                      password: 'Model2025!',
+                      name: '鳴上なごね',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-hoshina-haru',
+                      email: 'hoshina_haru@malymoon.test',
+                      password: 'Model2025!',
+                      name: '星名はる',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-yuzuriha-kureha',
+                      email: 'yuzuriha_kureha@malymoon.test',
+                      password: 'Model2025!',
+                      name: '楪くれは',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-himemiya-mahore',
+                      email: 'himemiya_mahore@malymoon.test',
+                      password: 'Model2025!',
+                      name: '姫宮まほれ',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-himeno-hinano',
+                      email: 'himeno_hinano@malymoon.test',
+                      password: 'Model2025!',
+                      name: '姫野ひなの',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-kosugi-reiko',
+                      email: 'kosugi_reiko@malymoon.test',
+                      password: 'Model2025!',
+                      name: '小杉怜子',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-sakurai-ririka',
+                      email: 'sakurai_ririka@malymoon.test',
+                      password: 'Model2025!',
+                      name: '佐倉井りりか',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-inuno-karin',
+                      email: 'inuno_karin@malymoon.test',
+                      password: 'Model2025!',
+                      name: '犬乃かりん',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-morimoto-shiona',
+                      email: 'morimoto_shiona@malymoon.test',
+                      password: 'Model2025!',
+                      name: '森本栞菜',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-kobayashi-yumeka',
+                      email: 'kobayashi_yumeka@malymoon.test',
+                      password: 'Model2025!',
+                      name: '小林夢叶',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-suzuno-riko',
+                      email: 'suzuno_riko@malymoon.test',
+                      password: 'Model2025!',
+                      name: '涼乃莉子',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-miyawaki-ayaka',
+                      email: 'miyawaki_ayaka@malymoon.test',
+                      password: 'Model2025!',
+                      name: '宮脇あやか',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-mitani-ayako',
+                      email: 'mitani_ayako@malymoon.test',
+                      password: 'Model2025!',
+                      name: '三谷綾子',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-koori-ria',
+                      email: 'koori_ria@malymoon.test',
+                      password: 'Model2025!',
+                      name: '小織りあ',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-hayakawa-nagisa',
+                      email: 'hayakawa_nagisa@malymoon.test',
+                      password: 'Model2025!',
+                      name: '早川渚紗',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-maika',
+                      email: 'maika@malymoon.test',
+                      password: 'Model2025!',
+                      name: 'まいか',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-usaki',
+                      email: 'usaki@malymoon.test',
+                      password: 'Model2025!',
+                      name: '宇咲',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-kaminami-rina',
+                      email: 'kaminami_rina@malymoon.test',
+                      password: 'Model2025!',
+                      name: '神南りな',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-tsuki-nagisa',
+                      email: 'tsuki_nagisa@malymoon.test',
+                      password: 'Model2025!',
+                      name: '月なぎさ',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-himana-riku',
+                      email: 'himana_riku@malymoon.test',
+                      password: 'Model2025!',
+                      name: '姫奈りく',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-kosaka-kotomi',
+                      email: 'kosaka_kotomi@malymoon.test',
+                      password: 'Model2025!',
+                      name: '高坂琴水',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-kanade-reika',
+                      email: 'kanade_reika@malymoon.test',
+                      password: 'Model2025!',
+                      name: '奏怜花',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-sugaya-natsuko',
+                      email: 'sugaya_natsuko@malymoon.test',
+                      password: 'Model2025!',
+                      name: '菅谷夏子',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-rena',
+                      email: 'rena@malymoon.test',
+                      password: 'Model2025!',
+                      name: 'れな',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-nishi',
+                      email: 'nishi@malymoon.test',
+                      password: 'Model2025!',
+                      name: '西',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-pan-runarifu',
+                      email: 'pan_runarifu@malymoon.test',
+                      password: 'Model2025!',
+                      name: 'パン・ルナリーフィ',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-sakurai-moe',
+                      email: 'sakurai_moe@malymoon.test',
+                      password: 'Model2025!',
+                      name: 'さくらいもえ',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-takasaki-aiko',
+                      email: 'takasaki_aiko@malymoon.test',
+                      password: 'Model2025!',
+                      name: '高崎愛生',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-noa',
+                      email: 'noa@malymoon.test',
+                      password: 'Model2025!',
+                      name: 'のあ',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-hazuki-kanon',
+                      email: 'hazuki_kanon@malymoon.test',
+                      password: 'Model2025!',
+                      name: '葉月花音',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-senbokutani-hanna',
+                      email: 'senbokutani_hanna@malymoon.test',
+                      password: 'Model2025!',
+                      name: '仙北谷ハンナ',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-kurosaki-ria',
+                      email: 'kurosaki_ria@malymoon.test',
+                      password: 'Model2025!',
+                      name: '黒崎りあ',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-shiozawa-misaki',
+                      email: 'shiozawa_misaki@malymoon.test',
+                      password: 'Model2025!',
+                      name: '塩澤みさき',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-natsume-nodoka',
+                      email: 'natsume_nodoka@malymoon.test',
+                      password: 'Model2025!',
+                      name: '夏目のどか',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-kasho-roshieru',
+                      email: 'kasho_roshieru@malymoon.test',
+                      password: 'Model2025!',
+                      name: '火将ロシエル',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-namae-wa-mada-nai',
+                      email: 'namae_wa_mada_nai@malymoon.test',
+                      password: 'Model2025!',
+                      name: '名前はまだない。',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-fuwaru',
+                      email: 'fuwaru@malymoon.test',
+                      password: 'Model2025!',
+                      name: 'ふわる',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-nekoda-ashu',
+                      email: 'nekoda_ashu@malymoon.test',
+                      password: 'Model2025!',
+                      name: '猫田あしゅ',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-furuhama-aoi',
+                      email: 'furuhama_aoi@malymoon.test',
+                      password: 'Model2025!',
+                      name: '古浜あおい',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-hinakami-mio',
+                      email: 'hinakami_mio@malymoon.test',
+                      password: 'Model2025!',
+                      name: 'ひなかみお',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-nanase-akane',
+                      email: 'nanase_akane@malymoon.test',
+                      password: 'Model2025!',
+                      name: '七瀬あかね',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-amane-hina',
+                      email: 'amane_hina@malymoon.test',
+                      password: 'Model2025!',
+                      name: 'あまねひな',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-hyakuri-yuri',
+                      email: 'hyakuri_yuri@malymoon.test',
+                      password: 'Model2025!',
+                      name: '百莉ゆり',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-yoha',
+                      email: 'yoha@malymoon.test',
+                      password: 'Model2025!',
+                      name: '世は',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-yamohachiko',
+                      email: 'yamohachiko@malymoon.test',
+                      password: 'Model2025!',
+                      name: 'やもはちこ',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-aoba-moguta',
+                      email: 'aoba_moguta@malymoon.test',
+                      password: 'Model2025!',
+                      name: '蒼羽もぐ汰',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-abu',
+                      email: 'abu@malymoon.test',
+                      password: 'Model2025!',
+                      name: 'あぶ',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                    {
+                      id: 'malymoon-nagisa',
+                      email: 'nagisa@malymoon.test',
+                      password: 'Model2025!',
+                      name: 'なぎさ',
+                      userType: 'model' as const,
+                      icon: User,
+                      description: 'Malymoon（マリームーン）所属モデル',
+                    },
+                  ].map(account => {
+                    const Icon = account.icon;
+                    const isCurrentLoading = loadingAccount === account.id;
+
+                    return (
+                      <Card
+                        key={account.id}
+                        className="hover:shadow-lg transition-shadow border-rose-200 dark:border-rose-800"
+                      >
+                        <CardHeader className="text-center pb-3">
+                          <div className="mx-auto mb-3 p-2 rounded-full bg-rose-100 dark:bg-rose-900">
+                            <Icon className="h-6 w-6 text-rose-600 dark:text-rose-400" />
+                          </div>
+                          <CardTitle className="text-lg">
+                            {account.name}
+                          </CardTitle>
+                          <CardDescription className="text-xs">
+                            {account.description}
+                          </CardDescription>
+                          <Badge
+                            variant="outline"
+                            className="border-rose-300 text-rose-700"
+                          >
+                            {account.userType}
+                          </Badge>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                          <div className="text-xs text-muted-foreground space-y-1">
+                            <p>
+                              <strong>Email:</strong> {account.email}
+                            </p>
+                            <p>
+                              <strong>Password:</strong> {account.password}
+                            </p>
+                          </div>
+                          <Button
+                            onClick={() => handleQuickLogin(account)}
+                            disabled={isLoading}
+                            className="w-full"
+                            size="sm"
+                          >
+                            {isCurrentLoading ? (
+                              <>
+                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                ログイン中...
+                              </>
+                            ) : (
+                              `${account.name}でログイン`
+                            )}
+                          </Button>
+                          <Button
+                            onClick={() => handleDeleteUser(account.email)}
+                            disabled={isLoading}
+                            variant="destructive"
+                            size="sm"
+                            className="w-full"
+                          >
+                            ユーザーを削除
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </section>
             </div>
 
             {/* 使用方法 */}
