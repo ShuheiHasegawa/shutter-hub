@@ -18,7 +18,6 @@ import {
 } from '@/components/ui/table';
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -385,7 +384,6 @@ export function PriorityTicketManagement() {
                   size="sm"
                   showRole={true}
                   showVerified={true}
-                  clickable={false}
                 />
                 <Button
                   variant="ghost"
@@ -492,7 +490,6 @@ export function PriorityTicketManagement() {
                               size="sm"
                               showRole={false}
                               showVerified={false}
-                              clickable={true}
                             />
                           ) : (
                             <span className="text-muted-foreground">
@@ -610,16 +607,16 @@ export function PriorityTicketManagement() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>キャンセル</AlertDialogCancel>
-            <AlertDialogAction
+            <Button
+              variant="destructive"
               onClick={() => {
                 if (showDeleteDialog) {
                   handleDeleteTicket(showDeleteDialog);
                 }
               }}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               削除
-            </AlertDialogAction>
+            </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
