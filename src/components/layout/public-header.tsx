@@ -147,8 +147,7 @@ export function PublicHeader() {
               </DropdownMenu>
             ) : (
               <Button
-                variant="default"
-                size="sm"
+                variant="cta"
                 onClick={() => {
                   router.push('/login');
                 }}

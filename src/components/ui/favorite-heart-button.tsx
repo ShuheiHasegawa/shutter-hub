@@ -75,10 +75,10 @@ export function FavoriteHeartButton({
 
   // ポジションの設定
   const positionClasses = {
-    'top-right': 'absolute top-2 right-2 z-10',
-    'top-left': 'absolute top-2 left-2 z-10',
-    'bottom-right': 'absolute bottom-2 right-2 z-10',
-    'bottom-left': 'absolute bottom-2 left-2 z-10',
+    'top-right': 'absolute top-2 right-2 z-20',
+    'top-left': 'absolute top-2 left-2 z-20',
+    'bottom-right': 'absolute bottom-2 right-2 z-20',
+    'bottom-left': 'absolute bottom-2 left-2 z-20',
     inline: '',
   };
 
@@ -462,12 +462,15 @@ export function FavoriteHeartButton({
         positionClasses[position],
         className
       )}
+      onClick={e => e.stopPropagation()}
+      onMouseDown={e => e.stopPropagation()}
     >
       <Button
         variant={variant}
         size="icon"
         onClick={handleToggle}
         disabled={isPending}
+        data-favorite-button="true"
         className={cn(
           sizeClasses[size],
           'rounded-full bg-background/80 backdrop-blur-sm border-0',

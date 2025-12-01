@@ -143,7 +143,7 @@ export function StudioCard({
 
           {/* 選択チェックボックスまたはお気に入りボタン */}
           {showSelection ? (
-            <div className="absolute top-2 right-2">
+            <div className="absolute top-2 right-2 z-20">
               <div
                 className={`w-6 h-6 rounded border-2 flex items-center justify-center ${
                   isSelected
@@ -166,12 +166,7 @@ export function StudioCard({
                       favoriteCount: favoriteState.favoriteCount,
                       isAuthenticated: true,
                     }
-                  : {
-                      // favoriteStateがundefinedの場合でも空のinitialStateを設定して個別の呼び出しを防ぐ
-                      isFavorited: false,
-                      favoriteCount: 0,
-                      isAuthenticated: false,
-                    }
+                  : undefined
               }
               onToggle={onFavoriteToggle}
             />
