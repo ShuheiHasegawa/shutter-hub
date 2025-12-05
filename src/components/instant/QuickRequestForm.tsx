@@ -37,7 +37,6 @@ import { FormattedPrice } from '@/components/ui/formatted-display';
 import type {
   LocationData,
   RequestType,
-  RequestUrgency,
   QuickRequestFormData,
   NearbyPhotographer,
   GuestUsageLimit,
