@@ -52,12 +52,6 @@ export function PricingDisplay() {
     },
   ];
 
-  const additionalFees = [
-    { condition: '重要リクエスト', fee: '+¥1,500', icon: '⚡' },
-    { condition: '休日料金', fee: '+¥1,500', icon: '📅' },
-    { condition: '夜間料金（18時以降）', fee: '+¥2,000', icon: '🌙' },
-  ];
-
   return (
     <div className="container mx-auto px-4">
       <div className="text-center mb-12">
@@ -65,8 +59,7 @@ export function PricingDisplay() {
           明確で分かりやすい料金体系
         </h2>
         <p className="text-gray-700 dark:text-gray-300 max-w-2xl mx-auto">
-          追加料金なし（緊急時除く）の明確な料金設定。
-          プロ品質の写真を手頃な価格でお届けします。
+          明確な料金設定で、プロ品質の写真を手頃な価格でお届けします。
         </p>
       </div>
 
@@ -114,37 +107,6 @@ export function PricingDisplay() {
           </Card>
         ))}
       </div>
-
-      {/* 追加料金 */}
-      <Card className="bg-gray-50 dark:bg-gray-800">
-        <CardHeader>
-          <CardTitle className="text-center text-gray-900 dark:text-white">
-            追加料金について
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {additionalFees.map((fee, index) => (
-              <div
-                key={index}
-                className="text-center p-3 bg-white dark:bg-gray-700 rounded-lg"
-              >
-                <div className="text-2xl mb-2">{fee.icon}</div>
-                <div className="text-sm font-medium text-gray-900 dark:text-white">
-                  {fee.condition}
-                </div>
-                <div className="text-sm font-semibold">{fee.fee}</div>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-700 dark:text-gray-300">
-              ※ 基本料金に追加される場合があります。事前に総額をお知らせします。
-            </p>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* 特典 */}
       <div className="mt-12 text-center">
