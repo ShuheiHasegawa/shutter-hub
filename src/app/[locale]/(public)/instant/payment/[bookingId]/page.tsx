@@ -293,37 +293,8 @@ export default async function PaymentPage({ params }: PageProps) {
                 <div className="space-y-3">
                   <div className="flex justify-between text-sm">
                     <span>基本料金</span>
-                    <span>
-                      ¥
-                      {(
-                        booking.total_amount -
-                        booking.rush_fee -
-                        booking.holiday_fee -
-                        booking.night_fee
-                      ).toLocaleString()}
-                    </span>
+                    <span>¥{booking.total_amount.toLocaleString()}</span>
                   </div>
-
-                  {booking.rush_fee > 0 && (
-                    <div className="flex justify-between text-sm">
-                      <span>緊急料金</span>
-                      <span>¥{booking.rush_fee.toLocaleString()}</span>
-                    </div>
-                  )}
-
-                  {booking.holiday_fee > 0 && (
-                    <div className="flex justify-between text-sm">
-                      <span>休日料金</span>
-                      <span>¥{booking.holiday_fee.toLocaleString()}</span>
-                    </div>
-                  )}
-
-                  {booking.night_fee > 0 && (
-                    <div className="flex justify-between text-sm">
-                      <span>夜間料金</span>
-                      <span>¥{booking.night_fee.toLocaleString()}</span>
-                    </div>
-                  )}
 
                   <Separator />
 

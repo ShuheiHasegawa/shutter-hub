@@ -183,24 +183,6 @@ export function EscrowPaymentForm({
                 <FormattedPrice value={booking.platform_fee} format="simple" />
               </span>
             </div>
-            <div className="flex justify-between text-sm">
-              <span>緊急料金</span>
-              <span>
-                <FormattedPrice value={booking.rush_fee} format="simple" />
-              </span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span>休日料金</span>
-              <span>
-                <FormattedPrice value={booking.holiday_fee} format="simple" />
-              </span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span>夜間料金</span>
-              <span>
-                <FormattedPrice value={booking.night_fee} format="simple" />
-              </span>
-            </div>
             <Separator />
             <div className="flex justify-between font-medium">
               <span>合計</span>

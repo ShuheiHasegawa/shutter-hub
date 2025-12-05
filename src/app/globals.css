@@ -302,4 +302,108 @@
       background-color 0.2s ease,
       color 0.2s ease;
   }
+
+  /* エディトリアルデザイン用スタイル */
+  .gradient-mesh {
+    background:
+      radial-gradient(at 0% 0%, rgba(111, 80, 145, 0.15) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, rgba(78, 205, 196, 0.1) 0px, transparent 50%),
+      radial-gradient(
+        at 100% 100%,
+        rgba(255, 107, 107, 0.1) 0px,
+        transparent 50%
+      ),
+      radial-gradient(at 0% 100%, rgba(255, 230, 109, 0.1) 0px, transparent 50%);
+  }
+
+  .dark .gradient-mesh {
+    background:
+      radial-gradient(at 0% 0%, rgba(111, 80, 145, 0.25) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, rgba(78, 205, 196, 0.2) 0px, transparent 50%),
+      radial-gradient(
+        at 100% 100%,
+        rgba(255, 107, 107, 0.2) 0px,
+        transparent 50%
+      ),
+      radial-gradient(at 0% 100%, rgba(255, 230, 109, 0.2) 0px, transparent 50%);
+  }
+
+  .noise-texture {
+    position: relative;
+  }
+
+  .noise-texture::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    mix-blend-mode: overlay;
+  }
+
+  .stagger-reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: staggerReveal 0.6s ease-out forwards;
+  }
+
+  @keyframes staggerReveal {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .stagger-reveal-delay-1 {
+    animation-delay: 0.1s;
+  }
+
+  .stagger-reveal-delay-2 {
+    animation-delay: 0.2s;
+  }
+
+  .stagger-reveal-delay-3 {
+    animation-delay: 0.3s;
+  }
+
+  .stagger-reveal-delay-4 {
+    animation-delay: 0.4s;
+  }
+
+  .stagger-reveal-delay-5 {
+    animation-delay: 0.5s;
+  }
+
+  .stagger-reveal-delay-6 {
+    animation-delay: 0.6s;
+  }
+
+  /* 非対称レイアウト用 */
+  .asymmetric-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 1.5rem;
+  }
+
+  .diagonal-accent {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .diagonal-accent::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+      135deg,
+      transparent 0%,
+      rgba(111, 80, 145, 0.05) 50%,
+      transparent 100%
+    );
+    transform: rotate(45deg);
+    pointer-events: none;
+  }
 }

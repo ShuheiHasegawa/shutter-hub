@@ -90,41 +90,9 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
   // 料金計算
   const calculateTotalPrice = () => {
     const basePrice = formData.budget;
-    let additionalFees = 0;
-
-    // 緊急料金
-    switch (formData.urgency) {
-      case 'now':
-        additionalFees += 2000;
-        break;
-      case 'within_30min':
-        additionalFees += 1500;
-        break;
-      case 'within_1hour':
-        additionalFees += 1000;
-        break;
-      default:
-        additionalFees += 0;
-        break;
-    }
-
-    // 休日料金（簡易チェック）
-    const now = new Date();
-    const isWeekend = now.getDay() === 0 || now.getDay() === 6;
-    if (isWeekend) {
-      additionalFees += 1500;
-    }
-
-    // 夜間料金（18時以降）
-    const isNight = now.getHours() >= 18;
-    if (isNight) {
-      additionalFees += 2000;
-    }
-
     return {
       basePrice,
-      additionalFees,
-      totalPrice: basePrice + additionalFees,
+      totalPrice: basePrice,
     };
   };
 
@@ -279,13 +247,6 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
     { value: 'landscape', label: '風景撮影', icon: '🌄' },
   ];
 
-  const urgencyOptions = [
-    { value: 'normal', label: '通常', extra: '追加料金なし', icon: '📋' },
-    { value: 'now', label: '今すぐ', extra: '+¥2,000', icon: '⚡' },
-    { value: 'within_30min', label: '30分以内', extra: '+¥1,500', icon: '🔥' },
-    { value: 'within_1hour', label: '1時間以内', extra: '+¥1,000', icon: '⏰' },
-  ];
-
   return (
     <Card id="quick-request" className="w-full max-w-4xl mx-auto">
       <CardHeader>
@@ -438,45 +399,6 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
                 </div>
               </div>
 
-              {/* 緊急度 */}
-              <div className="space-y-3">
-                <Label htmlFor="urgency">緊急度</Label>
-                <div className="grid grid-cols-2 gap-3">
-                  {urgencyOptions.map(option => (
-                    <button
-                      key={option.value}
-                      type="button"
-                      className={`p-3 border rounded-lg text-center transition-colors ${
-                        formData.urgency === option.value
-                          ? 'border-shutter-primary bg-shutter-primary/10'
-                          : 'border-border hover:border-muted-foreground'
-                      }`}
-                      onClick={() =>
-                        setFormData(prev => ({
-                          ...prev,
-                          urgency: option.value as RequestUrgency,
-                        }))
-                      }
-                    >
-                      <div className="space-y-1">
-                        <div className="text-lg">{option.icon}</div>
-                        <div className="text-sm font-medium">
-                          {option.label}
-                        </div>
-                        <Badge
-                          variant={
-                            option.value === 'now' ? 'destructive' : 'secondary'
-                          }
-                          className="text-xs"
-                        >
-                          {option.extra}
-                        </Badge>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
               {/* 撮影時間 */}
               <div className="space-y-3">
                 <Label htmlFor="duration">撮影時間</Label>
@@ -573,24 +495,11 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
                       )}
                     </span>
                   </div>
-                  {priceBreakdown.additionalFees > 0 && (
-                    <div className="flex justify-between text-shutter-warning font-medium">
-                      <span>追加料金</span>
-                      <span>
-                        +
-                        <FormattedPrice
-                          value={priceBreakdown.additionalFees}
-                          format="simple"
-                        />
-                      </span>
-                    </div>
-                  )}
                   <Separator />
                   <div className="flex justify-between font-medium text-foreground">
                     <span>合計</span>
                     <span>
-                      {priceBreakdown.basePrice === 0 &&
-                      priceBreakdown.additionalFees === 0 ? (
+                      {priceBreakdown.basePrice === 0 ? (
                         <span className="text-sm text-gray-500">
                           カメラマンが料金を提示
                         </span>
