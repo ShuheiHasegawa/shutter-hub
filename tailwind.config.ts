@@ -28,6 +28,7 @@ const config: Config = {
         inter: ['var(--font-inter)', 'sans-serif'],
         'noto-sans-jp': ['var(--font-noto-sans-jp)', 'sans-serif'],
         display: ['var(--font-playfair-display)', 'serif'],
+        outfit: ['var(--font-outfit)', 'sans-serif'],
       },
       colors: {
         // ShutterHub カスタムカラー（固定）
