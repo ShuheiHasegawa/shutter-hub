@@ -2,7 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { logger } from '@/lib/utils/logger';
-import { useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
+import {
+  Elements,
+  useStripe,
+  useElements,
+  CardElement,
+} from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -24,12 +30,17 @@ import {
 } from '@/app/actions/instant-payment';
 import type { EscrowPaymentFormProps } from '@/types/instant-photo';
 
-export function EscrowPaymentForm({
+const stripePromise = loadStripe(
+  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
+);
+
+function EscrowPaymentFormInternal({
   booking,
-  guestPhone,
+  guestPhone: _guestPhone,
+  clientSecret,
   onSuccess,
   onError,
-}: EscrowPaymentFormProps) {
+}: EscrowPaymentFormProps & { clientSecret: string }) {
   const stripe = useStripe();
   const elements = useElements();
 
@@ -38,30 +49,6 @@ export function EscrowPaymentForm({
     'idle' | 'success' | 'error'
   >('idle');
   const [errorMessage, setErrorMessage] = useState('');
-  const [clientSecret, setClientSecret] = useState<string | null>(null);
-
-  // エスクロー決済を初期化
-  useEffect(() => {
-    const initializePayment = async () => {
-      try {
-        const result = await createEscrowPayment(booking.id, guestPhone);
-        if (result.success && result.data) {
-          setClientSecret(result.data.clientSecret);
-        } else {
-          setErrorMessage(
-            result.error || 'エスクロー決済の初期化に失敗しました'
-          );
-          setPaymentStatus('error');
-        }
-      } catch (error) {
-        logger.error('エスクロー決済初期化エラー:', error);
-        setErrorMessage('予期しないエラーが発生しました');
-        setPaymentStatus('error');
-      }
-    };
-
-    initializePayment();
-  }, [booking.id, guestPhone]);
 
   const handlePayment = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -315,3 +302,101 @@ export function EscrowPaymentForm({
     </Card>
   );
 }
+
+export function EscrowPaymentForm({
+  booking,
+  guestPhone,
+  onSuccess,
+  onError,
+}: EscrowPaymentFormProps) {
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [paymentStatus, setPaymentStatus] = useState<
+    'idle' | 'success' | 'error'
+  >('idle');
+
+  // エスクロー決済を初期化
+  useEffect(() => {
+    const initializePayment = async () => {
+      try {
+        logger.info('createEscrowPayment 呼び出し開始:', {
+          bookingId: booking.id,
+          guestPhone,
+        });
+        const result = await createEscrowPayment(booking.id, guestPhone);
+        logger.info('createEscrowPayment 結果:', {
+          success: result.success,
+          hasData: !!result.data,
+          error: result.error,
+        });
+        if (result.success && result.data) {
+          setClientSecret(result.data.clientSecret);
+          logger.info('clientSecret 設定完了');
+        } else {
+          setErrorMessage(
+            result.error || 'エスクロー決済の初期化に失敗しました'
+          );
+          setPaymentStatus('error');
+        }
+      } catch (error) {
+        logger.error('エスクロー決済初期化エラー:', error);
+        setErrorMessage('予期しないエラーが発生しました');
+        setPaymentStatus('error');
+      }
+    };
+
+    initializePayment();
+  }, [booking.id, guestPhone]);
+
+  if (!clientSecret) {
+    return (
+      <Card className="w-full max-w-2xl mx-auto">
+        <CardContent className="py-8">
+          {paymentStatus === 'error' ? (
+            <Alert variant="destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>{errorMessage}</AlertDescription>
+            </Alert>
+          ) : (
+            <div className="flex items-center justify-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span>決済システムを初期化しています...</span>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const options = {
+    clientSecret,
+    appearance: {
+      theme: 'stripe' as const,
+      variables: {
+        colorPrimary: '#6F5091',
+        colorBackground: '#ffffff',
+        colorText: '#1f2937',
+        colorDanger: '#ef4444',
+        fontFamily: '"Inter", "Noto Sans JP", system-ui, sans-serif',
+        spacingUnit: '4px',
+        borderRadius: '6px',
+      },
+    },
+    locale: 'ja' as const,
+  };
+
+  return (
+    <Elements options={options} stripe={stripePromise}>
+      <EscrowPaymentFormInternal
+        booking={booking}
+        guestPhone={guestPhone}
+        clientSecret={clientSecret}
+        onSuccess={onSuccess}
+        onError={onError}
+      />
+    </Elements>
+  );
+}
+
+// default exportも追加（動的インポート用）
+export default EscrowPaymentForm;
