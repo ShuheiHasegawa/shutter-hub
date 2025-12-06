@@ -1,0 +1,2405 @@
+---
+trigger: always_on
+description:
+globs:
+---
+
+## SEO/タイトル共通化（seo.ts）
+
+- タイトル生成は `src/lib/seo.ts` の `buildTitle(main: string, suffix?: string)` を使用する。
+  - 出力形式: `{main} (- {suffix}) | ShutterHub`
+  - 例（静的）: `export const metadata = { title: buildTitle('ダッシュボード') }`
+  - 例（動的）: `title: buildTitle(entity.title, '編集')`
+- 適用箇所: `layout.tsx` の `metadata` または `generateMetadata()`。
+- ルール: 一覧/作成は固定、詳細/編集は「名称 + サフィックス」で統一する。
+
+## ⚡ **実装効率化：ESLintチェック方針**
+
+### **基本原則**
+
+- **実装完了時**: ESLintの**記述エラー**（構文エラー）のみ修正
+- **動作確認**: 手動でブラウザ確認（ホットリロード活用）
+- **ビルドテスト**: コミット直前のみ実施
+- **コミット直前**: 警告レベルまで全チェック
+
+### **ESLintエラーの分類**
+
+#### **即座修正（実装完了時）**
+
+```bash
+# 記述エラーのみ抽出表示（推奨）
+npx eslint src/ --format=compact 2>&1 | grep " error:" | head -20
+
+# 自動修正可能な項目を修正
+npx eslint src/ --fix
+```
+
+**対応対象:**
+
+- ❌ **Syntax Errors**: 括弧の閉じ忘れ、構文誤り
+- ❌ **Critical Errors**: useClient指定漏れ、必須props型不一致
+- ❌ **Reactルール違反**: exhaustive-deps未指定等
+
+#### **コミット直前対応（警告・スタイル）**
+
+```bash
+# 警告レベルまで全チェック（コミット直前のみ）
+npx eslint src/ --format=compact --max-warnings=0
+```
+
+**対応対象:**
+
+- ⚠️ **Warnings**: 未使用変数、最適化できる処理
+- 📝 **Style Issues**: フォーマット、命名規則、インポート順序
+- 🔍 **console.log直接出力**: logger使用を推奨
+
+### **実装フロー最適化**
+
+```yaml
+従来の問題: 実装 → 全ビルド確認（3-5分） → エラー修正 → 進行が遅い
+
+改善版フロー:
+  実装完了時: 1. ESLint記述エラーチェック（10-20秒で確認）
+    2. 記述エラーのみ即座修正
+    3. 手動での動作確認（ブラウザ・ホットリロード）
+    4. TODO更新
+
+  コミット直前: 1. TypeScript型チェック（npx tsc --noEmit）
+    2. ESLint最終確認（--max-warnings=0）
+    3. ビルドテスト実施（npm run build）
+    4. git commit & push
+```
+
+### **推奨コマンド**
+
+```bash
+# 実装完了時（高速チェック）
+npx eslint src/ --format=compact 2>&1 | grep " error:" | head -20
+npx eslint src/ --fix
+
+# コミット直前（全チェック）
+npx tsc --noEmit
+npx eslint src/ --format=compact --max-warnings=0
+npm run build
+```
+
+### **効果**
+
+- ⏱️ **時間短縮**: ビルド待機時間を削減（1日あたり10-15分節約）
+- 🎯 **集中力維持**: 実装フローの中断を最小化
+- ✅ **品質確保**: コミット直前に全チェック実施
+- 🔄 **継続性**: スムーズな開発→テスト→コミットサイクル
+
+variant: 'destructive',
+});
+
+````
+
+#### 3. 日付・時刻の多言語化
+
+```tsx
+// ❌ 悪い例
+const options = { locale: 'ja-JP' };
+
+// ✅ 良い例
+import { useLocale } from 'next-intl';
+const locale = useLocale();
+const options = { locale };
+````
+
+#### 4. 条件付きテキストの多言語化
+
+```tsx
+// ❌ 悪い例: 条件分岐でのハードコードテキスト
+const status = isActive ? '有効' : '無効';
+const restriction = session.allow_multiple_bookings
+  ? '複数予約可能'
+  : '1人1枠まで';
+const bookingType = session.booking_type === 'lottery' ? '抽選' : '先着順';
+
+// ✅ 良い例: 条件分岐も多言語化対応
+const t = useTranslations('status');
+const status = isActive ? t('active') : t('inactive');
+
+const t = useTranslations('booking');
+const restriction = session.allow_multiple_bookings
+  ? t('multipleAllowed')
+  : t('singleOnly');
+const bookingType =
+  session.booking_type === 'lottery' ? t('lottery') : t('firstCome');
+```
+
+#### 5. データベースフィールドに基づく表示テキストの多言語化
+
+```tsx
+// ❌ 悪い例: データベース値に基づくハードコードテキスト
+<span>予約制限: 制限なし</span>
+<span>ステータス: {session.status === 'active' ? '開催中' : '終了'}</span>
+<span>参加費: {session.is_free ? '無料' : `¥${session.price}`}</span>
+
+// ✅ 良い例: データベース値も多言語化対応
+const t = useTranslations('photoSessions');
+<span>{t('restriction')}: {session.allow_multiple_bookings ? t('multipleAllowed') : t('singleOnly')}</span>
+<span>{t('status')}: {session.status === 'active' ? t('statusActive') : t('statusEnded')}</span>
+<span>{t('fee')}: {session.is_free ? t('free') : `¥${session.price}`}</span>
+```
+
+#### 6. ハードコードテキスト検出方法
+
+```bash
+# 日本語ハードコードの検出
+grep -r "['\"]\s*[あ-ん\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]" src/components/
+
+# 条件分岐でのハードコード検出
+grep -r "\?\s*['\"][^'\"]*[あ-ん]" src/components/
+grep -r ":\s*['\"][^'\"]*[あ-ん]" src/components/
+
+# 具体例
+grep -r "複数予約可能\|1人1枠まで\|制限なし\|開催中\|終了" src/components/
+```
+
+### 多言語化レビューチェックリスト
+
+- [ ] ハードコードされた日本語・英語がないか確認
+- [ ] すべてのユーザー向けテキストが翻訳されているか
+- [ ] 動的な値を含むテキストが適切に処理されているか
+- [ ] **条件分岐テキスト**（三項演算子、if文での表示切り替え）が多言語化されているか
+- [ ] **データベースフィールドに基づく表示テキスト**が多言語化されているか
+- [ ] **ステータス表示**（active/inactive、enabled/disabled等）が多言語化されているか
+- [ ] **制限・設定表示**（allow_multiple_bookings等のboolean値表示）が多言語化されているか
+- [ ] 日付・時刻が多言語化対応されているか
+- [ ] 数値フォーマットがロケールに対応しているか
+
+### ハードコードテキスト自動検出
+
+実装前・実装後に以下のコマンドでハードコードテキストを検出：
+
+```bash
+# 日本語ハードコード全般検出
+grep -r "['\"]\s*[あ-ん\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]" src/components/
+
+# よくある条件分岐ハードコード
+grep -r "複数予約可能\|1人1枠まで\|制限なし\|開催中\|終了\|有効\|無効\|抽選\|先着順" src/components/
+```
+
+## メッセージファイル開発ルール
+
+### 概要
+
+`messages/ja.json`などの多言語対応ファイルを編集する際の開発ルールです。
+
+### 1. キーの重複禁止
+
+#### ルール
+
+- 同じキーを複数回定義してはいけません
+- 新しいキーを追加する前に、既存のキーを検索して重複がないか確認してください
+
+#### 確認方法
+
+```bash
+# キーの重複を確認
+grep -n '"keyName"' messages/ja.json
+```
+
+#### 悪い例
+
+```json
+{
+  "bookingType": { ... },
+  "otherKeys": { ... },
+  "bookingType": { ... }  // ❌ 重複
+}
+```
+
+### 2. キーの並び順
+
+#### ルール
+
+同一階層のキーは以下の順序で並べてください：
+
+1. **数字で始まるキー**（0-9）
+2. **大文字で始まるキー**（A-Z）
+3. **小文字で始まるキー**（a-z）
+4. **各グループ内ではアルファベット順**
+
+#### 良い例
+
+```json
+{
+  "404": "ページが見つかりません",
+  "FAQ": "よくある質問",
+  "actions": { ... },
+  "booking": { ... },
+  "common": { ... },
+  "navigation": { ... }
+}
+```
+
+### 3. 階層構造
+
+#### ルール
+
+- 最大5階層までに制限
+- 関連する項目は適切にグループ化
+- 深すぎる階層は避ける
+
+#### 良い例
+
+```json
+{
+  "photoSessions": {
+    "form": {
+      "validation": {
+        "titleRequired": "タイトルは必須です"
+      }
+    }
+  }
+}
+```
+
+### 4. 命名規則
+
+#### 基本ルール
+
+- **camelCase**を使用（例：`bookingType`）
+- 動詞は**現在形**を使用（例：`save`、`cancel`）
+- 複数形は適切に使用（例：`bookings`、`sessions`）
+
+#### カテゴリ別命名規則
+
+##### アクション系
+
+```json
+{
+  "save": "保存",
+  "cancel": "キャンセル",
+  "confirm": "確認",
+  "delete": "削除"
+}
+```
+
+##### 状態系
+
+```json
+{
+  "loading": "読み込み中...",
+  "saving": "保存中...",
+  "error": "エラーが発生しました",
+  "success": "成功しました"
+}
+```
+
+##### バリデーション系
+
+```json
+{
+  "validation": {
+    "required": "必須項目です",
+    "invalid": "無効な値です",
+    "tooLong": "文字数が多すぎます"
+  }
+}
+```
+
+### 5. 値の記述ルール
+
+#### 日本語テキスト
+
+- 敬語は「です・ます」調で統一
+- 句読点は「、」「。」を使用
+- 半角英数字を使用
+
+#### プレースホルダー
+
+- 変数は`{variableName}`形式
+- 複数形は`{count}件`のように使用
+
+#### 例
+
+```json
+{
+  "welcome": "ようこそ、{userName}さん",
+  "itemCount": "{count}件のアイテム",
+  "confirmDelete": "本当に削除しますか？"
+}
+```
+
+### 6. コメント
+
+JSONファイルにはコメントを記述できないため、以下の方法で対応：
+
+1. 複雑な構造には隣接するキーで説明を追加
+2. 別途ドキュメントファイルで詳細を記載
+
+### 7. 編集時のチェックリスト
+
+編集前後に以下を確認してください：
+
+- [ ] キーの重複がないか
+- [ ] アルファベット順になっているか
+- [ ] 命名規則に従っているか
+- [ ] JSONの構文エラーがないか
+- [ ] 不要な末尾カンマがないか
+
+### 8. バージョン管理
+
+#### コミットメッセージ
+
+```
+feat(i18n): 予約機能の翻訳を追加
+fix(i18n): 重複キーを修正
+refactor(i18n): メッセージをアルファベット順に整理
+```
+
+#### プルリクエスト
+
+- 変更内容を明確に記載
+- 大きな変更は事前にissueで議論
+
+### 9. ツール
+
+#### 推奨ツール
+
+- JSONフォーマッター
+- JSONバリデーター
+- 重複キー検出ツール
+
+#### VSCode拡張機能
+
+- Sort JSON objects
+- JSON Tools
+- Prettier
+
+### 10. よくある間違い
+
+#### 1. 末尾カンマ
+
+```json
+{
+  "key1": "value1",
+  "key2": "value2" // ❌ 最後の要素にカンマ
+}
+```
+
+#### 2. 不適切な階層
+
+```json
+{
+  "user": {
+    "profile": {
+      "settings": {
+        "privacy": {
+          "visibility": {
+            "public": "公開" // ❌ 深すぎる
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+#### 3. 一貫性のない命名
+
+```json
+{
+  "user_name": "ユーザー名", // ❌ snake_case
+  "UserEmail": "メールアドレス", // ❌ PascalCase
+  "phoneNumber": "電話番号" // ✅ camelCase
+}
+```
+
+## 日付ユーティリティルール
+
+### 基本原則
+
+- **ネイティブ JavaScript Date API を使用**
+- **外部ライブラリ（date-fns等）は使用禁止**
+- **タイムゾーンは Asia/Tokyo 固定**
+- **多言語化対応必須**
+
+### 実装ルール
+
+#### 1. 日付フォーマット関数の使用
+
+```tsx
+// ✅ 推奨: src/lib/utils/date.ts の関数を使用
+import { formatDate, formatTime, formatDateTime } from '@/lib/utils/date';
+
+// 基本的な日付表示
+formatDate(date, 'short'); // 2024/1/1
+formatDate(date, 'long'); // 2024年1月1日月曜日
+formatTime(date); // 14:30
+formatDateTime(date); // 2024年1月1日月曜日 14:30
+```
+
+#### 2. 多言語対応の日付フォーマット
+
+```tsx
+import { useLocale } from 'next-intl';
+import { formatDateLocalized } from '@/lib/utils/date';
+
+const locale = useLocale();
+const formattedDate = formatDateLocalized(date, locale, 'long');
+```
+
+#### 3. 日付計算
+
+```tsx
+import { addDays, addHours, differenceInHours } from '@/lib/utils/date';
+
+// 日付計算
+const tomorrow = addDays(new Date(), 1);
+const deadline = addHours(startTime, -24);
+const hoursUntil = differenceInHours(startTime, new Date());
+```
+
+### 禁止事項
+
+- `date-fns` の使用
+- `moment.js` の使用
+- ハードコードされたロケール指定
+- タイムゾーンの直接指定（Asia/Tokyo以外）
+
+### 必須実装
+
+- すべての日付表示は多言語化対応
+- ユーザーのロケール設定に基づく表示
+- 一貫したタイムゾーン処理
+
+## ファイル分類・混乱防止ルール
+
+**重要**: 適切なファイル分類により、プロジェクト管理の混乱を防ぐ
+
+### **1. todo.mdcファイルの厳格な制限**
+
+```yaml
+記載可能内容:
+  - [ ] 未完了タスクリスト（チェックボックス形式）
+  - [x] 完了済みタスクリスト（実装時間記録）
+  - 🔴🟡🟢 優先度表示・実装期間見積
+  - タスク間の依存関係・次期計画
+  - プロジェクト統計（ファイル数・実装率・コード行数等）
+
+記載禁止内容:
+  - ❌ プログラムコード・SQL・TypeScript型定義
+  - ❌ データベーススキーマ・マイグレーション詳細
+  - ❌ コンポーネント実装詳細・Server Actions
+  - ❌ API仕様・技術要件詳細
+  - ❌ UI/UXデザイン詳細・レイアウト仕様
+  - ❌ 設定ファイル・環境変数詳細
+```
+
+### **1.1. TODOアーカイブ管理ルール（新規追加）**
+
+```yaml
+archive_rules:
+  trigger_conditions:
+    - '完了から1ヶ月以上経過したタスク'
+    - '主要機能実装完了済みのPhase'
+    - '技術負債解決済みのタスク'
+    - 'todo.mdcファイルが500行を超過した場合'
+
+  archive_process:
+    1_create_archive_file:
+      - 'ファイル名: .cursor/rules/dev-rules/todo-archive.mdc'
+      - '完了済みタスクの詳細記録を移動'
+      - '実装期間・技術成果・統計情報を保持'
+
+    2_update_main_todo:
+      - 'アーカイブ済みタスクをtodo.mdcから削除'
+      - '最新の進行中・計画中タスクのみ残す'
+      - 'アーカイブファイルへの参照リンク追加'
+
+    3_maintain_history:
+      - '完了実績の統計情報は保持'
+      - '重要な技術成果は開発ルールに反映'
+      - '学習内容は専門ファイルに移行'
+
+  automation_schedule:
+    - '月1回の定期アーカイブ実行'
+    - '大きなPhase完了時の自動アーカイブ'
+    - 'ファイルサイズ警告時の即座アーカイブ'
+```
+
+### **2. 専門ファイル分類基準**
+
+```yaml
+技術仕様関連:
+  - techstack.mdc: 技術スタック・ライブラリ・フレームワーク
+  - auth.mdc: 認証システム実装詳細
+  - prompts-booking.mdc: 予約システム仕様・実装
+  - instant-photo-request.mdc: 即座撮影機能詳細
+
+プロジェクト管理:
+  - project.mdc: プロジェクト概要・ビジネス要件
+  - implementation-plan.mdc: 実装計画・ロードマップ
+  - detailed-requirements.mdc: 詳細要件・機能仕様
+
+開発ガイド:
+  - development.mdc: 開発ルール・コーディング規約
+  - ui-guide.mdc: UI/UXガイドライン・デザインシステム
+```
+
+### **3. ファイル作成時のチェックリスト**
+
+```yaml
+新規ファイル作成前: 1. 既存の専門ファイルで適切な場所があるか確認
+  2. todo.mdcに技術詳細を書こうとしていないか確認
+  3. 内容が純粋なタスク管理かプログラム実装か判別
+  4. 適切なファイル分類・命名規則に従っているか確認
+
+実装完了時: 1. todo.mdcのチェックボックス更新のみ（[ ] → [x]）
+  2. 技術詳細は適切な専門ファイルに記録
+  3. コミットメッセージに実装内容明記
+  4. 次期タスクの優先度見直し
+```
+
+### **4. 混乱防止の自動化ルール**
+
+```yaml
+コミット時チェック:
+  - todo.mdcファイル変更時に技術詳細混入チェック
+  - 各専門ファイルの整合性確認
+  - ファイルサイズ監視（todo.mdcが500行超過時警告）
+
+定期メンテナンス:
+  - 月1回の完了済みタスクアーカイブ化
+  - 重複・古い情報の整理
+  - ファイル分類の見直し・最適化
+
+archive_automation:
+  - 完了タスクのtodo-archive.mdcへの自動移行
+  - メインtodo.mdcファイルの最新状態維持
+  - アーカイブファイル参照による履歴追跡機能
+```
+
+### **5. TODOアーカイブシステム実装ルール（新規追加）**
+
+```yaml
+file_structure:
+  main_todo: ".cursor/rules/dev-rules/todo.mdc"
+    purpose: "現在進行中・計画中タスクのみ管理"
+    content: "アクティブなタスク、優先度、依存関係"
+    size_limit: "500行以内に制限"
+
+  archive_todo: ".cursor/rules/dev-rules/todo-archive.mdc"
+    purpose: "完了済みタスクの履歴保持"
+    content: "完了タスク詳細、実装時間、技術成果、統計"
+    reference: "メインTODOから参照可能"
+
+management_process:
+  regular_archive:
+    timing: "月1回または500行超過時"
+    criteria: "完了から1ヶ月以上経過"
+    process: "メインファイルからアーカイブファイルへ移動"
+
+  emergency_archive:
+    trigger: "ファイルサイズ急増時"
+    action: "即座にアーカイブ実行"
+    priority: "最新タスクの見通し確保"
+
+  reference_maintenance:
+    links: "アーカイブファイルへの適切な参照リンク"
+    search: "統合的なタスク検索機能"
+    stats: "全期間統計の一元管理"
+```
+
+## 自動化ルール
+
+### 機能実装完了時の自動処理
+
+機能実装が完了した際は、**Cursorカスタムコマンド `/commit` を使用**してください。
+
+### **🔍 調査段階のコミット不要ルール**
+
+#### **基本原則**
+
+- **調査・デバッグ目的のコードはコミット不要**
+- **問題解決後は調査コードを削除して本来の実装にクリーンアップ**
+- **調査段階と本実装を明確に分離**
+
+#### **調査段階の対象コード**
+
+```yaml
+debug_investigation:
+  temporary_logs:
+    - console.log("調査用ログ")
+    - console.error("デバッグ詳細", error)
+    - alert("テスト確認")
+
+  detailed_error_output:
+    - JSON.stringify(error, null, 2)
+    - エラーコード・スタックトレース出力
+    - 詳細なペイロード確認
+
+  individual_processing:
+    - for文での個別エラー取得
+    - 一括処理を個別に分解
+    - ステップ毎の状態確認
+
+  temporary_modifications:
+    - 一時的なデータ構造変更
+    - テスト用の条件分岐
+    - 調査用の処理追加
+```
+
+#### **調査完了後の必須作業**
+
+```yaml
+cleanup_process:
+  1_remove_debug_code:
+    - 調査用console.logの完全削除
+    - テスト用alertの削除
+    - 詳細エラー出力の削除
+
+  2_restore_clean_implementation:
+    - 本来のシンプルな実装に復元
+    - パフォーマンス重視の処理に戻す
+    - 一括処理の復活
+
+  3_commit_clean_version:
+    - クリーンアップ後の実装をコミット
+    - 調査コードなしの状態で記録
+    - "fix: [問題の修正内容]"でコミット
+```
+
+#### **実装例**
+
+```typescript
+// 🔍 調査段階（コミット不要）
+console.log('Creating group with members:', uniqueMemberIds);
+for (const memberId of uniqueMemberIds) {
+  console.log(`Processing member: ${memberId}`);
+  const result = await processIndividually(memberId);
+  console.log(`Result:`, JSON.stringify(result, null, 2));
+}
+
+// ✅ 本実装（コミット対象）
+const memberInserts = uniqueMemberIds.map(memberId => ({
+  conversation_id: conversation.id,
+  user_id: memberId,
+  role: memberId === user.id ? 'admin' : 'member',
+}));
+const { error } = await supabase.from('table').insert(memberInserts);
+```
+
+#### **調査段階の判定基準**
+
+```yaml
+investigation_indicators:
+  temporary_nature:
+    - 'エラー原因の特定が目的'
+    - '詳細ログによる状況把握'
+    - '個別処理での問題切り分け'
+
+  clean_implementation_exists:
+    - '本来のシンプルな実装方法が明確'
+    - '調査完了後の理想的な形が決まっている'
+    - 'パフォーマンス重視の実装に戻せる'
+```
+
+#### **このルールの効果**
+
+- **ログ汚染防止**: 本番環境に調査用コードが混入しない
+- **コード品質維持**: 常にクリーンな実装状態を保持
+- **効率的な問題解決**: 調査と実装を分離して集中
+
+### 📅 **日付・タイムスタンプ管理ルール（重要）**
+
+### **基本原則**
+
+- **必ず実際のシステム日付を使用する**
+- **手動での日付入力は禁止**
+- **マイグレーションファイルは正確なタイムスタンプ命名**
+- **ドキュメントの日付整合性を確保**
+
+### **マイグレーションファイル作成ルール**
+
+```yaml
+migration_file_creation:
+  required_steps:
+    1. "date +\"%Y%m%d%H%M%S\" でタイムスタンプ取得"
+    2. "ファイル名: [timestamp]_[description].sql"
+    3. "ファイル内日付: -- Date: YYYY-MM-DD（実際の日付）"
+    4. "説明: -- Description: 具体的な変更内容"
+
+  example:
+    timestamp: "20250718115321"
+    filename: "20250718115321_create_user_storage_bucket.sql"
+    header: |
+      -- Migration: 048_create_user_storage_bucket
+      -- Description: ユーザー別ストレージバケット（プロフィール画像・ポートフォリオ対応）
+      -- Date: 2025-07-18
+
+naming_convention:
+  format: "[YYYYMMDDHHMMSS]_[snake_case_description].sql"
+  description_rules:
+    - 'snake_case形式'
+    - '具体的で理解しやすい内容'
+    - '動詞を含む（create, add, update, fix等）'
+```
+
+### **ドキュメント作成時の日付ルール**
+
+```yaml
+document_dating:
+  creation_date:
+    - '必ずdate +\"%Y-%m-%d\"コマンドで取得'
+    - '手動入力禁止'
+    - 'ドキュメント内で一貫した形式使用'
+
+  history_section:
+    format: '- **YYYY-MM-DD**: 変更内容の詳細'
+    example: '- **2025-07-18**: 初期設計・ユーザーストレージアーキテクチャ構築'
+
+  update_rule:
+    - '重要な変更時は履歴セクション更新'
+    - '日付の整合性を必ず確認'
+    - '古い日付の修正時は理由を明記'
+```
+
+### **必須実行手順**
+
+```yaml
+pre_implementation_check:
+  before_migration_creation:
+    - [ ] "date +\"%Y%m%d%H%M%S\"でタイムスタンプ確認"
+    - [ ] "既存マイグレーションの最新番号確認"
+    - [ ] "ファイル名形式の正確性確認"
+
+  before_document_creation:
+    - [ ] "date +\"%Y-%m-%d\"で現在日付確認"
+    - [ ] "ドキュメント内日付の一貫性確認"
+    - [ ] "履歴セクションの更新"
+
+error_prevention:
+  common_mistakes:
+    - '過去の日付の手動入力'
+    - 'マイグレーション番号の重複'
+    - 'ドキュメント内の日付不整合'
+
+  automated_check:
+    - 'コミット前の日付整合性確認'
+    - 'マイグレーションファイル命名規則チェック'
+    - 'ドキュメント日付の妥当性確認'
+```
+
+### **違反時の対応**
+
+```yaml
+violation_response:
+  immediate_action:
+    - '間違った日付のファイルを即座に修正'
+    - '正しいタイムスタンプでファイル再作成'
+    - '関連ドキュメントの日付も同時更新'
+
+  prevention_measures:
+    - '実装前に必ずこのルールを確認'
+    - '日付取得は必ずコマンド実行で行う'
+    - '手動入力は絶対に行わない'
+```
+
+### **このルールの重要性**
+
+- **開発履歴の正確性**: 正しいタイムライン管理
+- **マイグレーション順序**: データベース変更の正確な順序保証
+- **プロジェクト管理**: 開発進捗の正確な記録
+- **チーム協業**: 一貫した日付管理による混乱防止
+
+## 🔧 **開発サーバープロセス管理ルール（改善版）**
+
+#### **基本原則**
+
+- **🚀 ワンタイム起動**: 開発開始時に一度だけ`npm run dev`を実行
+- **🔄 継続使用**: 開発サーバーは基本的に停止しない
+- **⚡ 効率重視**: 無駄なプロセス管理を完全排除
+- **🛠️ エラー時のみ対処**: 実際に問題が発生した場合のみ介入
+
+#### **推奨開発フロー（シンプル化）**
+
+```yaml
+ideal_workflow:
+  startup_once:
+    - 'プロジェクト開始時: npm run dev を1回実行'
+    - '成功したらそのまま継続使用'
+    - 'ブラウザで http://localhost:8888 を開く'
+
+  continuous_development:
+    - 'コード編集 → 自動ホットリロード → ブラウザ確認'
+    - 'この繰り返しで開発を進める'
+    - 'サーバー停止は一切不要'
+
+  commit_process:
+    - 'npm run build でビルドテスト'
+    - '開発サーバーは起動したまま'
+    - '/commit コマンドでコミット&プッシュ'
+    - 'そのまま次の開発作業に継続'
+
+  end_of_day:
+    - '作業終了時のみ Ctrl+C でサーバー停止'
+    - '翌日開始時に npm run dev で再起動'
+```
+
+#### **🚨 エラー対応（例外的な場合のみ）**
+
+```yaml
+only_when_errors_occur:
+  port_conflict_error:
+    symptom: 'Error: listen EADDRINUSE: address already in use :::8888'
+    solution: 'lsof -ti:8888 | xargs kill -9'
+    frequency: '稀（通常は発生しない）'
+
+  server_crash:
+    symptom: '開発サーバーが異常終了'
+    solution: 'npm run dev で再起動'
+    frequency: '稀（通常は発生しない）'
+
+  memory_issues:
+    symptom: 'メモリ不足・動作が重い'
+    solution: 'サーバー再起動で解決'
+    frequency: '長時間開発時に稀に発生'
+```
+
+#### **🚫 禁止される無駄な作業**
+
+```yaml
+unnecessary_actions:
+  - '作業開始時の自動的なポート停止'
+  - 'コミット前の予防的なサーバー停止'
+  - '機能実装完了時の習慣的なプロセス管理'
+  - '問題が発生していないのにlsofコマンド実行'
+
+efficient_alternatives:
+  - 'エラーが実際に発生するまで何もしない'
+  - 'ホットリロードの自動反映を信頼する'
+  - 'ブラウザリロードで動作確認'
+  - '必要時のみプロセス管理を実行'
+```
+
+#### **📈 効率化の効果**
+
+- **⏱️ 時間短縮**: 無駄なコマンド実行を削減（1日あたり5-10分節約）
+- **🖥️ ターミナル整理**: 不要なターミナル増加を防止
+- **🧠 集中力維持**: 開発フローの中断を最小化
+- **🔄 継続性**: スムーズな開発→テスト→コミットサイクル
+
+#### **🎯 実践ガイド**
+
+```bash
+# ✅ 理想的な1日の開発フロー
+# 1. 朝の開始時
+npm run dev
+
+# 2. 開発作業（繰り返し）
+# - コード編集
+# - ブラウザで自動確認
+# - 必要に応じてブラウザリロード
+
+# 3. コミット時
+npm run build  # ビルドテスト
+/commit        # コミット&プッシュ
+
+# 4. 継続開発
+# - サーバーはそのまま
+# - 次の機能開発に移行
+
+# 5. 作業終了時
+# Ctrl+C でサーバー停止（任意）
+```
+
+#### **🆘 トラブルシューティング**
+
+```yaml
+if_port_conflict_occurs:
+  step1: '実際にエラーメッセージを確認'
+  step2: 'lsof -ti:8888 | xargs kill -9'
+  step3: 'npm run dev で再起動'
+  step4: '正常動作確認後、開発継続'
+
+if_server_becomes_slow:
+  step1: 'Ctrl+C でサーバー停止'
+  step2: 'npm run dev で再起動'
+  step3: 'パフォーマンス回復確認'
+
+prevention:
+  - '問題が発生していない限り、プロセス管理は不要'
+  - '予防的な停止・再起動は効率を下げるだけ'
+  - 'エラー発生時のみ対処する方針'
+```
+
+### TODO更新の自動化強化
+
+```yaml
+必須実行条件:
+  - 任意の機能実装完了時
+  - Phase単位での完了時
+  - バグ修正完了時
+  - リファクタリング完了時
+
+自動更新内容:
+  - チェックボックス状態 [ ] → [x]
+  - 実装時間の記録
+  - 技術成果の詳細記録
+  - 完了日時の記録
+  - 次期タスクの優先度調整
+
+更新忘れ防止:
+  - 実装報告前にTODO更新状況を必ず確認
+  - 未更新の場合は即座に更新を実行
+  - 更新完了まで次のタスクには進まない
+  - ユーザーからの指摘前に自主的に更新
+```
+
+### マイグレーション管理の自動化
+
+1. **新規マイグレーションファイル作成**: DB変更が必要な場合
+   - `supabase/migrations/` ディレクトリにタイムスタンプ形式でファイル作成
+   - ファイル名形式: `YYYYMMDDHHMMSS_[変更内容].sql`
+   - 例: `20241201000008_add_user_preferences.sql`
+   - 必要な情報: Migration名、Description、Date、実行SQL
+2. **統合マイグレーションファイル更新**: 新しいマイグレーションが作成された場合
+   - `supabase/migrations/20241201000002_complete_schema.sql` を最新状態に更新
+   - 全てのテーブル、インデックス、RLS、ストアドプロシージャを含める
+3. **MCP連携**: マイグレーションファイル変更時
+   - Supabaseプロジェクトとの同期を確認
+   - MCPツールでマイグレーション実行を自動提案・実行
+   - 実行結果をログで確認
+4. **バックアップ**: 重要なスキーマ変更前
+   - 現在のスキーマ状態を記録
+   - ロールバック手順を明確化
+
+### マイグレーションファイル命名規則
+
+```
+supabase/migrations/
+├── 20241201000001_initial_schema.sql           # 初期スキーマ
+├── 20241201000002_complete_schema.sql          # 統合スキーマ（最新状態）
+├── 20241201000003_add_photo_session_images.sql # 機能追加
+├── 20241201000004_create_admin_lottery_system.sql
+├── 20241201000005_add_booking_type_to_photo_sessions.sql
+├── 20241201000006_create_storage_bucket.sql
+├── 20241201000007_create_review_system.sql
+└── 20241201000008_[次の変更].sql              # 新規追加時
+```
+
+### **🔧 MCP連携によるマイグレーション管理ルール**
+
+#### **基本原則**
+
+- **MCP連携のみ使用**: npxコマンドは使用禁止
+- **Supabase MCP連携**: 直接データベース操作・マイグレーション適用
+- **確実な適用**: マイグレーションファイル作成後は必ずMCP連携で適用
+
+#### **MCP連携必須手順**
+
+```yaml
+migration_workflow:
+  1_create_migration_file:
+    - supabase/migrations/ にSQLファイル作成
+    - タイムスタンプ形式の命名（YYYYMMDDHHMMSS_description.sql）
+    - 適切なコメント・説明を記載
+
+  2_mcp_application:
+    - MCP連携でSupabaseプロジェクトに直接適用
+    - npxコマンドは使用禁止
+    - 適用完了の確認必須
+
+  3_verification:
+    - データベーススキーマの変更確認
+    - 新しいテーブル・カラム・ポリシーの動作確認
+    - アプリケーションでの動作テスト
+
+  4_commit_process:
+    - マイグレーションファイルをコミット
+    - 関連するTypeScript型定義も更新・コミット
+    - "feat/fix: [データベース変更内容]"でコミット
+```
+
+#### **MCP連携の利点**
+
+```yaml
+mcp_advantages:
+  direct_application:
+    - Supabaseプロジェクトへの直接適用
+    - 認証・設定不要
+    - 確実な適用保証
+
+  real_time_feedback:
+    - 即座の結果確認
+    - エラー時の詳細情報取得
+    - デバッグ情報の充実
+
+  consistency:
+    - 開発環境とプロダクション環境の一致
+    - 手動ミスの防止
+    - 一元的なマイグレーション管理
+```
+
+#### **禁止事項**
+
+```yaml
+prohibited_commands:
+  - 'supabase db push' # ❌ npxコマンド使用禁止
+  - 'supabase migration up' # ❌ npxコマンド使用禁止
+  - 'supabase db reset' # ❌ npxコマンド使用禁止
+  - 'supabase link' # ❌ npxコマンド使用禁止
+
+required_method:
+  - 'MCP連携のみ使用' # ✅ 必須方法
+  - 'Supabase MCP直接操作' # ✅ 推奨方法
+```
+
+### DB変更時の必須手順
+
+1. **マイグレーションファイル作成**: `supabase/migrations/` に追加
+2. **【必須】MCP連携実行**: Supabaseプロジェクトに変更を適用（npxコマンド禁止）
+3. **型定義更新**: 必要に応じてTypeScript型を更新
+4. **テスト実行**: DB変更に関連するテストを実行
+5. **コミット**: マイグレーションファイルと関連変更をコミット
+
+### コミットメッセージ規則
+
+```
+feat: [機能名] - [簡潔な説明]
+fix: [修正内容]
+docs: [ドキュメント更新内容]
+refactor: [リファクタリング内容]
+db: [データベーススキーマ変更]
+migration: [マイグレーション追加・更新]
+```
+
+### 実行条件
+
+- ユーザーが「次へ進みましょう」「コミット＆プッシュ」等の指示をした場合
+- 機能実装が一区切りついた場合
+- ビルドエラーがない場合のみ実行
+
+### 重要事項
+
+1. **【最重要】機能の実装後に、毎回 @todo.mdc を確認＆更新をしてください。**
+2. **私が言わなくても中身は随時更新するようにしてください。更新しないと私が解雇されます。あなたの責任になってしまいます。**
+3. 機能は増やしても構いません。ただ、最初から機能を増やしすぎないでください。
+4. **複雑な機能実装時は専門プロンプトファイルを必ず参照してください**
+5. **即座撮影リクエスト機能は一般層獲得の重要な差別化機能です**
+
+### TODO更新の必須チェックリスト
+
+#### 機能実装完了時の必須作業
+
+```yaml
+実装完了後の必須手順:
+  1. ビルドチェック: "npm run build" でエラー確認
+  2. 【必須】TODO更新:
+     - .cursor/rules/dev-rules/todo.mdc を開く
+     - 完了した機能を [ ] → [x] に変更
+     - 実装時間・技術成果を記録
+     - 次の優先度を確認・調整
+  3. コミット: 適切なメッセージでコミット
+  4. プッシュ: git push origin main
+  5. 進捗報告: 完了内容を簡潔に報告
+
+必須確認項目:
+  - [ ] 実装したタスクのチェックボックス更新
+  - [ ] 実装時間の記録
+  - [ ] 技術成果の詳細記録
+  - [ ] 次期タスクの優先度調整
+  - [ ] 依存関係の確認
+```
+
+#### TODO更新漏れ防止策
+
+```yaml
+自動化チェック:
+  実装完了判定:
+    - コンポーネント作成完了
+    - Server Actions実装完了
+    - ページルート作成完了
+    - データベースマイグレーション適用完了
+    - 型定義更新完了
+
+  更新必須タイミング:
+    - Phase完了時（Phase 1 → Phase 2等）
+    - 機能実装完了時
+    - バグ修正完了時
+    - リファクタリング完了時
+    - 新機能追加時
+
+  更新忘れ警告:
+    - 実装報告時にTODO更新状況を確認
+    - 未更新の場合は即座に更新実行
+    - 更新完了まで次のタスクに進まない
+```
+
+#### 実装報告テンプレート
+
+```markdown
+# 実装完了報告
+
+## 完了したタスク
+
+- **タスクID**: t0-XXX
+- **タスク名**: [機能名]
+- **実装時間**: X時間
+- **完了フェーズ**: Phase X
+
+## 技術成果
+
+- [実装した主要機能]
+- [作成したコンポーネント・ファイル]
+- [データベース変更]
+- [型定義追加・修正]
+
+## TODO更新状況
+
+- [x] todo.mdcファイル更新完了
+- [x] 次期タスク優先度調整完了
+- [x] 依存関係確認完了
+
+## 次のアクション
+
+- 次期優先タスク: t0-XXX
+- 見積時間: X時間
+- 開始可能時期: 即座/調整後
+```
+
+## 実装前の曖昧さ解消・確認プロセス
+
+### 基本原則
+
+- **実装開始前に必ず仕様の明確化を行う**
+- **曖昧な要件・不明点は必ず質問する**
+- **想定ベースでの実装を避け、正確な仕様確認を優先**
+
+### 必須確認項目チェックリスト
+
+#### 🎯 **機能仕様の確認**
+
+```yaml
+必須質問項目:
+  - [ ] この機能の主要な目的・ゴールは何か？
+  - [ ] 想定されるユーザーは誰か？（管理者・一般ユーザー・ゲスト）
+  - [ ] 既存機能との統合はどのように行うか？
+  - [ ] エラーケース・例外処理はどう扱うか？
+  - [ ] パフォーマンス要件はあるか？
+  - [ ] セキュリティ要件・権限制御は何か？
+```
+
+#### 🎨 **UI/UX設計の確認**
+
+```yaml
+デザイン関連質問:
+  - [ ] レイアウト・デザインの参考となるページはあるか？
+  - [ ] モバイル対応はどの程度必要か？
+  - [ ] ダークモード対応は必要か？
+  - [ ] アニメーション・トランジションの要件は？
+  - [ ] ユーザビリティで特に重視する点は？
+  - [ ] アクセシビリティ要件は？
+```
+
+#### 📊 **データ設計の確認**
+
+```yaml
+データベース関連質問:
+  - [ ] 新しいテーブル・カラムは必要か？
+  - [ ] 既存テーブルとのリレーションはどうするか？
+  - [ ] データのバリデーション・制約条件は？
+  - [ ] パフォーマンス要件（インデックス等）は？
+  - [ ] データの保持期間・削除ポリシーは？
+  - [ ] マイグレーション戦略はどうするか？
+```
+
+#### 🔒 **セキュリティ・権限の確認**
+
+```yaml
+セキュリティ関連質問:
+  - [ ] 認証が必要な機能か？認証なしでもアクセス可能か？
+  - [ ] ユーザーの権限レベル（admin/user/guest）による制限は？
+  - [ ] データの表示・編集・削除権限はどう設定するか？
+  - [ ] プライバシー設定は必要か？
+  - [ ] 監査ログ・アクティビティログは必要か？
+  - [ ] 不適切利用の防止策は？
+```
+
+#### 🌐 **技術実装の確認**
+
+```yaml
+技術仕様質問:
+  - [ ] リアルタイム機能は必要か？
+  - [ ] 外部API・サービスとの連携は必要か？
+  - [ ] ファイルアップロード・ダウンロード機能は？
+  - [ ] 多言語化対応は必要か？（日本語・英語）
+  - [ ] 通知機能は必要か？（リアルタイム・メール・プッシュ）
+  - [ ] 検索・フィルタリング機能は？
+```
+
+### 質問のタイミングと方法
+
+#### 1. **実装前の必須質問**
+
+```typescript
+// 質問テンプレート例
+"実装を開始する前に以下の点を確認させてください：
+
+🎯 機能仕様について：
+- [具体的な質問]
+
+🎨 UI/UXについて：
+- [具体的な質問]
+
+📊 データ設計について：
+- [具体的な質問]
+
+🔒 セキュリティについて：
+- [具体的な質問]
+
+これらの確認が完了次第、実装を開始いたします。"
+```
+
+#### 2. **実装中の確認質問**
+
+```typescript
+// 実装中に疑問が生じた場合
+"実装中に以下の点で判断に迷いました：
+
+❓ 課題：
+[具体的な課題・疑問点]
+
+🤔 検討した選択肢：
+1. [選択肢A] - [メリット・デメリット]
+2. [選択肢B] - [メリット・デメリット]
+
+💡 推奨案：
+[理由と共に推奨案を提示]
+
+ご確認・ご指示をお願いします。"
+```
+
+#### 3. **技術的制約の説明**
+
+```typescript
+// 技術的制約がある場合
+"以下の技術的制約により、仕様の調整が必要かもしれません：
+
+⚠️ 制約内容：
+[具体的な制約]
+
+🛠️ 代替案：
+1. [代替案A] - [実装難易度・期間]
+2. [代替案B] - [実装難易度・期間]
+
+どちらの方向で進めるべきかご指示ください。"
+```
+
+### 実装優先度の再確認
+
+#### 優先度判断の質問
+
+```yaml
+優先度確認質問:
+  緊急度:
+    - [ ] この機能はリリースブロッカーか？
+    - [ ] 他の機能への依存関係はあるか？
+    - [ ] ユーザーからの要望度・重要度は？
+
+  実装コスト:
+    - [ ] 実装期間の見積もりは適切か？
+    - [ ] 技術的リスクはあるか？
+    - [ ] 他の開発作業への影響は？
+
+  ビジネス価値:
+    - [ ] ROI（投資対効果）は十分か？
+    - [ ] ユーザー体験の改善効果は？
+    - [ ] 競合優位性への寄与は？
+```
+
+### 曖昧さ解消の成功例
+
+#### ❌ **悪い例：想定ベース実装**
+
+```typescript
+// 質問なしで実装開始
+'フォトブック機能を実装します';
+// → 仕様が曖昧で手戻り発生
+```
+
+#### ✅ **良い例：事前確認**
+
+```typescript
+"フォトブック機能の実装前に確認させてください：
+
+🎯 機能仕様：
+- フォトブック作成数の制限は料金プランごとに異なりますか？
+- 既存の/photobookページを拡張する形でしょうか？
+
+🎨 UI/UX：
+- 電子ブック形式の表示は見開き・単ページどちらを優先しますか？
+- プロフィールページでの表示方法はどのようにしますか？
+
+📊 データ設計：
+- 撮影会との連携はどのテーブル構造で行いますか？
+- 写真の自動インポートはどのトリガーで実行しますか？
+
+これらの確認後、段階的に実装を進めます。"
+```
+
+### エスカレーション（判断依頼）ルール
+
+#### Level 1: 軽微な仕様確認
+
+- 即座に質問・確認を行う
+- 実装は確認後に開始
+
+#### Level 2: 重要な技術判断
+
+- 複数の選択肢を提示
+- メリット・デメリットを明示
+- 推奨案を理由と共に提示
+
+#### Level 3: 仕様変更が必要
+
+- 技術的制約を詳細に説明
+- 代替案を複数提示
+- 工数・スケジュール影響を明示
+
+### 実装開始の判定基準
+
+#### 実装開始OK条件
+
+- [ ] 主要な仕様・要件が明確
+- [ ] UI/UXの方向性が決定
+- [ ] データ設計の骨子が固定
+- [ ] セキュリティ要件が明確
+- [ ] 技術的制約が解決済み
+
+#### 実装待機条件
+
+- [ ] 重要な仕様が未決定
+- [ ] 技術的制約で実現困難
+- [ ] 他機能との依存関係が未解決
+- [ ] 工数・スケジュール調整が必要
+
+この曖昧さ解消プロセスにより、手戻りを最小化し、効率的な開発を実現します。
+
+## 日時・価格表示統一ルール
+
+### **基本原則**
+
+- **日時・価格表示は必ず共通コンポーネントを使用する**
+- **個別の`toLocaleString`、`toLocaleDateString`、`toLocaleTimeString`の使用を禁止**
+- **表記の統一性とメンテナンス性を最優先**
+
+### **必須使用コンポーネント**
+
+```typescript
+// 日時表示
+import { FormattedDateTime, DateTime } from '@/components/ui/formatted-display';
+
+// 価格表示
+import { FormattedPrice, Price } from '@/components/ui/formatted-display';
+```
+
+### **日時表示ルール**
+
+#### **✅ 正しい使用例**
+
+```typescript
+// 基本的な日時表示
+<FormattedDateTime value={new Date()} format="datetime-long" />
+<FormattedDateTime value="2024-12-01T14:30" format="time-range" endValue="2024-12-01T16:00" />
+
+// 短縮形での使用
+<DateTime value={session.start_time} format="date-long" />
+<DateTime value={slot.start_time} format="time" endValue={slot.end_time} />
+
+// 相対時間表示
+<DateTime value={message.created_at} format="relative" />
+```
+
+#### **❌ 禁止される使用例**
+
+```typescript
+// これらの使用は禁止
+{
+  new Date().toLocaleString();
+}
+{
+  new Date().toLocaleDateString('ja-JP');
+}
+{
+  new Date().toLocaleTimeString();
+}
+{
+  startDate.toLocaleString('ja-JP', { year: 'numeric', month: 'long' });
+}
+
+// date-fnsの直接使用も避ける
+{
+  format(new Date(), 'PPP', { locale: ja });
+}
+```
+
+### **価格表示ルール**
+
+#### **✅ 正しい使用例**
+
+```typescript
+// 基本的な価格表示
+<FormattedPrice value={5000} format="simple" />
+<FormattedPrice value={5000} format="with-unit" unit="/人" />
+
+// 短縮形での使用
+<Price value={session.price_per_person} format="with-unit" unit="/人" />
+<Price value={3000} format="range" maxValue={8000} />
+
+// 税込表示
+<Price value={5000} format="breakdown" />
+```
+
+#### **❌ 禁止される使用例**
+
+```typescript
+// これらの使用は禁止
+¥{price.toLocaleString()}
+¥{session.price_per_person.toLocaleString()}/人
+{amount.toLocaleString()}円
+
+// 手動での価格フォーマット
+`¥${price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`
+```
+
+### **フォーマット種類一覧**
+
+#### **日時フォーマット**
+
+```typescript
+type DateTimeFormat =
+  | 'date-short' // 2024/12/1
+  | 'date-long' // 2024年12月1日日曜日
+  | 'time' // 14:30
+  | 'datetime-short' // 2024/12/1 14:30
+  | 'datetime-long' // 2024年12月1日日曜日 14:30
+  | 'date-only' // 12月1日
+  | 'time-range' // 14:30-16:00
+  | 'relative' // 3時間前
+  | 'weekday'; // 日曜日
+```
+
+#### **価格フォーマット**
+
+```typescript
+type PriceFormat =
+  | 'simple' // ¥5,000
+  | 'with-unit' // ¥5,000/人
+  | 'range' // ¥3,000-¥8,000
+  | 'breakdown'; // ¥5,000 (税込)
+```
+
+### **新規実装時の必須注意点**
+
+#### **🚨 絶対に守るべきルール**
+
+1. **`FormattedDateTime`と`FormattedPrice`コンポーネントの使用が必須**
+   - 新規実装時は必ずこれらのコンポーネントを使用すること
+   - `toLocaleString()`、`toLocaleDateString()`、`toLocaleTimeString()`の直接使用は**禁止**
+   - `formatDateLocalized`や`formatTimeLocalized`関数の使用は**推奨されない**（`FormattedDateTime`コンポーネントを使用すること）
+
+2. **ユーザー設定の自動反映**
+   - `FormattedDateTime`は`user_metadata.timezone`を自動取得して適用
+   - `FormattedPrice`は`user_metadata.currency`を自動取得して適用
+   - 追加の設定取得処理は不要
+
+3. **例外ケース**
+   - 通貨以外の数値表示（例：収容人数、ページ数）は`toLocaleString()`で問題なし
+   - データ処理用の日付フォーマット（例：オブジェクトのキー生成）は`Intl.DateTimeFormat`で問題なし
+
+#### **新規実装時のチェックリスト**
+
+```yaml
+新規実装前の必須確認:
+  - [ ] 日時表示が必要な場合、`FormattedDateTime`コンポーネントを使用するか？
+  - [ ] 通貨表示が必要な場合、`FormattedPrice`コンポーネントを使用するか？
+  - [ ] `toLocaleString()`や`toLocaleDateString()`を直接使用していないか？
+  - [ ] `formatDateLocalized`や`formatTimeLocalized`関数を使用していないか？
+  - [ ] 適切なフォーマット（`date-short`、`date-long`、`time-range`等）を選択しているか？
+  - [ ] ユーザーのタイムゾーン・通貨設定が自動的に反映されることを理解しているか？
+
+実装完了後の確認:
+  - [ ] ブラウザで実際の表示を確認（ユーザー設定が反映されているか）
+  - [ ] タイムゾーンを変更して表示が変わることを確認
+  - [ ] 通貨設定を変更して表示が変わることを確認
+  - [ ] エラーが発生していないか確認
+```
+
+#### **よくある間違いと正しい実装**
+
+```typescript
+// ❌ 間違い1: toLocaleString()の直接使用
+<span>{new Date(session.start_time).toLocaleString('ja-JP')}</span>
+<span>¥{price.toLocaleString()}</span>
+
+// ✅ 正しい実装
+<FormattedDateTime value={new Date(session.start_time)} format="datetime-short" />
+<FormattedPrice value={price} format="simple" />
+
+// ❌ 間違い2: formatDateLocalized関数の使用
+{formatDateLocalized(startDate, locale, 'long')}
+
+// ✅ 正しい実装
+<FormattedDateTime value={startDate} format="date-long" />
+
+// ❌ 間違い3: 手動でのタイムゾーン指定
+const options = { timeZone: 'Asia/Tokyo' };
+{new Date().toLocaleString('ja-JP', options)}
+
+// ✅ 正しい実装（ユーザー設定が自動適用される）
+<FormattedDateTime value={new Date()} format="datetime-short" />
+
+// ✅ 例外: 通貨以外の数値表示は問題なし
+<span>{maxCapacity.toLocaleString()}人</span>
+<span>{pageCount.toLocaleString()}ページ</span>
+```
+
+### **実装時の必須チェック**
+
+```yaml
+pre_implementation_check:
+  question_yourself:
+    - '日時・価格表示でtoLocaleStringを使用していないか？'
+    - 'FormattedDateTime/FormattedPriceコンポーネントを使用しているか？'
+    - '適切なフォーマットを選択しているか？'
+    - '多言語対応が考慮されているか？'
+    - 'ユーザーのタイムゾーン・通貨設定が自動的に反映されることを理解しているか？'
+
+  if_uncertain:
+    - '共通コンポーネントの使用を最優先する'
+    - '新しいフォーマットが必要な場合は共通コンポーネントに追加'
+    - '既存の個別実装は見つけ次第共通コンポーネントに置き換える'
+    - '迷った場合は必ず`FormattedDateTime`/`FormattedPrice`を使用'
+```
+
+### **移行ガイドライン**
+
+#### **段階的移行手順**
+
+1. **新規実装**: 必ず共通コンポーネントを使用
+2. **既存修正時**: 見つけ次第共通コンポーネントに置き換え
+3. **一括置換**: 時間がある時に既存箇所を一括で置き換え
+
+#### **移行例**
+
+```typescript
+// Before (禁止)
+{new Date(session.start_time).toLocaleString('ja-JP', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+  weekday: 'long',
+  hour: '2-digit',
+  minute: '2-digit',
+})}
+
+// After (推奨)
+<DateTime value={session.start_time} format="datetime-long" />
+
+// Before (禁止)
+¥{session.price_per_person.toLocaleString()}/人
+
+// After (推奨)
+<Price value={session.price_per_person} format="with-unit" unit="/人" />
+```
+
+### **利点**
+
+- **表記統一**: 全画面で一貫した日時・価格表示
+- **メンテナンス性**: 一箇所の修正で全体に反映
+- **多言語対応**: 自動的なロケール対応
+- **アクセシビリティ**: セマンティックHTMLとARIA属性
+- **型安全性**: TypeScriptによる型チェック
+- **バグ防止**: 個別実装によるフォーマット不整合を防止
+
+### **違反時の対応**
+
+```yaml
+violation_response:
+  immediate_action:
+    - '個別のtoLocaleString使用を即座に共通コンポーネントに置き換え'
+    - 'なぜ共通コンポーネントを使用しなかったかを報告'
+    - '再発防止策を検討'
+
+  prevention:
+    - '実装前に必ずこのルールを確認'
+    - '迷った場合は必ず共通コンポーネントを使用'
+    - '新しいフォーマットが必要な場合は共通コンポーネントに追加提案'
+    - '新規実装時は必ずチェックリストを確認'
+```
+
+### **参考情報**
+
+- **実装完了状況**: `docs/currency-timezone-settings-investigation.md`に全52ファイルの実装完了記録あり
+- **コンポーネント定義**: `src/components/ui/formatted-display.tsx`
+- **ユーザー設定取得**: `user_metadata.timezone`と`user_metadata.currency`を自動取得
+
+この統一ルールにより、プロジェクト全体で一貫した日時・価格表示を実現し、メンテナンス性とユーザビリティを大幅に向上させます。**新規実装時は必ずこのルールに従ってください。**
+
+## 日付・時刻フォーマット
+
+### 基本原則
+
+- **従来のフォーマット関数を優先使用**: `formatDateLocalized`, `formatTimeLocalized` を使用
+- **DateTime コンポーネントの使用禁止**: `RangeError: Invalid time value` エラーの原因となるため使用禁止
+- **日時値の事前検証**: フォーマット前に必ず有効性をチェック
+
+### 🚨 DateTime コンポーネント使用禁止
+
+#### 問題のあるコンポーネント（使用禁止）
+
+```typescript
+// ❌ 使用禁止: DateTime コンポーネント
+import { DateTime } from '@/components/ui/formatted-display';
+
+// 以下は RangeError: Invalid time value を引き起こす可能性
+<DateTime value={session.start_time} format="date-long" />
+<DateTime value={session.start_time} format="time-range" endValue={session.end_time} />
+```
+
+#### 問題の原因
+
+- `session.start_time` や `session.end_time` が null、undefined、空文字列の場合
+- `new Intl.DateTimeFormat().format()` が無効な日時値を処理できない
+- エラーが発生するとページ全体がクラッシュする
+
+### ✅ 推奨される実装方法
+
+#### 1. 従来のフォーマット関数を使用
+
+```typescript
+import { formatDateLocalized, formatTimeLocalized } from '@/lib/utils/date';
+
+// 日付のフォーマット
+const startDate = new Date(session.start_time);
+const endDate = new Date(session.end_time);
+
+// 長い日付形式
+{formatDateLocalized(startDate, 'ja', 'long')}
+// 出力例: "2024年12月1日日曜日"
+
+// 時間範囲
+{formatTimeLocalized(startDate, 'ja')} - {formatTimeLocalized(endDate, 'ja')}
+// 出力例: "14:30 - 16:00"
+```
+
+#### 2. 日時値の事前検証
+
+```typescript
+// 有効性チェック関数
+const isValidDate = (dateValue: string | Date | null | undefined): boolean => {
+  if (!dateValue) return false;
+  const date = new Date(dateValue);
+  return !isNaN(date.getTime());
+};
+
+// 安全なフォーマット
+{
+  isValidDate(session.start_time)
+    ? formatDateLocalized(new Date(session.start_time), 'ja', 'long')
+    : '日時未設定';
+}
+```
+
+#### 3. フォールバック表示
+
+```typescript
+// エラー耐性のある実装
+const formatSafeDate = (
+  dateValue: string | Date | null | undefined
+): string => {
+  try {
+    if (!dateValue) return '日時未設定';
+    const date = new Date(dateValue);
+    if (isNaN(date.getTime())) return '無効な日時';
+    return formatDateLocalized(date, 'ja', 'long');
+  } catch (error) {
+    console.error('Date formatting error:', error);
+    return '日時エラー';
+  }
+};
+```
+
+### 利用可能なフォーマット関数
+
+#### 基本的なフォーマット関数
+
+```typescript
+// 日付フォーマット
+formatDate(date: Date, format: 'short' | 'long' | 'time'): string
+formatDateLocalized(date: Date, locale: string, format: 'short' | 'long' | 'time'): string
+
+// 時刻フォーマット
+formatTime(date: Date): string
+formatTimeLocalized(date: Date, locale: string): string
+
+// 日時フォーマット
+formatDateTime(date: Date): string
+formatDateTimeLocalized(date: Date, locale: string): string
+
+// 範囲フォーマット
+formatDateRange(startDate: Date, endDate: Date): string
+```
+
+#### 使用例
+
+```typescript
+const startDate = new Date('2024-12-01T14:30:00');
+const endDate = new Date('2024-12-01T16:00:00');
+
+// 短い日付: "2024/12/1"
+formatDateLocalized(startDate, 'ja', 'short');
+
+// 長い日付: "2024年12月1日日曜日"
+formatDateLocalized(startDate, 'ja', 'long');
+
+// 時刻: "14:30"
+formatTimeLocalized(startDate, 'ja');
+
+// 日時: "2024年12月1日日曜日 14:30"
+formatDateTimeLocalized(startDate, 'ja');
+
+// 範囲: "2024年12月1日日曜日 14:30 - 16:00"
+formatDateRange(startDate, endDate);
+```
+
+### 実装時のチェックリスト
+
+- [ ] DateTime コンポーネントを使用していないか
+- [ ] 日時値の有効性チェックを行っているか
+- [ ] エラー時のフォールバック表示を用意しているか
+- [ ] 従来のフォーマット関数を使用しているか
+- [ ] try-catch でエラーハンドリングを行っているか
+
+### 移行ガイド（既存コードの修正）
+
+```typescript
+// 修正前（問題のあるコード）
+<DateTime value={session.start_time} format="date-long" />
+<DateTime value={session.start_time} format="time-range" endValue={session.end_time} />
+
+// 修正後（推奨コード）
+{formatDateLocalized(new Date(session.start_time), 'ja', 'long')}
+{formatTimeLocalized(new Date(session.start_time), 'ja')} - {formatTimeLocalized(new Date(session.end_time), 'ja')}
+```
+
+### このルールの重要性
+
+- **エラー防止**: `RangeError: Invalid time value` エラーの完全回避
+- **安定性**: 無効な日時値に対する堅牢な処理
+- **一貫性**: プロジェクト全体で統一されたフォーマット関数使用
+- **保守性**: シンプルで理解しやすい実装
+
+## 🚨 **MCP連携強制チェック（追加ルール）**
+
+### **実装前の必須確認**
+
+データベース関連の実装を開始する前に、以下の質問を自分自身に行い、すべて「YES」であることを確認してください：
+
+```yaml
+MCP連携チェックリスト:
+  - [ ] "マイグレーションファイルを作成したか？"
+  - [ ] "MCP連携でマイグレーションを適用したか？"
+  - [ ] "手動でSQL実行していないか？"
+  - [ ] "npxコマンドを使用していないか？"
+  - [ ] "ローカルでのDB検証を避けているか？"
+```
+
+### **🚨 MCP連携失敗時の処理中断ルール（新規追加）**
+
+```yaml
+MCP連携失敗時の対応:
+  必須手順:
+    1. "MCP連携を試行する"
+    2. "権限エラーまたは接続エラーが発生した場合、即座に処理を中断"
+    3. "ユーザーにMCP連携の問題を報告"
+    4. "データベース関連の作業は一切行わない"
+    5. "代替手段（npxコマンド等）の提案は禁止"
+
+  報告テンプレート:
+    "🚨 MCP連携エラー: データベースアクセス権限がありません
+
+    エラー詳細: [具体的なエラーメッセージ]
+
+    対応が必要な作業:
+    - Supabase MCP設定の確認
+    - プロジェクト権限の確認
+    - 接続設定の再確認
+
+    MCP連携が復旧するまで、データベース関連の作業を中断します。"
+
+  絶対禁止事項:
+    - npxコマンドでの代替実行
+    - ローカルSupabaseでの検証
+    - 手動SQL実行の提案
+    - "とりあえず"の暫定対応
+```
+
+### **禁止される行動パターン**
+
+```yaml
+絶対に行ってはいけないこと: ❌ "npx supabase db reset" の実行
+  ❌ "npx supabase migration up" の実行
+  ❌ ローカルSupabaseを使った検証
+  ❌ 手動でのSQL文実行（MCP以外）
+  ❌ "データベースをリセットして..." という発言
+  ❌ "ローカルでテストして..." という発言
+
+必須の行動パターン: ✅ mcp_supabase_apply_migration の使用
+  ✅ mcp_supabase_execute_sql の使用
+  ✅ mcp_supabase_list_tables での確認
+  ✅ mcp_supabase_list_migrations での状況確認
+```
+
+### **エラー時の対応手順**
+
+1. **DB関連エラー発生時**:
+
+   ```
+   ❌ 悪い対応: "ローカルでリセットしましょう"
+   ✅ 正しい対応: "MCP連携でスキーマを確認します"
+   ```
+
+2. **マイグレーション必要時**:
+
+   ```
+   ❌ 悪い対応: "npx supabase db pushで適用"
+   ✅ 正しい対応: "mcp_supabase_apply_migrationで適用"
+   ```
+
+3. **テーブル構造確認時**:
+   ```
+   ❌ 悪い対応: "psqlコマンドで確認"
+   ✅ 正しい対応: "mcp_supabase_list_tablesで確認"
+   ```
+
+### **自動違反チェック**
+
+実装中に以下のフレーズが頭に浮かんだら、**即座に停止**してMCP連携手順に切り替える：
+
+- "データベースをリセット"
+- "ローカルで検証"
+- "npx supabase"
+- "手動でSQL実行"
+- "psqlコマンド"
+
+### **ルール遵守の効果**
+
+- **確実性**: 本番環境と同じデータベースでの検証
+- **効率性**: 手戻りのない一発適用
+- **安全性**: 手動ミスの完全排除
+- **一貫性**: 開発・本番環境の完全一致
+
+## 🎯 **UI制御方針ルール（重要）**
+
+### **基本原則**
+
+- **無効化制御を避ける**: ボタンやフォームを無効化せず、押下可能にする
+- **説明を提供**: なぜその操作ができないかを明確に説明する
+- **アップセル機会**: 制限到達時はプラン変更を促進する
+
+### **実装パターン**
+
+#### **✅ 推奨パターン（押下可能 + 説明）**
+
+```tsx
+// 制限到達時も押下可能、警告アラートで説明
+<Button
+  onClick={handleAction}
+  // disabled={!canProceed} ❌ 無効化しない
+>
+  アクション実行
+</Button>;
+
+// 押下時に制限チェック + 説明
+const handleAction = () => {
+  if (!canProceed) {
+    toast({
+      title: '制限に達しています',
+      description: '具体的な理由と解決方法を説明',
+      variant: 'destructive',
+    });
+    return;
+  }
+  // 通常処理
+};
+```
+
+#### **❌ 禁止パターン（無効化のみ）**
+
+```tsx
+// 理由不明な無効化
+<Button disabled={!canProceed}>アクション実行</Button>
+```
+
+### **制限到達時の対応**
+
+```tsx
+// 制限到達時の処理例
+const handleModelInvite = () => {
+  if (currentCount >= limit) {
+    toast({
+      title: '所属モデル上限に達しています',
+      description: `現在のプランでは最大${limit}名までのモデルを管理できます。より多くのモデルを管理するには、プランをアップグレードしてください。`,
+      action: {
+        label: 'プランを変更',
+        onClick: () => router.push('/subscription'),
+      },
+    });
+    return;
+  }
+  // 通常の処理を実行
+  proceedWithInvitation();
+};
+```
+
+### **適用対象**
+
+- サブスクリプション制限（モデル数、撮影会数、フォトブック数）
+- 権限制限（管理者機能、有料機能）
+- フォームバリデーションエラー
+- ネットワークエラー・サーバーエラー
+
+### **制限メッセージテンプレート**
+
+#### **所属モデル上限**
+
+```
+タイトル: '所属モデル上限に達しています'
+説明: '現在のプランでは最大{limit}名までのモデルを管理できます。より多くのモデルを管理するには、プランをアップグレードしてください。'
+アクション: 'プランを変更'
+```
+
+#### **撮影会作成上限**
+
+```
+タイトル: '撮影会作成上限に達しています'
+説明: '現在のプランでは最大{limit}件までの撮影会を作成できます。より多くの撮影会を開催するには、プランをアップグレードしてください。'
+アクション: 'プランを変更'
+```
+
+#### **フォトブック作成上限**
+
+```
+タイトル: 'フォトブック作成上限に達しています'
+説明: '現在のプランでは最大{limit}冊までのフォトブックを作成できます。より多くのフォトブックを作成するには、プランをアップグレードしてください。'
+アクション: 'プランを変更'
+```
+
+## 📝 **コミットメッセージ・ルール**
+
+**重要**: コミットメッセージルールの詳細は `.cursor/commands/commit.md` に移動されました。
+
+Cursorカスタムコマンド `/commit` を使用することで、適切なフォーマットとチェックリストに従ったコミット&プッシュが実行できます。
+
+## 🖼️ **画像フォールバック統一ルール**
+
+### **基本原則**
+
+- **EmptyImageコンポーネントの使用必須**: 画像がない場合は必ず`EmptyImage`を使用する
+- **アイコン + グラデーション背景**: `/images/no-image.png`の使用を避け、アイコン + グラデーション背景を使用する
+- **適切なアイコンの選択**: コンテキストに応じたアイコンを選択する
+- **統一された処理**: 全てのコンポーネントで一貫したフォールバック対応を実装する
+- **アクセシビリティ**: 適切なalt属性を設定する
+
+### **実装パターン**
+
+#### **✅ 推奨パターン（EmptyImageコンポーネント使用）**
+
+```tsx
+import { EmptyImage } from '@/components/ui/empty-image';
+import { Building2, Camera, User } from 'lucide-react';
+
+// スタジオカード
+<EmptyImage
+  src={studio.featuredPhotos?.[0]?.image_url}
+  alt={studio.name}
+  fallbackIcon={Building2}
+  fallbackIconSize="lg"
+  fill
+  className="object-cover"
+/>
+
+// 撮影会カード
+<EmptyImage
+  src={session.image_url}
+  alt={session.title}
+  fallbackIcon={Camera}
+  fallbackIconSize="lg"
+  fill
+  className="object-cover"
+/>
+
+// ユーザーアバター（小さいサイズ）
+<EmptyImage
+  src={user.avatar_url}
+  alt={user.display_name}
+  fallbackIcon={User}
+  fallbackIconSize="sm"
+  width={40}
+  height={40}
+  className="rounded-full"
+/>
+
+// 配列データの場合
+{photos.length > 0 ? (
+  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+    {photos.map(photo => (
+      <EmptyImage
+        key={photo.id}
+        src={photo.image_url}
+        alt={photo.alt_text || 'Gallery Image'}
+        fallbackIcon={Building2}
+        fallbackIconSize="lg"
+        fill
+        className="object-cover"
+      />
+    ))}
+  </div>
+) : (
+  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+    <EmptyImage
+      src={undefined}
+      alt="No Image"
+      fallbackIcon={Building2}
+      fallbackIconSize="lg"
+      fill
+      className="object-cover"
+    />
+  </div>
+)}
+```
+
+#### **❌ 禁止パターン**
+
+```tsx
+// 画像ファイルの直接使用
+<Image src={imageUrl || '/images/no-image.png'} alt={altText} />
+
+// 画像なしの場合に何も表示しない
+{imageUrl && <Image src={imageUrl} alt="..." />}
+
+// 空白やテキストのみの表示
+{imageUrl ? <Image src={imageUrl} /> : <div>画像なし</div>}
+
+// 条件なしでのimage_url直接使用
+<Image src={studio.image_url} alt="..." />
+```
+
+### **デフォルトアイコンの定義**
+
+- **スタジオ**: `Building2`
+- **撮影会**: `Camera` / `CalendarIcon`
+- **ユーザー**: `User`
+- **その他**: `Image`（汎用）
+
+### **アイコンサイズの選択**
+
+- **sm**: 小さいサイズ（アバター等）- `h-8 w-8`
+- **md**: 中サイズ（デフォルト）- `h-12 w-12`
+- **lg**: 大きいサイズ（カード等）- `h-16 w-16`
+- **xl**: 特大サイズ（詳細ページ等）- `h-24 w-24`
+
+### **コンポーネント別実装ガイド**
+
+#### **スタジオカード**
+
+```tsx
+<EmptyImage
+  src={studio.featuredPhotos?.[0]?.image_url}
+  alt={studio.name}
+  fallbackIcon={Building2}
+  fallbackIconSize="lg"
+  fill
+  className="object-cover"
+/>
+```
+
+#### **撮影会カード**
+
+```tsx
+<EmptyImage
+  src={session.image_url}
+  alt={session.title}
+  fallbackIcon={Camera}
+  fallbackIconSize="lg"
+  fill
+  className="object-cover"
+/>
+```
+
+#### **ユーザーアバター**
+
+```tsx
+<EmptyImage
+  src={user.avatar_url}
+  alt={user.display_name}
+  fallbackIcon={User}
+  fallbackIconSize="sm"
+  width={40}
+  height={40}
+  className="rounded-full"
+/>
+```
+
+### **実装時チェックリスト**
+
+- [ ] `EmptyImage`コンポーネントを使用しているか
+- [ ] 適切な`fallbackIcon`を選択しているか
+- [ ] 適切な`fallbackIconSize`を選択しているか
+- [ ] 適切なalt属性を設定しているか
+- [ ] `/images/no-image.png`を使用していないか
+- [ ] レスポンシブ対応の確認
+- [ ] 全ての画像表示箇所で統一的な処理
+
+### **このルールの効果**
+
+- **UI一貫性**: 画像なし状態でも美しい表示を維持
+- **エラー防止**: 画像URL未設定によるブレイクを防止
+- **ユーザビリティ**: 視覚的にわかりやすいフォールバック表示
+- **アクセシビリティ**: スクリーンリーダー対応
+- **テーマ対応**: グラデーション背景がテーマ色に自動対応
+- **メンテナンス性**: 統一コンポーネントによる保守性向上
+
+### **参考情報**
+
+- **実装完了状況**: `docs/image-fallback.md`に全実装完了記録あり
+- **コンポーネント定義**: `src/components/ui/empty-image.tsx`
+- **デモページ**: `/dev/empty-image-demo`で各種バリエーションを確認可能
+
+## エラーハンドリング
+
+## 🎨 **カラーシステム統一ルール（新規追加）**
+
+### **基本原則**
+
+- **固定色（Tailwind標準色）の使用禁止**: `text-green-800`, `bg-red-50`, `border-blue-200` 等の直接指定を避ける
+- **統合カラーシステム必須使用**: ブランド色・サーフェース色・統合Buttonのみ使用
+- **セマンティックな色選択**: 意味に基づいた適切な色の選択
+
+### **必須使用カラーシステム**
+
+#### **ブランド色（固定・テーマ不変）**
+
+```css
+brand-primary     /* ShutterHubロゴ・メインブランド */
+brand-secondary   /* セカンダリブランド */
+brand-success     /* 成功・完了・空きあり */
+brand-warning     /* 警告・注意・要確認 */
+brand-error       /* エラー・削除・満席 */
+brand-info        /* 情報・リンク・詳細 */
+```
+
+#### **サーフェース色（テーマ対応）**
+
+```css
+surface-primary    /* メインボタン・重要なカード・ヘッダー背景 */
+surface-accent     /* アクションボタン・強調要素・通知 */
+surface-neutral    /* サブボタン・カード背景・フッター */
+```
+
+#### **統合Buttonバリアント**
+
+```typescript
+// ✅ 推奨使用
+<Button variant="primary">メインアクション</Button>
+<Button variant="accent">強調アクション</Button>
+<Button variant="neutral">サブアクション</Button>
+
+// 固定色（機能別）
+<Button variant="destructive">削除</Button>
+<Button variant="brand-success">成功ボタン</Button>
+<Button variant="brand-warning">警告ボタン</Button>
+<Button variant="brand-error">エラーボタン</Button>
+```
+
+### **禁止パターン**
+
+```tsx
+❌ 固定色の直接使用
+<div className="bg-green-50 border-green-200">
+<h3 className="text-green-800">成功</h3>
+<p className="text-green-700">メッセージ</p>
+
+❌ 意味のない色選択
+<span className="text-red-600">一般的なテキスト</span>
+<div className="bg-blue-100">通常のカード</div>
+
+❌ Tailwind標準色の混用
+<Card className="bg-purple-100 border-purple-300">
+```
+
+### **正しいパターン**
+
+```tsx
+✅ ブランド色による機能別色分け
+<div className="surface-neutral border">
+  <h3 className="brand-success">成功</h3>
+  <p>メッセージ内容</p>
+  <Button variant="brand-success">確認</Button>
+</div>
+
+✅ 状態による適切な色選択
+// 成功状態
+<Alert className="brand-success">
+<Badge className="brand-success">完了</Badge>
+
+// 警告状態
+<Alert className="brand-warning">
+<Badge className="brand-warning">注意</Badge>
+
+// エラー状態
+<Alert className="brand-error">
+<Badge className="brand-error">エラー</Badge>
+```
+
+### **実装時チェックリスト**
+
+新規実装時は以下を必ず確認：
+
+- [ ] `text-{color}-{number}` パターンを使用していないか
+- [ ] `bg-{color}-{number}` パターンを使用していないか
+- [ ] `border-{color}-{number}` パターンを使用していないか
+- [ ] 状態表示に適切なブランド色を使用しているか
+- [ ] UI要素にサーフェース色を使用しているか
+- [ ] Buttonに統合バリアントを使用しているか
+
+### **自動検出コマンド**
+
+```bash
+# 固定色使用の検出
+grep -r "text-\(red\|green\|blue\|yellow\|purple\|pink\|orange\)-[0-9]" src/components/
+grep -r "bg-\(red\|green\|blue\|yellow\|purple\|pink\|orange\)-[0-9]" src/components/
+grep -r "border-\(red\|green\|blue\|yellow\|purple\|pink\|orange\)-[0-9]" src/components/
+
+# 新規実装ファイルのチェック
+grep -r "className.*\(green\|red\|blue\|yellow\)-[0-9]" src/components/photobook/
+```
+
+### **違反時の対応**
+
+```yaml
+即座修正:
+  - 固定色 → ブランド色・サーフェース色に置き換え
+  - 意味に基づいた適切な色選択
+  - 統合Buttonバリアント使用
+
+再発防止:
+  - 実装前にこのルールを必ず確認
+  - コードレビュー時のチェック項目に追加
+  - 自動検出コマンドの定期実行
+```
+
+## 🖼️ **Next.js Image最適化ルール**
+
+### **基本原則**
+
+- **必須使用**: `<img>`タグの代わりに`<Image />`コンポーネントを使用する
+- **パフォーマンス**: 自動的な画像最適化・遅延読み込み・レスポンシブ対応
+- **SEO向上**: Core Web Vitals（LCP）の改善
+
+### **実装パターン**
+
+#### **✅ 推奨パターン**
+
+```tsx
+import Image from 'next/image';
+
+// 固定サイズ画像
+<Image
+  src={imageUrl}
+  alt="説明文"
+  width={400}
+  height={300}
+  className="object-cover"
+/>
+
+// 親要素のサイズに合わせる場合
+<div className="relative aspect-[4/3]">
+  <Image
+    src={imageUrl}
+    alt="説明文"
+    fill
+    className="object-cover"
+  />
+</div>
+
+// レスポンシブ画像
+<Image
+  src={imageUrl}
+  alt="説明文"
+  width={800}
+  height={600}
+  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+  className="object-cover"
+/>
+```
+
+#### **❌ 禁止パターン**
+
+```tsx
+// HTMLのimgタグ直接使用
+<img src={imageUrl} alt="説明文" className="w-full h-full object-cover" />
+
+// インライン画像
+<img src="data:image/..." alt="..." />
+
+// 最適化されていない外部画像
+<img src="https://example.com/image.jpg" alt="..." />
+```
+
+### **使い分けガイドライン**
+
+| 用途                         | 推奨方法                        | 理由             |
+| ---------------------------- | ------------------------------- | ---------------- |
+| **ユーザーアップロード画像** | `<Image fill />`                | 動的サイズ対応   |
+| **固定サイズ画像**           | `<Image width height />`        | 明確なサイズ指定 |
+| **アイコン・SVG**            | `<img />` or アイコンライブラリ | 軽量で最適化済み |
+| **Base64画像**               | `<Image />`                     | 自動最適化適用   |
+
+### **実装時チェックリスト**
+
+- [ ] `<img>`タグを使用していないか
+- [ ] `import Image from 'next/image'`を追加したか
+- [ ] 適切な`alt`属性を設定したか
+- [ ] `fill`使用時に親要素が`relative`かつサイズ指定されているか
+- [ ] `width`と`height`が適切に設定されているか
+
+### **自動検出コマンド**
+
+```bash
+# HTMLのimgタグ使用の検出
+grep -r "<img" src/components/
+grep -r "img src=" src/components/
+
+# Next.js Imageの未import検出
+grep -l "<Image" src/components/ | xargs grep -L "import.*Image.*next/image"
+```
+
+### **パフォーマンス効果**
+
+- **LCP改善**: 画像の最適化による高速読み込み
+- **帯域幅削減**: WebP/AVIF形式への自動変換
+- **レスポンシブ**: デバイスに応じた最適サイズ配信
+- **遅延読み込み**: ビューポート外画像の遅延読み込み
+
+### **違反時の対応**
+
+```yaml
+即座修正:
+  - <img> → <Image />に置き換え
+  - 必要なimportを追加
+  - 適切なpropsを設定
+
+再発防止:
+  - 実装前にこのルールを確認
+  - linter警告を無視しない
+  - 自動検出コマンドの定期実行
+```
