@@ -192,16 +192,17 @@ function DraggableImageCard({
           {/* 表紙ステータス・設定ボタン */}
           <div className="flex items-center gap-1">
             {isCover ? (
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-0.5">
                 <Star
                   className={cn(
-                    isMobile ? 'h-2 w-2' : 'h-3 w-3',
+                    isMobile ? 'h-3 w-3' : 'h-3 w-3',
                     'fill-current'
                   )}
                 />
+                {/* スマホでは表紙テキスト非表示 */}
                 <span
                   className={cn(
-                    isMobile ? 'text-[10px]' : 'text-xs',
+                    isMobile ? 'sr-only' : 'text-xs',
                     'font-medium'
                   )}
                 >
@@ -216,7 +217,7 @@ function DraggableImageCard({
                   className={cn(
                     'hover:bg-white/20',
                     isMobile
-                      ? 'h-4 w-auto px-1 text-[10px]'
+                      ? 'h-5 w-5 p-0' // スマホ: アイコンのみで正方形
                       : 'h-6 w-auto px-2 text-xs'
                   )}
                   onClick={e => {
@@ -225,10 +226,9 @@ function DraggableImageCard({
                   }}
                   title="表紙に設定"
                 >
-                  <Star
-                    className={cn(isMobile ? 'h-2 w-2 mr-0.5' : 'h-3 w-3 mr-1')}
-                  />
-                  {isMobile ? '表紙' : '表紙に設定'}
+                  <Star className={cn(isMobile ? 'h-3 w-3' : 'h-3 w-3 mr-1')} />
+                  {/* スマホではテキスト非表示 */}
+                  {!isMobile && '表紙に設定'}
                 </Button>
               )
             )}
