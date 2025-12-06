@@ -41,53 +41,65 @@ function EditorHeader({
   isSaving,
 }: EditorHeaderProps) {
   return (
-    <div className="border-b px-4 py-3 flex items-center justify-between">
-      {/* 左側：戻るボタンとタイトル */}
-      <div className="flex items-center gap-4">
-        <BackButton href="/photobooks" />
+    <div className="border-b px-4 py-2 md:py-3">
+      {/* スマホ: 2行レイアウト、PC: 1行レイアウト */}
+      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+        {/* 1行目: 戻る + タイトル + 保存ボタン */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 md:gap-4 min-w-0 flex-1">
+            <BackButton href="/photobooks" />
 
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg">
-            <BookOpen className="h-5 w-5" />
-          </div>
-          <div>
-            <h1 className="text-lg font-semibold line-clamp-1">
-              {photobook.title}
-            </h1>
-            <div className="flex items-center gap-2 text-sm">
-              <Badge variant="outline" className="text-xs">
-                クイック
-              </Badge>
-              <span>
-                {photobook.current_pages}/{photobook.max_pages} ページ
-              </span>
+            {/* タイトル部分 */}
+            <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
+              {/* アイコン - PCのみ表示 */}
+              <div className="hidden md:block p-2 rounded-lg">
+                <BookOpen className="h-5 w-5" />
+              </div>
+
+              {/* タイトルテキスト */}
+              <h1 className="text-base md:text-lg font-semibold truncate max-w-[180px] md:max-w-none">
+                {photobook.title}
+              </h1>
             </div>
           </div>
+
+          {/* 保存ボタン - スマホでは1行目に */}
+          <Button
+            size="sm"
+            onClick={onSave}
+            disabled={isSaving}
+            className="flex items-center gap-1 md:gap-2 shrink-0 ml-2"
+            variant="cta"
+          >
+            <Save className="h-4 w-4" />
+            <span className="hidden sm:inline">
+              {isSaving ? '保存中...' : '保存'}
+            </span>
+          </Button>
         </div>
-      </div>
 
-      {/* 右側：アクションボタン */}
-      <div className="flex items-center gap-2">
-        <Button
-          variant="action"
-          size="sm"
-          onClick={onPreview}
-          className="hidden md:flex"
-        >
-          <Eye className="h-4 w-4 mr-2" />
-          プレビュー
-        </Button>
+        {/* 2行目: バッジ・ページ情報・プレビューボタン */}
+        <div className="flex items-center justify-between md:justify-end gap-2">
+          <div className="flex items-center gap-2 text-sm">
+            <Badge variant="outline" className="text-xs">
+              クイック
+            </Badge>
+            <span className="text-muted-foreground">
+              {photobook.current_pages}/{photobook.max_pages} ページ
+            </span>
+          </div>
 
-        <Button
-          size="sm"
-          onClick={onSave}
-          disabled={isSaving}
-          className="flex items-center gap-2"
-          variant="cta"
-        >
-          <Save className="h-4 w-4" />
-          {isSaving ? '保存中...' : '保存'}
-        </Button>
+          {/* プレビューボタン - PCのみ */}
+          <Button
+            variant="action"
+            size="sm"
+            onClick={onPreview}
+            className="hidden md:flex"
+          >
+            <Eye className="h-4 w-4 mr-2" />
+            プレビュー
+          </Button>
+        </div>
       </div>
     </div>
   );
