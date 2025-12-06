@@ -129,6 +129,15 @@ const devTools: DevTool[] = [
     category: 'testing',
   },
   {
+    title: 'テストデータセットアップ',
+    description:
+      '共通テストアカウントと各開発ツールをまとめたテストデータ作成ハブ',
+    path: '/dev/test-data-setup',
+    icon: <TestTube className="h-5 w-5" />,
+    status: 'stable',
+    category: 'testing',
+  },
+  {
     title: '空状態表示デモ',
     description:
       '統一的な空状態（Empty State）表示コンポーネントのデザインパターン',
@@ -191,6 +200,127 @@ export default function DevToolsPage() {
                   <p className="text-xl opacity-80 max-w-2xl mx-auto">
                     ShutterHub の開発・テスト・デバッグ用ツール集
                   </p>
+                  <div className="mt-6 max-w-3xl mx-auto text-left text-sm bg-background/70 border border-border rounded-lg p-4 space-y-3">
+                    <h2 className="font-semibold text-base">
+                      テスト用アカウント
+                    </h2>
+                    <p className="text-xs text-muted-foreground">
+                      下記のアカウントはテストデータや E2E
+                      テストで利用される想定のサンプルです。 必要に応じて{' '}
+                      <span className="font-mono">/dev</span>{' '}
+                      配下の各ツールと組み合わせて利用してください。
+                    </p>
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-blue-50 text-blue-800 border border-blue-200">
+                            カメラマン
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            長谷川秀平
+                          </span>
+                        </div>
+                        <dl className="space-y-1 font-mono text-[11px] break-all">
+                          <div>
+                            <dt className="inline text-muted-foreground">
+                              Email:
+                            </dt>{' '}
+                            <dd className="inline">ishushushu13@gmail.com</dd>
+                          </div>
+                          <div>
+                            <dt className="inline text-muted-foreground">
+                              Password:
+                            </dt>{' '}
+                            <dd className="inline">
+                              test123456
+                              <span className="text-[10px] text-muted-foreground ml-1">
+                                （Google連携のため環境によって異なる可能性あり）
+                              </span>
+                            </dd>
+                          </div>
+                        </dl>
+                      </div>
+
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-pink-50 text-pink-800 border border-pink-200">
+                            モデル
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            小日向ゆか
+                          </span>
+                        </div>
+                        <dl className="space-y-1 font-mono text-[11px] break-all">
+                          <div>
+                            <dt className="inline text-muted-foreground">
+                              Email:
+                            </dt>{' '}
+                            <dd className="inline">
+                              yuka.kohinata@testdomain.com
+                            </dd>
+                          </div>
+                          <div>
+                            <dt className="inline text-muted-foreground">
+                              Password:
+                            </dt>{' '}
+                            <dd className="inline">test123456</dd>
+                          </div>
+                        </dl>
+                      </div>
+
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200">
+                            運営（大規模）
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            Malymoon撮影会
+                          </span>
+                        </div>
+                        <dl className="space-y-1 font-mono text-[11px] break-all">
+                          <div>
+                            <dt className="inline text-muted-foreground">
+                              Email:
+                            </dt>{' '}
+                            <dd className="inline">malymoon@shutterhub.test</dd>
+                          </div>
+                          <div>
+                            <dt className="inline text-muted-foreground">
+                              Password:
+                            </dt>{' '}
+                            <dd className="inline">Malymoon2025!</dd>
+                          </div>
+                        </dl>
+                      </div>
+
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+                            運営（小規模）
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            ことり撮影会
+                          </span>
+                        </div>
+                        <dl className="space-y-1 font-mono text-[11px] break-all">
+                          <div>
+                            <dt className="inline text-muted-foreground">
+                              Email:
+                            </dt>{' '}
+                            <dd className="inline">
+                              kotori.session@testdomain.com
+                            </dd>
+                          </div>
+                          <div>
+                            <dt className="inline text-muted-foreground">
+                              Password:
+                            </dt>{' '}
+                            <dd className="inline">test123456</dd>
+                          </div>
+                        </dl>
+                      </div>
+                    </div>
+                  </div>
                   <div className="flex justify-center gap-2 mt-6">
                     <Badge variant="outline" className="bg-background/20">
                       {devTools.length} ツール
