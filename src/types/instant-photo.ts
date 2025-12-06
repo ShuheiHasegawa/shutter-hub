@@ -497,7 +497,9 @@ export interface ExtendedBooking extends InstantBooking {
     avatar_url?: string;
     bio?: string;
     average_rating?: number;
+    total_reviews?: number;
     phone?: string;
+    is_verified?: boolean;
   };
   escrow_payment?: EscrowPayment;
   photo_delivery?: PhotoDelivery;

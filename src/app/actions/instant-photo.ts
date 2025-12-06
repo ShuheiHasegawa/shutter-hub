@@ -602,6 +602,7 @@ export async function getPhotographerRequests(): Promise<
         matched_photographer_id: r.matched_photographer_id,
         pending_photographer_id: r.pending_photographer_id,
         guest_name: r.guest_name,
+        created_at: r.created_at, // デバッグ用
       })),
     });
 

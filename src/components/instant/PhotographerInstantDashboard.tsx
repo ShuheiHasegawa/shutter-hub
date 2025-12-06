@@ -85,6 +85,7 @@ export function PhotographerInstantDashboard({
             id: r.id,
             status: r.status,
             matched_photographer_id: r.matched_photographer_id,
+            created_at: r.created_at, // 日時不明デバッグ用
           })),
         });
         setRequests(result.data);
