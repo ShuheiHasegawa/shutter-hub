@@ -156,16 +156,21 @@ function DraggableImageCard({
   return (
     <div
       className={cn(
-        'group relative transition-all duration-200',
+        'group relative transition-all duration-200 select-none',
         isDragging && 'opacity-50 scale-105 z-10', // シンプルなドラッグ表示
         isPendingDelete && 'opacity-50 grayscale'
       )}
+      style={{
+        WebkitUserSelect: 'none',
+        WebkitTouchCallout: 'none',
+        userSelect: 'none',
+      }}
     >
       <Card
         ref={setNodeRef}
         style={style}
         className={cn(
-          'overflow-hidden shadow-md hover:shadow-lg transition-shadow',
+          'overflow-hidden shadow-md hover:shadow-lg transition-shadow select-none',
           isMobile && 'shadow-sm' // モバイルでは控えめなシャドウ
         )}
       >
@@ -1009,9 +1014,13 @@ export function QuickPhotobookImageManagerV2({
           {/* レスポンシブ画像レイアウト */}
           <div
             className={cn(
-              'surface-neutral rounded-lg p-6',
+              'surface-neutral rounded-lg p-6 select-none',
               isProcessing && 'opacity-50'
             )}
+            style={{
+              WebkitUserSelect: 'none',
+              WebkitTouchCallout: 'none',
+            }}
           >
             <DndContext
               sensors={sensors}
