@@ -8,6 +8,7 @@ import {
   DragStartEvent,
   DragEndEvent,
   PointerSensor,
+  TouchSensor,
   KeyboardSensor,
   useSensor,
   useSensors,
@@ -309,10 +310,12 @@ function DraggableImageCard({
           className={cn(
             'cursor-grab active:cursor-grabbing hover:bg-gray-50 transition-colors flex items-center justify-center',
             isMobile ? 'p-2' : 'p-3',
-            'touch-none' // スマホでのドラッグを有効化
+            'touch-none select-none' // スマホでのドラッグを有効化 + テキスト選択防止
           )}
           style={{
             touchAction: 'none', // スマホでのタッチ操作を有効化
+            WebkitUserSelect: 'none', // iOS Safari対応
+            WebkitTouchCallout: 'none', // iOS長押しメニュー防止
           }}
           title="ドラッグして並び替え"
         >
@@ -886,6 +889,12 @@ export function QuickPhotobookImageManagerV2({
     useSensor(PointerSensor, {
       activationConstraint: {
         distance: 8, // 8px移動でドラッグ開始（スマホ対応）
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 150, // 150ms長押しでドラッグ開始（テキスト選択との競合を防止）
+        tolerance: 5, // 5px以内の移動は許容
       },
     }),
     useSensor(KeyboardSensor, {
