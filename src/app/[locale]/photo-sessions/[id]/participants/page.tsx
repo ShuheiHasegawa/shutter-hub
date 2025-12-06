@@ -70,7 +70,7 @@ export default async function ParticipantsPage({
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'confirmed':
-        return <Badge variant="brand-success">確定</Badge>;
+        return <Badge variant="secondary">確定</Badge>;
       case 'pending':
         return <Badge variant="outline">保留</Badge>;
       case 'cancelled':

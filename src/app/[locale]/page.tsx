@@ -3,390 +3,408 @@
 import { useTranslations } from 'next-intl';
 import { PublicHeader } from '@/components/layout/public-header';
 import { Footer } from '@/components/layout/footer';
-
 import { Button } from '@/components/ui/button';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Camera, Users, Zap, MapPin, Star, Calendar } from 'lucide-react';
+  Camera,
+  Users,
+  Zap,
+  MapPin,
+  Star,
+  Calendar,
+  ArrowRight,
+  ArrowUpRight,
+} from 'lucide-react';
 import { Link } from '@/i18n/routing';
+import { useEffect, useState, useRef } from 'react';
 
 export default function HomePage() {
   const t = useTranslations('home');
+  const [mounted, setMounted] = useState(false);
+  const heroRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
+    <div className="flex flex-col h-screen overflow-hidden bg-[#0a0a0a]">
       <div className="flex-1 min-h-0 overflow-hidden">
-        <div className="h-full overflow-y-auto">
+        <div className="h-full overflow-y-auto scroll-smooth">
           <PublicHeader />
           <main>
-            {/* ヒーローセクション - エディトリアルデザイン */}
-            <section className="relative min-h-[90vh] flex items-center overflow-hidden noise-texture">
-              {/* グラデーションメッシュ背景 */}
-              <div className="absolute inset-0 gradient-mesh opacity-60" />
-
-              {/* 対角線アクセント */}
-              <div className="absolute inset-0 diagonal-accent" />
-
-              <div className="container relative z-10 py-24 md:py-32">
-                <div className="asymmetric-grid">
-                  {/* 非対称レイアウト: 左側に余白、右側にコンテンツ */}
-                  <div className="col-span-12 lg:col-span-8 lg:col-start-3">
-                    <div className="space-y-10">
-                      {/* タイトル - 特徴的なフォント使用 */}
-                      <div className="stagger-reveal">
-                        <h1 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold tracking-tight leading-[1.1]">
-                          <span className="block">{t('hero.title')}</span>
-                          <span className="block brand-primary whitespace-nowrap">
-                            {t('hero.titleHighlight')}
-                          </span>
-                        </h1>
-                      </div>
-
-                      {/* サブタイトル - スタガードアニメーション */}
-                      <div className="stagger-reveal stagger-reveal-delay-1 space-y-4">
-                        <p className="text-xl md:text-2xl lg:text-3xl opacity-90 leading-relaxed max-w-2xl">
-                          {t('hero.subtitle')}
-                        </p>
-                        <p className="text-lg md:text-xl opacity-75 max-w-xl">
-                          {t('hero.subtitleSecond')}
-                        </p>
-                      </div>
-
-                      {/* CTAボタン - スタガードアニメーション */}
-                      <div className="stagger-reveal stagger-reveal-delay-2 flex flex-col sm:flex-row gap-4 pt-4">
-                        <Button
-                          asChild
-                          size="lg"
-                          variant="accent"
-                          className="group relative overflow-hidden transition-all duration-300 hover:scale-105"
-                        >
-                          <Link href="/photo-sessions">
-                            <span className="relative z-10">
-                              {t('hero.findSessions')}
-                            </span>
-                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-                          </Link>
-                        </Button>
-                        <Button
-                          asChild
-                          size="lg"
-                          variant="primary"
-                          className="group relative overflow-hidden transition-all duration-300 hover:scale-105"
-                        >
-                          <Link href="/instant">
-                            <span className="relative z-10">
-                              {t('hero.requestInstant')}
-                            </span>
-                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-                          </Link>
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+            {/* ===== HERO ===== */}
+            <section
+              ref={heroRef}
+              className="relative min-h-[100svh] flex flex-col justify-end pb-16 md:pb-24 overflow-hidden"
+            >
+              {/* 背景画像プレースホルダー（将来的に実画像に置換） */}
+              <div className="absolute inset-0">
+                <div
+                  className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                  style={{
+                    backgroundImage: `url('https://images.unsplash.com/photo-1542038784456-1ea8e935640e?q=80&w=2070&auto=format&fit=crop')`,
+                  }}
+                />
+                {/* オーバーレイ */}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/60 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0a]/80 via-transparent to-transparent" />
               </div>
-            </section>
-
-            {/* 特徴セクション - 非対称グリッドレイアウト */}
-            <section className="relative py-32 surface-primary noise-texture">
-              <div className="container">
-                {/* セクションタイトル - 非中央配置 */}
-                <div className="asymmetric-grid mb-20">
-                  <div className="col-span-12 md:col-span-8 md:col-start-2 lg:col-span-6 lg:col-start-3">
-                    <div className="stagger-reveal stagger-reveal-delay-1">
-                      <h2 className="font-display text-4xl md:text-5xl font-bold mb-6">
-                        {t('features.title')}
-                      </h2>
-                      <p className="text-xl opacity-80 leading-relaxed">
-                        {t('features.subtitle')}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* カードグリッド - 3列シンプルグリッド */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {/* カード1 */}
-                  <div className="stagger-reveal stagger-reveal-delay-2">
-                    <Card className="h-full surface-accent group hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 border-0 flex flex-col overflow-hidden">
-                      <CardHeader className="pb-6 pt-8 px-8">
-                        <div className="relative mx-auto w-20 h-20 brand-primary rounded-3xl flex items-center justify-center mb-8 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 shadow-2xl">
-                          <div className="absolute inset-0 brand-primary rounded-3xl opacity-20 blur-xl group-hover:opacity-40 transition-opacity duration-500" />
-                          <Calendar className="h-10 w-10 text-white relative z-10" />
-                        </div>
-                        <CardTitle className="text-2xl font-bold mb-4 text-center">
-                          {t('features.booking.title')}
-                        </CardTitle>
-                        <CardDescription className="leading-relaxed text-center text-base">
-                          {t('features.booking.description')}
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="flex-1 pt-0 pb-8 px-8">
-                        <ul className="space-y-3">
-                          <li className="flex items-start">
-                            <span className="mr-3 mt-1 text-lg">•</span>
-                            <span className="leading-relaxed">
-                              {t('features.booking.features.0')}
-                            </span>
-                          </li>
-                          <li className="flex items-start">
-                            <span className="mr-3 mt-1 text-lg">•</span>
-                            <span className="leading-relaxed">
-                              {t('features.booking.features.1')}
-                            </span>
-                          </li>
-                          <li className="flex items-start">
-                            <span className="mr-3 mt-1 text-lg">•</span>
-                            <span className="leading-relaxed">
-                              {t('features.booking.features.2')}
-                            </span>
-                          </li>
-                        </ul>
-                      </CardContent>
-                    </Card>
-                  </div>
-
-                  {/* カード2 */}
-                  <div className="stagger-reveal stagger-reveal-delay-3">
-                    <Card className="h-full surface-accent group hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 border-0 flex flex-col overflow-hidden">
-                      <CardHeader className="pb-6 pt-8 px-8">
-                        <div className="relative mx-auto w-20 h-20 brand-primary rounded-3xl flex items-center justify-center mb-8 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 shadow-2xl">
-                          <div className="absolute inset-0 brand-primary rounded-3xl opacity-20 blur-xl group-hover:opacity-40 transition-opacity duration-500" />
-                          <Zap className="h-10 w-10 text-white relative z-10" />
-                        </div>
-                        <CardTitle className="text-2xl font-bold mb-4 text-center">
-                          {t('features.instant.title')}
-                        </CardTitle>
-                        <CardDescription className="leading-relaxed text-center text-base">
-                          {t('features.instant.description')}
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="flex-1 pt-0 pb-8 px-8">
-                        <ul className="space-y-3">
-                          <li className="flex items-start">
-                            <span className="mr-3 mt-1 text-lg">•</span>
-                            <span className="leading-relaxed">
-                              {t('features.instant.features.0')}
-                            </span>
-                          </li>
-                          <li className="flex items-start">
-                            <span className="mr-3 mt-1 text-lg">•</span>
-                            <span className="leading-relaxed">
-                              {t('features.instant.features.1')}
-                            </span>
-                          </li>
-                          <li className="flex items-start">
-                            <span className="mr-3 mt-1 text-lg">•</span>
-                            <span className="leading-relaxed">
-                              {t('features.instant.features.2')}
-                            </span>
-                          </li>
-                        </ul>
-                      </CardContent>
-                    </Card>
-                  </div>
-
-                  {/* カード3 */}
-                  <div className="stagger-reveal stagger-reveal-delay-4">
-                    <Card className="h-full surface-accent group hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 border-0 flex flex-col overflow-hidden">
-                      <CardHeader className="pb-6 pt-8 px-8">
-                        <div className="relative mx-auto w-20 h-20 brand-primary rounded-3xl flex items-center justify-center mb-8 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 shadow-2xl">
-                          <div className="absolute inset-0 brand-primary rounded-3xl opacity-20 blur-xl group-hover:opacity-40 transition-opacity duration-500" />
-                          <MapPin className="h-10 w-10 text-white relative z-10" />
-                        </div>
-                        <CardTitle className="text-2xl font-bold mb-4 text-center">
-                          {t('features.wiki.title')}
-                        </CardTitle>
-                        <CardDescription className="leading-relaxed text-center text-base">
-                          {t('features.wiki.description')}
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="flex-1 pt-0 pb-8 px-8">
-                        <ul className="space-y-3">
-                          <li className="flex items-start">
-                            <span className="mr-3 mt-1 text-lg">•</span>
-                            <span className="leading-relaxed">
-                              {t('features.wiki.features.0')}
-                            </span>
-                          </li>
-                          <li className="flex items-start">
-                            <span className="mr-3 mt-1 text-lg">•</span>
-                            <span className="leading-relaxed">
-                              {t('features.wiki.features.1')}
-                            </span>
-                          </li>
-                          <li className="flex items-start">
-                            <span className="mr-3 mt-1 text-lg">•</span>
-                            <span className="leading-relaxed">
-                              {t('features.wiki.features.2')}
-                            </span>
-                          </li>
-                        </ul>
-                      </CardContent>
-                    </Card>
-                  </div>
-
-                  {/* カード4 */}
-                  <div className="stagger-reveal stagger-reveal-delay-5">
-                    <Card className="h-full surface-accent group hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 border-0 flex flex-col overflow-hidden">
-                      <CardHeader className="pb-6 pt-8 px-8">
-                        <div className="relative mx-auto w-20 h-20 brand-primary rounded-3xl flex items-center justify-center mb-8 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 shadow-2xl">
-                          <div className="absolute inset-0 brand-primary rounded-3xl opacity-20 blur-xl group-hover:opacity-40 transition-opacity duration-500" />
-                          <Users className="h-10 w-10 text-white relative z-10" />
-                        </div>
-                        <CardTitle className="text-2xl font-bold mb-4 text-center">
-                          {t('features.platform.title')}
-                        </CardTitle>
-                        <CardDescription className="leading-relaxed text-center text-base">
-                          {t('features.platform.description')}
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="flex-1 pt-0 pb-8 px-8">
-                        <ul className="space-y-3">
-                          <li className="flex items-start">
-                            <span className="mr-3 mt-1 text-lg">•</span>
-                            <span className="leading-relaxed">
-                              {t('features.platform.features.0')}
-                            </span>
-                          </li>
-                          <li className="flex items-start">
-                            <span className="mr-3 mt-1 text-lg">•</span>
-                            <span className="leading-relaxed">
-                              {t('features.platform.features.1')}
-                            </span>
-                          </li>
-                          <li className="flex items-start">
-                            <span className="mr-3 mt-1 text-lg">•</span>
-                            <span className="leading-relaxed">
-                              {t('features.platform.features.2')}
-                            </span>
-                          </li>
-                        </ul>
-                      </CardContent>
-                    </Card>
-                  </div>
-
-                  {/* カード5 */}
-                  <div className="stagger-reveal stagger-reveal-delay-6">
-                    <Card className="h-full surface-accent group hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 border-0 flex flex-col overflow-hidden">
-                      <CardHeader className="pb-6 pt-8 px-8">
-                        <div className="relative mx-auto w-20 h-20 brand-primary rounded-3xl flex items-center justify-center mb-8 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 shadow-2xl">
-                          <div className="absolute inset-0 brand-primary rounded-3xl opacity-20 blur-xl group-hover:opacity-40 transition-opacity duration-500" />
-                          <Star className="h-10 w-10 text-white relative z-10" />
-                        </div>
-                        <CardTitle className="text-2xl font-bold mb-4 text-center">
-                          {t('features.review.title')}
-                        </CardTitle>
-                        <CardDescription className="leading-relaxed text-center text-base">
-                          {t('features.review.description')}
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="flex-1 pt-0 pb-8 px-8">
-                        <ul className="space-y-3">
-                          <li className="flex items-start">
-                            <span className="mr-3 mt-1 text-lg">•</span>
-                            <span className="leading-relaxed">
-                              {t('features.review.features.0')}
-                            </span>
-                          </li>
-                          <li className="flex items-start">
-                            <span className="mr-3 mt-1 text-lg">•</span>
-                            <span className="leading-relaxed">
-                              {t('features.review.features.1')}
-                            </span>
-                          </li>
-                          <li className="flex items-start">
-                            <span className="mr-3 mt-1 text-lg">•</span>
-                            <span className="leading-relaxed">
-                              {t('features.review.features.2')}
-                            </span>
-                          </li>
-                        </ul>
-                      </CardContent>
-                    </Card>
-                  </div>
-
-                  {/* カード6 */}
-                  <div className="stagger-reveal stagger-reveal-delay-6">
-                    <Card className="h-full surface-accent group hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 border-0 flex flex-col overflow-hidden">
-                      <CardHeader className="pb-6 pt-8 px-8">
-                        <div className="relative mx-auto w-20 h-20 brand-primary rounded-3xl flex items-center justify-center mb-8 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 shadow-2xl">
-                          <div className="absolute inset-0 brand-primary rounded-3xl opacity-20 blur-xl group-hover:opacity-40 transition-opacity duration-500" />
-                          <Camera className="h-10 w-10 text-white relative z-10" />
-                        </div>
-                        <CardTitle className="text-2xl font-bold mb-4 text-center">
-                          {t('features.professional.title')}
-                        </CardTitle>
-                        <CardDescription className="leading-relaxed text-center text-base">
-                          {t('features.professional.description')}
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="flex-1 pt-0 pb-8 px-8">
-                        <ul className="space-y-3">
-                          <li className="flex items-start">
-                            <span className="mr-3 mt-1 text-lg">•</span>
-                            <span className="leading-relaxed">
-                              {t('features.professional.features.0')}
-                            </span>
-                          </li>
-                          <li className="flex items-start">
-                            <span className="mr-3 mt-1 text-lg">•</span>
-                            <span className="leading-relaxed">
-                              {t('features.professional.features.1')}
-                            </span>
-                          </li>
-                          <li className="flex items-start">
-                            <span className="mr-3 mt-1 text-lg">•</span>
-                            <span className="leading-relaxed">
-                              {t('features.professional.features.2')}
-                            </span>
-                          </li>
-                        </ul>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* CTAセクション - エディトリアルスタイル */}
-            <section className="relative py-32 surface-accent noise-texture overflow-hidden">
-              {/* グラデーションメッシュ背景 */}
-              <div className="absolute inset-0 gradient-mesh opacity-40" />
 
               <div className="container relative z-10">
-                <div className="asymmetric-grid">
-                  {/* 非中央配置 */}
-                  <div className="col-span-12 md:col-span-10 md:col-start-2 lg:col-span-8 lg:col-start-3">
-                    <div className="space-y-10 stagger-reveal stagger-reveal-delay-1">
-                      <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
-                        {t('cta.title')}
-                      </h2>
-                      <p className="text-xl md:text-2xl opacity-90 leading-relaxed">
-                        {t('cta.subtitle')}
-                      </p>
-                      <div className="pt-6">
-                        <Button
-                          asChild
-                          size="lg"
-                          variant="cta"
-                          className="group relative overflow-hidden transition-all duration-300 hover:scale-105 text-lg px-8 py-6"
+                <div className="max-w-4xl">
+                  {/* 小さなラベル */}
+                  <div
+                    className={`mb-6 transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+                  >
+                    <span className="inline-block text-[11px] tracking-[0.3em] uppercase text-amber-500 font-medium">
+                      Photography Platform
+                    </span>
+                  </div>
+
+                  {/* メインタイトル - エディトリアルスタイル */}
+                  <h1
+                    className={`mb-8 transition-all duration-700 delay-100 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+                  >
+                    <span
+                      className="block text-[clamp(2.5rem,8vw,7rem)] font-serif font-normal text-white leading-[0.95] tracking-[-0.02em]"
+                      style={{
+                        fontFamily: 'var(--font-playfair-display), serif',
+                      }}
+                    >
+                      {t('hero.title')}
+                    </span>
+                    <span
+                      className="block text-[clamp(2.5rem,8vw,7rem)] font-serif italic text-amber-400 leading-[0.95] tracking-[-0.02em] mt-1"
+                      style={{
+                        fontFamily: 'var(--font-playfair-display), serif',
+                      }}
+                    >
+                      {t('hero.titleHighlight')}
+                    </span>
+                  </h1>
+
+                  {/* サブタイトル */}
+                  <p
+                    className={`text-lg md:text-xl text-white/70 leading-relaxed max-w-xl mb-10 transition-all duration-700 delay-200 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+                  >
+                    {t('hero.subtitle')}
+                  </p>
+
+                  {/* CTAボタン - ミニマル */}
+                  <div
+                    className={`flex flex-wrap gap-4 transition-all duration-700 delay-300 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+                  >
+                    <Button
+                      asChild
+                      className="h-12 px-8 bg-white text-[#0a0a0a] hover:bg-white/90 rounded-none text-sm font-medium tracking-wide transition-all duration-200"
+                    >
+                      <Link href="/photo-sessions">
+                        {t('hero.findSessions')}
+                        <ArrowRight className="w-4 h-4 ml-2" />
+                      </Link>
+                    </Button>
+                    <Button
+                      asChild
+                      variant="outline"
+                      className="h-12 px-8 bg-transparent text-white border-white/30 hover:bg-white/10 hover:border-white/50 rounded-none text-sm font-medium tracking-wide transition-all duration-200"
+                    >
+                      <Link href="/instant">{t('hero.requestInstant')}</Link>
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              {/* スクロールヒント */}
+              <div className="absolute bottom-8 right-8 hidden md:flex items-center gap-3 text-white/40 text-xs tracking-widest uppercase">
+                <span>Scroll</span>
+                <div className="w-px h-8 bg-white/20" />
+              </div>
+            </section>
+
+            {/* ===== INTRO SECTION ===== */}
+            <section className="py-24 md:py-32 bg-[#0a0a0a] border-t border-white/5">
+              <div className="container">
+                <div className="grid lg:grid-cols-12 gap-12 lg:gap-16">
+                  {/* 左カラム - テキスト */}
+                  <div className="lg:col-span-5">
+                    <span className="text-[11px] tracking-[0.3em] uppercase text-amber-500 font-medium">
+                      About
+                    </span>
+                    <h2
+                      className="mt-6 text-3xl md:text-4xl lg:text-5xl font-serif text-white leading-[1.1]"
+                      style={{
+                        fontFamily: 'var(--font-playfair-display), serif',
+                      }}
+                    >
+                      写真で残す、
+                      <br />
+                      <span className="italic text-white/60">
+                        かけがえのない瞬間
+                      </span>
+                    </h2>
+                  </div>
+
+                  {/* 右カラム - 説明文 */}
+                  <div className="lg:col-span-6 lg:col-start-7">
+                    <p className="text-white/60 text-lg leading-relaxed mb-8">
+                      ShutterHubは、プロフェッショナルなカメラマンと撮影機会を求める人々をつなぐプラットフォームです。撮影会の予約から、今すぐカメラマンを呼べる「即座撮影」まで。あなたの大切な瞬間を、最高のクオリティで残します。
+                    </p>
+                    <div className="flex gap-12">
+                      <div>
+                        <div
+                          className="text-3xl md:text-4xl font-serif text-white"
+                          style={{
+                            fontFamily: 'var(--font-playfair-display), serif',
+                          }}
                         >
-                          <Link href="/auth/signup">
-                            <span className="relative z-10">
-                              {t('cta.getStarted')}
-                            </span>
-                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-                          </Link>
-                        </Button>
+                          1,000+
+                        </div>
+                        <div className="text-xs text-white/40 uppercase tracking-wider mt-1">
+                          Photographers
+                        </div>
+                      </div>
+                      <div>
+                        <div
+                          className="text-3xl md:text-4xl font-serif text-white"
+                          style={{
+                            fontFamily: 'var(--font-playfair-display), serif',
+                          }}
+                        >
+                          50,000+
+                        </div>
+                        <div className="text-xs text-white/40 uppercase tracking-wider mt-1">
+                          Sessions
+                        </div>
+                      </div>
+                      <div>
+                        <div
+                          className="text-3xl md:text-4xl font-serif text-white"
+                          style={{
+                            fontFamily: 'var(--font-playfair-display), serif',
+                          }}
+                        >
+                          4.9
+                        </div>
+                        <div className="text-xs text-white/40 uppercase tracking-wider mt-1">
+                          Rating
+                        </div>
                       </div>
                     </div>
                   </div>
+                </div>
+              </div>
+            </section>
+
+            {/* ===== FEATURES - 非対称グリッド ===== */}
+            <section className="py-24 md:py-32 bg-[#f5f4f0]">
+              <div className="container">
+                <div className="mb-16">
+                  <span className="text-[11px] tracking-[0.3em] uppercase text-amber-600 font-medium">
+                    Services
+                  </span>
+                  <h2
+                    className="mt-4 text-3xl md:text-4xl font-serif text-[#0a0a0a]"
+                    style={{
+                      fontFamily: 'var(--font-playfair-display), serif',
+                    }}
+                  >
+                    {t('features.title')}
+                  </h2>
+                </div>
+
+                {/* 非対称レイアウト */}
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-px bg-[#0a0a0a]/10">
+                  {[
+                    {
+                      icon: Calendar,
+                      titleKey: 'features.booking.title',
+                      descKey: 'features.booking.description',
+                      featuresKey: 'features.booking.features',
+                    },
+                    {
+                      icon: Zap,
+                      titleKey: 'features.instant.title',
+                      descKey: 'features.instant.description',
+                      featuresKey: 'features.instant.features',
+                    },
+                    {
+                      icon: MapPin,
+                      titleKey: 'features.wiki.title',
+                      descKey: 'features.wiki.description',
+                      featuresKey: 'features.wiki.features',
+                    },
+                    {
+                      icon: Users,
+                      titleKey: 'features.platform.title',
+                      descKey: 'features.platform.description',
+                      featuresKey: 'features.platform.features',
+                    },
+                    {
+                      icon: Star,
+                      titleKey: 'features.review.title',
+                      descKey: 'features.review.description',
+                      featuresKey: 'features.review.features',
+                    },
+                    {
+                      icon: Camera,
+                      titleKey: 'features.professional.title',
+                      descKey: 'features.professional.description',
+                      featuresKey: 'features.professional.features',
+                    },
+                  ].map((feature, index) => (
+                    <div
+                      key={index}
+                      className="group bg-[#f5f4f0] p-8 md:p-10 transition-colors duration-300 hover:bg-white"
+                    >
+                      <feature.icon
+                        className="w-6 h-6 text-[#0a0a0a]/40 mb-6"
+                        strokeWidth={1.5}
+                      />
+                      <h3 className="text-lg font-medium text-[#0a0a0a] mb-3">
+                        {t(feature.titleKey)}
+                      </h3>
+                      <p className="text-[#0a0a0a]/60 text-sm leading-relaxed mb-6">
+                        {t(feature.descKey)}
+                      </p>
+                      <ul className="space-y-2">
+                        {[0, 1, 2].map(i => (
+                          <li
+                            key={i}
+                            className="flex items-start gap-2 text-sm text-[#0a0a0a]/50"
+                          >
+                            <span className="w-1 h-1 rounded-full bg-amber-500 mt-2 shrink-0" />
+                            {t(`${feature.featuresKey}.${i}`)}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+
+            {/* ===== SHOWCASE - 写真重視 ===== */}
+            <section className="py-24 md:py-32 bg-[#0a0a0a]">
+              <div className="container">
+                <div className="grid lg:grid-cols-2 gap-16 items-center">
+                  {/* 左：ビジュアル */}
+                  <div className="relative aspect-[4/5] bg-[#1a1a1a]">
+                    <div
+                      className="absolute inset-0 bg-cover bg-center"
+                      style={{
+                        backgroundImage: `url('https://images.unsplash.com/photo-1554048612-b6a482bc67e5?q=80&w=2070&auto=format&fit=crop')`,
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-transparent opacity-60" />
+
+                    {/* フローティングカード */}
+                    <div className="absolute bottom-6 left-6 right-6 bg-white/95 backdrop-blur-sm p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-sm font-medium text-[#0a0a0a]">
+                            次回の撮影を予約
+                          </div>
+                          <div className="text-xs text-[#0a0a0a]/50 mt-1">
+                            1,000+のカメラマンが待っています
+                          </div>
+                        </div>
+                        <ArrowUpRight className="w-5 h-5 text-[#0a0a0a]" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 右：コンテンツ */}
+                  <div>
+                    <span className="text-[11px] tracking-[0.3em] uppercase text-amber-500 font-medium">
+                      Experience
+                    </span>
+                    <h2
+                      className="mt-6 text-3xl md:text-4xl lg:text-5xl font-serif text-white leading-[1.1] mb-8"
+                      style={{
+                        fontFamily: 'var(--font-playfair-display), serif',
+                      }}
+                    >
+                      プロの手で、
+                      <br />
+                      <span className="italic text-white/60">
+                        特別な一枚を。
+                      </span>
+                    </h2>
+                    <p className="text-white/60 leading-relaxed mb-10 max-w-md">
+                      ポートレート、カップルフォト、家族写真、イベント撮影。どんなシーンでも、経験豊富なカメラマンが最高の瞬間を切り取ります。
+                    </p>
+
+                    <div className="space-y-6">
+                      {[
+                        {
+                          label: '安心の料金システム',
+                          desc: '明確な料金表示、追加料金なし',
+                        },
+                        {
+                          label: '即日対応可能',
+                          desc: '今すぐカメラマンを呼べる「即座撮影」',
+                        },
+                        {
+                          label: '高品質な納品',
+                          desc: 'プロ品質の編集済み写真データを受け取り',
+                        },
+                      ].map((item, i) => (
+                        <div key={i} className="flex gap-4 items-start">
+                          <div className="w-8 h-px bg-amber-500 mt-3" />
+                          <div>
+                            <div className="text-white font-medium">
+                              {item.label}
+                            </div>
+                            <div className="text-white/40 text-sm mt-1">
+                              {item.desc}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* ===== CTA ===== */}
+            <section className="relative py-32 md:py-40 overflow-hidden">
+              {/* 背景 */}
+              <div
+                className="absolute inset-0 bg-cover bg-center"
+                style={{
+                  backgroundImage: `url('https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=2038&auto=format&fit=crop')`,
+                }}
+              />
+              <div className="absolute inset-0 bg-[#0a0a0a]/85" />
+
+              <div className="container relative z-10">
+                <div className="max-w-2xl mx-auto text-center">
+                  <h2
+                    className="text-4xl md:text-5xl lg:text-6xl font-serif text-white leading-[1.1] mb-6"
+                    style={{
+                      fontFamily: 'var(--font-playfair-display), serif',
+                    }}
+                  >
+                    {t('cta.title')}
+                  </h2>
+                  <p className="text-lg text-white/60 mb-10 leading-relaxed">
+                    {t('cta.subtitle')}
+                  </p>
+
+                  <Button
+                    asChild
+                    className="h-14 px-10 bg-white text-[#0a0a0a] hover:bg-white/90 rounded-none text-sm font-medium tracking-wide transition-all duration-200"
+                  >
+                    <Link href="/auth/signup">
+                      {t('cta.getStarted')}
+                      <ArrowRight className="w-4 h-4 ml-3" />
+                    </Link>
+                  </Button>
+
+                  <p className="mt-6 text-xs text-white/40">
+                    無料で始められます。クレジットカードは不要です。
+                  </p>
                 </div>
               </div>
             </section>
