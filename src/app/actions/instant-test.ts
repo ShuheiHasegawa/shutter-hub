@@ -93,8 +93,8 @@ function generateRandomRequestData(
   const requestType =
     requestTypes[Math.floor(Math.random() * requestTypes.length)];
 
-  // 緊急度をランダム選択
-  const urgencies: RequestUrgency[] = ['normal', 'now', 'within_30min'];
+  // 緊急度をランダム選択（DBのCHECK制約に合わせて、テストではnormal固定を使用）
+  const urgencies: RequestUrgency[] = ['normal'];
   const urgency = urgencies[Math.floor(Math.random() * urgencies.length)];
 
   // 撮影時間をランダム選択
@@ -307,7 +307,8 @@ export async function getTestRequests(): Promise<{
         budget,
         status,
         created_at,
-        matched_photographer_id
+        matched_photographer_id,
+        pending_photographer_id
       `
       )
       .like('guest_phone', '090-TEST-%')
@@ -351,7 +352,11 @@ export async function getTestRequests(): Promise<{
       status: request.status,
       created_at: request.created_at,
       booking_id: bookingMap.get(request.id),
-      photographer_id: request.matched_photographer_id || undefined,
+      // マッチ済みなら matched_photographer_id、受諾状態なら pending_photographer_id を使用
+      photographer_id:
+        request.matched_photographer_id ||
+        request.pending_photographer_id ||
+        undefined,
     }));
 
     return {
@@ -360,6 +365,130 @@ export async function getTestRequests(): Promise<{
     };
   } catch (error) {
     logger.error('予期しないエラー:', error);
+    return {
+      success: false,
+      error: '予期しないエラーが発生しました',
+    };
+  }
+}
+
+/**
+ * テスト用：写真配信をシミュレートする
+ * 決済完了後のフローをテストするためのヘルパー関数
+ */
+export async function simulatePhotoDelivery(bookingId: string): Promise<{
+  success: boolean;
+  data?: {
+    deliveryId: string;
+    deliveryUrl: string;
+  };
+  error?: string;
+}> {
+  try {
+    const supabase = await createClient();
+
+    // booking情報を取得
+    const { data: booking, error: bookingError } = await supabase
+      .from('instant_bookings')
+      .select('*, request:instant_photo_requests(*)')
+      .eq('id', bookingId)
+      .single();
+
+    if (bookingError || !booking) {
+      return {
+        success: false,
+        error: '予約情報が見つかりません',
+      };
+    }
+
+    // 配信情報を作成
+    const deliveryUrl = `https://example.com/photos/test-delivery-${Date.now()}`;
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 30);
+
+    const { data: delivery, error: deliveryError } = await supabase
+      .from('photo_deliveries')
+      .upsert(
+        {
+          booking_id: bookingId,
+          delivery_method: 'external_url',
+          external_service: 'test_simulation',
+          external_url: deliveryUrl,
+          photo_count: 10,
+          total_size_mb: 50,
+          resolution: 'high',
+          formats: ['jpg', 'edited'],
+          photographer_message: 'テスト配信です。素敵な写真をお届けします！',
+          download_expires_at: expiresAt.toISOString(),
+          download_count: 0,
+          max_downloads: 10,
+          delivered_at: new Date().toISOString(),
+        },
+        {
+          onConflict: 'booking_id',
+        }
+      )
+      .select()
+      .single();
+
+    if (deliveryError) {
+      logger.error('写真配信シミュレートエラー:', deliveryError);
+      return {
+        success: false,
+        error: '配信情報の作成に失敗しました',
+      };
+    }
+
+    // エスクロー決済ステータスを更新
+    await supabase
+      .from('escrow_payments')
+      .update({
+        delivery_status: 'delivered',
+        delivered_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq('booking_id', bookingId);
+
+    // 予約情報を更新
+    await supabase
+      .from('instant_bookings')
+      .update({
+        photos_delivered: 10,
+        delivery_url: deliveryUrl,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', bookingId);
+
+    // リクエストのステータスを 'delivered' に更新
+    const request = Array.isArray(booking.request)
+      ? booking.request[0]
+      : booking.request;
+
+    if (request?.id) {
+      await supabase
+        .from('instant_photo_requests')
+        .update({
+          status: 'delivered',
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', request.id);
+    }
+
+    logger.info('写真配信シミュレート成功:', {
+      bookingId,
+      deliveryId: delivery.id,
+      deliveryUrl,
+    });
+
+    return {
+      success: true,
+      data: {
+        deliveryId: delivery.id,
+        deliveryUrl,
+      },
+    };
+  } catch (error) {
+    logger.error('写真配信シミュレートエラー:', error);
     return {
       success: false,
       error: '予期しないエラーが発生しました',

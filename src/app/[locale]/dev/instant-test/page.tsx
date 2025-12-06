@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useLocale } from 'next-intl';
 import { PublicHeader } from '@/components/layout/public-header';
 import { DevToolsNavigation } from '@/components/dev/DevToolsNavigation';
 import {
@@ -39,7 +40,9 @@ import {
   getPhotographersList,
   createTestInstantRequest,
   getTestRequests,
+  simulatePhotoDelivery,
 } from '@/app/actions/instant-test';
+import { approvePhotographer } from '@/app/actions/instant-photo';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import type { RequestType } from '@/types/instant-photo';
@@ -72,6 +75,8 @@ const requestTypeLabels: Record<RequestType, string> = {
 
 const statusLabels: Record<string, string> = {
   pending: '待機中',
+  photographer_accepted: 'カメラマン受諾済み',
+  guest_approved: 'ゲスト承認済み',
   matched: 'マッチング済み',
   in_progress: '撮影中',
   completed: '完了',
@@ -82,6 +87,8 @@ const statusLabels: Record<string, string> = {
 
 const statusColors: Record<string, string> = {
   pending: 'bg-yellow-100 text-yellow-800',
+  photographer_accepted: 'bg-orange-100 text-orange-800',
+  guest_approved: 'bg-cyan-100 text-cyan-800',
   matched: 'bg-blue-100 text-blue-800',
   in_progress: 'bg-purple-100 text-purple-800',
   completed: 'bg-green-100 text-green-800',
@@ -91,12 +98,15 @@ const statusColors: Record<string, string> = {
 };
 
 export default function InstantTestPage() {
+  const locale = useLocale();
   const [photographers, setPhotographers] = useState<Photographer[]>([]);
   const [selectedPhotographerId, setSelectedPhotographerId] =
     useState<string>('');
   const [testRequests, setTestRequests] = useState<TestRequest[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingRequests, setIsLoadingRequests] = useState(false);
+  const [approvingId, setApprovingId] = useState<string | null>(null);
+  const [deliveringId, setDeliveringId] = useState<string | null>(null);
   const { toast } = useToast();
 
   // フォトグラファー一覧を取得
@@ -171,6 +181,62 @@ export default function InstantTestPage() {
       });
     }
     setIsLoading(false);
+  };
+
+  // ゲスト承認（本番フローに沿ったテスト用）
+  const handleApproveAsGuest = async (
+    requestId: string,
+    photographerId?: string
+  ) => {
+    if (!photographerId) return;
+
+    setApprovingId(requestId);
+    try {
+      const result = await approvePhotographer(requestId, photographerId);
+
+      if (result.success) {
+        const bookingId = result.data?.bookingId;
+        toast({
+          title: '承認完了',
+          description: bookingId
+            ? `フォトグラファーを承認し、予約を作成しました (bookingId: ${bookingId})`
+            : 'フォトグラファーを承認しました',
+        });
+        await loadTestRequests();
+      } else {
+        toast({
+          title: 'エラー',
+          description: result.error || 'フォトグラファー承認処理に失敗しました',
+          variant: 'destructive',
+        });
+      }
+    } finally {
+      setApprovingId(null);
+    }
+  };
+
+  // 写真配信シミュレート（テスト用）
+  const handleSimulateDelivery = async (bookingId: string) => {
+    setDeliveringId(bookingId);
+    try {
+      const result = await simulatePhotoDelivery(bookingId);
+
+      if (result.success) {
+        toast({
+          title: '配信シミュレート完了',
+          description: `写真配信をシミュレートしました。URL: ${result.data?.deliveryUrl}`,
+        });
+        await loadTestRequests();
+      } else {
+        toast({
+          title: 'エラー',
+          description: result.error || '写真配信シミュレートに失敗しました',
+          variant: 'destructive',
+        });
+      }
+    } finally {
+      setDeliveringId(null);
+    }
   };
 
   // 日時をフォーマット
@@ -258,6 +324,7 @@ export default function InstantTestPage() {
                         onClick={handleCreateRequest}
                         disabled={isLoading || !selectedPhotographerId}
                         className="w-full"
+                        variant="cta"
                       >
                         {isLoading ? (
                           <>
@@ -343,25 +410,76 @@ export default function InstantTestPage() {
                                     {formatDateTime(request.created_at)}
                                   </TableCell>
                                   <TableCell>
-                                    {request.booking_id ? (
-                                      <Button
-                                        asChild
-                                        variant="outline"
-                                        size="sm"
-                                      >
-                                        <Link
-                                          href={`/instant/payment/${request.booking_id}`}
-                                          target="_blank"
-                                        >
-                                          <ExternalLink className="mr-2 h-3 w-3" />
-                                          決済ページ
-                                        </Link>
-                                      </Button>
-                                    ) : (
-                                      <span className="text-sm text-muted-foreground">
-                                        マッチング待ち
-                                      </span>
-                                    )}
+                                    <div className="flex flex-col gap-2">
+                                      {request.status ===
+                                        'photographer_accepted' &&
+                                        request.photographer_id && (
+                                          <Button
+                                            variant="secondary"
+                                            size="sm"
+                                            onClick={() =>
+                                              handleApproveAsGuest(
+                                                request.id,
+                                                request.photographer_id
+                                              )
+                                            }
+                                            disabled={
+                                              approvingId === request.id
+                                            }
+                                          >
+                                            {approvingId === request.id
+                                              ? '承認中...'
+                                              : 'ゲストとして承認（テスト）'}
+                                          </Button>
+                                        )}
+
+                                      {request.booking_id ? (
+                                        <>
+                                          <Button
+                                            asChild
+                                            variant="outline"
+                                            size="sm"
+                                          >
+                                            <Link
+                                              href={`/${locale}/instant/payment/${request.booking_id}`}
+                                              target="_blank"
+                                            >
+                                              <ExternalLink className="mr-2 h-3 w-3" />
+                                              決済ページ
+                                            </Link>
+                                          </Button>
+                                          {/* 決済完了後かつ配信前の場合のみ配信シミュレートボタンを表示 */}
+                                          {[
+                                            'in_progress',
+                                            'completed',
+                                          ].includes(request.status) && (
+                                            <Button
+                                              variant="secondary"
+                                              size="sm"
+                                              onClick={() =>
+                                                request.booking_id &&
+                                                handleSimulateDelivery(
+                                                  request.booking_id
+                                                )
+                                              }
+                                              disabled={
+                                                deliveringId ===
+                                                request.booking_id
+                                              }
+                                            >
+                                              {deliveringId ===
+                                              request.booking_id
+                                                ? '配信中...'
+                                                : '📷 写真配信シミュレート'}
+                                            </Button>
+                                          )}
+                                        </>
+                                      ) : (
+                                        <span className="text-sm text-muted-foreground">
+                                          マッチング待ち
+                                        </span>
+                                      )}
+                                    </div>
                                   </TableCell>
                                 </TableRow>
                               ))}
