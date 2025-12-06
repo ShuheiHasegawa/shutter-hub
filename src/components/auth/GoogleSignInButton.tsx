@@ -112,7 +112,7 @@ export function OAuthButton({
       variant="outline"
       onClick={handleOAuthSignIn}
       disabled={isLoading}
-      className={`w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-50 text-gray-700 ${className}`}
+      className={`w-full flex items-center justify-center gap-3 ${className}`}
     >
       {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : children}
     </Button>
