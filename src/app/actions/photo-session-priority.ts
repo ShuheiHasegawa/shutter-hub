@@ -133,7 +133,7 @@ export async function getPriorityBookingSettings(
   }
 }
 
-// 優先チケットの作成（主催者が配布）
+// 優先チケットの作成（認証済みユーザーが配布）
 export async function createPriorityTicket(
   ticket: Omit<PriorityTicket, 'photo_session_id' | 'issued_by'>
 ): Promise<{ success: boolean; error?: string; data?: PriorityTicket }> {
@@ -143,17 +143,6 @@ export async function createPriorityTicket(
       return { success: false, error: authResult.error };
     }
     const { user, supabase } = authResult.data;
-
-    // 主催者権限チェック（user_typeが'organizer'であることを確認）
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('user_type')
-      .eq('id', user.id)
-      .single();
-
-    if (!profile || profile.user_type !== 'organizer') {
-      return { success: false, error: '主催者のみがチケットを配布できます' };
-    }
 
     const { data, error } = await supabase
       .from('priority_tickets')
