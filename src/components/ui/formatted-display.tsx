@@ -91,6 +91,16 @@ export function FormattedDateTime({
     }
   }, [user, propTimeZone]);
 
+  // デバッグ: value が undefined/null の場合をログ出力
+  useEffect(() => {
+    if (value === undefined || value === null || value === '') {
+      logger.warn('[FormattedDateTime] Invalid value received:', {
+        value,
+        format,
+      });
+    }
+  }, [value, format]);
+
   // 日時の正規化（datetime-local形式やISO文字列をDateオブジェクトに変換）
   const normalizeDate = (dateValue: Date | string): Date | null => {
     let date: Date;
@@ -108,9 +118,17 @@ export function FormattedDateTime({
         return null;
       }
 
-      // datetime-local形式（YYYY-MM-DDTHH:mm）の場合
-      if (dateValue.includes('T') && !dateValue.includes('Z')) {
-        date = new Date(dateValue + ':00'); // 秒を追加
+      // datetime-local形式（YYYY-MM-DDTHH:mm）の場合 - 秒とタイムゾーンがない場合のみ
+      // ISO 8601タイムゾーンオフセット（+00:00 や -05:00）は除外する
+      const isDateTimeLocal =
+        dateValue.includes('T') &&
+        !dateValue.includes('Z') &&
+        !dateValue.includes('+') &&
+        !dateValue.match(/-\d{2}:\d{2}$/); // マイナスのタイムゾーンオフセットを除外
+
+      if (isDateTimeLocal && !dateValue.includes('.')) {
+        // 秒がない場合のみ ':00' を追加
+        date = new Date(dateValue + ':00');
       } else {
         date = new Date(dateValue);
       }
