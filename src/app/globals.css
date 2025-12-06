@@ -1,12 +1,12 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Leaflet Map Styles - must be before @tailwind in Next.js 16 */
+@import 'leaflet/dist/leaflet.css';
 
 /* 新カラーシステムv2のインポート */
 @import '../styles/color-system-v2.css';
 
-/* Leaflet Map Styles */
-@import 'leaflet/dist/leaflet.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /* カスタムアニメーション */
 @layer utilities {
