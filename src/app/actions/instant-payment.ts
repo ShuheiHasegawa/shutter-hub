@@ -4,7 +4,7 @@ import { logger } from '@/lib/utils/logger';
 import { stripe } from '@/lib/stripe/config';
 import { revalidatePath } from 'next/cache';
 import { requireAuthForAction } from '@/lib/auth/server-actions';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createServiceRoleClient } from '@/lib/supabase/server';
 import type {
   EscrowPayment,
   ConfirmDeliveryData,
@@ -25,13 +25,21 @@ export async function createEscrowPayment(
   ActionResult<{ clientSecret: string; escrowPayment: EscrowPayment }>
 > {
   try {
+    logger.info('createEscrowPayment サーバー側開始:', {
+      bookingId,
+      guestPhone,
+    });
+
     if (!stripe) {
+      logger.error('Stripe が初期化されていません');
       return { success: false, error: 'Stripe not initialized on server' };
     }
 
-    const supabase = await createClient();
+    // ゲストユーザーの決済処理のため、Service Role クライアントを使用してRLSをバイパス
+    const supabase = createServiceRoleClient();
 
     // 予約情報を取得
+    logger.info('予約情報取得中...', { bookingId });
     const { data: booking, error: bookingError } = await supabase
       .from('instant_bookings')
       .select('*')
@@ -39,8 +47,10 @@ export async function createEscrowPayment(
       .single();
 
     if (bookingError || !booking) {
+      logger.error('予約が見つかりません:', { bookingError, bookingId });
       return { success: false, error: '予約が見つかりません' };
     }
+    logger.info('予約情報取得成功:', { total_amount: booking.total_amount });
 
     // 既存のエスクロー決済確認
     const { data: existingPayment } = await supabase
@@ -50,10 +60,12 @@ export async function createEscrowPayment(
       .single();
 
     if (existingPayment && existingPayment.escrow_status !== 'pending') {
+      logger.warn('既に決済が処理されています:', { existingPayment });
       return { success: false, error: '既に決済が処理されています' };
     }
 
     // Stripe PaymentIntentを作成（エスクロー用）
+    logger.info('Stripe PaymentIntent作成開始...');
     const paymentIntent = await stripe.paymentIntents.create({
       amount: booking.total_amount,
       currency: 'jpy',
@@ -65,11 +77,15 @@ export async function createEscrowPayment(
         guest_phone: guestPhone,
       },
     });
+    logger.info('Stripe PaymentIntent作成成功:', {
+      paymentIntentId: paymentIntent.id,
+    });
 
     // エスクロー決済レコードを作成
     const autoConfirmAt = new Date();
     autoConfirmAt.setHours(autoConfirmAt.getHours() + 72); // 72時間後
 
+    logger.info('エスクロー決済レコード作成開始...');
     const { data: escrowPayment, error: escrowError } = await supabase
       .from('escrow_payments')
       .upsert({
@@ -89,9 +105,19 @@ export async function createEscrowPayment(
       .single();
 
     if (escrowError) {
-      logger.error('エスクロー決済作成エラー:', escrowError);
+      logger.error('エスクロー決済作成エラー（詳細）:', {
+        error: escrowError,
+        code: escrowError.code,
+        message: escrowError.message,
+        details: escrowError.details,
+        hint: escrowError.hint,
+      });
       return { success: false, error: 'エスクロー決済の作成に失敗しました' };
     }
+
+    logger.info('エスクロー決済作成成功:', {
+      escrowPaymentId: escrowPayment.id,
+    });
 
     return {
       success: true,
@@ -101,7 +127,7 @@ export async function createEscrowPayment(
       },
     };
   } catch (error) {
-    logger.error('エスクロー決済作成エラー:', error);
+    logger.error('エスクロー決済作成エラー（例外）:', error);
     return { success: false, error: '予期しないエラーが発生しました' };
   }
 }
@@ -113,7 +139,8 @@ export async function confirmEscrowPayment(
   paymentIntentId: string
 ): Promise<ActionResult<EscrowPayment>> {
   try {
-    const supabase = await createClient();
+    // ゲストユーザーの決済処理のため、Service Role クライアントを使用してRLSをバイパス
+    const supabase = createServiceRoleClient();
 
     // エスクロー決済を更新
     const { data: escrowPayment, error } = await supabase
@@ -141,14 +168,38 @@ export async function confirmEscrowPayment(
       })
       .eq('id', escrowPayment.booking_id);
 
-    // リクエストステータスを撮影中に更新
-    await supabase
-      .from('instant_photo_requests')
-      .update({
-        status: 'in_progress',
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', escrowPayment.booking_id);
+    // 対応するリクエストIDを取得してステータスを撮影中に更新
+    const { data: bookingForStatus, error: bookingForStatusError } =
+      await supabase
+        .from('instant_bookings')
+        .select('request_id')
+        .eq('id', escrowPayment.booking_id)
+        .single();
+
+    if (bookingForStatusError) {
+      logger.error('instant_bookings取得エラー (confirmEscrowPayment):', {
+        booking_id: escrowPayment.booking_id,
+        error: bookingForStatusError,
+      });
+    } else if (bookingForStatus?.request_id) {
+      const { error: requestStatusError } = await supabase
+        .from('instant_photo_requests')
+        .update({
+          status: 'in_progress',
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', bookingForStatus.request_id);
+
+      if (requestStatusError) {
+        logger.error(
+          'instant_photo_requestsステータス更新エラー (in_progress):',
+          {
+            request_id: bookingForStatus.request_id,
+            error: requestStatusError,
+          }
+        );
+      }
+    }
 
     // 決済完了通知を送信（カメラマンに通知）
     try {
@@ -519,15 +570,39 @@ export async function confirmDeliveryWithReview(
       })
       .eq('booking_id', data.booking_id);
 
-    // リクエストを完了状態に
-    await supabase
-      .from('instant_photo_requests')
-      .update({
-        status: 'completed',
-        completed_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', data.booking_id);
+    // 対応するリクエストIDを取得してリクエストを完了状態に
+    const { data: bookingForCompletion, error: bookingForCompletionError } =
+      await supabase
+        .from('instant_bookings')
+        .select('request_id')
+        .eq('id', data.booking_id)
+        .single();
+
+    if (bookingForCompletionError) {
+      logger.error('instant_bookings取得エラー (confirmDeliveryWithReview):', {
+        booking_id: data.booking_id,
+        error: bookingForCompletionError,
+      });
+    } else if (bookingForCompletion?.request_id) {
+      const { error: requestCompleteError } = await supabase
+        .from('instant_photo_requests')
+        .update({
+          status: 'completed',
+          completed_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', bookingForCompletion.request_id);
+
+      if (requestCompleteError) {
+        logger.error(
+          'instant_photo_requestsステータス更新エラー (completed):',
+          {
+            request_id: bookingForCompletion.request_id,
+            error: requestCompleteError,
+          }
+        );
+      }
+    }
 
     revalidatePath('/instant');
     return { success: true, data: undefined };
@@ -683,23 +758,46 @@ export async function processAutoConfirmations(): Promise<
           })
           .eq('id', payment.id);
 
-        // 関連する予約とリクエストを更新
-        await supabase
-          .from('instant_bookings')
-          .update({
-            payment_status: 'paid',
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', payment.booking_id);
+        // 関連する予約を更新
+        const { data: bookingForAuto, error: bookingForAutoError } =
+          await supabase
+            .from('instant_bookings')
+            .update({
+              payment_status: 'paid',
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', payment.booking_id)
+            .select('request_id')
+            .single();
 
-        await supabase
-          .from('instant_photo_requests')
-          .update({
-            status: 'completed',
-            completed_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', payment.booking_id);
+        if (bookingForAutoError) {
+          logger.error(
+            'instant_bookings更新エラー (processAutoConfirmations):',
+            {
+              booking_id: payment.booking_id,
+              error: bookingForAutoError,
+            }
+          );
+        } else if (bookingForAuto?.request_id) {
+          const { error: autoRequestStatusError } = await supabase
+            .from('instant_photo_requests')
+            .update({
+              status: 'completed',
+              completed_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', bookingForAuto.request_id);
+
+          if (autoRequestStatusError) {
+            logger.error(
+              'instant_photo_requestsステータス更新エラー (auto completed):',
+              {
+                request_id: bookingForAuto.request_id,
+                error: autoRequestStatusError,
+              }
+            );
+          }
+        }
 
         processedCount++;
       } catch (error) {
