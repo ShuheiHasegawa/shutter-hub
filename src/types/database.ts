@@ -21,6 +21,8 @@ export interface Profile {
   user_type: UserType;
   bio: string | null;
   location: string | null;
+  prefecture?: string | null;
+  city?: string | null;
   website: string | null;
   instagram_handle: string | null;
   twitter_handle: string | null;

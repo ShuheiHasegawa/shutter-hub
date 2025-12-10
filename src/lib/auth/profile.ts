@@ -10,6 +10,8 @@ export interface CreateProfileData {
   display_name?: string;
   bio?: string;
   location?: string;
+  prefecture?: string;
+  city?: string;
   website?: string;
   instagram_handle?: string;
   twitter_handle?: string;
@@ -254,6 +256,8 @@ export async function updateProfile(
       user_type: profileData.user_type,
       bio: profileData.bio,
       location: profileData.location,
+      prefecture: profileData.prefecture,
+      city: profileData.city,
       website: profileData.website,
       instagram_handle: profileData.instagram_handle,
       twitter_handle: profileData.twitter_handle,
