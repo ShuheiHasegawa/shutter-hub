@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 import { PhotoSessionCard } from './PhotoSessionCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
 import { getBulkFavoriteStatusAction } from '@/app/actions/favorites';
 import {
   Select,
@@ -26,7 +27,7 @@ import { LoadingState } from '@/components/ui/loading-state';
 import { SearchIcon, Loader2, Plus, Camera } from 'lucide-react';
 import Link from 'next/link';
 import { usePhotoSessions } from '@/hooks/usePhotoSessions';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth, useUserProfile } from '@/hooks/useAuth';
 import type { PhotoSessionWithOrganizer, BookingType } from '@/types/database';
 import { useTranslations } from 'next-intl';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -79,6 +80,9 @@ export function PhotoSessionList({
   >('start_time');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const { user: currentUser } = useAuth();
+  const { profile, loading: profileLoading } = useUserProfile();
+  const [filterByActivityLocation, setFilterByActivityLocation] =
+    useState(false);
   const [favoriteStates, setFavoriteStates] = useState<
     Record<string, { isFavorited: boolean; favoriteCount: number }>
   >({});
@@ -527,8 +531,101 @@ export function PhotoSessionList({
           >
             {t('sidebar.onlyAvailable')}
           </Label>
-        </div>
 
+          {/* 活動拠点で絞る（PC表示） */}
+          <div className="flex items-center gap-2 ml-4 border-l pl-4 border-gray-200 dark:border-gray-700">
+            <Checkbox
+              id="activity-location-header"
+              checked={filterByActivityLocation}
+              disabled={profileLoading} // 読み込み中は無効化
+              onCheckedChange={checked => {
+                const isChecked = checked === true;
+                logger.info('活動拠点フィルター変更:', {
+                  isChecked,
+                  profilePrefecture: profile?.prefecture,
+                  profileLoading,
+                });
+
+                if (isChecked) {
+                  if (!profile?.prefecture) {
+                    toast.error(
+                      'プロフィール設定で活動拠点（都道府県）を設定してください'
+                    );
+                    logger.warn('活動拠点フィルターエラー: 都道府県未設定');
+                    return;
+                  }
+
+                  // 都道府県でフィルタリング
+                  setFilterByActivityLocation(true);
+                  setLocationFilter(profile.prefecture);
+
+                  // 即座に検索実行
+                  setTimeout(() => {
+                    setAppliedFilters(prev => ({
+                      ...(prev || {
+                        keyword: '',
+                        location: '',
+                        priceMin: '',
+                        priceMax: '',
+                        dateFrom: '',
+                        dateTo: '',
+                        bookingTypes: [],
+                        participantsMin: '',
+                        participantsMax: '',
+                        onlyAvailable: false,
+                      }),
+                      location: profile.prefecture || '',
+                    }));
+                    setAppliedLocationFilter(profile.prefecture || '');
+                    setSessions([]);
+                    setHasMore(true);
+                    loadSessions(true);
+                  }, 0);
+                } else {
+                  // フィルタリング解除
+                  setFilterByActivityLocation(false);
+                  setLocationFilter('');
+
+                  setTimeout(() => {
+                    setAppliedFilters(prev => ({
+                      ...(prev || {
+                        keyword: '',
+                        location: '',
+                        priceMin: '',
+                        priceMax: '',
+                        dateFrom: '',
+                        dateTo: '',
+                        bookingTypes: [],
+                        participantsMin: '',
+                        participantsMax: '',
+                        onlyAvailable: false,
+                      }),
+                      location: '',
+                    }));
+                    setAppliedLocationFilter('');
+                    setSessions([]);
+                    setHasMore(true);
+                    loadSessions(true);
+                  }, 0);
+                }
+              }}
+            />
+            <Label
+              htmlFor="activity-location-header"
+              className={`text-sm font-normal cursor-pointer select-none flex items-center gap-1 ${profileLoading ? 'opacity-50' : ''}`}
+            >
+              <span>活動拠点で絞る</span>
+              {filterByActivityLocation && profile?.prefecture && (
+                <span className="text-xs text-muted-foreground ml-1">
+                  ({profile.prefecture})
+                </span>
+              )}
+              {profileLoading && (
+                <Loader2 className="h-3 w-3 animate-spin ml-1" />
+              )}
+            </Label>
+          </div>
+        </div>
         {/* 右側: 並び順と撮影会作成ボタン */}
         <div className="flex items-center gap-2 justify-end flex-1">
           {/* 並び順 */}
@@ -621,7 +718,15 @@ export function PhotoSessionList({
                   <Input
                     placeholder={t('list.locationPlaceholder')}
                     value={locationFilter}
-                    onChange={e => setLocationFilter(e.target.value)}
+                    onChange={e => {
+                      setLocationFilter(e.target.value);
+                      if (
+                        filterByActivityLocation &&
+                        e.target.value !== profile?.prefecture
+                      ) {
+                        setFilterByActivityLocation(false);
+                      }
+                    }}
                   />
                 </div>
 

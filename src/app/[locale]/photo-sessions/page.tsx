@@ -2,12 +2,10 @@
 
 import { Suspense, useState, useEffect } from 'react';
 import { PhotoSessionList } from '@/components/photo-sessions/PhotoSessionList';
-import { PhotoSessionsSidebar } from '@/components/layout/PhotoSessionsSidebar';
 import { CompactFilterBar } from '@/components/photo-sessions/CompactFilterBar';
 import { AuthenticatedLayout } from '@/components/layout/authenticated-layout';
 import { PageTitleHeader } from '@/components/ui/page-title-header';
-import { Button } from '@/components/ui/button';
-import { CameraIcon, SidebarClose } from 'lucide-react';
+import { CameraIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { BookingType } from '@/types/database';
 
@@ -118,8 +116,8 @@ export default function PhotoSessionsPage() {
           icon={<CameraIcon className="h-6 w-6" />}
         />
 
-        {/* スマホ・タブレット用コンパクトフィルター（XL画面未満のみ） */}
-        <div className="xl:hidden flex-shrink-0">
+        {/* コンパクトフィルター（全画面幅で表示：サイドバー一時廃止のため） */}
+        <div className="flex-shrink-0">
           <CompactFilterBar
             filters={filters}
             onFiltersChange={setFilters}
@@ -130,9 +128,15 @@ export default function PhotoSessionsPage() {
         </div>
 
         {/* メインコンテンツ */}
-        <div className="flex-1 min-h-0 xl:grid xl:grid-cols-[320px,1fr] xl:gap-6">
-          {/* デスクトップサイドバー（XL画面以上：常に表示） */}
-          <aside className="hidden xl:block">
+        <div className="flex-1 min-h-0">
+          {/* 
+            [サイドバー型フィルターの一時廃止]
+            スマホ以外の画面幅でも常にコンパクトフィルターを表示するため、
+            以下のサイドバーコンポーネントの表示を一時的に無効化しています。
+            コンポーネント自体は削除せず、将来的な復活に備えてコメントアウトしています。
+          */}
+          {/*
+          <aside className="hidden xl:block w-[320px] flex-shrink-0 mr-6">
             <div className="sticky top-6 max-h-[calc(100vh-3rem)] overflow-y-auto sidebar-scroll">
               <PhotoSessionsSidebar
                 filters={filters}
@@ -143,8 +147,10 @@ export default function PhotoSessionsPage() {
               />
             </div>
           </aside>
+          */}
 
-          {/* モバイル・タブレットサイドバー（XL画面未満でのオーバーレイ） */}
+          {/* モバイル・タブレットサイドバー（XL画面未満でのオーバーレイ） - 一時無効化 */}
+          {/*
           {sidebarOpen && (
             <div
               className="xl:hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
@@ -179,6 +185,7 @@ export default function PhotoSessionsPage() {
               </aside>
             </div>
           )}
+          */}
 
           {/* メインコンテンツエリア */}
           <main className="min-w-0 flex flex-col flex-1 min-h-0 overflow-hidden">
