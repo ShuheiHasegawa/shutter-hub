@@ -43,6 +43,7 @@ import { getCurrentUsername } from '@/app/actions/username';
 import { logger } from '@/lib/utils/logger';
 import { User, Camera, AtSign } from 'lucide-react';
 import { OrganizerModelManagement } from '@/components/profile/organizer/OrganizerModelManagement';
+import { PREFECTURES } from '@/constants/japan';
 
 const profileEditSchema = z.object({
   user_type: z.enum(['model', 'photographer', 'organizer']),
@@ -54,10 +55,8 @@ const profileEditSchema = z.object({
     .string()
     .max(500, '自己紹介は500文字以内で入力してください')
     .optional(),
-  location: z
-    .string()
-    .max(100, '所在地は100文字以内で入力してください')
-    .optional(),
+  prefecture: z.string().optional(),
+  city: z.string().max(50, '市区町村は50文字以内で入力してください').optional(),
   website: z
     .string()
     .url('有効なURLを入力してください')
@@ -88,7 +87,8 @@ interface ProfileEditFormProps {
     email: string;
     avatar_url: string | null;
     bio: string | null;
-    location: string | null;
+    prefecture?: string | null;
+    city?: string | null;
     website: string | null;
     instagram_handle: string | null;
     twitter_handle: string | null;
@@ -119,7 +119,8 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
         'model',
       display_name: profile.display_name || '',
       bio: profile.bio || '',
-      location: profile.location || '',
+      prefecture: profile.prefecture || '',
+      city: profile.city || '',
       website: profile.website || '',
       instagram_handle: profile.instagram_handle || '',
       twitter_handle: profile.twitter_handle || '',
@@ -476,22 +477,60 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="location"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>所在地</FormLabel>
-                  <FormControl>
-                    <Input placeholder="東京都渋谷区" {...field} />
-                  </FormControl>
-                  <FormDescription>
-                    活動エリアの参考として表示されます。
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {/* 活動拠点 */}
+            <div className="space-y-4">
+              <FormLabel>活動拠点</FormLabel>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="prefecture"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm text-muted-foreground">
+                        都道府県
+                      </FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value || ''}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="都道府県を選択" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {PREFECTURES.map(pref => (
+                            <SelectItem key={pref} value={pref}>
+                              {pref}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="city"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm text-muted-foreground">
+                        市区町村（任意）
+                      </FormLabel>
+                      <FormControl>
+                        <Input placeholder="渋谷区、横浜市など" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <FormDescription>
+                活動エリアの参考として表示されます。
+              </FormDescription>
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField

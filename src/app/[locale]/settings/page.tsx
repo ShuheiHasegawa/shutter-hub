@@ -31,7 +31,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
+// import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -458,15 +458,17 @@ export default function SettingsPage() {
               通知設定
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-8">
             {/* 通知方法 */}
             <div className="space-y-4">
-              <h3 className="text-lg font-medium">通知方法</h3>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Mail className="h-4 w-4" />
-                    <Label>メール通知</Label>
+              <h3 className="text-base font-semibold border-b pb-2">
+                通知方法
+              </h3>
+              <div className="space-y-4 pl-4">
+                <div className="flex items-center justify-between py-2">
+                  <div className="flex items-center gap-3">
+                    <Mail className="h-4 w-4 text-muted-foreground" />
+                    <Label className="font-normal">メール通知</Label>
                   </div>
                   <Switch
                     checked={settings.emailNotifications}
@@ -475,10 +477,10 @@ export default function SettingsPage() {
                     }
                   />
                 </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Smartphone className="h-4 w-4" />
-                    <Label>プッシュ通知</Label>
+                <div className="flex items-center justify-between py-2">
+                  <div className="flex items-center gap-3">
+                    <Smartphone className="h-4 w-4 text-muted-foreground" />
+                    <Label className="font-normal">プッシュ通知</Label>
                   </div>
                   <Switch
                     checked={settings.pushNotifications}
@@ -487,11 +489,11 @@ export default function SettingsPage() {
                     }
                   />
                 </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Bell className="h-4 w-4" />
+                <div className="flex items-center justify-between py-2">
+                  <div className="flex items-center gap-3">
+                    <Bell className="h-4 w-4 text-muted-foreground" />
                     <div>
-                      <Label>トースト通知</Label>
+                      <Label className="font-normal">トースト通知</Label>
                       <p className="text-xs text-muted-foreground">
                         画面上部に通知を表示
                       </p>
@@ -504,13 +506,13 @@ export default function SettingsPage() {
                     }
                   />
                 </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <RefreshCcw className="h-4 w-4" />
+                <div className="flex items-center justify-between py-2">
+                  <div className="flex items-center gap-3">
+                    <RefreshCcw className="h-4 w-4 text-muted-foreground" />
                     <div>
-                      <Label>リアルタイム通知</Label>
+                      <Label className="font-normal">リアルタイム通知</Label>
                       <p className="text-xs text-muted-foreground">
-                        データベース変更をリアルタイムで受信（オフの場合は30秒ごとに更新）
+                        データベース変更をリアルタイムで受信
                       </p>
                     </div>
                   </div>
@@ -524,14 +526,14 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            <Separator />
-
             {/* 通知種別 */}
             <div className="space-y-4">
-              <h3 className="text-lg font-medium">通知種別</h3>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <Label>予約リマインダー</Label>
+              <h3 className="text-base font-semibold border-b pb-2">
+                通知種別
+              </h3>
+              <div className="space-y-4 pl-4">
+                <div className="flex items-center justify-between py-2">
+                  <Label className="font-normal">予約リマインダー</Label>
                   <Switch
                     checked={settings.bookingReminders}
                     onCheckedChange={checked =>
@@ -540,8 +542,8 @@ export default function SettingsPage() {
                   />
                 </div>
                 {profile.user_type === 'photographer' && (
-                  <div className="flex items-center justify-between">
-                    <Label>即座撮影リクエスト</Label>
+                  <div className="flex items-center justify-between py-2">
+                    <Label className="font-normal">即座撮影リクエスト</Label>
                     <Switch
                       checked={settings.instantRequests}
                       onCheckedChange={checked =>
@@ -550,8 +552,8 @@ export default function SettingsPage() {
                     />
                   </div>
                 )}
-                <div className="flex items-center justify-between">
-                  <Label>メッセージ通知</Label>
+                <div className="flex items-center justify-between py-2">
+                  <Label className="font-normal">メッセージ通知</Label>
                   <Switch
                     checked={settings.messageNotifications}
                     onCheckedChange={checked =>
@@ -559,8 +561,8 @@ export default function SettingsPage() {
                     }
                   />
                 </div>
-                <div className="flex items-center justify-between">
-                  <Label>システム更新</Label>
+                <div className="flex items-center justify-between py-2">
+                  <Label className="font-normal">システム更新</Label>
                   <Switch
                     checked={settings.systemUpdates}
                     onCheckedChange={checked =>
@@ -568,8 +570,8 @@ export default function SettingsPage() {
                     }
                   />
                 </div>
-                <div className="flex items-center justify-between">
-                  <Label>マーケティングメール</Label>
+                <div className="flex items-center justify-between py-2">
+                  <Label className="font-normal">マーケティングメール</Label>
                   <Switch
                     checked={settings.marketingEmails}
                     onCheckedChange={checked =>
@@ -591,16 +593,16 @@ export default function SettingsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>プロフィール表示</Label>
+            <div className="space-y-4 pl-4">
+              <div className="space-y-3 py-2">
+                <Label className="font-normal">プロフィール表示</Label>
                 <Select
                   value={settings.profileVisibility}
                   onValueChange={(value: string) =>
                     handleSettingChange('profileVisibility', value)
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="max-w-xs">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -613,8 +615,8 @@ export default function SettingsPage() {
                 </Select>
               </div>
 
-              <div className="flex items-center justify-between">
-                <Label>位置情報を表示</Label>
+              <div className="flex items-center justify-between py-2">
+                <Label className="font-normal">位置情報を表示</Label>
                 <Switch
                   checked={settings.showLocation}
                   onCheckedChange={checked =>
@@ -623,8 +625,8 @@ export default function SettingsPage() {
                 />
               </div>
 
-              <div className="flex items-center justify-between">
-                <Label>オンライン状態を表示</Label>
+              <div className="flex items-center justify-between py-2">
+                <Label className="font-normal">オンライン状態を表示</Label>
                 <Switch
                   checked={settings.showOnlineStatus}
                   onCheckedChange={checked =>
@@ -633,8 +635,10 @@ export default function SettingsPage() {
                 />
               </div>
 
-              <div className="flex items-center justify-between">
-                <Label>ダイレクトメッセージを許可</Label>
+              <div className="flex items-center justify-between py-2">
+                <Label className="font-normal">
+                  ダイレクトメッセージを許可
+                </Label>
                 <Switch
                   checked={settings.allowDirectMessages}
                   onCheckedChange={checked =>
@@ -658,63 +662,69 @@ export default function SettingsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              {profile.user_type === 'photographer' && (
-                <>
-                  <div className="flex items-center justify-between">
-                    <Label>即座撮影を受け付ける</Label>
+              <div className="space-y-4 pl-4">
+                {profile.user_type === 'photographer' && (
+                  <>
+                    <div className="flex items-center justify-between py-2">
+                      <Label className="font-normal">
+                        即座撮影を受け付ける
+                      </Label>
+                      <Switch
+                        checked={settings.instantPhotoAvailable}
+                        onCheckedChange={checked =>
+                          handleSettingChange('instantPhotoAvailable', checked)
+                        }
+                      />
+                    </div>
+
+                    <div className="space-y-3 py-2">
+                      <Label className="font-normal">最大移動距離（km）</Label>
+                      <Select
+                        value={settings.maxTravelDistance.toString()}
+                        onValueChange={(value: string) =>
+                          handleSettingChange(
+                            'maxTravelDistance',
+                            parseInt(value)
+                          )
+                        }
+                      >
+                        <SelectTrigger className="max-w-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="5">5km</SelectItem>
+                          <SelectItem value="10">10km</SelectItem>
+                          <SelectItem value="20">20km</SelectItem>
+                          <SelectItem value="50">50km</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </>
+                )}
+
+                {profile.user_type === 'organizer' && (
+                  <div className="flex items-center justify-between py-2">
+                    <Label className="font-normal">予約を自動承認</Label>
                     <Switch
-                      checked={settings.instantPhotoAvailable}
+                      checked={settings.autoAcceptBookings}
                       onCheckedChange={checked =>
-                        handleSettingChange('instantPhotoAvailable', checked)
+                        handleSettingChange('autoAcceptBookings', checked)
                       }
                     />
                   </div>
+                )}
 
-                  <div className="space-y-2">
-                    <Label>最大移動距離（km）</Label>
-                    <Select
-                      value={settings.maxTravelDistance.toString()}
-                      onValueChange={(value: string) =>
-                        handleSettingChange(
-                          'maxTravelDistance',
-                          parseInt(value)
-                        )
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="5">5km</SelectItem>
-                        <SelectItem value="10">10km</SelectItem>
-                        <SelectItem value="20">20km</SelectItem>
-                        <SelectItem value="50">50km</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </>
-              )}
-
-              {profile.user_type === 'organizer' && (
-                <div className="flex items-center justify-between">
-                  <Label>予約を自動承認</Label>
+                <div className="flex items-center justify-between py-2">
+                  <Label className="font-normal">
+                    写真公開前に同意を必須とする
+                  </Label>
                   <Switch
-                    checked={settings.autoAcceptBookings}
+                    checked={settings.requirePhotoConsent}
                     onCheckedChange={checked =>
-                      handleSettingChange('autoAcceptBookings', checked)
+                      handleSettingChange('requirePhotoConsent', checked)
                     }
                   />
                 </div>
-              )}
-
-              <div className="flex items-center justify-between">
-                <Label>写真公開前に同意を必須とする</Label>
-                <Switch
-                  checked={settings.requirePhotoConsent}
-                  onCheckedChange={checked =>
-                    handleSettingChange('requirePhotoConsent', checked)
-                  }
-                />
               </div>
             </CardContent>
           </Card>
@@ -729,11 +739,11 @@ export default function SettingsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>テーマ</Label>
+            <div className="space-y-4 pl-4">
+              <div className="space-y-3 py-2">
+                <Label className="font-normal">テーマ</Label>
                 <Select value={theme} onValueChange={setTheme}>
-                  <SelectTrigger>
+                  <SelectTrigger className="max-w-xs">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -754,15 +764,15 @@ export default function SettingsPage() {
                 </Select>
               </div>
 
-              <div className="space-y-2">
-                <Label>言語</Label>
+              <div className="space-y-3 py-2">
+                <Label className="font-normal">言語</Label>
                 <Select
                   value={settings.language}
                   onValueChange={value =>
                     handleSettingChange('language', value)
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="max-w-xs">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -772,15 +782,15 @@ export default function SettingsPage() {
                 </Select>
               </div>
 
-              <div className="space-y-2">
-                <Label>タイムゾーン</Label>
+              <div className="space-y-3 py-2">
+                <Label className="font-normal">タイムゾーン</Label>
                 <Select
                   value={settings.timezone}
                   onValueChange={value =>
                     handleSettingChange('timezone', value)
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="max-w-xs">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -793,15 +803,15 @@ export default function SettingsPage() {
                 </Select>
               </div>
 
-              <div className="space-y-2">
-                <Label>通貨</Label>
+              <div className="space-y-3 py-2">
+                <Label className="font-normal">通貨</Label>
                 <Select
                   value={settings.currency}
                   onValueChange={(value: string) =>
                     handleSettingChange('currency', value)
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="max-w-xs">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -824,10 +834,10 @@ export default function SettingsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
+            <div className="space-y-4 pl-4">
+              <div className="flex items-center justify-between py-2">
                 <div>
-                  <Label>二段階認証</Label>
+                  <Label className="font-normal">二段階認証</Label>
                   <p className="text-sm text-muted-foreground">
                     アカウントのセキュリティを強化
                   </p>
