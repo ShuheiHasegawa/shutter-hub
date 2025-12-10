@@ -28,6 +28,14 @@ export const routing = defineRouting({
       ja: '/dashboard',
       en: '/dashboard',
     },
+    '/calendar': {
+      ja: '/calendar',
+      en: '/calendar',
+    },
+    '/favorites': {
+      ja: '/favorites',
+      en: '/favorites',
+    },
     '/instant': {
       ja: '/instant',
       en: '/instant',
@@ -99,6 +107,18 @@ export const routing = defineRouting({
     '/cookies': {
       ja: '/cookies',
       en: '/cookies',
+    },
+    '/lp-v1': {
+      ja: '/lp-v1',
+      en: '/lp-v1',
+    },
+    '/lp-v2': {
+      ja: '/lp-v2',
+      en: '/lp-v2',
+    },
+    '/lp-v3': {
+      ja: '/lp-v3',
+      en: '/lp-v3',
     },
   },
 });

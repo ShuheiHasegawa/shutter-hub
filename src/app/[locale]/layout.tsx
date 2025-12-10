@@ -12,6 +12,7 @@ import { notFound } from 'next/navigation';
 import '../globals.css';
 import { ThemeProvider } from '@/components/providers/theme-provider';
 import { SWRProvider } from '@/components/providers/swr-provider';
+import { PullToRefreshProvider } from '@/components/providers/pull-to-refresh-provider';
 import { Toaster } from '@/components/ui/toaster';
 import { enableQueryStatistics } from '@/lib/supabase/query-wrapper';
 
@@ -139,7 +140,7 @@ export default async function LocaleLayout({
               enableSystem
               disableTransitionOnChange
             >
-              {children}
+              <PullToRefreshProvider>{children}</PullToRefreshProvider>
               <Toaster />
             </ThemeProvider>
           </SWRProvider>

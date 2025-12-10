@@ -544,7 +544,7 @@ export function PhotoSessionDetail({
             {/* スマホ表示: 縦並びレイアウト */}
             <div className="flex flex-col space-y-4 md:hidden">
               <div className="flex items-center gap-2">
-                <BackButton href="/photo-sessions" />
+                <BackButton />
                 <CardTitle className="text-lg leading-tight">
                   {session.title}
                 </CardTitle>
@@ -566,7 +566,7 @@ export function PhotoSessionDetail({
             {/* デスクトップ表示: 横並びレイアウト */}
             <div className="hidden md:flex justify-between items-start">
               <div className="flex items-center gap-2">
-                <BackButton href="/photo-sessions" />
+                <BackButton />
                 <CardTitle className="text-2xl">{session.title}</CardTitle>
               </div>
               <div className="flex items-center gap-2">
@@ -717,7 +717,7 @@ export function PhotoSessionDetail({
             {/* スマホ表示: 縦並びレイアウト */}
             <div className="flex flex-col space-y-4 md:hidden">
               <div className="flex items-center gap-2">
-                <BackButton href="/photo-sessions" />
+                <BackButton />
                 <CardTitle className="text-lg leading-tight">
                   {session.title}
                 </CardTitle>
@@ -739,7 +739,7 @@ export function PhotoSessionDetail({
             {/* デスクトップ表示: 横並びレイアウト */}
             <div className="hidden md:flex justify-between items-start">
               <div className="flex items-center gap-2">
-                <BackButton href="/photo-sessions" />
+                <BackButton />
                 <CardTitle className="text-2xl">{session.title}</CardTitle>
               </div>
               <div className="flex items-center gap-2">
