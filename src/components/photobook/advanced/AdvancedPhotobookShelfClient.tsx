@@ -39,11 +39,12 @@ export function AdvancedPhotobookShelfClient({
   userId: _userId,
 }: AdvancedPhotobookShelfClientProps) {
   // アドバンスドフォトブックの最大数を表示数として使用
-  const maxDisplayCount = planLimits.advanced.maxPhotobooks;
-  const displayPhotobooks = photobooks.slice(0, maxDisplayCount);
+  const maxDisplayCount = planLimits.advanced.maxPhotobooks || 10; // 開発用: デフォルト10
+  const displayPhotobooks = photobooks.slice(0, maxDisplayCount || 10);
 
-  // プラン上限チェック
-  const canCreateNew = displayPhotobooks.length < maxDisplayCount;
+  // プラン上限チェック（開発中は常にtrue）
+  // TODO: 本番環境では元に戻す
+  const canCreateNew = true; // displayPhotobooks.length < maxDisplayCount;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

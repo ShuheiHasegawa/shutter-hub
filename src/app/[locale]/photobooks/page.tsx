@@ -8,8 +8,8 @@ import {
   getPhotobookPlanLimits,
 } from '@/app/actions/quick-photobook';
 import { getCurrentUser } from '@/lib/auth/server';
-import { QuickPhotobookShelfClient } from '@/components/photobook/QuickPhotobookShelfClient';
-import { AdvancedPhotobookShelfClient } from '@/components/photobook/AdvancedPhotobookShelfClient';
+import { QuickPhotobookShelfClient } from '@/components/photobook/quick/QuickPhotobookShelfClient';
+import { AdvancedPhotobookShelfClient } from '@/components/photobook/advanced/AdvancedPhotobookShelfClient';
 
 /**
  * アドバンスドフォトブック本棚コンポーネント

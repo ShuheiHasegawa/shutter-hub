@@ -40,7 +40,7 @@ import {
   removePhotobookImage,
   reorderPhotobookImages,
 } from '@/app/actions/quick-photobook-images';
-import { PhotobookPageLimitDisplay } from './PhotobookPlanGate';
+import { PhotobookPageLimitDisplay } from '../common/PhotobookPlanGate';
 import { logger } from '@/lib/utils/logger';
 import { toast } from 'sonner';
 

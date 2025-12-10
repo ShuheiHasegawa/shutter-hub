@@ -6,7 +6,7 @@ import {
   getPhotobook,
   getPhotobookImages,
 } from '@/app/actions/quick-photobook';
-import { QuickPhotobookViewer } from '@/components/photobook/QuickPhotobookViewer';
+import { QuickPhotobookViewer } from '@/components/photobook/quick/QuickPhotobookViewer';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 

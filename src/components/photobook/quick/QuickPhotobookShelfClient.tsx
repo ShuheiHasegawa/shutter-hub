@@ -18,7 +18,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { DeletePhotobookDialog } from '@/components/photobook/DeletePhotobookDialog';
+import { DeletePhotobookDialog } from '../common/DeletePhotobookDialog';
 import type {
   PhotobookListItem,
   PhotobookPlanLimits,

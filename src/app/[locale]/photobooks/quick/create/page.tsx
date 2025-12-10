@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import { getCurrentUser } from '@/lib/auth/server';
 import { checkPhotobookCreationLimit } from '@/app/actions/quick-photobook';
-import { QuickPhotobookCreateForm } from '@/components/photobook/QuickPhotobookCreateForm';
+import { QuickPhotobookCreateForm } from '@/components/photobook/quick/QuickPhotobookCreateForm';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageTitleHeader } from '@/components/ui/page-title-header';
 import { Button } from '@/components/ui/button';

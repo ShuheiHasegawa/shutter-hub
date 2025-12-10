@@ -26,7 +26,7 @@ import {
   checkPhotobookCreationLimit,
   getPhotobookPlanLimits,
 } from '@/app/actions/quick-photobook';
-import { PhotobookCreateLimitDisplay } from './PhotobookPlanGate';
+import { PhotobookCreateLimitDisplay } from '../common/PhotobookPlanGate';
 import { PlanLimitCheck, PhotobookPlanLimits } from '@/types/quick-photobook';
 import { logger } from '@/lib/utils/logger';
 import { toast } from 'sonner';

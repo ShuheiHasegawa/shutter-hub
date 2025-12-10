@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 
 // PhotobookEditorを動的インポートして水和エラーを回避
 const PhotobookEditor = dynamic(
-  () => import('@/components/photobook/editor/PhotobookEditor'),
+  () => import('@/components/photobook/advanced/editor/PhotobookEditor'),
   {
     ssr: false,
     loading: () => (

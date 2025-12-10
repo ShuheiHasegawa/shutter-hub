@@ -16,11 +16,11 @@ import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { Photobook, PhotobookImage } from '@/types/quick-photobook';
 import { QuickPhotobookPreview } from './QuickPhotobookPreview';
-import { PhotobookPreviewModal } from './PhotobookPreviewModal';
+import { PhotobookPreviewModal } from '../common/PhotobookPreviewModal';
 import { updatePhotobook } from '@/app/actions/quick-photobook';
 import { logger } from '@/lib/utils/logger';
 import { toast } from 'sonner';
-import { BackButton } from '../ui/back-button';
+import { BackButton } from '@/components/ui/back-button';
 import { FormattedDateTime } from '@/components/ui/formatted-display';
 
 /**
