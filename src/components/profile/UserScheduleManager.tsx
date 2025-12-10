@@ -3,6 +3,7 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/routing';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -427,18 +428,11 @@ export function UserScheduleManager({
     });
   }, [userSlots]);
 
-  // 日付クリック処理
-  const handleDateClick = useCallback(
-    async (date: Date) => {
-      if (!isOwnProfile) return; // 編集は本人のみ
-
-      setSelectedDate(date);
-      setShowModal(true);
-      setEditingSlot(null);
-      setIsCreating(false);
-    },
-    [isOwnProfile]
-  );
+  // 日付クリック処理（閲覧専用: 詳細ダイアログを開く）
+  const handleDateClick = useCallback(async (date: Date) => {
+    setSelectedDate(date);
+    setShowMemoDialog(true); // 常に閲覧専用ダイアログを開く
+  }, []);
 
   // 選択された日の時間枠取得
   const getSelectedDateSlots = useCallback((): TimeSlot[] => {
@@ -681,15 +675,21 @@ export function UserScheduleManager({
 
   return (
     <div>
-      {/* アクセス権限チェック */}
-      {!isOwnProfile && (
-        <Alert>
-          <AlertCircle className="h-5 w-5 text-amber-500" />
-          <AlertDescription>
-            他のユーザーのスケジュールは閲覧のみ可能です
-          </AlertDescription>
-        </Alert>
-      )}
+      {/* 閲覧専用の案内 */}
+      <Alert className="mb-4">
+        <AlertCircle className="h-5 w-5 text-blue-500" />
+        <AlertDescription className="flex flex-col sm:flex-row sm:items-center gap-2">
+          <span>このページではスケジュールの確認のみ可能です。</span>
+          {isOwnProfile && (
+            <Link
+              href="/calendar"
+              className="text-blue-600 hover:underline font-medium"
+            >
+              空き時間の編集はカレンダーページへ →
+            </Link>
+          )}
+        </AlertDescription>
+      </Alert>
 
       {/* メインカレンダー */}
       <Card>
@@ -836,39 +836,6 @@ export function UserScheduleManager({
                       </div>
                     )}
                   </div>
-                  {isOwnProfile && (
-                    <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-                      <Button
-                        variant="neutral"
-                        size="sm"
-                        className="text-xs px-2 py-1 sm:text-sm sm:px-3 sm:py-2"
-                        onClick={() => {
-                          // 日付文字列から正確にDateオブジェクトを作成（タイムゾーン問題を回避）
-                          const [year, month, day] = slot.date
-                            .split('-')
-                            .map(Number);
-                          setSelectedDate(new Date(year, month - 1, day));
-                          setEditingSlot(slot);
-                          setFormData({
-                            startTime: slot.startTime,
-                            endTime: slot.endTime,
-                            notes: slot.notes || '',
-                          });
-                          setShowModal(true);
-                        }}
-                      >
-                        編集
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        className="text-xs px-2 py-1 sm:text-sm sm:px-3 sm:py-2"
-                        onClick={() => handleDeleteSlot(slot.id)}
-                      >
-                        削除
-                      </Button>
-                    </div>
-                  )}
                 </div>
               ))
             )}

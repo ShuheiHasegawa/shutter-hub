@@ -71,7 +71,7 @@ export function Sidebar({ className }: SidebarProps) {
   };
 
   const navigate = (href: string) => {
-    router.push(href);
+    router.push(href as '/dashboard'); // Type assertion for dynamic routes
   };
 
   const navItems: NavItem[] = [
@@ -79,6 +79,11 @@ export function Sidebar({ className }: SidebarProps) {
       title: t('dashboard'),
       href: '/dashboard',
       icon: Home,
+    },
+    {
+      title: 'カレンダー',
+      href: '/calendar',
+      icon: Calendar,
     },
     {
       title: t('instant'),
@@ -299,7 +304,7 @@ export function MobileSidebarTrigger() {
   };
 
   const navigate = (href: string) => {
-    router.push(href);
+    router.push(href as '/dashboard'); // Type assertion for dynamic routes
   };
 
   const navItems: NavItem[] = [
@@ -307,6 +312,11 @@ export function MobileSidebarTrigger() {
       title: t('dashboard'),
       href: '/dashboard',
       icon: Home,
+    },
+    {
+      title: 'カレンダー',
+      href: '/calendar',
+      icon: Calendar,
     },
     {
       title: t('instant'),

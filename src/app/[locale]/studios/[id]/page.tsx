@@ -43,6 +43,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Building2,
+  Train,
 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
@@ -364,12 +365,12 @@ export default function StudioDetailPage() {
         {/* 概要 ｜ スタジオ情報 */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           {/* 左側：概要 */}
-          <div>
-            <Card>
+          <div className="flex">
+            <Card className="flex-1 flex flex-col">
               <CardHeader>
                 <CardTitle className="text-xl">概要</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="flex-1">
                 {studio.description ? (
                   <p className="text-theme-text-primary leading-relaxed">
                     {studio.description}
@@ -384,108 +385,128 @@ export default function StudioDetailPage() {
           </div>
 
           {/* 右側：スタジオ情報 */}
-          <div>
-            <Card>
+          <div className="flex">
+            <Card className="flex-1 flex flex-col">
               <CardHeader>
                 <CardTitle className="text-xl">スタジオ情報</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex items-start gap-2">
-                    <MapPin className="w-4 h-4 mt-1 text-theme-text-muted flex-shrink-0" />
+              <CardContent className="flex-1 flex flex-col">
+                {/* 基本情報 */}
+                <div className="space-y-4 flex-1">
+                  {/* 住所 */}
+                  <div className="flex items-start gap-3">
+                    <MapPin className="w-4 h-4 mt-0.5 text-theme-primary flex-shrink-0" />
                     <div>
                       <p className="text-sm text-theme-text-secondary">住所</p>
-                      <p className="font-medium">{studio.address}</p>
+                      <p className="font-medium text-theme-text-primary">
+                        {studio.address}
+                      </p>
                     </div>
                   </div>
 
+                  {/* アクセス */}
                   {studio.access_info && (
-                    <div className="mt-2">
-                      <p className="text-sm text-theme-text-secondary">
-                        アクセス
+                    <div className="flex items-start gap-3">
+                      <Train className="w-4 h-4 mt-0.5 text-theme-primary flex-shrink-0" />
+                      <div>
+                        <p className="text-sm text-theme-text-secondary">
+                          アクセス
+                        </p>
+                        <p className="text-sm text-theme-text-primary">
+                          {studio.access_info}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 料金 */}
+                  <div className="flex items-start gap-3">
+                    <DollarSign className="w-4 h-4 mt-0.5 text-theme-primary flex-shrink-0" />
+                    <div>
+                      <p className="text-sm text-theme-text-secondary">料金</p>
+                      <p className="font-medium text-theme-text-primary">
+                        {formatPriceRange()}
                       </p>
-                      <p className="text-sm">{studio.access_info}</p>
+                    </div>
+                  </div>
+
+                  {/* 最大収容人数 */}
+                  {studio.max_capacity && (
+                    <div className="flex items-start gap-3">
+                      <Users className="w-4 h-4 mt-0.5 text-theme-primary flex-shrink-0" />
+                      <div>
+                        <p className="text-sm text-theme-text-secondary">
+                          最大収容人数
+                        </p>
+                        <p className="font-medium text-theme-text-primary">
+                          {studio.max_capacity}名
+                        </p>
+                      </div>
                     </div>
                   )}
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <DollarSign className="w-4 h-4 text-theme-text-muted" />
-                  <div>
-                    <p className="text-sm text-theme-text-secondary">料金</p>
-                    <p className="font-medium">{formatPriceRange()}</p>
-                  </div>
-                </div>
-
-                {studio.max_capacity && (
-                  <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4 text-theme-text-muted" />
-                    <div>
-                      <p className="text-sm text-theme-text-secondary">
-                        最大収容人数
-                      </p>
-                      <p className="font-medium">{studio.max_capacity}名</p>
-                    </div>
+                {/* 設備バッジ */}
+                {(studio.parking_available || studio.wifi_available) && (
+                  <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-theme-neutral/10">
+                    {studio.parking_available && (
+                      <Badge
+                        variant="outline"
+                        className="flex items-center gap-1.5"
+                      >
+                        <Truck className="w-3.5 h-3.5" />
+                        駐車場あり
+                      </Badge>
+                    )}
+                    {studio.wifi_available && (
+                      <Badge
+                        variant="outline"
+                        className="flex items-center gap-1.5"
+                      >
+                        <Wifi className="w-3.5 h-3.5" />
+                        Wi-Fi完備
+                      </Badge>
+                    )}
                   </div>
                 )}
 
-                {/* 設備アイコン */}
-                <div className="flex gap-4 pt-2">
-                  {studio.parking_available && (
-                    <div className="flex items-center gap-1 text-sm text-green-600">
-                      <Truck className="w-4 h-4" />
-                      <span>駐車場</span>
-                    </div>
-                  )}
-                  {studio.wifi_available && (
-                    <div className="flex items-center gap-1 text-sm text-blue-600">
-                      <Wifi className="w-4 h-4" />
-                      <span>Wi-Fi</span>
-                    </div>
-                  )}
-                </div>
-
                 {/* 連絡先 */}
                 {(studio.phone || studio.email || studio.website_url) && (
-                  <div className="pt-4 border-t border-theme-neutral/20">
-                    <h4 className="font-medium mb-3">連絡先</h4>
-                    <div className="space-y-2">
+                  <div className="mt-4 pt-4 border-t border-theme-neutral/10">
+                    <h4 className="font-medium text-sm text-theme-text-secondary mb-3">
+                      連絡先
+                    </h4>
+                    <div className="flex flex-wrap gap-3">
                       {studio.phone && (
-                        <div className="flex items-center gap-2">
-                          <Phone className="w-4 h-4 text-theme-text-muted" />
-                          <a
-                            href={`tel:${studio.phone}`}
-                            className="text-blue-600 hover:underline"
-                          >
-                            {studio.phone}
-                          </a>
-                        </div>
+                        <a
+                          href={`tel:${studio.phone}`}
+                          className="flex items-center gap-2 px-3 py-2 rounded-lg bg-theme-surface/50 border border-theme-neutral/10 hover:border-theme-primary/30 transition-colors"
+                        >
+                          <Phone className="w-4 h-4 text-theme-primary" />
+                          <span className="text-sm">{studio.phone}</span>
+                        </a>
                       )}
 
                       {studio.email && (
-                        <div className="flex items-center gap-2">
-                          <Mail className="w-4 h-4 text-theme-text-muted" />
-                          <a
-                            href={`mailto:${studio.email}`}
-                            className="text-blue-600 hover:underline"
-                          >
-                            {studio.email}
-                          </a>
-                        </div>
+                        <a
+                          href={`mailto:${studio.email}`}
+                          className="flex items-center gap-2 px-3 py-2 rounded-lg bg-theme-surface/50 border border-theme-neutral/10 hover:border-theme-primary/30 transition-colors"
+                        >
+                          <Mail className="w-4 h-4 text-theme-primary" />
+                          <span className="text-sm">{studio.email}</span>
+                        </a>
                       )}
 
                       {studio.website_url && (
-                        <div className="flex items-center gap-2">
-                          <Globe className="w-4 h-4 text-theme-text-muted" />
-                          <a
-                            href={studio.website_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:underline"
-                          >
-                            ウェブサイト
-                          </a>
-                        </div>
+                        <a
+                          href={studio.website_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 px-3 py-2 rounded-lg bg-theme-surface/50 border border-theme-neutral/10 hover:border-theme-primary/30 transition-colors"
+                        >
+                          <Globe className="w-4 h-4 text-theme-primary" />
+                          <span className="text-sm">ウェブサイト</span>
+                        </a>
                       )}
                     </div>
                   </div>

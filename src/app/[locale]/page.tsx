@@ -42,7 +42,7 @@ export default function HomePage() {
                 <div
                   className="absolute inset-0 bg-cover bg-center bg-no-repeat"
                   style={{
-                    backgroundImage: `url('https://images.unsplash.com/photo-1542038784456-1ea8e935640e?q=80&w=2070&auto=format&fit=crop')`,
+                    backgroundImage: `url('/images/lp/hero-main.png')`,
                   }}
                 />
                 {/* オーバーレイ */}
@@ -292,7 +292,7 @@ export default function HomePage() {
                     <div
                       className="absolute inset-0 bg-cover bg-center"
                       style={{
-                        backgroundImage: `url('https://images.unsplash.com/photo-1554048612-b6a482bc67e5?q=80&w=2070&auto=format&fit=crop')`,
+                        backgroundImage: `url('/images/lp/showcase.png')`,
                       }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-transparent opacity-60" />
@@ -373,7 +373,7 @@ export default function HomePage() {
               <div
                 className="absolute inset-0 bg-cover bg-center"
                 style={{
-                  backgroundImage: `url('https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=2038&auto=format&fit=crop')`,
+                  backgroundImage: `url('/images/lp/cta-background.png')`,
                 }}
               />
               <div className="absolute inset-0 bg-[#0a0a0a]/85" />
