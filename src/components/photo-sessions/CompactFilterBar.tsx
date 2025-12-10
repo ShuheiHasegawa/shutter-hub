@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
+// import { logger } from '@/lib/utils/logger';
 import {
   normalizeSearchKeyword,
   normalizeLocation,
@@ -21,17 +22,18 @@ import {
   X,
   MapPin,
   Calendar,
-  DollarSign,
-  Users,
-  ChevronDown,
   Clock,
   Shuffle,
   UserCheck,
   Star,
+  DollarSign,
+  ChevronDown,
   SlidersHorizontal,
   LucideIcon,
 } from 'lucide-react';
 import type { BookingType } from '@/types/database';
+import { useUserProfile } from '@/hooks/useAuth';
+// import { toast } from 'sonner';
 
 interface FilterState {
   keyword: string;
@@ -79,9 +81,13 @@ export function CompactFilterBar({
   const [bookingTypes, setBookingTypes] = useState<BookingType[]>(
     filters.bookingTypes || []
   );
+
   const [onlyAvailable, setOnlyAvailable] = useState(
     filters.onlyAvailable || false
   );
+  const { profile } = useUserProfile();
+  const [filterByActivityLocation, setFilterByActivityLocation] =
+    useState(false);
 
   // 検索実行時にrefから値を取得して親に通知
   const handleSearch = () => {
@@ -179,6 +185,7 @@ export function CompactFilterBar({
         keywordRef.current.value = '';
       } else if (key === 'location' && locationRef.current) {
         locationRef.current.value = '';
+        setFilterByActivityLocation(false);
       }
       setTimeout(() => handleSearch(), 0);
     }
@@ -259,6 +266,7 @@ export function CompactFilterBar({
       });
     }
 
+    /*
     if (filters.participantsMin || filters.participantsMax) {
       const participantsRange =
         filters.participantsMin && filters.participantsMax
@@ -270,10 +278,11 @@ export function CompactFilterBar({
         key: 'participantsRange',
         label: participantsRange,
         fullLabel: `参加者: ${participantsRange}`,
-        icon: Users,
+        icon: UserCheck, // Users was removed
         color: 'bg-indigo-100 text-indigo-800 border-indigo-200',
       });
     }
+    */
 
     filters.bookingTypes.forEach(type => {
       const typeInfo = bookingTypeLabels[type];
@@ -294,7 +303,7 @@ export function CompactFilterBar({
         key: 'onlyAvailable',
         label: '空きあり',
         fullLabel: '空きありのみ',
-        icon: Users,
+        icon: UserCheck,
         color: 'bg-emerald-100 text-emerald-800 border-emerald-200',
       });
     }
@@ -319,7 +328,7 @@ export function CompactFilterBar({
                 ref={keywordRef}
                 placeholder="撮影会を検索..."
                 defaultValue={filters.keyword}
-                className="pl-8 sm:pl-10 text-sm sm:text-base border-0 shadow-none focus:ring-1 focus:ring-blue-500 focus:border-transparent transition-colors"
+                className="pl-8 sm:pl-10 text-sm sm:text-base shadow-none focus:ring-1 focus:ring-blue-500 focus:border-transparent transition-colors"
               />
             </div>
 
@@ -357,29 +366,6 @@ export function CompactFilterBar({
                 <span className="hidden sm:inline ml-1">クリア</span>
               </Button>
             )}
-          </div>
-
-          {/* 空きがある撮影会のみ表示チェックボックス */}
-          <div className="mt-3 pt-3 border-t border-gray-400">
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="only-available-compact"
-                checked={onlyAvailable}
-                onCheckedChange={checked => {
-                  setOnlyAvailable(checked === true);
-                  // 空きがある撮影会のみ表示は例外で即座に検索実行
-                  setTimeout(() => handleSearch(), 0);
-                }}
-                className="w-4 h-4"
-              />
-              <Label
-                htmlFor="only-available-compact"
-                className="text-sm cursor-pointer flex items-center gap-2"
-              >
-                <Users className="h-4 w-4 text-emerald-600" />
-                空きがある撮影会のみ表示
-              </Label>
-            </div>
           </div>
         </CardContent>
       </Card>
@@ -423,151 +409,186 @@ export function CompactFilterBar({
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CollapsibleContent className="space-y-0">
           <Card className="border-blue-200 mt-3">
-            <CardContent className="p-4 sm:p-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-                {/* 場所フィルター */}
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-green-600" />
-                    場所
-                  </Label>
-                  <Input
-                    ref={locationRef}
-                    placeholder="渋谷、新宿..."
-                    defaultValue={filters.location}
-                    className="text-sm"
-                  />
+            <CardContent className="p-4 sm:p-6 space-y-4">
+              {/* 場所フィルター (独立した行・全幅) */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-green-600" />
+                  場所
+                </Label>
+                <Input
+                  ref={locationRef}
+                  placeholder="渋谷、新宿..."
+                  defaultValue={filters.location}
+                  className="text-sm"
+                  onChange={e => {
+                    if (
+                      filterByActivityLocation &&
+                      e.target.value !== profile?.prefecture
+                    ) {
+                      setFilterByActivityLocation(false);
+                    }
+                  }}
+                />
+              </div>
+
+              {/* 日程・料金・予約方式グリッド */}
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
+                {/* 日程フィルター (横並び) */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-purple-600" />
+                      開始日
+                    </Label>
+                    <Input
+                      ref={dateFromRef}
+                      type="date"
+                      defaultValue={filters.dateFrom}
+                      className="text-sm"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-purple-600" />
+                      終了日
+                    </Label>
+                    <Input
+                      ref={dateToRef}
+                      type="date"
+                      defaultValue={filters.dateTo}
+                      className="text-sm"
+                    />
+                  </div>
                 </div>
 
-                {/* 日程フィルター */}
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-purple-600" />
-                    開始日
-                  </Label>
-                  <Input
-                    ref={dateFromRef}
-                    type="date"
-                    defaultValue={filters.dateFrom}
-                    className="text-sm"
-                  />
-                </div>
+                {/* 料金・予約方式グループ */}
+                <div className="space-y-4">
+                  {/* 料金フィルター (横並び) */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium flex items-center gap-2">
+                        <DollarSign className="h-4 w-4 text-orange-600" />
+                        最低料金
+                      </Label>
+                      <Input
+                        ref={priceMinRef}
+                        type="number"
+                        placeholder="0"
+                        defaultValue={filters.priceMin}
+                        className="text-sm"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium flex items-center gap-2">
+                        <DollarSign className="h-4 w-4 text-orange-600" />
+                        最高料金
+                      </Label>
+                      <Input
+                        ref={priceMaxRef}
+                        type="number"
+                        placeholder="10000"
+                        defaultValue={filters.priceMax}
+                        className="text-sm"
+                      />
+                    </div>
+                  </div>
 
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-purple-600" />
-                    終了日
-                  </Label>
-                  <Input
-                    ref={dateToRef}
-                    type="date"
-                    defaultValue={filters.dateTo}
-                    className="text-sm"
-                  />
-                </div>
-
-                {/* 料金フィルター */}
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium flex items-center gap-2">
-                    <DollarSign className="h-4 w-4 text-orange-600" />
-                    最低料金
-                  </Label>
-                  <Input
-                    ref={priceMinRef}
-                    type="number"
-                    placeholder="0"
-                    defaultValue={filters.priceMin}
-                    className="text-sm"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium flex items-center gap-2">
-                    <DollarSign className="h-4 w-4 text-orange-600" />
-                    最高料金
-                  </Label>
-                  <Input
-                    ref={priceMaxRef}
-                    type="number"
-                    placeholder="10000"
-                    defaultValue={filters.priceMax}
-                    className="text-sm"
-                  />
-                </div>
-
-                {/* 参加者数フィルター */}
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium flex items-center gap-2">
-                    <Users className="h-4 w-4 text-indigo-600" />
-                    最少参加者
-                  </Label>
-                  <Input
-                    ref={participantsMinRef}
-                    type="number"
-                    placeholder="1"
-                    defaultValue={filters.participantsMin}
-                    className="text-sm"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium flex items-center gap-2">
-                    <Users className="h-4 w-4 text-indigo-600" />
-                    最多参加者
-                  </Label>
-                  <Input
-                    ref={participantsMaxRef}
-                    type="number"
-                    placeholder="50"
-                    defaultValue={filters.participantsMax}
-                    className="text-sm"
-                  />
-                </div>
-
-                {/* 予約方式フィルター - モバイル最適化 */}
-                <div className="space-y-2 sm:col-span-2 lg:col-span-1">
-                  <Label className="text-sm font-medium flex items-center gap-2">
-                    <Star className="h-4 w-4 text-yellow-600" />
-                    予約方式
-                  </Label>
-                  <div className="grid grid-cols-2 sm:grid-cols-1 gap-2">
-                    {Object.entries(bookingTypeLabels).map(
-                      ([key, typeInfo]) => {
-                        const Icon = typeInfo.icon;
-                        const isChecked = bookingTypes.includes(
-                          key as BookingType
-                        );
-                        return (
-                          <div
-                            key={key}
-                            className="flex items-center space-x-2"
-                          >
-                            <Checkbox
-                              id={key}
-                              checked={isChecked}
-                              onCheckedChange={() =>
-                                toggleBookingType(key as BookingType)
-                              }
-                              className="w-4 h-4"
-                            />
-                            <Label
-                              htmlFor={key}
-                              className="flex items-center gap-2 text-sm cursor-pointer flex-1 min-w-0"
+                  {/* 予約方式フィルター (2x2 コンパクト) */}
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium flex items-center gap-2">
+                      <Star className="h-4 w-4 text-yellow-600" />
+                      予約方式
+                    </Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {Object.entries(bookingTypeLabels).map(
+                        ([key, typeInfo]) => {
+                          const Icon = typeInfo.icon;
+                          const isChecked = bookingTypes.includes(
+                            key as BookingType
+                          );
+                          return (
+                            <div
+                              key={key}
+                              className="flex items-center space-x-2"
                             >
-                              <Icon className="h-3.5 w-3.5 flex-shrink-0" />
-                              <span className="truncate">{typeInfo.label}</span>
-                            </Label>
-                          </div>
-                        );
-                      }
-                    )}
+                              <Checkbox
+                                id={key}
+                                checked={isChecked}
+                                onCheckedChange={() =>
+                                  toggleBookingType(key as BookingType)
+                                }
+                                className="w-4 h-4"
+                              />
+                              <Label
+                                htmlFor={key}
+                                className="flex items-center gap-1.5 text-sm cursor-pointer flex-1 min-w-0"
+                              >
+                                <Icon className="h-3.5 w-3.5 flex-shrink-0" />
+                                <span className="truncate text-xs sm:text-sm">
+                                  {typeInfo.label}
+                                </span>
+                              </Label>
+                            </div>
+                          );
+                        }
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
 
               {/* 検索実行ボタン */}
               <div className="mt-4 sm:mt-6 pt-4 border-t border-blue-200">
-                <div className="flex justify-center">
+                <div className="flex justify-center gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      // "空きがある撮影会のみ"と"活動拠点で絞る"以外をクリア
+                      if (keywordRef.current) keywordRef.current.value = '';
+                      if (priceMinRef.current) priceMinRef.current.value = '';
+                      if (priceMaxRef.current) priceMaxRef.current.value = '';
+                      if (dateFromRef.current) dateFromRef.current.value = '';
+                      if (dateToRef.current) dateToRef.current.value = '';
+                      if (participantsMinRef.current)
+                        participantsMinRef.current.value = '';
+                      if (participantsMaxRef.current)
+                        participantsMaxRef.current.value = '';
+                      setBookingTypes([]);
+
+                      // 検索を実行して反映（リセット状態で）
+                      const newFilters: FilterState = {
+                        keyword: '',
+                        location: locationRef.current?.value || '', // 場所は保持すべきか？ユーザー要望は「活動拠点で絞る」を保持。活動拠点で絞るがONなら保持、OFFならクリア？
+                        // 要望: "「空きがある撮影会のみ」と「活動拠点で絞る」以外をクリア"
+                        // 場所入力(locationRef)は活動拠点フィルターがONのときは自動入力される。
+                        // もし活動拠点フィルターがOFFなら、場所もクリアすべきか？
+                        // 文脈的に「絞り込み条件」をクリアしたい。場所手入力もクリア対象と思われる。
+                        // ただし filterByActivityLocation が true の場合、locationRef は profile.prefecture になっているはず。
+                        // それを維持する。
+                        priceMin: '',
+                        priceMax: '',
+                        dateFrom: '',
+                        dateTo: '',
+                        participantsMin: '',
+                        participantsMax: '',
+                        bookingTypes: [],
+                        onlyAvailable: onlyAvailable, // 保持
+                      };
+
+                      if (!filterByActivityLocation && locationRef.current) {
+                        locationRef.current.value = '';
+                        newFilters.location = '';
+                      }
+
+                      onFiltersChange(newFilters);
+                      onSearch?.();
+                    }}
+                    disabled={isSearchLoading}
+                    className="w-full sm:w-auto"
+                  >
+                    クリア
+                  </Button>
                   <Button
                     onClick={handleSearch}
                     disabled={isSearchLoading}
