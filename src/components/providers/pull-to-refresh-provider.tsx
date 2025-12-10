@@ -51,13 +51,27 @@ export function PullToRefreshProvider({
     }
   }, [isRefreshing, router]);
 
+  const getScrollTop = useCallback(() => {
+    if (typeof window === 'undefined') return 0;
+
+    // メインコンテンツ要素を探す (AuthenticatedLayout用)
+    const mainElement = document.querySelector('main');
+    if (mainElement) {
+      const styles = window.getComputedStyle(mainElement);
+      if (styles.overflowY === 'auto' || styles.overflowY === 'scroll') {
+        return mainElement.scrollTop;
+      }
+    }
+    return window.scrollY || document.documentElement.scrollTop;
+  }, []);
+
   const handleTouchStart = useCallback(
     (e: TouchEvent) => {
       // リフレッシュ中は無視
       if (isRefreshing) return;
 
       // スクロール位置を確認（ページ最上部のときのみ）
-      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      const scrollTop = getScrollTop();
       touchStartScrollTop.current = scrollTop;
 
       if (scrollTop <= 0) {
@@ -65,14 +79,14 @@ export function PullToRefreshProvider({
         isPulling.current = true;
       }
     },
-    [isRefreshing]
+    [isRefreshing, getScrollTop]
   );
 
   const handleTouchMove = useCallback(
     (e: TouchEvent) => {
       if (!isPulling.current || isRefreshing) return;
 
-      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      const scrollTop = getScrollTop();
 
       // スクロールが始まったらプルをキャンセル
       if (scrollTop > 0) {
@@ -94,7 +108,7 @@ export function PullToRefreshProvider({
         setPullDistance(0);
       }
     },
-    [isRefreshing]
+    [isRefreshing, getScrollTop]
   );
 
   const handleTouchEnd = useCallback(() => {
