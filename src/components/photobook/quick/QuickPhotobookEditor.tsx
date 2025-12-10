@@ -12,7 +12,7 @@ import {
 } from '@/types/quick-photobook';
 import { QuickPhotobookImageManagerV2 } from './QuickPhotobookImageManagerV2';
 import { QuickPhotobookSettings } from './QuickPhotobookSettings';
-import { PhotobookPreviewModal } from './PhotobookPreviewModal';
+import { PhotobookPreviewModal } from '../common/PhotobookPreviewModal';
 import {
   getPhotobookImages,
   updatePhotobook,

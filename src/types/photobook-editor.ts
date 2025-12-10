@@ -23,8 +23,11 @@ export interface PhotobookProject {
   history?: HistoryManager;
 }
 
+export type PhotobookAspectRatio = 'portrait' | 'landscape' | 'square';
+
 export interface ProjectSettings {
   dimensions: { width: number; height: number }; // mm単位
+  aspectRatio: PhotobookAspectRatio; // アスペクト比
   dpi: number; // 印刷解像度（300dpi推奨）
   colorSpace: 'RGB' | 'CMYK';
   bleedMargin: number; // 裁ち落とし（3mm推奨）

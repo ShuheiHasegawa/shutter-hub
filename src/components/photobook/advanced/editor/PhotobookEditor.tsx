@@ -10,7 +10,6 @@ import {
   ZoomOut,
   Download,
   Eye,
-  EyeOff,
   Grid3X3,
   Settings,
 } from 'lucide-react';
@@ -19,10 +18,13 @@ import {
   useCurrentProject,
   useActivePage,
 } from '@/stores/photobook-editor-store';
+import type { PhotobookPage } from '@/types/photobook-editor';
 import { NativeDndProvider } from './NativeDndProvider';
 import EditorSidebar from './EditorSidebar';
 import EditableCanvas from './EditableCanvas';
 import { ToastProvider } from './ToastManager';
+import { SettingsDialog } from './SettingsDialog';
+import { PreviewModal } from './PreviewModal';
 import { cn } from '@/lib/utils';
 import { FormattedDateTime } from '@/components/ui/formatted-display';
 
@@ -30,15 +32,16 @@ import { FormattedDateTime } from '@/components/ui/formatted-display';
 // ツールバーコンポーネント
 // ============================================
 
-const EditorToolbar: React.FC = () => {
+const EditorToolbar: React.FC<{
+  onSettingsClick: () => void;
+  onPreviewClick: () => void;
+}> = ({ onSettingsClick, onPreviewClick }) => {
   const {
     canUndo,
     canRedo,
-    isPreviewMode,
     editorState,
     undo,
     redo,
-    setPreviewMode,
     setZoom,
     toggleGrid,
     saveProject,
@@ -68,7 +71,7 @@ const EditorToolbar: React.FC = () => {
   };
 
   return (
-    <div className="bg-white border-b px-4 py-2 flex items-center justify-between">
+    <div className="surface-primary border-b px-4 py-2 flex items-center justify-between">
       {/* 左側のツール */}
       <div className="flex items-center space-x-2">
         {/* アンドゥ・リドゥ */}
@@ -149,20 +152,16 @@ const EditorToolbar: React.FC = () => {
       <div className="flex items-center space-x-2">
         {/* プレビューモード */}
         <Button
-          variant={isPreviewMode ? 'default' : 'outline'}
+          variant="outline"
           size="sm"
-          onClick={() => setPreviewMode(!isPreviewMode)}
+          onClick={onPreviewClick}
           className="flex items-center space-x-1"
         >
-          {isPreviewMode ? (
-            <EyeOff className="h-4 w-4" />
-          ) : (
-            <Eye className="h-4 w-4" />
-          )}
+          <Eye className="h-4 w-4" />
           <span className="hidden sm:inline">プレビュー</span>
         </Button>
 
-        <div className="w-px h-6 bg-gray-300" />
+        <div className="w-px h-6 opacity-20 bg-current" />
 
         {/* 保存・エクスポート */}
         <Button
@@ -186,6 +185,7 @@ const EditorToolbar: React.FC = () => {
           size="sm"
           className="p-2"
           title="プロパティ設定"
+          onClick={onSettingsClick}
         >
           <Settings className="h-4 w-4" />
         </Button>
@@ -204,23 +204,83 @@ const PageNavigation: React.FC = () => {
 
   if (!currentProject) return null;
 
+  const pages = currentProject.pages;
+  const totalPages = pages.length;
+
+  // スプレッド構造を生成
+  // 1ページ目: 単独（表紙）
+  // 2-3, 4-5, ...: 見開き
+  // 残りの単独ページがある場合：単独
+  const spreads: Array<{ type: 'single' | 'spread'; pages: PhotobookPage[] }> =
+    [];
+
+  if (pages.length > 0) {
+    // 表紙（1ページ目）は常に単独
+    spreads.push({ type: 'single', pages: [pages[0]] });
+
+    // 2ページ目以降を見開きペアとして処理
+    let i = 1;
+    while (i < totalPages) {
+      if (i + 1 < totalPages) {
+        // 次のページがある場合は見開き
+        spreads.push({ type: 'spread', pages: [pages[i], pages[i + 1]] });
+        i += 2;
+      } else {
+        // 次のページがない場合は単独（最終ページ）
+        spreads.push({ type: 'single', pages: [pages[i]] });
+        i += 1;
+      }
+    }
+  }
+
+  const handleSpreadClick = (spread: {
+    type: 'single' | 'spread';
+    pages: PhotobookPage[];
+  }) => {
+    // 見開きの場合は左ページを選択
+    setActivePage(spread.pages[0].id);
+  };
+
+  const isSpreadActive = (spread: {
+    type: 'single' | 'spread';
+    pages: PhotobookPage[];
+  }) => {
+    return spread.pages.some(p => p.id === editorState.activePageId);
+  };
+
   return (
-    <div className="bg-gray-50 border-b px-4 py-2">
+    <div className="surface-secondary border-b px-4 py-2">
       <div className="flex items-center space-x-2 overflow-x-auto">
-        {/* ページサムネイル */}
+        {/* スプレッドサムネイル */}
         <div className="flex space-x-2">
-          {currentProject.pages.map((page, index) => (
+          {spreads.map((spread, spreadIndex) => (
             <button
-              key={page.id}
-              onClick={() => setActivePage(page.id)}
+              key={spread.pages[0].id}
+              onClick={() => handleSpreadClick(spread)}
               className={cn(
-                'flex-shrink-0 w-16 h-20 border-2 rounded bg-white flex items-center justify-center text-xs font-medium transition-colors',
-                editorState.activePageId === page.id
-                  ? 'border-blue-500 bg-blue-50 text-blue-700'
-                  : 'border-gray-300 text-gray-600 hover:border-gray-400'
+                'flex-shrink-0 border-2 rounded bg-white flex items-center justify-center transition-colors overflow-hidden',
+                spread.type === 'spread' ? 'w-32 h-16' : 'w-14 h-16',
+                isSpreadActive(spread)
+                  ? 'border-blue-500 ring-2 ring-blue-200'
+                  : 'border-gray-300 hover:border-gray-400'
               )}
             >
-              {index + 1}
+              {spread.type === 'spread' ? (
+                // 見開き表示
+                <div className="flex w-full h-full">
+                  <div className="flex-1 flex items-center justify-center text-xs font-medium border-r border-gray-300">
+                    {spread.pages[0].pageNumber}
+                  </div>
+                  <div className="flex-1 flex items-center justify-center text-xs font-medium">
+                    {spread.pages[1].pageNumber}
+                  </div>
+                </div>
+              ) : (
+                // 単独ページ表示
+                <span className="text-xs font-medium">
+                  {spreadIndex === 0 ? '表紙' : spread.pages[0].pageNumber}
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -230,7 +290,7 @@ const PageNavigation: React.FC = () => {
           variant="outline"
           size="sm"
           onClick={() => addPage()}
-          className="flex-shrink-0 h-20 w-16 text-xs border-dashed"
+          className="flex-shrink-0 h-16 w-14 text-xs border-dashed"
         >
           + 追加
         </Button>
@@ -253,6 +313,8 @@ const PhotobookEditor: React.FC<PhotobookEditorProps> = ({
   className,
 }) => {
   const [isMounted, setIsMounted] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   const {
     createNewProject,
@@ -351,9 +413,21 @@ const PhotobookEditor: React.FC<PhotobookEditorProps> = ({
   return (
     <ToastProvider>
       <NativeDndProvider>
-        <div className={cn('h-screen flex flex-col bg-gray-100', className)}>
+        <div className={cn('h-screen flex flex-col', className)}>
           {/* ツールバー */}
-          <EditorToolbar />
+          <EditorToolbar
+            onSettingsClick={() => setSettingsOpen(true)}
+            onPreviewClick={() => setPreviewOpen(true)}
+          />
+
+          {/* 設定ダイアログ */}
+          <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
+
+          {/* プレビューモーダル */}
+          <PreviewModal
+            open={previewOpen}
+            onClose={() => setPreviewOpen(false)}
+          />
 
           {/* メインエディターエリア */}
           <div className="flex-1 flex overflow-hidden">

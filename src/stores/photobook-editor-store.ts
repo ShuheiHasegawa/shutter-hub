@@ -51,6 +51,9 @@ interface PhotobookEditorActions {
   loadProject: (projectId: string) => Promise<void>;
   saveProject: () => Promise<void>;
   updateProjectMeta: (meta: Partial<PhotobookProject['meta']>) => void;
+  updateProjectSettings: (
+    settings: Partial<PhotobookProject['settings']>
+  ) => void;
 
   // ページ管理
   addPage: (position?: number) => void;
@@ -215,14 +218,46 @@ const createDefaultProject = (title: string): PhotobookProject => ({
   },
   settings: {
     dimensions: { width: 210, height: 297 }, // A4サイズ (mm)
+    aspectRatio: 'portrait', // デフォルトは縦長
     dpi: 300,
     colorSpace: 'RGB',
     bleedMargin: 3,
   },
   pages: [
+    // 表紙（1ページ目）
     {
       id: generateId(),
       pageNumber: 1,
+      layout: {
+        backgroundColor: '#ffffff',
+        margins: { top: 10, right: 10, bottom: 10, left: 10 },
+      },
+      elements: [],
+    },
+    // 見開き左（2ページ目）
+    {
+      id: generateId(),
+      pageNumber: 2,
+      layout: {
+        backgroundColor: '#ffffff',
+        margins: { top: 10, right: 10, bottom: 10, left: 10 },
+      },
+      elements: [],
+    },
+    // 見開き右（3ページ目）
+    {
+      id: generateId(),
+      pageNumber: 3,
+      layout: {
+        backgroundColor: '#ffffff',
+        margins: { top: 10, right: 10, bottom: 10, left: 10 },
+      },
+      elements: [],
+    },
+    // 裏表紙（4ページ目）
+    {
+      id: generateId(),
+      pageNumber: 4,
       layout: {
         backgroundColor: '#ffffff',
         margins: { top: 10, right: 10, bottom: 10, left: 10 },
@@ -299,19 +334,36 @@ export const usePhotobookEditorStore = create<
           });
 
           try {
-            // TODO: 実際のAPI呼び出しを実装
-            // const project = await api.loadProject(projectId);
+            // Server Actionを呼び出してDBからプロジェクトを読み込む
+            const { loadAdvancedPhotobook } = await import(
+              '@/app/actions/advanced-photobook'
+            );
 
-            // モックデータ（開発時）
-            const mockProject =
-              createDefaultProject('読み込まれたプロジェクト');
-            mockProject.meta.id = projectId;
+            // 注意: userIdは本来認証から取得すべき
+            // ここでは仮のuserIdを使用（実際の実装では認証コンテキストから取得）
+            const result = await loadAdvancedPhotobook(
+              projectId,
+              'current-user-id'
+            );
 
-            set(state => {
-              state.currentProject = mockProject;
-              state.editorState.activePageId = mockProject.pages[0].id;
-              state.isProjectLoading = false;
-            });
+            if (result.success && result.project) {
+              set(state => {
+                state.currentProject = result.project!;
+                state.editorState.activePageId =
+                  result.project!.pages[0]?.id || '';
+                state.isProjectLoading = false;
+              });
+            } else {
+              // DBに存在しない場合は新規プロジェクトを作成
+              const newProject = createDefaultProject('新しいフォトブック');
+              newProject.meta.id = projectId;
+
+              set(state => {
+                state.currentProject = newProject;
+                state.editorState.activePageId = newProject.pages[0].id;
+                state.isProjectLoading = false;
+              });
+            }
           } catch (error) {
             set(state => {
               state.projectError =
@@ -326,16 +378,29 @@ export const usePhotobookEditorStore = create<
           if (!currentProject) return;
 
           try {
-            // TODO: 実際のAPI呼び出しを実装
-            // await api.saveProject(currentProject);
+            // Server Actionを呼び出してDBに保存
+            const { saveAdvancedPhotobook } = await import(
+              '@/app/actions/advanced-photobook'
+            );
 
-            set(state => {
-              if (state.currentProject) {
-                state.currentProject.meta.updatedAt = new Date().toISOString();
-                state.currentProject.meta.lastSavedAt =
-                  new Date().toISOString();
-              }
-            });
+            // 注意: userIdは本来認証から取得すべき
+            const result = await saveAdvancedPhotobook(
+              'current-user-id',
+              currentProject
+            );
+
+            if (result.success) {
+              set(state => {
+                if (state.currentProject) {
+                  state.currentProject.meta.updatedAt =
+                    new Date().toISOString();
+                  state.currentProject.meta.lastSavedAt =
+                    new Date().toISOString();
+                }
+              });
+            } else {
+              throw new Error(result.error?.message || '保存に失敗しました');
+            }
           } catch (error) {
             set(state => {
               state.projectError =
@@ -348,6 +413,24 @@ export const usePhotobookEditorStore = create<
           set(state => {
             if (state.currentProject) {
               Object.assign(state.currentProject.meta, meta);
+              state.currentProject.meta.updatedAt = new Date().toISOString();
+            }
+          });
+        },
+
+        updateProjectSettings: settings => {
+          set(state => {
+            if (state.currentProject) {
+              // アスペクト比が変更された場合、dimensions も更新
+              if (settings.aspectRatio) {
+                const aspectDimensions = {
+                  portrait: { width: 210, height: 297 }, // A4縦
+                  landscape: { width: 297, height: 210 }, // A4横
+                  square: { width: 210, height: 210 }, // 正方形
+                };
+                settings.dimensions = aspectDimensions[settings.aspectRatio];
+              }
+              Object.assign(state.currentProject.settings, settings);
               state.currentProject.meta.updatedAt = new Date().toISOString();
             }
           });

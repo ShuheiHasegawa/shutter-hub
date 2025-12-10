@@ -264,40 +264,58 @@ const EditorSidebar: React.FC<EditorSidebarProps> = ({ className }) => {
   }
 
   return (
-    <div className={cn('w-80 bg-white flex flex-col', className)}>
+    <div
+      className={cn(
+        'w-72 surface-primary border-r flex flex-col h-full',
+        className
+      )}
+    >
+      {/* ヘッダー */}
+      <div className="p-3 border-b surface-secondary">
+        <h2 className="font-semibold text-sm">エディター</h2>
+      </div>
+
       {/* タブコンテンツ */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-hidden flex flex-col">
         <Tabs
           value={activeTab}
           onValueChange={value =>
             setActiveTab(value as 'layout' | 'template' | 'upload')
           }
+          className="flex-1 flex flex-col"
         >
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="template" className="text-xs">
-              <FileText className="h-4 w-4 mr-1" />
-              テンプレート
-            </TabsTrigger>
-            <TabsTrigger value="layout" className="text-xs">
-              <Layout className="h-4 w-4 mr-1" />
-              レイアウト
-            </TabsTrigger>
-            <TabsTrigger value="upload" className="text-xs">
-              <Image className="h-4 w-4 mr-1" />
-              画像
-            </TabsTrigger>
-          </TabsList>
+          {/* タブリスト */}
+          <div className="border-b px-2 pt-2">
+            <TabsList className="w-full p-1 h-auto">
+              <TabsTrigger value="layout" className="flex-1 py-2 px-1 text-xs">
+                <Layout className="h-4 w-4 mr-1" />
+                <span>レイアウト</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="template"
+                className="flex-1 py-2 px-1 text-xs"
+              >
+                <FileText className="h-4 w-4 mr-1" />
+                <span>テンプレート</span>
+              </TabsTrigger>
+              <TabsTrigger value="upload" className="flex-1 py-2 px-1 text-xs">
+                <Image className="h-4 w-4 mr-1" />
+                <span>画像</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
-          <div className="p-4 overflow-y-auto h-full">
-            <TabsContent value="layout" className="mt-0">
+          {/* タブ内容 */}
+          <div className="flex-1 overflow-y-auto p-4">
+            <TabsContent value="layout" className="mt-0 h-full">
               <LayoutTab />
             </TabsContent>
 
-            <TabsContent value="template" className="mt-0">
+            <TabsContent value="template" className="mt-0 h-full">
               <TemplateTab />
             </TabsContent>
 
-            <TabsContent value="upload" className="mt-0">
+            <TabsContent value="upload" className="mt-0 h-full">
               <UploadTab />
             </TabsContent>
           </div>
