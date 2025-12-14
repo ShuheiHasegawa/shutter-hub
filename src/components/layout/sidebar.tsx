@@ -124,6 +124,11 @@ export function Sidebar({ className }: SidebarProps) {
           href: '/priority-tickets',
           icon: Ticket,
         },
+        {
+          title: 'お気に入り',
+          href: '/favorites?tab=photo_session',
+          icon: Heart,
+        },
       ],
     },
     {
@@ -139,6 +144,11 @@ export function Sidebar({ className }: SidebarProps) {
           title: 'スタジオ作成',
           href: '/studios/create',
           icon: Plus,
+        },
+        {
+          title: 'お気に入り',
+          href: '/favorites?tab=studio',
+          icon: Heart,
         },
       ],
     },
@@ -324,11 +334,6 @@ export function MobileSidebarTrigger() {
       icon: Zap,
     },
     {
-      title: 'お気に入り',
-      href: '/favorites',
-      icon: Heart,
-    },
-    {
       title: t('photoSessions'),
       icon: Camera,
       children: [
@@ -357,6 +362,11 @@ export function MobileSidebarTrigger() {
           href: '/priority-tickets',
           icon: Ticket,
         },
+        {
+          title: 'お気に入り',
+          href: '/favorites?tab=photo_session',
+          icon: Heart,
+        },
       ],
     },
     {
@@ -372,6 +382,11 @@ export function MobileSidebarTrigger() {
           title: 'スタジオ作成',
           href: '/studios/create',
           icon: Plus,
+        },
+        {
+          title: 'お気に入り',
+          href: '/favorites?tab=studio',
+          icon: Heart,
         },
       ],
     },

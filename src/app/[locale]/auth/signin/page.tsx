@@ -141,14 +141,18 @@ export default function SignInPage() {
               現在のアカウントでログイン中です。別のアカウントでログインする場合は、一度ログアウトしてください。
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
+          <AlertDialogFooter className="flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
+            <AlertDialogAction
+              onClick={handleLogoutAndContinue}
+              className="w-full sm:w-auto"
+            >
+              ログアウトして続ける
+            </AlertDialogAction>
             <AlertDialogAction
               onClick={() => router.push(`/${locale}/dashboard`)}
+              className="w-full sm:w-auto"
             >
               ダッシュボードに戻る
-            </AlertDialogAction>
-            <AlertDialogAction onClick={handleLogoutAndContinue}>
-              ログアウトして続ける
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

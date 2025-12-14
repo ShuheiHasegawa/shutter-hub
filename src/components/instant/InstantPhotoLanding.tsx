@@ -94,7 +94,7 @@ export function InstantPhotoLanding() {
               <div className="flex items-center justify-center gap-3 p-4 bg-card rounded-lg">
                 <Clock className="h-6 w-6 text-shutter-success" />
                 <span className="font-medium text-card-foreground">
-                  平均応答時間5分
+                  高速レスポンス
                 </span>
               </div>
               <div className="flex items-center justify-center gap-3 p-4 bg-card rounded-lg">
@@ -158,7 +158,6 @@ export function InstantPhotoLanding() {
                             <Button className="w-full">カメラマンを検索</Button>
                             <Button
                               onClick={handleLocationRequest}
-                              variant="outline"
                               className="w-full"
                             >
                               <MapPin className="h-4 w-4 mr-2" />
@@ -218,38 +217,35 @@ export function InstantPhotoLanding() {
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-card-foreground mb-4">
-              多くの方にご利用いただいています
+              ShutterHubについて
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              旅行者、カップル、家族、インスタグラマーなど、
-              様々な方々が即座撮影サービスを活用しています。
+              プロのカメラマンと撮影機会を求める人々をつなぐプラットフォームです。
             </p>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div className="text-center">
-              <div className="text-3xl font-bold text-shutter-info mb-2">
-                500+
-              </div>
-              <div className="text-muted-foreground">登録カメラマン</div>
+              <div className="text-3xl font-bold text-shutter-info mb-2">—</div>
+              <div className="text-muted-foreground">参加カメラマン</div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-shutter-success mb-2">
-                98%
+                —
               </div>
               <div className="text-muted-foreground">満足度</div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-shutter-primary mb-2">
-                5分
+                —
               </div>
               <div className="text-muted-foreground">平均応答時間</div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-shutter-warning mb-2">
-                24/7
+                —
               </div>
-              <div className="text-muted-foreground">サポート対応</div>
+              <div className="text-muted-foreground">サポート体制</div>
             </div>
           </div>
         </div>
@@ -286,12 +282,36 @@ export function InstantPhotoLanding() {
             {[
               { name: '渋谷・原宿', count: '50+', image: '🗼' },
               { name: '浅草・上野', count: '40+', image: '🏮' },
-              { name: '新宿・代々木', count: '35+', image: '🏢' },
-              { name: '六本木・赤坂', count: '30+', image: '🌃' },
-              { name: '銀座・日比谷', count: '25+', image: '🏪' },
-              { name: 'お台場・豊洲', count: '20+', image: '🌉' },
-              { name: '横浜・みなとみらい', count: '30+', image: '🎡' },
-              { name: '鎌倉・江ノ島', count: '15+', image: '⛩️' },
+              {
+                name: '新宿・代々木',
+                count: '35+',
+                image: '🏢',
+              },
+              {
+                name: '六本木・赤坂',
+                count: '30+',
+                image: '🌃',
+              },
+              {
+                name: '銀座・日比谷',
+                count: '25+',
+                image: '🏪',
+              },
+              {
+                name: 'お台場・豊洲',
+                count: '20+',
+                image: '🌉',
+              },
+              {
+                name: '横浜・みなとみらい',
+                count: '30+',
+                image: '🎡',
+              },
+              {
+                name: '鎌倉・江ノ島',
+                count: '15+',
+                image: '⛩️',
+              },
             ].map(area => (
               <Card
                 key={area.name}

@@ -20,8 +20,7 @@ export default async function FavoritesPage({
   searchParams: Promise<{ tab?: string }>;
 }) {
   const params = await searchParams;
-  const initialTab =
-    params.tab === 'photo_session' ? 'photo_session' : 'studio';
+  const initialTab = params.tab === 'studio' ? 'studio' : 'photo_session';
 
   return (
     <AuthenticatedLayout>

@@ -677,7 +677,7 @@ export function UserScheduleManager({
     <div>
       {/* 閲覧専用の案内 */}
       <Alert className="mb-4">
-        <AlertCircle className="h-5 w-5 text-blue-500" />
+        <AlertCircle className="h-5 w-5 text-blue-500 mt-0.5" />
         <AlertDescription className="flex flex-col sm:flex-row sm:items-center gap-2">
           <span>このページではスケジュールの確認のみ可能です。</span>
           {isOwnProfile && (

@@ -84,7 +84,7 @@ export function LocationPermissionCheck({
               <Button onClick={onRequestLocation} className="flex-1">
                 再試行
               </Button>
-              <Button onClick={onSkip} variant="outline" className="flex-1">
+              <Button onClick={onSkip} className="flex-1">
                 スキップ
               </Button>
             </div>

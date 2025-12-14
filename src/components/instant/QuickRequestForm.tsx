@@ -258,17 +258,19 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
             </Badge>
           )}
         </CardTitle>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <MapPin className="h-4 w-4" />
-          <span>
-            {location.address ||
-              `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}`}
-          </span>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-sm text-muted-foreground">
+          <div className="flex items-start gap-2 flex-1 min-w-0">
+            <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
+            <span className="break-words break-all">
+              {location.address ||
+                `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}`}
+            </span>
+          </div>
           <Badge
             variant={
               locationAccuracy.accuracy === 'high' ? 'default' : 'secondary'
             }
-            className="text-xs"
+            className="text-xs flex-shrink-0 self-start sm:self-center"
           >
             {locationAccuracy.accuracy === 'high'
               ? '高精度'

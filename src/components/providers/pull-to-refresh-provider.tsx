@@ -65,6 +65,29 @@ export function PullToRefreshProvider({
     return window.scrollY || document.documentElement.scrollTop;
   }, []);
 
+  const isAtTop = useCallback(() => {
+    const scrollTop = getScrollTop();
+    // スクロール位置が最上部（5px以内の誤差を許容）
+    return scrollTop <= 5;
+  }, [getScrollTop]);
+
+  const isAtBottom = useCallback(() => {
+    if (typeof window === 'undefined') return false;
+
+    const mainElement = document.querySelector('main');
+    if (mainElement) {
+      const styles = window.getComputedStyle(mainElement);
+      if (styles.overflowY === 'auto' || styles.overflowY === 'scroll') {
+        const { scrollTop, scrollHeight, clientHeight } = mainElement;
+        // スクロール位置が最下部（5px以内の誤差を許容）
+        return scrollTop + clientHeight >= scrollHeight - 5;
+      }
+    }
+
+    const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
+    return scrollTop + clientHeight >= scrollHeight - 5;
+  }, []);
+
   const handleTouchStart = useCallback(
     (e: TouchEvent) => {
       // リフレッシュ中は無視
@@ -74,12 +97,16 @@ export function PullToRefreshProvider({
       const scrollTop = getScrollTop();
       touchStartScrollTop.current = scrollTop;
 
-      if (scrollTop <= 0) {
+      // 最上部にいる場合のみPull-to-refreshを有効化
+      // 最下部にいる場合は無効化（上スクロール時の干渉を防ぐ）
+      if (isAtTop() && !isAtBottom()) {
         touchStartY.current = e.touches[0].clientY;
         isPulling.current = true;
+      } else {
+        isPulling.current = false;
       }
     },
-    [isRefreshing, getScrollTop]
+    [isRefreshing, getScrollTop, isAtTop, isAtBottom]
   );
 
   const handleTouchMove = useCallback(
@@ -87,9 +114,11 @@ export function PullToRefreshProvider({
       if (!isPulling.current || isRefreshing) return;
 
       const scrollTop = getScrollTop();
+      const currentScrollTop = scrollTop;
 
       // スクロールが始まったらプルをキャンセル
-      if (scrollTop > 0) {
+      // または最下部にいる場合はプルをキャンセル（上スクロール時の干渉を防ぐ）
+      if (currentScrollTop > 5 || isAtBottom()) {
         isPulling.current = false;
         setPullDistance(0);
         return;
@@ -98,17 +127,20 @@ export function PullToRefreshProvider({
       const touchY = e.touches[0].clientY;
       const diff = touchY - touchStartY.current;
 
-      if (diff > 0) {
+      // 下方向へのタッチ（上方向へのスクロール）のみPull-to-refreshを有効化
+      if (diff > 0 && currentScrollTop <= 5) {
         // 上方向へのスクロールを防止
         e.preventDefault();
         // 抵抗を適用
         const distance = Math.min(diff / RESISTANCE, PULL_THRESHOLD * 1.5);
         setPullDistance(distance);
       } else {
+        // 上方向へのタッチ（下方向へのスクロール）の場合はプルをキャンセル
+        isPulling.current = false;
         setPullDistance(0);
       }
     },
-    [isRefreshing, getScrollTop]
+    [isRefreshing, getScrollTop, isAtBottom]
   );
 
   const handleTouchEnd = useCallback(() => {

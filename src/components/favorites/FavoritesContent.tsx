@@ -33,7 +33,7 @@ interface FavoritesContentProps {
 }
 
 export function FavoritesContent({
-  initialTab = 'studio',
+  initialTab = 'photo_session',
 }: FavoritesContentProps) {
   const t = useTranslations('favorites');
   const router = useRouter();
@@ -271,13 +271,6 @@ export function FavoritesContent({
         className="space-y-6"
       >
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="studio" className="flex items-center gap-2">
-            <Building2 className="h-4 w-4" />
-            {t('tabs.studios')}
-            <Badge variant="secondary" className="ml-1">
-              {studioFavorites.length}
-            </Badge>
-          </TabsTrigger>
           <TabsTrigger
             value="photo_session"
             className="flex items-center gap-2"
@@ -288,16 +281,14 @@ export function FavoritesContent({
               {photoSessionFavorites.length}
             </Badge>
           </TabsTrigger>
+          <TabsTrigger value="studio" className="flex items-center gap-2">
+            <Building2 className="h-4 w-4" />
+            {t('tabs.studios')}
+            <Badge variant="secondary" className="ml-1">
+              {studioFavorites.length}
+            </Badge>
+          </TabsTrigger>
         </TabsList>
-
-        <TabsContent value="studio" className="space-y-6">
-          <FavoritesTabContent
-            items={getTabContent('studio')}
-            type="studio"
-            searchTerm={searchTerm}
-            emptyMessage={t('empty.studios')}
-          />
-        </TabsContent>
 
         <TabsContent value="photo_session" className="space-y-6">
           <FavoritesTabContent
@@ -305,6 +296,15 @@ export function FavoritesContent({
             type="photo_session"
             searchTerm={searchTerm}
             emptyMessage={t('empty.photoSessions')}
+          />
+        </TabsContent>
+
+        <TabsContent value="studio" className="space-y-6">
+          <FavoritesTabContent
+            items={getTabContent('studio')}
+            type="studio"
+            searchTerm={searchTerm}
+            emptyMessage={t('empty.studios')}
           />
         </TabsContent>
       </Tabs>
