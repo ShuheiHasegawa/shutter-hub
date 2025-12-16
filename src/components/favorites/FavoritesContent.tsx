@@ -14,10 +14,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { PageTitleHeader } from '@/components/ui/page-title-header';
 import { StudioCard } from '@/components/studio/StudioCard';
 import { PhotoSessionCard } from '@/components/photo-sessions/PhotoSessionCard';
 import { FavoritesLoading } from './FavoritesLoading';
 import { EmptyFavorites } from './EmptyFavorites';
+import { StickyHeader } from '@/components/ui/sticky-header';
 import { getUserFavoritesAction } from '@/app/actions/favorites';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
@@ -88,6 +90,11 @@ export function FavoritesContent({
     },
     []
   );
+
+  // initialTabが変更されたときにactiveTabを更新
+  useEffect(() => {
+    setActiveTab(initialTab);
+  }, [initialTab]);
 
   // 初期データ取得（初期タブに応じて）
   useEffect(() => {
@@ -160,9 +167,10 @@ export function FavoritesContent({
 
     // URLパラメータを更新
     const newUrl = new URL(window.location.href);
-    if (newTab === 'photo_session') {
-      newUrl.searchParams.set('tab', 'photo_session');
+    if (newTab === 'studio') {
+      newUrl.searchParams.set('tab', 'studio');
     } else {
+      // photo_sessionの場合はパラメータを削除（デフォルトのため）
       newUrl.searchParams.delete('tab');
     }
     router.replace(newUrl.pathname + newUrl.search, { scroll: false });
@@ -222,47 +230,11 @@ export function FavoritesContent({
   return (
     <div className="max-w-6xl mx-auto">
       {/* ヘッダー */}
-      <div className="mb-8">
-        <div className="flex items-center gap-3 mb-4">
-          <Heart className="h-8 w-8 text-pink-600" />
-          <div>
-            <h1 className="text-3xl font-bold text-theme-text-primary">
-              {t('title')}
-            </h1>
-            <p className="text-theme-text-secondary">{t('subtitle')}</p>
-          </div>
-        </div>
-
-        {/* 検索・フィルター */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-theme-text-muted" />
-            <Input
-              placeholder={t('search.placeholder')}
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-
-          <Select
-            value={sortBy}
-            onValueChange={(value: 'newest' | 'oldest' | 'name') =>
-              setSortBy(value)
-            }
-          >
-            <SelectTrigger className="w-full sm:w-[180px]">
-              <Filter className="h-4 w-4 mr-2" />
-              <SelectValue placeholder={t('sort.placeholder')} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="newest">{t('sort.newest')}</SelectItem>
-              <SelectItem value="oldest">{t('sort.oldest')}</SelectItem>
-              <SelectItem value="name">{t('sort.name')}</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
+      <PageTitleHeader
+        title={t('title')}
+        description={t('subtitle')}
+        icon={<Heart className="h-8 w-8" />}
+      />
 
       {/* タブコンテンツ */}
       <Tabs
@@ -270,26 +242,59 @@ export function FavoritesContent({
         onValueChange={handleTabChange}
         className="space-y-6"
       >
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger
-            value="photo_session"
-            className="flex items-center gap-2"
-          >
-            <Camera className="h-4 w-4" />
-            {t('tabs.photoSessions')}
-            <Badge variant="secondary" className="ml-1">
-              {photoSessionFavorites.length}
-            </Badge>
-          </TabsTrigger>
-          <TabsTrigger value="studio" className="flex items-center gap-2">
-            <Building2 className="h-4 w-4" />
-            {t('tabs.studios')}
-            <Badge variant="secondary" className="ml-1">
-              {studioFavorites.length}
-            </Badge>
-          </TabsTrigger>
-        </TabsList>
+        {/* 検索・フィルターとタブを固定 */}
+        <StickyHeader className="space-y-4 mb-6">
+          {/* 検索・フィルター */}
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-theme-text-muted" />
+              <Input
+                placeholder={t('search.placeholder')}
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
 
+            <Select
+              value={sortBy}
+              onValueChange={(value: 'newest' | 'oldest' | 'name') =>
+                setSortBy(value)
+              }
+            >
+              <SelectTrigger className="w-full sm:w-[180px]">
+                <Filter className="h-4 w-4 mr-2" />
+                <SelectValue placeholder={t('sort.placeholder')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="newest">{t('sort.newest')}</SelectItem>
+                <SelectItem value="oldest">{t('sort.oldest')}</SelectItem>
+                <SelectItem value="name">{t('sort.name')}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* タブ */}
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger
+              value="photo_session"
+              className="flex items-center gap-2"
+            >
+              <Camera className="h-4 w-4" />
+              {t('tabs.photoSessions')}
+              <Badge variant="secondary" className="ml-1">
+                {photoSessionFavorites.length}
+              </Badge>
+            </TabsTrigger>
+            <TabsTrigger value="studio" className="flex items-center gap-2">
+              <Building2 className="h-4 w-4" />
+              {t('tabs.studios')}
+              <Badge variant="secondary" className="ml-1">
+                {studioFavorites.length}
+              </Badge>
+            </TabsTrigger>
+          </TabsList>
+        </StickyHeader>
         <TabsContent value="photo_session" className="space-y-6">
           <FavoritesTabContent
             items={getTabContent('photo_session')}

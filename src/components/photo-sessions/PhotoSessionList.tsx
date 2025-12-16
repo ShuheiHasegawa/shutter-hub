@@ -32,6 +32,7 @@ import type { PhotoSessionWithOrganizer, BookingType } from '@/types/database';
 import { useTranslations } from 'next-intl';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { StickyHeader } from '@/components/ui/sticky-header';
 
 interface FilterState {
   keyword: string;
@@ -490,7 +491,7 @@ export function PhotoSessionList({
   return (
     <div className="flex flex-col flex-1 min-h-0">
       {/* ヘッダーコントロール - 固定 */}
-      <div className="flex-shrink-0 sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b flex justify-between items-center py-2">
+      <StickyHeader className="flex justify-between items-center">
         {/* 左側: 空きがある撮影会のみ（PC表示） */}
         <div className="hidden md:flex items-center gap-2 pl-4">
           <Checkbox
@@ -688,7 +689,7 @@ export function PhotoSessionList({
             </Link>
           </Button>
         </div>
-      </div>
+      </StickyHeader>
 
       {/* スクロール可能なコンテンツエリア */}
       <div className="flex-1 overflow-y-auto min-h-0 flex flex-col">
