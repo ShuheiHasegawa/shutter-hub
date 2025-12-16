@@ -132,11 +132,17 @@ export function PublicHeader() {
                     <User className="mr-2 h-4 w-4" />
                     <span>ダッシュボード</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/profile">
-                      <User className="mr-2 h-4 w-4" />
-                      <span>プロフィール</span>
-                    </Link>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      if (user) {
+                        router.push(`/profile/${user.id}`);
+                      } else {
+                        router.push('/auth/signin');
+                      }
+                    }}
+                  >
+                    <User className="mr-2 h-4 w-4" />
+                    <span>プロフィール</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut}>

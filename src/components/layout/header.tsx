@@ -93,7 +93,7 @@ export function AppHeader({
                 </div>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link href="/profile">
+                  <Link href={user ? `/profile/${user.id}` : '/auth/signin'}>
                     <User className="mr-2 h-4 w-4" />
                     <span>{t('profile')}</span>
                   </Link>
@@ -203,7 +203,7 @@ export function AppHeader({
           <nav className="flex items-center space-x-2">
             {user && <NotificationCenter />}
             {user && (
-              <Link href="/profile">
+              <Link href={`/profile/${user.id}`}>
                 <Button variant="ghost" size="sm">
                   <MessageCircle className="h-4 w-4" />
                 </Button>
@@ -239,7 +239,7 @@ export function AppHeader({
                   </div>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link href="/profile">
+                    <Link href={user ? `/profile/${user.id}` : '/auth/signin'}>
                       <User className="mr-2 h-4 w-4" />
                       <span>{t('profile')}</span>
                     </Link>
@@ -306,7 +306,10 @@ export function AppHeader({
               </Link>
               {user ? (
                 <>
-                  <Link href="/profile" className="block px-2 py-1 text-lg">
+                  <Link
+                    href={`/profile/${user.id}`}
+                    className="block px-2 py-1 text-lg"
+                  >
                     {t('profile')}
                   </Link>
                   <Link href="/bookings" className="block px-2 py-1 text-lg">

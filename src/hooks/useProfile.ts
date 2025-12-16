@@ -287,3 +287,38 @@ export function refreshProfileData(userId: string) {
   invalidateProfileCache(userId);
   logger.info('プロフィールデータを手動リフレッシュ:', { userId });
 }
+
+/**
+ * プロフィールページ用データ取得フック（並列実行）
+ * プロフィール、フォロー統計、活動統計を並列で取得する
+ */
+export function useProfilePageData(userId: string, currentUserId: string) {
+  const { data, error, isLoading } = useSWR(
+    userId ? `profile-page-${userId}` : null,
+    async () => {
+      // 並列実行
+      const [profile, followStats, activityStats] = await Promise.all([
+        fetchProfile(userId),
+        fetchFollowStats(userId, currentUserId),
+        fetchUserActivityStats(userId),
+      ]);
+
+      return { profile, followStats, activityStats };
+    },
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      dedupingInterval: 300000, // 5分間重複防止
+      errorRetryCount: 3,
+      errorRetryInterval: 1000,
+    }
+  );
+
+  return {
+    profile: data?.profile,
+    followStats: data?.followStats,
+    activityStats: data?.activityStats,
+    isLoading,
+    error,
+  };
+}
