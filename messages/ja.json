@@ -419,6 +419,22 @@
       "fewLeft": "残りわずか",
       "full": "満員"
     },
+    "layout": {
+      "card": "カード表示",
+      "grid": "グリッド表示",
+      "table": "テーブル表示",
+      "toggle": "表示形式を切り替え"
+    },
+    "table": {
+      "headers": {
+        "sessionName": "撮影会名",
+        "dateTime": "開催日時",
+        "location": "場所",
+        "bookingStatus": "予約状況",
+        "bookingType": "予約方式",
+        "price": "料金"
+      }
+    },
     "form": {
       "createTitle": "撮影会作成",
       "editTitle": "撮影会編集",

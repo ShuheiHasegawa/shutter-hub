@@ -262,6 +262,12 @@
     "organizer": "Organizer",
     "free": "Free",
     "people": "people",
+    "types": {
+      "firstCome": "First Come",
+      "lottery": "Lottery",
+      "adminLottery": "Admin Lottery",
+      "priority": "Priority"
+    },
     "selectPaymentMethod": "Select Payment Method",
     "paymentMethodStripe": "Stripe Payment",
     "paymentMethodCashOnSite": "Cash on Site",
@@ -391,6 +397,22 @@
       "available": "Available",
       "fewLeft": "Few left",
       "full": "Full"
+    },
+    "layout": {
+      "card": "Card View",
+      "grid": "Grid View",
+      "table": "Table View",
+      "toggle": "Toggle view layout"
+    },
+    "table": {
+      "headers": {
+        "sessionName": "Session Name",
+        "dateTime": "Date & Time",
+        "location": "Location",
+        "bookingStatus": "Booking Status",
+        "bookingType": "Booking Type",
+        "price": "Price"
+      }
     },
     "form": {
       "createTitle": "Create Photo Session",

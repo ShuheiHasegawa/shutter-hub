@@ -9,30 +9,19 @@ import {
 } from '@/lib/utils/input-normalizer';
 import { useRouter } from 'next/navigation';
 import { PhotoSessionCard } from './PhotoSessionCard';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { toast } from 'sonner';
+import { PhotoSessionGridCard } from './PhotoSessionGridCard';
+import { PhotoSessionTableRow } from './PhotoSessionTableRow';
+import { PhotoSessionMobileCompactCard } from './PhotoSessionMobileCompactCard';
+import { PhotoSessionMobileListCard } from './PhotoSessionMobileListCard';
+import { useLayoutPreference } from '@/hooks/useLayoutPreference';
 import { getBulkFavoriteStatusAction } from '@/app/actions/favorites';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
 import { EmptyState } from '@/components/ui/empty-state';
 import { LoadingState } from '@/components/ui/loading-state';
-import { SearchIcon, Loader2, Plus, Camera } from 'lucide-react';
-import Link from 'next/link';
+import { Loader2, Camera } from 'lucide-react';
 import { usePhotoSessions } from '@/hooks/usePhotoSessions';
-import { useAuth, useUserProfile } from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/useAuth';
 import type { PhotoSessionWithOrganizer, BookingType } from '@/types/database';
 import { useTranslations } from 'next-intl';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
-import { StickyHeader } from '@/components/ui/sticky-header';
 
 interface FilterState {
   keyword: string;
@@ -55,6 +44,14 @@ interface PhotoSessionListProps {
   searchTrigger?: number; // 検索トリガー用の数値
   sidebarOpen?: boolean; // サイドバーの開閉状態
   onToggleSidebar?: () => void; // サイドバートグル関数
+  onFiltersChange?: (filters: FilterState) => void; // フィルター変更コールバック
+  layout?: 'card' | 'grid' | 'table'; // レイアウトタイプ
+  sortBy?: 'start_time' | 'price' | 'created_at' | 'popularity' | 'end_time'; // 並び順
+  sortOrder?: 'asc' | 'desc'; // 並び順の方向
+  onSortChange?: (
+    sortBy: 'start_time' | 'price' | 'created_at' | 'popularity' | 'end_time',
+    sortOrder: 'asc' | 'desc'
+  ) => void; // 並び順変更コールバック
 }
 
 const ITEMS_PER_PAGE = 20;
@@ -67,23 +64,28 @@ export function PhotoSessionList({
   searchTrigger = 0,
   sidebarOpen: _sidebarOpen = false,
   onToggleSidebar: _onToggleSidebar,
+  onFiltersChange: _onFiltersChange,
+  layout: layoutProp,
+  sortBy: sortByProp,
+  sortOrder: sortOrderProp,
+  onSortChange: _onSortChange,
 }: PhotoSessionListProps) {
   const router = useRouter();
   const t = useTranslations('photoSessions');
+  // 親からlayoutが渡されていない場合は、独自に取得
+  const { layout: layoutFromHook } = useLayoutPreference();
+  const layout = layoutProp || layoutFromHook;
   const [sessions, setSessions] = useState<PhotoSessionWithOrganizer[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [locationFilter, setLocationFilter] = useState('');
-  const [sortBy, setSortBy] = useState<
-    'start_time' | 'price' | 'created_at' | 'popularity' | 'end_time'
-  >('start_time');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  // filtersプロパティから検索クエリと場所フィルターを取得
+  const searchQuery = filters?.keyword || '';
+  const locationFilter = filters?.location || '';
+  // 親からsortBy/sortOrderが渡されていない場合は、デフォルト値を使用
+  const sortBy = sortByProp || 'start_time';
+  const sortOrder = sortOrderProp || 'asc';
   const { user: currentUser } = useAuth();
-  const { profile, loading: profileLoading } = useUserProfile();
-  const [filterByActivityLocation, setFilterByActivityLocation] =
-    useState(false);
   const [favoriteStates, setFavoriteStates] = useState<
     Record<string, { isFavorited: boolean; favoriteCount: number }>
   >({});
@@ -229,7 +231,7 @@ export function PhotoSessionList({
                 string,
                 { isFavorited: boolean; favoriteCount: number }
               > = {};
-              sessions.forEach(session => {
+              newSessions.forEach(session => {
                 emptyStates[`photo_session_${session.id}`] = {
                   isFavorited: false,
                   favoriteCount: 0,
@@ -252,7 +254,7 @@ export function PhotoSessionList({
               string,
               { isFavorited: boolean; favoriteCount: number }
             > = {};
-            sessions.forEach(session => {
+            newSessions.forEach(session => {
               emptyStates[`photo_session_${session.id}`] = {
                 isFavorited: false,
                 favoriteCount: 0,
@@ -276,7 +278,13 @@ export function PhotoSessionList({
       isLoadingRef.current = false;
       pendingResetRef.current = false;
     }
-  }, [swrSessions, swrLoading, swrError, dataPage]);
+  }, [
+    swrSessions,
+    swrLoading,
+    swrError,
+    dataPage,
+    appliedFilters?.onlyAvailable,
+  ]);
 
   // loadSessions を通常の関数として定義（SWRトリガー用）
   const loadSessions = (reset = false) => {
@@ -490,286 +498,8 @@ export function PhotoSessionList({
 
   return (
     <div className="flex flex-col flex-1 min-h-0">
-      {/* ヘッダーコントロール - 固定 */}
-      <StickyHeader className="flex justify-between items-center">
-        {/* 左側: 空きがある撮影会のみ（PC表示） */}
-        <div className="hidden md:flex items-center gap-2 pl-4">
-          <Checkbox
-            id="only-available-header"
-            checked={
-              !!appliedFilters?.onlyAvailable || !!filters?.onlyAvailable
-            }
-            onCheckedChange={checked => {
-              const next = checked === true;
-              // ローカルの確定フィルタに即時反映して再検索する
-              const newFilters = {
-                ...(filters || {
-                  keyword: '',
-                  location: '',
-                  priceMin: '',
-                  priceMax: '',
-                  dateFrom: '',
-                  dateTo: '',
-                  bookingTypes: [] as BookingType[],
-                  participantsMin: '',
-                  participantsMax: '',
-                  onlyAvailable: false,
-                }),
-                onlyAvailable: next,
-              } as FilterState;
-
-              setAppliedFilters(newFilters);
-              setAppliedSearchQuery(searchQuery);
-              setAppliedLocationFilter(locationFilter);
-              setSessions([]);
-              setHasMore(true);
-              loadSessions(true);
-            }}
-          />
-          <Label
-            htmlFor="only-available-header"
-            className="text-sm font-normal cursor-pointer select-none"
-          >
-            {t('sidebar.onlyAvailable')}
-          </Label>
-
-          {/* 活動拠点で絞る（PC表示） */}
-          <div className="flex items-center gap-2 ml-4 border-l pl-4 border-gray-200 dark:border-gray-700">
-            <Checkbox
-              id="activity-location-header"
-              checked={filterByActivityLocation}
-              disabled={profileLoading} // 読み込み中は無効化
-              onCheckedChange={checked => {
-                const isChecked = checked === true;
-                logger.info('活動拠点フィルター変更:', {
-                  isChecked,
-                  profilePrefecture: profile?.prefecture,
-                  profileLoading,
-                });
-
-                if (isChecked) {
-                  if (!profile?.prefecture) {
-                    toast.error(
-                      'プロフィール設定で活動拠点（都道府県）を設定してください'
-                    );
-                    logger.warn('活動拠点フィルターエラー: 都道府県未設定');
-                    return;
-                  }
-
-                  // 都道府県でフィルタリング
-                  setFilterByActivityLocation(true);
-                  setLocationFilter(profile.prefecture);
-
-                  // 即座に検索実行
-                  setTimeout(() => {
-                    setAppliedFilters(prev => ({
-                      ...(prev || {
-                        keyword: '',
-                        location: '',
-                        priceMin: '',
-                        priceMax: '',
-                        dateFrom: '',
-                        dateTo: '',
-                        bookingTypes: [],
-                        participantsMin: '',
-                        participantsMax: '',
-                        onlyAvailable: false,
-                      }),
-                      location: profile.prefecture || '',
-                    }));
-                    setAppliedLocationFilter(profile.prefecture || '');
-                    setSessions([]);
-                    setHasMore(true);
-                    loadSessions(true);
-                  }, 0);
-                } else {
-                  // フィルタリング解除
-                  setFilterByActivityLocation(false);
-                  setLocationFilter('');
-
-                  setTimeout(() => {
-                    setAppliedFilters(prev => ({
-                      ...(prev || {
-                        keyword: '',
-                        location: '',
-                        priceMin: '',
-                        priceMax: '',
-                        dateFrom: '',
-                        dateTo: '',
-                        bookingTypes: [],
-                        participantsMin: '',
-                        participantsMax: '',
-                        onlyAvailable: false,
-                      }),
-                      location: '',
-                    }));
-                    setAppliedLocationFilter('');
-                    setSessions([]);
-                    setHasMore(true);
-                    loadSessions(true);
-                  }, 0);
-                }
-              }}
-            />
-            <Label
-              htmlFor="activity-location-header"
-              className={`text-sm font-normal cursor-pointer select-none flex items-center gap-1 ${profileLoading ? 'opacity-50' : ''}`}
-            >
-              <span>活動拠点で絞る</span>
-              {filterByActivityLocation && profile?.prefecture && (
-                <span className="text-xs text-muted-foreground ml-1">
-                  ({profile.prefecture})
-                </span>
-              )}
-              {profileLoading && (
-                <Loader2 className="h-3 w-3 animate-spin ml-1" />
-              )}
-            </Label>
-          </div>
-        </div>
-        {/* 右側: 並び順と撮影会作成ボタン */}
-        <div className="flex items-center gap-2 justify-end flex-1">
-          {/* 並び順 */}
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground hidden sm:inline">
-              並び順:
-            </span>
-            <Select
-              value={`${sortBy}_${sortOrder}`}
-              onValueChange={value => {
-                const [newSortBy, newSortOrder] = value.split('_') as [
-                  (
-                    | 'start_time'
-                    | 'price'
-                    | 'created_at'
-                    | 'popularity'
-                    | 'end_time'
-                  ),
-                  'asc' | 'desc',
-                ];
-                setSortBy(newSortBy);
-                setSortOrder(newSortOrder);
-              }}
-            >
-              <SelectTrigger className="w-[180px] sm:w-[200px]">
-                <SelectValue placeholder="並び順" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="start_time_asc">
-                  開催日時順（早い順）
-                </SelectItem>
-                <SelectItem value="start_time_desc">
-                  開催日時順（遅い順）
-                </SelectItem>
-                <SelectItem value="end_time_asc">
-                  終了日時順（早い順）
-                </SelectItem>
-                <SelectItem value="end_time_desc">
-                  終了日時順（遅い順）
-                </SelectItem>
-                <SelectItem value="price_asc">価格順（安い順）</SelectItem>
-                <SelectItem value="price_desc">価格順（高い順）</SelectItem>
-                <SelectItem value="popularity_desc">
-                  人気順（高い順）
-                </SelectItem>
-                <SelectItem value="popularity_asc">人気順（低い順）</SelectItem>
-                <SelectItem value="created_at_desc">
-                  新着順（新しい順）
-                </SelectItem>
-                <SelectItem value="created_at_asc">新着順（古い順）</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* 撮影会を作成ボタン */}
-          <Button asChild size="sm" variant="cta">
-            <Link href="/photo-sessions/create">
-              <Plus className="h-4 w-4 mr-2" />
-              撮影会を作成
-            </Link>
-          </Button>
-        </div>
-      </StickyHeader>
-
       {/* スクロール可能なコンテンツエリア */}
       <div className="flex-1 overflow-y-auto min-h-0 flex flex-col">
-        {/* 検索・フィルター（サイドバーがない場合のみ表示） */}
-        {!filters && (
-          <Card className="m-4 flex-shrink-0">
-            <CardHeader>
-              <CardTitle className="text-lg">
-                {t('list.searchFilter')}
-              </CardTitle>
-            </CardHeader>
-            <Separator className="my-2" />
-            <CardContent>
-              <div className="space-y-4">
-                {/* 検索入力フィールド */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="relative">
-                    <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder={t('list.keywordPlaceholder')}
-                      value={searchQuery}
-                      onChange={e => setSearchQuery(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-
-                  <Input
-                    placeholder={t('list.locationPlaceholder')}
-                    value={locationFilter}
-                    onChange={e => {
-                      setLocationFilter(e.target.value);
-                      if (
-                        filterByActivityLocation &&
-                        e.target.value !== profile?.prefecture
-                      ) {
-                        setFilterByActivityLocation(false);
-                      }
-                    }}
-                  />
-                </div>
-
-                {/* 検索・リセットボタン */}
-                <div className="flex gap-2 justify-center">
-                  <Button
-                    onClick={handleSearch}
-                    disabled={loading}
-                    className="px-8"
-                    variant="action"
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 className="animate-spin-slow h-4 w-4 mr-2" />
-                        検索中...
-                      </>
-                    ) : (
-                      <>
-                        <SearchIcon className="h-4 w-4 mr-2" />
-                        検索
-                      </>
-                    )}
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setSearchQuery('');
-                      setLocationFilter('');
-                      setSortBy('start_time');
-                      setSortOrder('asc');
-                    }}
-                    disabled={loading}
-                  >
-                    {t('list.reset')}
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
         {/* 撮影会一覧 */}
         <div className="flex flex-col">
           {sessions.length === 0 && !loading ? (
@@ -805,31 +535,163 @@ export function PhotoSessionList({
               }
             />
           ) : (
-            <div className="space-y-3 md:space-y-4">
-              {sessions.map(session => {
-                const favoriteState =
-                  favoriteStates[`photo_session_${session.id}`];
-                return (
-                  <PhotoSessionCard
-                    key={session.id}
-                    session={session}
-                    onViewDetails={handleViewDetails}
-                    onEdit={handleEdit}
-                    isOwner={currentUser?.id === session.organizer_id}
-                    showActions={true}
-                    layoutMode="card"
-                    favoriteState={favoriteState}
-                    onFavoriteToggle={(isFavorited, favoriteCount) =>
-                      handleFavoriteToggle(
-                        session.id,
-                        isFavorited,
-                        favoriteCount
-                      )
-                    }
-                  />
-                );
-              })}
-            </div>
+            <>
+              {/* 横長カードレイアウト */}
+              {layout === 'card' && (
+                <>
+                  {/* PC版: 横長カード */}
+                  <div className="hidden md:block space-y-3 md:space-y-4 px-4 md:px-0">
+                    {sessions.map(session => {
+                      const favoriteState =
+                        favoriteStates[`photo_session_${session.id}`];
+                      return (
+                        <PhotoSessionCard
+                          key={session.id}
+                          session={session}
+                          onViewDetails={handleViewDetails}
+                          onEdit={handleEdit}
+                          isOwner={currentUser?.id === session.organizer_id}
+                          showActions={true}
+                          layoutMode="card"
+                          favoriteState={favoriteState}
+                          onFavoriteToggle={(isFavorited, favoriteCount) =>
+                            handleFavoriteToggle(
+                              session.id,
+                              isFavorited,
+                              favoriteCount
+                            )
+                          }
+                        />
+                      );
+                    })}
+                  </div>
+
+                  {/* モバイル版: コンパクトカード */}
+                  <div className="md:hidden space-y-4">
+                    {sessions.map(session => {
+                      const favoriteState =
+                        favoriteStates[`photo_session_${session.id}`];
+                      return (
+                        <PhotoSessionMobileCompactCard
+                          key={session.id}
+                          session={session}
+                          onViewDetails={handleViewDetails}
+                          favoriteState={favoriteState}
+                          onFavoriteToggle={(isFavorited, favoriteCount) =>
+                            handleFavoriteToggle(
+                              session.id,
+                              isFavorited,
+                              favoriteCount
+                            )
+                          }
+                        />
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+
+              {/* 3列グリッドレイアウト */}
+              {layout === 'grid' && (
+                <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 lg:gap-6 md:px-0">
+                  {sessions.map(session => {
+                    const favoriteState =
+                      favoriteStates[`photo_session_${session.id}`];
+                    return (
+                      <PhotoSessionGridCard
+                        key={session.id}
+                        session={session}
+                        onViewDetails={handleViewDetails}
+                        onEdit={handleEdit}
+                        isOwner={currentUser?.id === session.organizer_id}
+                        showActions={true}
+                        favoriteState={favoriteState}
+                        onFavoriteToggle={(isFavorited, favoriteCount) =>
+                          handleFavoriteToggle(
+                            session.id,
+                            isFavorited,
+                            favoriteCount
+                          )
+                        }
+                      />
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* テーブルレイアウト */}
+              {layout === 'table' && (
+                <>
+                  {/* PC版: テーブル */}
+                  <div className="hidden md:block bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden mx-4 md:mx-0">
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+                          <tr>
+                            <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                              {t('table.headers.sessionName')}
+                            </th>
+                            <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                              {t('table.headers.dateTime')}
+                            </th>
+                            <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                              {t('table.headers.location')}
+                            </th>
+                            <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                              {t('table.headers.bookingStatus')}
+                            </th>
+                            <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                              {t('table.headers.bookingType')}
+                            </th>
+                            <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                              {t('table.headers.price')}
+                            </th>
+                            <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                              {/* アクション列 */}
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                          {sessions.map(session => (
+                            <PhotoSessionTableRow
+                              key={session.id}
+                              session={session}
+                              onViewDetails={handleViewDetails}
+                              onEdit={handleEdit}
+                              isOwner={currentUser?.id === session.organizer_id}
+                              showActions={true}
+                            />
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* モバイル版: リストカード */}
+                  <div className="md:hidden space-y-4">
+                    {sessions.map(session => {
+                      const favoriteState =
+                        favoriteStates[`photo_session_${session.id}`];
+                      return (
+                        <PhotoSessionMobileListCard
+                          key={session.id}
+                          session={session}
+                          onViewDetails={handleViewDetails}
+                          favoriteState={favoriteState}
+                          onFavoriteToggle={(isFavorited, favoriteCount) =>
+                            handleFavoriteToggle(
+                              session.id,
+                              isFavorited,
+                              favoriteCount
+                            )
+                          }
+                        />
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </>
           )}
 
           {/* 無限スクロール用のトリガー要素 */}
@@ -841,7 +703,7 @@ export function PhotoSessionList({
               </div>
             )}
             {!hasMore && sessions.length > 0 && (
-              <p className="text-muted-foreground text-center">
+              <p className="text-muted-foreground text-center mt-8">
                 すべての撮影会を表示しました
               </p>
             )}
