@@ -42,7 +42,7 @@ export default function HomePage() {
                 <div
                   className="absolute inset-0 bg-cover bg-center bg-no-repeat"
                   style={{
-                    backgroundImage: `url('/images/lp/hero-main.png')`,
+                    backgroundImage: `url('/images/lp/hero-main.jpg')`,
                   }}
                 />
                 {/* オーバーレイ */}
@@ -292,7 +292,7 @@ export default function HomePage() {
                     <div
                       className="absolute inset-0 bg-cover bg-center"
                       style={{
-                        backgroundImage: `url('/images/lp/showcase.png')`,
+                        backgroundImage: `url('/images/lp/showcase.jpg')`,
                       }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-transparent opacity-60" />
@@ -373,7 +373,7 @@ export default function HomePage() {
               <div
                 className="absolute inset-0 bg-cover bg-center"
                 style={{
-                  backgroundImage: `url('/images/lp/cta-background.png')`,
+                  backgroundImage: `url('/images/lp/cta-background.jpg')`,
                 }}
               />
               <div className="absolute inset-0 bg-[#0a0a0a]/85" />

@@ -566,7 +566,7 @@ export default function LPVariant3() {
                       <div
                         className="absolute inset-0 bg-cover bg-center"
                         style={{
-                          backgroundImage: `url('/images/lp/showcase.png')`,
+                          backgroundImage: `url('/images/lp/showcase.jpg')`,
                         }}
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-[#030303] via-transparent to-transparent opacity-70" />

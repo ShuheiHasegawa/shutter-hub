@@ -194,28 +194,28 @@ export default function LPVariant2() {
       titleKey: 'features.wiki.title',
       descKey: 'features.wiki.description',
       color: '#10b981',
-      image: '/images/lp/showcase.png',
+      image: '/images/lp/showcase.jpg',
     },
     {
       icon: Users,
       titleKey: 'features.platform.title',
       descKey: 'features.platform.description',
       color: '#3b82f6',
-      image: '/images/lp/hero-main.png',
+      image: '/images/lp/hero-main.jpg',
     },
     {
       icon: Star,
       titleKey: 'features.review.title',
       descKey: 'features.review.description',
       color: '#8b5cf6',
-      image: '/images/lp/hero-secondary.png',
+      image: '/images/lp/hero-secondary.jpg',
     },
     {
       icon: Camera,
       titleKey: 'features.professional.title',
       descKey: 'features.professional.description',
       color: '#ec4899',
-      image: '/images/lp/cta-background.png',
+      image: '/images/lp/cta-background.jpg',
     },
   ];
 
@@ -340,7 +340,7 @@ export default function LPVariant2() {
                       <div
                         className="absolute inset-0 bg-cover bg-center"
                         style={{
-                          backgroundImage: `url('/images/lp/showcase.png')`,
+                          backgroundImage: `url('/images/lp/showcase.jpg')`,
                         }}
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
@@ -351,7 +351,7 @@ export default function LPVariant2() {
                       <div
                         className="absolute inset-0 bg-cover bg-center"
                         style={{
-                          backgroundImage: `url('/images/lp/hero-main.png')`,
+                          backgroundImage: `url('/images/lp/hero-main.jpg')`,
                         }}
                       />
                     </div>
@@ -359,7 +359,7 @@ export default function LPVariant2() {
                       <div
                         className="absolute inset-0 bg-cover bg-center"
                         style={{
-                          backgroundImage: `url('/images/lp/hero-secondary.png')`,
+                          backgroundImage: `url('/images/lp/hero-secondary.jpg')`,
                         }}
                       />
                     </div>
@@ -508,7 +508,7 @@ export default function LPVariant2() {
                       <div
                         className="absolute inset-0 bg-cover bg-center"
                         style={{
-                          backgroundImage: `url('/images/lp/showcase.png')`,
+                          backgroundImage: `url('/images/lp/showcase.jpg')`,
                         }}
                       />
                     </div>
