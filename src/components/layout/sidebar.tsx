@@ -106,7 +106,10 @@ export function Sidebar({ className }: SidebarProps) {
         },
         {
           title: '撮影会作成',
-          href: '/photo-sessions/create',
+          href:
+            profile?.user_type === 'organizer'
+              ? '/photo-sessions/create/organizer'
+              : '/photo-sessions/create',
           icon: Plus,
         },
         {
@@ -344,7 +347,10 @@ export function MobileSidebarTrigger() {
         },
         {
           title: '撮影会作成',
-          href: '/photo-sessions/create',
+          href:
+            profile?.user_type === 'organizer'
+              ? '/photo-sessions/create/organizer'
+              : '/photo-sessions/create',
           icon: Plus,
         },
         {

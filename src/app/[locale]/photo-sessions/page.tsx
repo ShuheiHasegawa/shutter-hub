@@ -298,7 +298,13 @@ export default function PhotoSessionsPage() {
 
               {/* 撮影会を作成ボタン */}
               <Button asChild size="sm" variant="cta">
-                <Link href="/photo-sessions/create">
+                <Link
+                  href={
+                    profile?.user_type === 'organizer'
+                      ? '/photo-sessions/create/organizer'
+                      : '/photo-sessions/create'
+                  }
+                >
                   <Plus className="h-4 w-4 mr-2" />
                   撮影会を作成
                 </Link>

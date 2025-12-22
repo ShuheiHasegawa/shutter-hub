@@ -46,7 +46,7 @@ export function AppHeader({
 }: AppHeaderProps) {
   const t = useTranslations('navigation');
   const { logout } = useAuth();
-  const { user, avatarUrl, displayName } = useProfile();
+  const { user, avatarUrl, displayName, profile } = useProfile();
 
   const handleSignOut = async () => {
     await logout();
@@ -159,7 +159,11 @@ export function AppHeader({
                     {user && (
                       <NavigationMenuLink asChild>
                         <Link
-                          href="/photo-sessions/create"
+                          href={
+                            profile?.user_type === 'organizer'
+                              ? '/photo-sessions/create/organizer'
+                              : '/photo-sessions/create'
+                          }
                           className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                         >
                           <div className="text-sm font-medium leading-none">
@@ -292,7 +296,11 @@ export function AppHeader({
               </Link>
               {user && (
                 <Link
-                  href="/photo-sessions/create"
+                  href={
+                    profile?.user_type === 'organizer'
+                      ? '/photo-sessions/create/organizer'
+                      : '/photo-sessions/create'
+                  }
                   className="block px-2 py-1 text-lg"
                 >
                   撮影会を開催

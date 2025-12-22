@@ -286,7 +286,7 @@ export function UpcomingOrganizerSessions({
 
         {/* 新規作成ボタン */}
         <div className="pt-2">
-          <Link href="/ja/photo-sessions/create">
+          <Link href="/photo-sessions/create/organizer">
             <Button variant="outline" className="w-full gap-2">
               <Plus className="h-4 w-4" />
               新しい撮影会を作成

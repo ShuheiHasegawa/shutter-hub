@@ -20,6 +20,7 @@ import { LoadingState } from '@/components/ui/loading-state';
 import { Loader2, Camera } from 'lucide-react';
 import { usePhotoSessions } from '@/hooks/usePhotoSessions';
 import { useAuth } from '@/hooks/useAuth';
+import { useProfile } from '@/hooks/useSimpleProfile';
 import type { PhotoSessionWithOrganizer, BookingType } from '@/types/database';
 import { useTranslations } from 'next-intl';
 
@@ -86,6 +87,7 @@ export function PhotoSessionList({
   const sortBy = sortByProp || 'start_time';
   const sortOrder = sortOrderProp || 'asc';
   const { user: currentUser } = useAuth();
+  const { profile } = useProfile();
   const [favoriteStates, setFavoriteStates] = useState<
     Record<string, { isFavorited: boolean; favoriteCount: number }>
   >({});
@@ -463,7 +465,11 @@ export function PhotoSessionList({
   };
 
   const handleCreate = () => {
-    router.push('/photo-sessions/create');
+    const createUrl =
+      profile?.user_type === 'organizer'
+        ? '/photo-sessions/create/organizer'
+        : '/photo-sessions/create';
+    router.push(createUrl);
   };
 
   // お気に入り状態変更のコールバック
