@@ -152,15 +152,27 @@ export function PhotoSessionList({
 
   // SWRデータ反映
   useEffect(() => {
-    if (!isLoadingRef.current) return;
-    if (swrLoading) return;
+    // キャッシュからデータが返ってきた場合も反映する
+    if (swrLoading) {
+      // ローディング中は何もしない
+      return;
+    }
+
+    // エラーチェック
+    if (swrError) {
+      logger.error('撮影会一覧取得エラー:', swrError);
+      setLoading(false);
+      setLoadingMore(false);
+      isLoadingRef.current = false;
+      return;
+    }
+
+    // データが存在しない場合
+    if (!swrSessions) {
+      return;
+    }
 
     try {
-      if (swrError) {
-        logger.error('撮影会一覧取得エラー:', swrError);
-        return;
-      }
-
       let fetched = (swrSessions || []) as PhotoSessionWithOrganizer[];
       // クライアント側で「空きあり」を絞り込む（サーバー側比較が不可のため）
       const onlyAvail = (appliedFilters?.onlyAvailable ?? false) || false;
@@ -181,6 +193,10 @@ export function PhotoSessionList({
         取得件数: newSessions.length,
         ページ: dataPage,
         リセット: pendingResetRef.current,
+        isLoadingRef: isLoadingRef.current,
+        swrLoading,
+        swrError: !!swrError,
+        キャッシュヒット: !swrLoading && swrSessions !== undefined,
       });
 
       if (pendingResetRef.current) {
@@ -329,11 +345,22 @@ export function PhotoSessionList({
 
   // 初回ロードのみ（1回だけ実行）
   useEffect(() => {
+    // コンポーネントマウント時にrefをリセット
+    isLoadingRef.current = false;
+    pendingResetRef.current = false;
+
     if (prevFiltersRef.current === '') {
       prevFiltersRef.current = 'initialized'; // 初期化済みマーク
       logger.info('[PhotoSessionList] 初回ロード開始', { organizerId });
       loadSessions(true);
     }
+
+    // クリーンアップ: アンマウント時にrefをリセット
+    return () => {
+      prevFiltersRef.current = '';
+      isLoadingRef.current = false;
+      pendingResetRef.current = false;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // 依存関係なし - 1回のみ実行
 
