@@ -105,27 +105,25 @@ export function PhotoSessionGridCard({
           </div>
         )}
         {/* Favorite Button: Top Right */}
-        <div className="absolute" style={{ top: '4px', right: '4px' }}>
-          <CardFavoriteButton
-            favoriteType="photo_session"
-            favoriteId={session.id}
-            size="sm"
-            initialState={
-              favoriteState
-                ? {
-                    isFavorited: favoriteState.isFavorited,
-                    favoriteCount: favoriteState.favoriteCount,
-                    isAuthenticated: true,
-                  }
-                : {
-                    isFavorited: false,
-                    favoriteCount: 0,
-                    isAuthenticated: false,
-                  }
-            }
-            onToggle={onFavoriteToggle}
-          />
-        </div>
+        <CardFavoriteButton
+          favoriteType="photo_session"
+          favoriteId={session.id}
+          size="sm"
+          initialState={
+            favoriteState
+              ? {
+                  isFavorited: favoriteState.isFavorited,
+                  favoriteCount: favoriteState.favoriteCount,
+                  isAuthenticated: true,
+                }
+              : {
+                  isFavorited: false,
+                  favoriteCount: 0,
+                  isAuthenticated: false,
+                }
+          }
+          onToggle={onFavoriteToggle}
+        />
       </div>
 
       {/* Content Section */}

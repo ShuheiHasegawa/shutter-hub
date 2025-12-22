@@ -13,13 +13,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { StudioSearchFilters } from '@/types/database';
 import { PlusIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { PREFECTURES } from '@/constants/japan';
 import { STUDIO_SORT_OPTIONS, DEFAULT_STUDIO_SEARCH } from '@/constants/studio';
 import Link from 'next/link';
 import { PageTitleHeader } from '@/components/ui/page-title-header';
+import { StickyHeader } from '@/components/ui/sticky-header';
 import { BuildingIcon } from 'lucide-react';
 
 export default function StudiosPage() {
@@ -80,112 +80,106 @@ export default function StudiosPage() {
           </Link>
         }
       />
-      <div className="mx-auto space-y-4">
-        {/* 検索・フィルター */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <MagnifyingGlassIcon className="w-5 h-5" />
-              検索・フィルター
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-              {/* キーワード検索 */}
-              <div>
-                <label className="text-sm font-medium text-theme-text-primary">
-                  キーワード
-                </label>
-                <Input
-                  placeholder="スタジオ名、住所で検索"
-                  value={filters.query || ''}
-                  onChange={e => handleSearchChange('query', e.target.value)}
-                />
-              </div>
-
-              {/* 都道府県 */}
-              <div>
-                <label className="text-sm font-medium text-theme-text-primary">
-                  都道府県
-                </label>
-                <Select
-                  value={filters.prefecture || ''}
-                  onValueChange={value =>
-                    handleSearchChange('prefecture', value)
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="都道府県を選択" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">すべて</SelectItem>
-                    {PREFECTURES.map(prefecture => (
-                      <SelectItem key={prefecture} value={prefecture}>
-                        {prefecture}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* ソート */}
-              <div>
-                <label className="text-sm font-medium text-theme-text-primary">
-                  並び順
-                </label>
-                <Select
-                  value={`${filters.sort_by}_${filters.sort_order}`}
-                  onValueChange={value => {
-                    const [sort_by, sort_order] = value.split('_');
-                    setFilters(prev => ({
-                      ...prev,
-                      sort_by: sort_by as
-                        | 'name'
-                        | 'rating'
-                        | 'price'
-                        | 'distance'
-                        | 'created_at',
-                      sort_order: sort_order as 'asc' | 'desc',
-                    }));
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {STUDIO_SORT_OPTIONS.map(option => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* 検索・リセットボタン */}
-              <div className="flex items-end space-x-2">
-                <Button
-                  onClick={handleSearch}
-                  className="flex-1"
-                  variant="accent"
-                >
-                  <MagnifyingGlassIcon className="w-4 h-4 mr-2" />
-                  検索
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={handleReset}
-                  className="flex-1"
-                >
-                  リセット
-                </Button>
-              </div>
+      <div className="flex flex-col flex-1 min-h-0">
+        {/* 検索・フィルター（StickyHeaderで固定） */}
+        <StickyHeader className="px-4 space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            {/* キーワード検索 */}
+            <div>
+              <label className="text-sm font-medium text-theme-text-primary">
+                キーワード
+              </label>
+              <Input
+                placeholder="スタジオ名、住所で検索"
+                value={filters.query || ''}
+                onChange={e => handleSearchChange('query', e.target.value)}
+              />
             </div>
-          </CardContent>
-        </Card>
+
+            {/* 都道府県 */}
+            <div>
+              <label className="text-sm font-medium text-theme-text-primary">
+                都道府県
+              </label>
+              <Select
+                value={filters.prefecture || ''}
+                onValueChange={value => handleSearchChange('prefecture', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="都道府県を選択" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">すべて</SelectItem>
+                  {PREFECTURES.map(prefecture => (
+                    <SelectItem key={prefecture} value={prefecture}>
+                      {prefecture}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* ソート */}
+            <div>
+              <label className="text-sm font-medium text-theme-text-primary">
+                並び順
+              </label>
+              <Select
+                value={`${filters.sort_by}_${filters.sort_order}`}
+                onValueChange={value => {
+                  const [sort_by, sort_order] = value.split('_');
+                  setFilters(prev => ({
+                    ...prev,
+                    sort_by: sort_by as
+                      | 'name'
+                      | 'rating'
+                      | 'price'
+                      | 'distance'
+                      | 'created_at',
+                    sort_order: sort_order as 'asc' | 'desc',
+                  }));
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {STUDIO_SORT_OPTIONS.map(option => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* 検索・リセットボタン */}
+            <div className="flex items-end space-x-2">
+              <Button
+                onClick={handleSearch}
+                className="flex-1"
+                variant="accent"
+              >
+                <MagnifyingGlassIcon className="w-4 h-4 mr-2" />
+                検索
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleReset}
+                className="flex-1"
+              >
+                リセット
+              </Button>
+            </div>
+          </div>
+        </StickyHeader>
 
         {/* スタジオ一覧 */}
-        <StudiosList filters={filters} triggerSearch={triggerSearch} />
+        <div className="flex-1 overflow-y-auto min-h-0">
+          <div className="px-4 pb-16 md:pb-16">
+            <StudiosList filters={filters} triggerSearch={triggerSearch} />
+          </div>
+        </div>
       </div>
     </AuthenticatedLayout>
   );

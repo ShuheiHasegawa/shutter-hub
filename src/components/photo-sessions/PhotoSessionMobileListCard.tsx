@@ -9,7 +9,7 @@ import {
   FormattedPrice,
   FormattedDateTime,
 } from '@/components/ui/formatted-display';
-import { CardFavoriteButton } from '@/components/ui/favorite-heart-button';
+import { FavoriteHeartButton } from '@/components/ui/favorite-heart-button';
 import Link from 'next/link';
 
 interface PhotoSessionMobileListCardProps {
@@ -71,10 +71,13 @@ export function PhotoSessionMobileListCard({
           )}
         </div>
         <div className="flex-shrink-0 ml-2">
-          <CardFavoriteButton
+          <FavoriteHeartButton
             favoriteType="photo_session"
             favoriteId={session.id}
             size="sm"
+            position="inline"
+            variant="ghost"
+            iconOnly
             initialState={
               favoriteState
                 ? {

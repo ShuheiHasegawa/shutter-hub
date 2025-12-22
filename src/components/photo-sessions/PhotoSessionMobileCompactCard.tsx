@@ -9,7 +9,7 @@ import {
   FormattedPrice,
   FormattedDateTime,
 } from '@/components/ui/formatted-display';
-import { CardFavoriteButton } from '@/components/ui/favorite-heart-button';
+import { FavoriteHeartButton } from '@/components/ui/favorite-heart-button';
 import { EmptyImage } from '@/components/ui/empty-image';
 import { Camera } from 'lucide-react';
 import Link from 'next/link';
@@ -116,10 +116,13 @@ export function PhotoSessionMobileCompactCard({
 
       {/* お気に入りボタン */}
       <div className="flex-shrink-0">
-        <CardFavoriteButton
+        <FavoriteHeartButton
           favoriteType="photo_session"
           favoriteId={session.id}
           size="sm"
+          position="inline"
+          variant="ghost"
+          iconOnly
           initialState={
             favoriteState
               ? {
