@@ -127,14 +127,21 @@
   - [x] revalidateIfStale: trueを明示的に設定
 - [x] **Phase 4**: デバッグログの強化✅
   - [x] SWRデータ反映時の詳細ログ追加
+- [x] **Phase 5**: SWRデータ反映ロジックの根本修正（v2）✅
+  - [x] swrLoading時のloading状態管理改善（swrLoadingがtrueの時はloadingもtrueに設定）
+  - [x] swrSessionsがundefinedでもloadingをfalseに設定
+  - [x] 初回ロードロジックの簡素化（明示的なloadSessions呼び出しを削除、SWRに任せる）
+  - [x] SWRのfallbackData追加（{ list: [], totalCount: 0 }）でundefinedを防止
 - **優先度**: ✅ 完了（スマホでのページ遷移時のスケルトンローディング問題解消）
-- **実装時間**: 約30分（2025年12月22日完了）
+- **実装時間**: 約50分（2025年12月22日完了：Phase 1-4は30分、Phase 5は20分）
 - **技術成果**:
   - **✅ 状態管理改善**: コンポーネントマウント時のrefリセット追加
   - **✅ SWRデータ反映改善**: キャッシュからのデータも確実に反映
   - **✅ ログ強化**: 問題発生時の原因特定が容易に
+  - **✅ 根本修正**: SWRのloading状態とコンポーネントのloading状態の同期を改善
+  - **✅ fallbackData追加**: undefinedによる早期リターンを防止
 - **問題**: スマホでページ遷移を繰り返すとスケルトンローディング状態のまま表示されない
-- **原因**: SWRキャッシュとコンポーネント状態管理の不整合
+- **原因**: SWRキャッシュとコンポーネント状態管理の不整合、swrSessionsがundefined時の早期リターン
 
 ### **✅ t0-074: formatted-display match エラー修正（エラーハンドリング改善）**
 
@@ -147,14 +154,21 @@
 - [x] **Phase 3**: エラーハンドリングの追加✅
   - [x] normalizeDate関数全体をtry-catchで囲む
   - [x] エラー発生時のログ出力とフォールバック処理
-- **優先度**: ✅ 完了（詳細画面でのmatchエラー解消）
-- **実装時間**: 約20分（2025年12月22日完了）
+- [x] **Phase 4**: 他のファイルでのmatchエラー対策✅
+  - [x] UserScheduleManager.tsx: organizerLabelsByDay[day]のundefinedチェック
+  - [x] auth-error.ts: errorMessageのundefinedチェック
+  - [x] CreatePostForm.tsx: textのundefinedチェック（extractHashtagsFromContent, extractMentionsFromContent）
+  - [x] quick-photobook-upload.ts: urlObj.pathnameのundefinedチェック
+  - [x] MessageModeration.tsx: contentのundefinedチェック（detectSpam関数）
+- **優先度**: ✅ 完了（詳細画面でのmatchエラー解消、全ファイルでのmatchエラー対策完了）
+- **実装時間**: 約35分（2025年12月22日完了：Phase 1-3は20分、Phase 4は15分）
 - **技術成果**:
   - **✅ 型安全性向上**: null/undefinedを安全に処理
   - **✅ エラーハンドリング強化**: try-catchによる安全な処理
   - **✅ 早期リターン**: 無効な値の早期処理
+  - **✅ 包括的対策**: プロジェクト全体でのmatch()呼び出し箇所のundefinedチェック追加
 - **問題**: 詳細画面で「Cannot read properties of undefined (reading 'match')」エラーが発生
-- **原因**: formatted-display.tsxのdateValue検証不足
+- **原因**: formatted-display.tsxのdateValue検証不足、その他のファイルでもmatch()呼び出し前のundefinedチェック不足
 
 ### **🔴 t0-070: プロフィールページパフォーマンス最適化（実装進行中）**
 

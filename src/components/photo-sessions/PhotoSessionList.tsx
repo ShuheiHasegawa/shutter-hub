@@ -152,9 +152,9 @@ export function PhotoSessionList({
 
   // SWRデータ反映
   useEffect(() => {
-    // キャッシュからデータが返ってきた場合も反映する
+    // SWRがローディング中の場合
     if (swrLoading) {
-      // ローディング中は何もしない
+      setLoading(true);
       return;
     }
 
@@ -167,8 +167,9 @@ export function PhotoSessionList({
       return;
     }
 
-    // データが存在しない場合
+    // データが存在しない場合でもloadingをfalseに
     if (!swrSessions) {
+      setLoading(false);
       return;
     }
 
@@ -343,17 +344,12 @@ export function PhotoSessionList({
     loadSessions(true);
   };
 
-  // 初回ロードのみ（1回だけ実行）
+  // 初回ロードはSWRが自動的に行うため、明示的なloadSessionsは不要
+  // ただし、refのリセットは必要
   useEffect(() => {
     // コンポーネントマウント時にrefをリセット
     isLoadingRef.current = false;
     pendingResetRef.current = false;
-
-    if (prevFiltersRef.current === '') {
-      prevFiltersRef.current = 'initialized'; // 初期化済みマーク
-      logger.info('[PhotoSessionList] 初回ロード開始', { organizerId });
-      loadSessions(true);
-    }
 
     // クリーンアップ: アンマウント時にrefをリセット
     return () => {
@@ -361,7 +357,6 @@ export function PhotoSessionList({
       isLoadingRef.current = false;
       pendingResetRef.current = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // 依存関係なし - 1回のみ実行
 
   // 検索トリガー変更時の処理

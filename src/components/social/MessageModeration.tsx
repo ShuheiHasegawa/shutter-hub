@@ -44,6 +44,9 @@ import { toast } from 'sonner';
 const detectSpam = (
   content: string
 ): { isSpam: boolean; confidence: number; reasons: string[] } => {
+  if (!content || typeof content !== 'string') {
+    return { isSpam: false, confidence: 0, reasons: [] };
+  }
   const reasons: string[] = [];
   let spamScore = 0;
 

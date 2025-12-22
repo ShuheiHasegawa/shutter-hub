@@ -132,6 +132,9 @@ export function getAuthErrorMessageFromResponse(
  * @returns エラーコード（見つからない場合はnull）
  */
 export function extractErrorCode(errorMessage: string): AuthErrorCode | null {
+  if (!errorMessage || typeof errorMessage !== 'string') {
+    return null;
+  }
   const match = errorMessage.match(/^([A-Z_]+):/);
   if (match) {
     return match[1] as AuthErrorCode;

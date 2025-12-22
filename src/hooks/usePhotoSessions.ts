@@ -213,6 +213,7 @@ export function usePhotoSessions(
       dedupingInterval: 30_000, // 30秒: 詳細画面からの戻り時の不要なクエリ実行を抑制
       errorRetryCount: 2,
       revalidateIfStale: true, // 古いデータでも再検証（キャッシュからのデータも確実に反映）
+      fallbackData: { list: [], totalCount: 0 }, // 初期データを設定（undefinedを防ぐ）
     }
   );
 

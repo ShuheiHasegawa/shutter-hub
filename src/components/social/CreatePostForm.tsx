@@ -144,12 +144,18 @@ export function CreatePostForm({
   };
 
   const extractHashtagsFromContent = (text: string): string[] => {
+    if (!text || typeof text !== 'string') {
+      return [];
+    }
     const hashtagRegex = /#([a-zA-Z0-9_]+)/g;
     const matches = text.match(hashtagRegex);
     return matches ? matches.map(match => match.slice(1).toLowerCase()) : [];
   };
 
   const extractMentionsFromContent = (text: string): string[] => {
+    if (!text || typeof text !== 'string') {
+      return [];
+    }
     const mentionRegex = /@([a-zA-Z0-9_]+)/g;
     const matches = text.match(mentionRegex);
     return matches ? matches.map(match => match.slice(1)) : [];

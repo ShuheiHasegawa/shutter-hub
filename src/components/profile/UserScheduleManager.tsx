@@ -204,6 +204,12 @@ function UnifiedCalendarGrid({
                                       {(() => {
                                         const timeText =
                                           organizerLabelsByDay[day];
+                                        if (
+                                          !timeText ||
+                                          typeof timeText !== 'string'
+                                        ) {
+                                          return timeText || '●';
+                                        }
                                         const timeMatch = timeText.match(
                                           /(\d{1,2}:\d{2})-(\d{1,2}:\d{2})/
                                         );

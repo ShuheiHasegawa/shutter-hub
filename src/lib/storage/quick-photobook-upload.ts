@@ -230,6 +230,9 @@ export async function deletePhotobookImage(
     const extractPath = (url: string): string | null => {
       try {
         const urlObj = new URL(url);
+        if (!urlObj.pathname || typeof urlObj.pathname !== 'string') {
+          return null;
+        }
         const pathMatch = urlObj.pathname.match(
           /\/storage\/v1\/object\/public\/photobooks\/(.+)$/
         );
