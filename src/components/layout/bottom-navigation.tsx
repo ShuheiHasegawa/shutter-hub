@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import {
   LayoutDashboard,
   Camera,
@@ -13,11 +13,13 @@ import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { Link } from '@/i18n/routing';
 import { logger } from '@/lib/utils/logger';
+import { useBottomNavigationStore } from '@/stores/bottom-navigation-store';
 
 export function BottomNavigation() {
   const t = useTranslations('navigation');
   const pathname = usePathname();
-  const [isVisible, setIsVisible] = useState(true);
+  const isVisible = useBottomNavigationStore(state => state.isVisible);
+  const setIsVisible = useBottomNavigationStore(state => state.setIsVisible);
   const lastScrollY = useRef(0);
   const scrollThreshold = 10; // スクロール検知の閾値（px）
 
@@ -148,36 +150,34 @@ export function BottomNavigation() {
         // スクロール量が閾値を超えた場合のみ処理
         if (Math.abs(scrollDifference) > scrollThreshold) {
           const shouldShow = scrollDifference < 0;
-          setIsVisible(prev => {
-            if (prev !== shouldShow) {
-              logger.debug(
-                `[BottomNavigation] State changed: ${prev ? 'visible' : 'hidden'} -> ${shouldShow ? 'visible' : 'hidden'}`,
-                {
-                  component: 'BottomNavigation',
-                  scrollDifference,
-                  currentScrollY,
-                }
-              );
-            }
-            return shouldShow;
-          });
+          const currentVisible = useBottomNavigationStore.getState().isVisible;
+          if (currentVisible !== shouldShow) {
+            logger.debug(
+              `[BottomNavigation] State changed: ${currentVisible ? 'visible' : 'hidden'} -> ${shouldShow ? 'visible' : 'hidden'}`,
+              {
+                component: 'BottomNavigation',
+                scrollDifference,
+                currentScrollY,
+              }
+            );
+          }
+          setIsVisible(shouldShow);
           lastScrollY.current = currentScrollY;
         }
 
         // ページトップ付近では常に表示
         if (currentScrollY < 100) {
-          setIsVisible(prev => {
-            if (!prev) {
-              logger.debug(
-                '[BottomNavigation] State changed: hidden -> visible (near top)',
-                {
-                  component: 'BottomNavigation',
-                  currentScrollY,
-                }
-              );
-            }
-            return true;
-          });
+          const currentVisible = useBottomNavigationStore.getState().isVisible;
+          if (!currentVisible) {
+            logger.debug(
+              '[BottomNavigation] State changed: hidden -> visible (near top)',
+              {
+                component: 'BottomNavigation',
+                currentScrollY,
+              }
+            );
+          }
+          setIsVisible(true);
         }
       };
 
@@ -247,7 +247,7 @@ export function BottomNavigation() {
         cleanup();
       }
     };
-  }, [scrollThreshold]);
+  }, [scrollThreshold, setIsVisible]);
 
   const navigationItems = [
     {

@@ -4,6 +4,7 @@ import { ReactNode, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { logger } from '@/lib/utils/logger';
+import { useBottomNavigationStore } from '@/stores/bottom-navigation-store';
 
 export interface ActionBarButton {
   id: string;
@@ -70,6 +71,7 @@ export function ActionBar({
   autoHide = false, // デフォルトfalse（既存動作維持）
 }: ActionBarProps) {
   const [isVisible, setIsVisible] = useState(true);
+  const isBottomNavVisible = useBottomNavigationStore(state => state.isVisible);
 
   // autoHide有効時：Sentinel要素の可視状態を監視
   useEffect(() => {
@@ -143,7 +145,9 @@ export function ActionBar({
         sticky && 'fixed right-0 z-40',
         sticky && 'left-0 md:left-64',
         sticky && 'w-full md:w-[calc(100%-16rem)]', // サイドバー幅（16rem = 256px）を考慮
-        sticky && 'bottom-16 md:bottom-0', // スマホでは下部ナビゲーション分（64px）のマージン、デスクトップでは通常のbottom-0
+        // ボトムナビゲーション表示状態に応じて動的にbottom位置を調整
+        sticky && isBottomNavVisible && 'bottom-16 md:bottom-0', // ボトムナビゲーション表示時
+        sticky && !isBottomNavVisible && 'bottom-0', // ボトムナビゲーション非表示時
         !sticky && 'w-full',
         backgroundClasses[background],
         className

@@ -10,6 +10,7 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
+import { useBottomNavigationStore } from '@/stores/bottom-navigation-store';
 
 export interface ActionButton {
   id: string;
@@ -64,6 +65,8 @@ export function ActionSheet({
   className,
   contentClassName,
 }: ActionSheetProps) {
+  const isBottomNavVisible = useBottomNavigationStore(state => state.isVisible);
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetTrigger asChild>{trigger}</SheetTrigger>
@@ -71,6 +74,8 @@ export function ActionSheet({
         side="bottom"
         className={cn(
           'max-h-[80vh] rounded-t-[10px] bg-background border-border',
+          // ボトムナビゲーション表示時のみpb-safeを適用
+          isBottomNavVisible ? 'pb-safe' : 'pb-4',
           contentClassName
         )}
       >
@@ -91,7 +96,9 @@ export function ActionSheet({
 
         <div
           className={cn(
-            'grid gap-3 pb-safe',
+            'grid gap-3',
+            // ボトムナビゲーション表示時のみpb-safeを適用
+            isBottomNavVisible ? 'pb-safe' : 'pb-4',
             maxColumns === 1 && 'grid-cols-1',
             maxColumns === 2 && 'grid-cols-2',
             maxColumns === 3 && 'grid-cols-3',
