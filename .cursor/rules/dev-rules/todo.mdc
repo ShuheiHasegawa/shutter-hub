@@ -136,6 +136,26 @@
 - **問題**: スマホでページ遷移を繰り返すとスケルトンローディング状態のまま表示されない
 - **原因**: SWRキャッシュとコンポーネント状態管理の不整合
 
+### **✅ t0-074: formatted-display match エラー修正（エラーハンドリング改善）**
+
+- [x] **Phase 1**: dateValue検証の強化✅
+  - [x] normalizeDate関数の型定義を拡張（null | undefined対応）
+  - [x] match()呼び出し前の安全な検証
+- [x] **Phase 2**: 呼び出し元の検証✅
+  - [x] FormattedDateTimePropsの型定義を拡張
+  - [x] valueがnull/undefinedの場合の早期リターン追加
+- [x] **Phase 3**: エラーハンドリングの追加✅
+  - [x] normalizeDate関数全体をtry-catchで囲む
+  - [x] エラー発生時のログ出力とフォールバック処理
+- **優先度**: ✅ 完了（詳細画面でのmatchエラー解消）
+- **実装時間**: 約20分（2025年12月22日完了）
+- **技術成果**:
+  - **✅ 型安全性向上**: null/undefinedを安全に処理
+  - **✅ エラーハンドリング強化**: try-catchによる安全な処理
+  - **✅ 早期リターン**: 無効な値の早期処理
+- **問題**: 詳細画面で「Cannot read properties of undefined (reading 'match')」エラーが発生
+- **原因**: formatted-display.tsxのdateValue検証不足
+
 ### **🔴 t0-070: プロフィールページパフォーマンス最適化（実装進行中）**
 
 - [x] **Phase 1**: 現状分析と計画策定（implementation_plan.md作成）✅

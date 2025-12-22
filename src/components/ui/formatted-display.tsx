@@ -27,11 +27,11 @@ export type PriceFormat =
 
 interface FormattedDateTimeProps {
   /** 表示する日時（Date、ISO文字列、datetime-local形式） */
-  value: Date | string;
+  value: Date | string | null | undefined;
   /** 表示フォーマット */
   format: DateTimeFormat;
   /** 終了日時（範囲表示の場合） */
-  endValue?: Date | string;
+  endValue?: Date | string | null | undefined;
   /** ロケール（省略時は現在のロケール） */
   locale?: string;
   /** カスタムクラス名 */
@@ -91,57 +91,79 @@ export function FormattedDateTime({
     }
   }, [user, propTimeZone]);
 
-  // デバッグ: value が undefined/null の場合をログ出力
+  // デバッグ: value が空文字列の場合をログ出力
   useEffect(() => {
-    if (value === undefined || value === null || value === '') {
-      logger.warn('[FormattedDateTime] Invalid value received:', {
+    if (value === '') {
+      logger.warn('[FormattedDateTime] Empty string value received:', {
         value,
         format,
       });
     }
   }, [value, format]);
 
-  // 日時の正規化（datetime-local形式やISO文字列をDateオブジェクトに変換）
-  const normalizeDate = (dateValue: Date | string): Date | null => {
-    let date: Date;
+  // valueがnull/undefinedの場合は早期リターン（Hooksの後に配置）
+  if (value === null || value === undefined) {
+    return (
+      <time className={cn('inline-block', className)} aria-label={ariaLabel}>
+        <span className="text-muted-foreground">日時不明</span>
+      </time>
+    );
+  }
 
-    if (dateValue instanceof Date) {
-      date = dateValue;
-    } else if (typeof dateValue === 'string') {
-      // 空文字列やnull/undefined文字列のチェック
-      if (
-        !dateValue ||
-        dateValue.trim() === '' ||
-        dateValue === 'null' ||
-        dateValue === 'undefined'
-      ) {
+  // 日時の正規化（datetime-local形式やISO文字列をDateオブジェクトに変換）
+  const normalizeDate = (
+    dateValue: Date | string | null | undefined
+  ): Date | null => {
+    try {
+      let date: Date;
+
+      if (dateValue instanceof Date) {
+        date = dateValue;
+      } else if (typeof dateValue === 'string') {
+        // 空文字列やnull/undefined文字列のチェック
+        if (
+          !dateValue ||
+          dateValue.trim() === '' ||
+          dateValue === 'null' ||
+          dateValue === 'undefined'
+        ) {
+          return null;
+        }
+
+        // datetime-local形式（YYYY-MM-DDTHH:mm）の場合 - 秒とタイムゾーンがない場合のみ
+        // ISO 8601タイムゾーンオフセット（+00:00 や -05:00）は除外する
+        // dateValueが文字列であることを確認してからmatch()を呼ぶ
+        const hasNegativeTimezoneOffset =
+          dateValue.match(/-\d{2}:\d{2}$/) !== null;
+        const isDateTimeLocal =
+          dateValue.includes('T') &&
+          !dateValue.includes('Z') &&
+          !dateValue.includes('+') &&
+          !hasNegativeTimezoneOffset; // マイナスのタイムゾーンオフセットを除外
+
+        if (isDateTimeLocal && !dateValue.includes('.')) {
+          // 秒がない場合のみ ':00' を追加
+          date = new Date(dateValue + ':00');
+        } else {
+          date = new Date(dateValue);
+        }
+      } else {
         return null;
       }
 
-      // datetime-local形式（YYYY-MM-DDTHH:mm）の場合 - 秒とタイムゾーンがない場合のみ
-      // ISO 8601タイムゾーンオフセット（+00:00 や -05:00）は除外する
-      const isDateTimeLocal =
-        dateValue.includes('T') &&
-        !dateValue.includes('Z') &&
-        !dateValue.includes('+') &&
-        !dateValue.match(/-\d{2}:\d{2}$/); // マイナスのタイムゾーンオフセットを除外
-
-      if (isDateTimeLocal && !dateValue.includes('.')) {
-        // 秒がない場合のみ ':00' を追加
-        date = new Date(dateValue + ':00');
-      } else {
-        date = new Date(dateValue);
+      // 無効な日付のチェック
+      if (isNaN(date.getTime())) {
+        return null;
       }
-    } else {
-      return null;
-    }
 
-    // 無効な日付のチェック
-    if (isNaN(date.getTime())) {
-      return null;
+      return date;
+    } catch (error) {
+      logger.error('[FormattedDateTime] Date normalization error:', error, {
+        dateValue,
+        dateValueType: typeof dateValue,
+      });
+      return null; // エラー時はnullを返す
     }
-
-    return date;
   };
 
   const startDate = normalizeDate(value);
