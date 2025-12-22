@@ -210,7 +210,7 @@ export function usePhotoSessions(
     {
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
-      dedupingInterval: 10_000, // 10秒: 高頻度操作の重複抑制
+      dedupingInterval: 30_000, // 30秒: 詳細画面からの戻り時の不要なクエリ実行を抑制
       errorRetryCount: 2,
     }
   );

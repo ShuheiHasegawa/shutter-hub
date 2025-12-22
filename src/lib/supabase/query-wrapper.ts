@@ -109,7 +109,7 @@ export async function executeQuery<T>(
   queryBuilder: (supabase: SupabaseClient) => PromiseLike<unknown>,
   options: QueryOptions = {}
 ): Promise<T> {
-  const { detailed: _detailed = false, timeout: _timeout = 30000 } = options;
+  const { detailed: _detailed = false, timeout: _timeout = 60000 } = options;
 
   // 本番環境での最適化
   const isProduction = process.env.NODE_ENV === 'production';
@@ -144,7 +144,7 @@ async function executeWithMonitoring<T>(
   queryBuilder: (supabase: SupabaseClient) => PromiseLike<unknown>,
   options: QueryOptions
 ): Promise<T> {
-  const { detailed = false, timeout = 30000 } = options;
+  const { detailed = false, timeout = 60000 } = options;
   const startTime = performance.now();
   const callId = queryMonitor.startCall(operation);
 
@@ -197,6 +197,16 @@ async function executeWithMonitoring<T>(
     const errorMessage =
       error instanceof Error ? error.message : 'Unknown error';
 
+    // タイムアウトエラーの場合は詳細情報を追加
+    const isTimeout = errorMessage.includes('timeout');
+    const additionalInfo = isTimeout
+      ? {
+          timeout: timeout,
+          duration: duration,
+          operation,
+        }
+      : {};
+
     // エラーメトリクス
     const metrics: QueryMetrics = {
       operation,
@@ -213,6 +223,19 @@ async function executeWithMonitoring<T>(
 
     // エラーログ出力
     logQueryResult(metrics, detailed);
+
+    // タイムアウトエラーの場合は追加情報をログに記録
+    if (isTimeout) {
+      logger.error(
+        `[QueryWrapper] ❌ ${operation}: ${duration.toFixed(2)}ms - Query timeout`,
+        {
+          operation,
+          duration,
+          timeout,
+          ...additionalInfo,
+        }
+      );
+    }
 
     // エラーを再スロー
     logger.error(`${operation}エラー:`, error);
