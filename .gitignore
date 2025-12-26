@@ -49,3 +49,4 @@ coverage/
 
 # GitHub Actions Artifacts（ローカル生成時）
 artifacts/
+.cursor/debug.log
