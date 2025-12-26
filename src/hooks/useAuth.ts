@@ -149,7 +149,8 @@ export function useUserProfile() {
     };
 
     loadProfile();
-  }, [user, authLoading, supabase]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, authLoading]); // supabaseは毎回新しいインスタンスが作成されるため依存配列から除外
 
   return { profile, loading: authLoading || loading };
 }
