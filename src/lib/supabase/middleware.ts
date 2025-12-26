@@ -6,9 +6,20 @@ export async function updateSession(request: NextRequest) {
     request,
   });
 
+  // 新形式のPublishable Keyを優先、なければ従来のAnon Keyを使用
+  const supabaseKey =
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseKey) {
+    throw new Error(
+      'Missing Supabase key. Please set either NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY (new format) or NEXT_PUBLIC_SUPABASE_ANON_KEY (legacy format).'
+    );
+  }
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseKey,
     {
       cookies: {
         getAll() {
