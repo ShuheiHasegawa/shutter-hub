@@ -192,13 +192,47 @@ export function Sidebar({ className }: SidebarProps) {
   ];
 
   const isActive = (href: string) => {
+    const currentPath = String(pathname);
     if (href === '/dashboard') {
-      return pathname === '/dashboard' || pathname.endsWith('/dashboard');
+      return currentPath === '/dashboard' || currentPath.endsWith('/dashboard');
     }
     if (href === '/favorites') {
-      return pathname === '/favorites' || pathname.startsWith('/favorites');
+      return (
+        currentPath === '/favorites' || currentPath.startsWith('/favorites')
+      );
     }
-    return pathname.startsWith(href);
+    // 正確なパスマッチング: 子パスが存在する場合は親パスをアクティブにしない
+    if (href === '/photo-sessions') {
+      // /photo-sessions の場合のみアクティブ
+      // /photo-sessions/create などの子パスは除外
+      return (
+        currentPath === '/photo-sessions' ||
+        (currentPath.startsWith('/photo-sessions/') &&
+          !currentPath.startsWith('/photo-sessions/create'))
+      );
+    }
+    if (href === '/photo-sessions/create') {
+      return (
+        currentPath === '/photo-sessions/create' ||
+        currentPath.startsWith('/photo-sessions/create/')
+      );
+    }
+    if (href === '/studios') {
+      // /studios の場合のみアクティブ
+      // /studios/create などの子パスは除外
+      return (
+        currentPath === '/studios' ||
+        (currentPath.startsWith('/studios/') &&
+          !currentPath.startsWith('/studios/create'))
+      );
+    }
+    if (href === '/studios/create') {
+      return (
+        currentPath === '/studios/create' ||
+        currentPath.startsWith('/studios/create/')
+      );
+    }
+    return currentPath.startsWith(href);
   };
 
   const renderNavItem = (item: NavItem, level = 0) => {
@@ -433,13 +467,47 @@ export function MobileSidebarTrigger() {
   ];
 
   const isActive = (href: string) => {
+    const currentPath = String(pathname);
     if (href === '/dashboard') {
-      return pathname === '/dashboard' || pathname.endsWith('/dashboard');
+      return currentPath === '/dashboard' || currentPath.endsWith('/dashboard');
     }
     if (href === '/favorites') {
-      return pathname === '/favorites' || pathname.startsWith('/favorites');
+      return (
+        currentPath === '/favorites' || currentPath.startsWith('/favorites')
+      );
     }
-    return pathname.startsWith(href);
+    // 正確なパスマッチング: 子パスが存在する場合は親パスをアクティブにしない
+    if (href === '/photo-sessions') {
+      // /photo-sessions の場合のみアクティブ
+      // /photo-sessions/create などの子パスは除外
+      return (
+        currentPath === '/photo-sessions' ||
+        (currentPath.startsWith('/photo-sessions/') &&
+          !currentPath.startsWith('/photo-sessions/create'))
+      );
+    }
+    if (href === '/photo-sessions/create') {
+      return (
+        currentPath === '/photo-sessions/create' ||
+        currentPath.startsWith('/photo-sessions/create/')
+      );
+    }
+    if (href === '/studios') {
+      // /studios の場合のみアクティブ
+      // /studios/create などの子パスは除外
+      return (
+        currentPath === '/studios' ||
+        (currentPath.startsWith('/studios/') &&
+          !currentPath.startsWith('/studios/create'))
+      );
+    }
+    if (href === '/studios/create') {
+      return (
+        currentPath === '/studios/create' ||
+        currentPath.startsWith('/studios/create/')
+      );
+    }
+    return currentPath.startsWith(href);
   };
 
   const renderNavItem = (item: NavItem, level = 0) => {

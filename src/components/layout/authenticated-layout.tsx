@@ -54,7 +54,9 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 
         {/* スクロール可能なメインコンテンツ */}
         <main className="flex-1 overflow-y-auto min-h-0 flex flex-col">
-          <div className="flex-1 px-4 pb-16 md:pb-16 space-y-4">{children}</div>
+          <div className="flex-1 px-4 py-4 pb-16 md:pb-16 space-y-4">
+            {children}
+          </div>
           {/* フッター */}
           <AuthenticatedFooter />
         </main>
