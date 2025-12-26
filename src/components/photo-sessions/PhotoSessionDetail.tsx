@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { logger } from '@/lib/utils/logger';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
@@ -33,7 +33,6 @@ import {
 
 import {
   getPhotoSessionParticipants,
-  checkUserParticipation,
   type PhotoSessionParticipant,
 } from '@/app/actions/photo-session-participants';
 import { usePhotoSessionBooking } from '@/hooks/usePhotoSessionBooking';
@@ -46,16 +45,24 @@ import { BackButton } from '../ui/back-button';
 import { ReviewList } from '@/components/reviews/ReviewList';
 import { createClient } from '@/lib/supabase/client';
 import Image from 'next/image';
-import {
-  getLotteryEntryCount,
-  getLotteryStatistics,
-} from '@/app/actions/multi-slot-lottery';
 import { getLotterySession } from '@/app/actions/photo-session-lottery';
 import { getPhotoSessionStudioAction } from '@/app/actions/photo-session-studio';
 
 interface PhotoSessionDetailProps {
   session: PhotoSessionWithOrganizer;
   slots: PhotoSessionSlot[];
+  userBooking?: {
+    id: string;
+    photo_session_id: string;
+    user_id: string;
+    status: string;
+    created_at: string;
+    updated_at: string;
+  } | null;
+  studio?: {
+    id: string;
+    name: string;
+  } | null;
 }
 
 // Googleカレンダーイベント作成関数
@@ -85,8 +92,49 @@ const createGoogleCalendarEvent = (
 export function PhotoSessionDetail({
   session,
   slots,
+  userBooking: initialUserBooking,
+  studio: initialStudio,
 }: PhotoSessionDetailProps) {
-  const { user } = useAuth();
+  // #region agent log
+  useEffect(() => {
+    // セッションIDが変わったらデータ取得フラグをリセット
+    hasLoadedDataRef.current = false;
+
+    fetch('http://127.0.0.1:7243/ingest/0b62af13-0d04-4c38-8e09-5e16a4cac0dd', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        location: 'PhotoSessionDetail.tsx:97',
+        message: 'コンポーネントマウント',
+        data: { sessionId: session.id },
+        timestamp: Date.now(),
+        sessionId: 'debug-session',
+        runId: 'run3',
+        hypothesisId: 'N',
+      }),
+    }).catch(() => {});
+    return () => {
+      fetch(
+        'http://127.0.0.1:7243/ingest/0b62af13-0d04-4c38-8e09-5e16a4cac0dd',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            location: 'PhotoSessionDetail.tsx:97',
+            message: 'コンポーネントアンマウント',
+            data: { sessionId: session.id },
+            timestamp: Date.now(),
+            sessionId: 'debug-session',
+            runId: 'run3',
+            hypothesisId: 'N',
+          }),
+        }
+      ).catch(() => {});
+    };
+  }, [session.id]);
+  // #endregion
+
+  const { user, loading: authLoading } = useAuth();
   const searchParams = useSearchParams();
   const router = useRouter();
   const { toast } = useToast();
@@ -115,14 +163,26 @@ export function PhotoSessionDetail({
   const [studio, setStudio] = useState<{
     id: string;
     name: string;
-  } | null>(null);
+  } | null>(initialStudio || null);
+
+  // データ取得済みフラグ（重複実行を防ぐ）
+  const hasLoadedDataRef = useRef(false);
 
   // 予約状態を管理するhook
   const {
     canBook: canBookFromHook,
     isLoading: bookingLoading,
-    userBooking,
-  } = usePhotoSessionBooking(session);
+    userBooking: userBookingFromHook,
+  } = usePhotoSessionBooking(session, initialUserBooking);
+
+  // userBookingの参照を安定化（オブジェクトの参照が変わるのを防ぐ）
+  const stableUserBooking = useMemo(
+    () => initialUserBooking,
+    [initialUserBooking]
+  );
+
+  // サーバーサイドで取得した予約情報を優先使用
+  const userBooking = stableUserBooking || userBookingFromHook;
 
   const startDate = new Date(session.start_time);
   const endDate = new Date(session.end_time);
@@ -140,21 +200,147 @@ export function PhotoSessionDetail({
   const bookingStep = searchParams.get('step');
   const isInBookingFlow = !!bookingStep;
 
-  // 参加者データを取得
+  // 参加者データとその他の条件付きデータを並列取得
   useEffect(() => {
-    const loadParticipantsData = async () => {
+    // #region agent log
+    fetch('http://127.0.0.1:7243/ingest/0b62af13-0d04-4c38-8e09-5e16a4cac0dd', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        location: 'PhotoSessionDetail.tsx:198',
+        message: 'useEffect実行開始',
+        data: {
+          sessionId: session.id,
+          userId: user?.id,
+          authLoading,
+          isLoadingData,
+          userBooking: !!stableUserBooking,
+          isPast,
+          hasLoadedData: hasLoadedDataRef.current,
+        },
+        timestamp: Date.now(),
+        sessionId: 'debug-session',
+        runId: 'run3',
+        hypothesisId: 'K',
+      }),
+    }).catch(() => {});
+    // #endregion
+
+    // 認証状態の読み込み中は待機
+    if (authLoading) {
+      // #region agent log
+      fetch(
+        'http://127.0.0.1:7243/ingest/0b62af13-0d04-4c38-8e09-5e16a4cac0dd',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            location: 'PhotoSessionDetail.tsx:223',
+            message: '認証読み込み中 - 待機',
+            data: { authLoading },
+            timestamp: Date.now(),
+            sessionId: 'debug-session',
+            runId: 'run3',
+            hypothesisId: 'K',
+          }),
+        }
+      ).catch(() => {});
+      // #endregion
+      return;
+    }
+
+    // 既にデータを取得済みの場合はスキップ（認証状態が変わっただけの場合）
+    if (hasLoadedDataRef.current && user?.id) {
+      // #region agent log
+      fetch(
+        'http://127.0.0.1:7243/ingest/0b62af13-0d04-4c38-8e09-5e16a4cac0dd',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            location: 'PhotoSessionDetail.tsx:245',
+            message: '既にデータ取得済み - スキップ',
+            data: { userId: user.id },
+            timestamp: Date.now(),
+            sessionId: 'debug-session',
+            runId: 'run3',
+            hypothesisId: 'K',
+          }),
+        }
+      ).catch(() => {});
+      // #endregion
+      return;
+    }
+
+    const loadAllData = async () => {
       // 既に実行中の場合は重複実行を防ぐ
       if (isLoadingData) {
+        // #region agent log
+        fetch(
+          'http://127.0.0.1:7243/ingest/0b62af13-0d04-4c38-8e09-5e16a4cac0dd',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              location: 'PhotoSessionDetail.tsx:171',
+              message: '重複実行をスキップ',
+              data: { isLoadingData },
+              timestamp: Date.now(),
+              sessionId: 'debug-session',
+              runId: 'run2',
+              hypothesisId: 'G',
+            }),
+          }
+        ).catch(() => {});
+        // #endregion
         logger.debug('[PhotoSessionDetail] 既に実行中 - 重複実行をスキップ');
         return;
       }
 
-      logger.debug('[PhotoSessionDetail] loadParticipantsData開始', {
+      // #region agent log
+      fetch(
+        'http://127.0.0.1:7243/ingest/0b62af13-0d04-4c38-8e09-5e16a4cac0dd',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            location: 'PhotoSessionDetail.tsx:176',
+            message: 'loadAllData開始',
+            data: { sessionId: session.id, userId: user?.id },
+            timestamp: Date.now(),
+            sessionId: 'debug-session',
+            runId: 'run2',
+            hypothesisId: 'H',
+          }),
+        }
+      ).catch(() => {});
+      // #endregion
+
+      logger.debug('[PhotoSessionDetail] loadAllData開始', {
         sessionId: session.id,
         userId: user?.id,
       });
 
+      // ユーザーが未ログインの場合は早期リターン（認証読み込み完了後）
       if (!user) {
+        // #region agent log
+        fetch(
+          'http://127.0.0.1:7243/ingest/0b62af13-0d04-4c38-8e09-5e16a4cac0dd',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              location: 'PhotoSessionDetail.tsx:185',
+              message: 'ユーザー未ログイン - 処理スキップ',
+              data: {},
+              timestamp: Date.now(),
+              sessionId: 'debug-session',
+              runId: 'run2',
+              hypothesisId: 'I',
+            }),
+          }
+        ).catch(() => {});
+        // #endregion
         logger.debug('[PhotoSessionDetail] ユーザー未ログイン - 処理スキップ');
         setLoading(false);
         return;
@@ -163,28 +349,170 @@ export function PhotoSessionDetail({
       setIsLoadingData(true);
 
       try {
-        const [participantsData, userParticipation] = await Promise.all([
+        // レビュー可能かチェック（予約済みで撮影会終了後）
+        const canReviewNow = !!stableUserBooking && isPast;
+
+        // 条件付き並列実行のためのpromises配列
+        // #region agent log
+        fetch(
+          'http://127.0.0.1:7243/ingest/0b62af13-0d04-4c38-8e09-5e16a4cac0dd',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              location: 'PhotoSessionDetail.tsx:181',
+              message: 'getPhotoSessionParticipants呼び出し前',
+              data: { sessionId: session.id },
+              timestamp: Date.now(),
+              sessionId: 'debug-session',
+              runId: 'run1',
+              hypothesisId: 'D',
+            }),
+          }
+        ).catch(() => {});
+        // #endregion
+        const promises: Promise<unknown>[] = [
+          // 参加者データは常に取得
           getPhotoSessionParticipants(session.id),
-          checkUserParticipation(session.id, user.id),
-        ]);
+        ];
 
-        logger.debug('[PhotoSessionDetail] データ取得完了', {
-          participantsCount: participantsData.length,
-          isParticipant: userParticipation,
-        });
+        // 抽選方式の場合のみエントリー数取得
+        if (session.booking_type === 'lottery') {
+          promises.push(getLotterySession(session.id));
+        }
 
+        // レビュー権限がある場合のみ既存レビューチェック
+        if (canReviewNow) {
+          const supabase = createClient();
+          promises.push(
+            Promise.resolve(
+              supabase
+                .from('photo_session_reviews')
+                .select('id')
+                .eq('photo_session_id', session.id)
+                .eq('reviewer_id', user.id)
+                .maybeSingle()
+            ).then(result => result.data)
+          );
+        }
+
+        const results = await Promise.all(promises);
+
+        // 参加者データの処理
+        const participantsData = results[0] as PhotoSessionParticipant[];
+        // #region agent log
+        fetch(
+          'http://127.0.0.1:7243/ingest/0b62af13-0d04-4c38-8e09-5e16a4cac0dd',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              location: 'PhotoSessionDetail.tsx:250',
+              message: '参加者データ取得完了',
+              data: { participantsCount: participantsData.length },
+              timestamp: Date.now(),
+              sessionId: 'debug-session',
+              runId: 'run3',
+              hypothesisId: 'L',
+            }),
+          }
+        ).catch(() => {});
+        // #endregion
         setParticipants(participantsData);
+
+        // データ取得完了フラグを設定
+        hasLoadedDataRef.current = true;
+
+        // checkUserParticipationの代わりに、participantsデータから判定
+        const userParticipation = participantsData.some(
+          p => p.user_id === user.id
+        );
         setIsParticipant(userParticipation);
+
+        // 抽選セッション情報の処理
+        if (session.booking_type === 'lottery' && results[1]) {
+          const lotterySessionResult = results[1] as Awaited<
+            ReturnType<typeof getLotterySession>
+          >;
+          if (lotterySessionResult.data?.id) {
+            const lotterySessionId = lotterySessionResult.data.id;
+            setLotterySession({
+              max_entries: lotterySessionResult.data?.max_entries ?? null,
+            });
+
+            // 開催者は統計情報、一般ユーザーはエントリー数を取得
+            if (isOrganizer) {
+              const { getLotteryStatistics } = await import(
+                '@/app/actions/multi-slot-lottery'
+              );
+              const result = await getLotteryStatistics(lotterySessionId);
+              if (result.success && result.data) {
+                setLotteryEntryCount({
+                  total_groups: result.data.total_groups,
+                  total_entries: result.data.total_entries,
+                  entries_by_slot: result.data.entries_by_slot || [],
+                });
+              }
+            } else {
+              const { getLotteryEntryCount } = await import(
+                '@/app/actions/multi-slot-lottery'
+              );
+              const result = await getLotteryEntryCount(lotterySessionId);
+              if (result.success && result.data) {
+                setLotteryEntryCount(result.data);
+              }
+            }
+          }
+        }
+
+        // 既存レビューの処理
+        if (canReviewNow && results[results.length - 1]) {
+          const reviewResult = results[results.length - 1] as {
+            data: { id: string } | null;
+            error: unknown;
+          };
+          setHasExistingReview(!!reviewResult.data);
+        }
       } catch (error) {
-        logger.error('[PhotoSessionDetail] 参加者データ読み込みエラー:', error);
+        logger.error('[PhotoSessionDetail] データ読み込みエラー:', error);
       } finally {
+        // #region agent log
+        fetch(
+          'http://127.0.0.1:7243/ingest/0b62af13-0d04-4c38-8e09-5e16a4cac0dd',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              location: 'PhotoSessionDetail.tsx:333',
+              message: 'loadAllData完了',
+              data: {},
+              timestamp: Date.now(),
+              sessionId: 'debug-session',
+              runId: 'run3',
+              hypothesisId: 'M',
+            }),
+          }
+        ).catch(() => {});
+        // #endregion
         setLoading(false);
         setIsLoadingData(false);
       }
     };
 
-    loadParticipantsData();
-  }, [session.id, user?.id]);
+    loadAllData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    session.id,
+    session.booking_type,
+    session.end_time,
+    user?.id,
+    isOrganizer,
+    stableUserBooking?.id, // オブジェクト全体ではなくIDのみを依存配列に含める
+    isPast, // isPastを依存配列に追加
+    // authLoadingを依存配列から削除（authLoadingが変わるたびに再実行されるのを防ぐ）
+    // isLoadingDataを依存配列から削除（無限ループ防止）
+    // stableUserBookingとuserはuseEffect内で使用されるが、依存配列に含めると無限ループになる可能性があるため除外
+  ]);
 
   const hasSlots = slots && slots.length > 0;
 
@@ -320,54 +648,13 @@ export function PhotoSessionDetail({
   // レビュー可能かチェック（予約済みで撮影会終了後）
   const canReview = !!userBooking && isPast;
 
-  // 抽選エントリー数を取得
+  // スタジオ情報を取得（サーバーサイドで取得できなかった場合のみ）
   useEffect(() => {
-    const loadLotteryEntryCount = async () => {
-      // 抽選方式以外はスキップ
-      if (session.booking_type !== 'lottery' || !user) {
-        return;
-      }
+    // サーバーサイドで既に取得済みの場合はスキップ
+    if (initialStudio !== undefined) {
+      return;
+    }
 
-      try {
-        // 抽選セッション情報を取得
-        const lotterySessionResult = await getLotterySession(session.id);
-        if (!lotterySessionResult.data?.id) {
-          return;
-        }
-
-        const lotterySessionId = lotterySessionResult.data.id;
-
-        // max_entriesを保存
-        setLotterySession({
-          max_entries: lotterySessionResult.data?.max_entries ?? null,
-        });
-
-        // 開催者は統計情報、一般ユーザーはエントリー数を取得
-        if (isOrganizer) {
-          const result = await getLotteryStatistics(lotterySessionId);
-          if (result.success && result.data) {
-            setLotteryEntryCount({
-              total_groups: result.data.total_groups,
-              total_entries: result.data.total_entries,
-              entries_by_slot: result.data.entries_by_slot || [],
-            });
-          }
-        } else {
-          const result = await getLotteryEntryCount(lotterySessionId);
-          if (result.success && result.data) {
-            setLotteryEntryCount(result.data);
-          }
-        }
-      } catch (error) {
-        logger.error('エントリー数取得エラー:', error);
-      }
-    };
-
-    loadLotteryEntryCount();
-  }, [session.id, session.booking_type, user?.id, isOrganizer]);
-
-  // スタジオ情報を取得
-  useEffect(() => {
     const loadStudio = async () => {
       try {
         const result = await getPhotoSessionStudioAction(session.id);
@@ -383,34 +670,7 @@ export function PhotoSessionDetail({
     };
 
     loadStudio();
-  }, [session.id]);
-
-  // 既存レビューのチェック
-  useEffect(() => {
-    const checkExistingReview = async () => {
-      if (!user || !canReview) {
-        setHasExistingReview(false);
-        return;
-      }
-
-      try {
-        const supabase = createClient();
-        const { data: existingReview } = await supabase
-          .from('photo_session_reviews')
-          .select('id')
-          .eq('photo_session_id', session.id)
-          .eq('reviewer_id', user.id)
-          .maybeSingle();
-
-        setHasExistingReview(!!existingReview);
-      } catch (error) {
-        logger.error('既存レビューチェックエラー:', error);
-        setHasExistingReview(false);
-      }
-    };
-
-    checkExistingReview();
-  }, [user, session.id, canReview]);
+  }, [session.id, initialStudio]);
 
   // アクションバーのボタン設定
   const getActionBarButtons = (): ActionBarButton[] => {

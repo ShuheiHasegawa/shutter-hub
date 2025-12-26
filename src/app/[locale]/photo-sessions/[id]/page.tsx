@@ -5,6 +5,7 @@ import { PhotoSessionDetail } from '@/components/photo-sessions/PhotoSessionDeta
 import { LoadingCard } from '@/components/ui/loading-card';
 import { AuthenticatedLayout } from '@/components/layout/authenticated-layout';
 import { logger } from '@/lib/utils/logger';
+import { getCurrentUser } from '@/lib/auth/server';
 
 export default async function PhotoSessionPage({
   params,
@@ -14,35 +15,86 @@ export default async function PhotoSessionPage({
   const { id } = await params;
   const supabase = await createClient();
 
-  // 撮影会情報を取得
-  const { data: session, error } = await supabase
-    .from('photo_sessions')
-    .select(
-      `
-      *,
-      organizer:organizer_id(
-        id,
-        email,
-        display_name,
-        avatar_url
-      )
-    `
-    )
-    .eq('id', id)
-    .eq('is_published', true)
-    .single();
+  // ユーザー情報を取得（認証チェック用）
+  const user = await getCurrentUser();
 
-  if (error || !session) {
+  // 並列でデータを取得
+  const [sessionResult, slotsResult, userBookingResult, studioResult] =
+    await Promise.all([
+      // 撮影会情報を取得
+      supabase
+        .from('photo_sessions')
+        .select(
+          `
+        *,
+        organizer:organizer_id(
+          id,
+          email,
+          display_name,
+          avatar_url
+        )
+      `
+        )
+        .eq('id', id)
+        .eq('is_published', true)
+        .single(),
+
+      // 撮影枠情報を取得
+      supabase
+        .from('photo_session_slots')
+        .select('*')
+        .eq('photo_session_id', id)
+        .eq('is_active', true)
+        .order('slot_number'),
+
+      // ユーザーの既存予約を取得（ログインしている場合のみ）
+      user
+        ? supabase
+            .from('bookings')
+            .select('*')
+            .eq('photo_session_id', id)
+            .eq('user_id', user.id)
+            .in('status', ['confirmed', 'pending'])
+            .maybeSingle()
+        : Promise.resolve({ data: null, error: null }),
+
+      // スタジオ情報を取得
+      supabase
+        .from('photo_session_studios')
+        .select(
+          `
+        studio_id,
+        studios!inner(
+          id,
+          name
+        )
+      `
+        )
+        .eq('photo_session_id', id)
+        .maybeSingle(),
+    ]);
+
+  // 撮影会情報のエラーチェック
+  if (sessionResult.error || !sessionResult.data) {
     notFound();
   }
 
-  // 撮影枠情報を取得
-  const { data: slots, error: slotsError } = await supabase
-    .from('photo_session_slots')
-    .select('*')
-    .eq('photo_session_id', id)
-    .eq('is_active', true)
-    .order('slot_number');
+  const session = sessionResult.data;
+  const slots = slotsResult.data || [];
+  const userBooking = userBookingResult.data;
+  const studioData = studioResult.data;
+
+  // スタジオ情報を整形
+  const studio = studioData?.studios
+    ? {
+        id: Array.isArray(studioData.studios)
+          ? studioData.studios[0].id
+          : studioData.studios.id,
+        name: Array.isArray(studioData.studios)
+          ? studioData.studios[0].name
+          : studioData.studios.name,
+      }
+    : null;
 
   // データ検証ログ（開発環境のみ）
   if (process.env.NODE_ENV === 'development' && slots) {
@@ -59,15 +111,20 @@ export default async function PhotoSessionPage({
     });
   }
 
-  if (slotsError) {
-    logger.error('[PhotoSessionPage] スロット取得エラー:', slotsError);
+  if (slotsResult.error) {
+    logger.error('[PhotoSessionPage] スロット取得エラー:', slotsResult.error);
   }
 
   return (
     <AuthenticatedLayout>
       <div>
         <Suspense fallback={<LoadingCard />}>
-          <PhotoSessionDetail session={session} slots={slots || []} />
+          <PhotoSessionDetail
+            session={session}
+            slots={slots}
+            userBooking={userBooking}
+            studio={studio}
+          />
         </Suspense>
       </div>
     </AuthenticatedLayout>

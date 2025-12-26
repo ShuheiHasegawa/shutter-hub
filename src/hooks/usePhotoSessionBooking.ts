@@ -21,13 +21,23 @@ interface BookingState {
   availableSlots: number;
 }
 
-export function usePhotoSessionBooking(session: PhotoSessionWithOrganizer) {
+export function usePhotoSessionBooking(
+  session: PhotoSessionWithOrganizer,
+  initialUserBooking?: {
+    id: string;
+    photo_session_id: string;
+    user_id: string;
+    status: string;
+    created_at: string;
+    updated_at: string;
+  } | null
+) {
   const { user } = useAuth();
   const [bookingState, setBookingState] = useState<BookingState>({
     isLoading: true,
     canBook: false,
     reason: null,
-    userBooking: null,
+    userBooking: initialUserBooking || null,
     availableSlots: 0,
   });
 
@@ -40,7 +50,7 @@ export function usePhotoSessionBooking(session: PhotoSessionWithOrganizer) {
         isLoading: false,
         canBook: false,
         reason: 'ログインが必要です',
-        userBooking: null,
+        userBooking: initialUserBooking || null,
         availableSlots: session.max_participants - session.current_participants,
       });
       return;
@@ -49,55 +59,30 @@ export function usePhotoSessionBooking(session: PhotoSessionWithOrganizer) {
     setBookingState(prev => ({ ...prev, isLoading: true }));
 
     try {
-      // 現在の撮影会情報を取得
-      const { data: currentSession, error: sessionError } = await supabase
-        .from('photo_sessions')
-        .select('*')
-        .eq('id', session.id)
-        .single();
+      // サーバーサイドで取得済みの予約情報を使用
+      const existingBooking = initialUserBooking || null;
 
-      if (sessionError || !currentSession) {
-        setBookingState({
-          isLoading: false,
-          canBook: false,
-          reason: '撮影会情報の取得に失敗しました',
-          userBooking: null,
-          availableSlots: 0,
-        });
-        return;
-      }
-
-      // ユーザーの既存予約をチェック
-      const { data: existingBookings } = await supabase
-        .from('bookings')
-        .select('*')
-        .eq('photo_session_id', session.id)
-        .eq('user_id', user.id)
-        .eq('status', 'confirmed');
-
+      // 撮影会情報は既に取得済みなので、sessionオブジェクトを直接使用
       const availableSlots =
-        currentSession.max_participants - currentSession.current_participants;
+        session.max_participants - session.current_participants;
       const now = new Date();
-      const startTime = new Date(currentSession.start_time);
+      const startTime = new Date(session.start_time);
 
       let canBook = true;
       let reason = null;
 
       // 各種チェック
-      if (!currentSession.is_published) {
+      if (!session.is_published) {
         canBook = false;
         reason = 'この撮影会は公開されていません';
       } else if (startTime <= now) {
         canBook = false;
         reason = 'この撮影会は既に開始または終了しています';
-      } else if (
-        existingBookings &&
-        existingBookings.length > 0 &&
-        !currentSession.allow_multiple_bookings
-      ) {
+      } else if (existingBooking && !session.allow_multiple_bookings) {
         // 複数予約が許可されていない場合、既存予約があれば予約不可
         canBook = false;
-        reason = `既に予約済みです。この撮影会では複数枠の予約は許可されていません（${existingBookings.length}件予約済み）`;
+        reason =
+          '既に予約済みです。この撮影会では複数枠の予約は許可されていません';
       } else if (availableSlots <= 0) {
         canBook = false;
         reason = '満席です';
@@ -107,10 +92,7 @@ export function usePhotoSessionBooking(session: PhotoSessionWithOrganizer) {
         isLoading: false,
         canBook,
         reason,
-        userBooking:
-          existingBookings && existingBookings.length > 0
-            ? existingBookings[0]
-            : null,
+        userBooking: existingBooking,
         availableSlots,
       });
     } catch (error) {
@@ -119,7 +101,7 @@ export function usePhotoSessionBooking(session: PhotoSessionWithOrganizer) {
         isLoading: false,
         canBook: false,
         reason: '予約状態の確認に失敗しました',
-        userBooking: null,
+        userBooking: initialUserBooking || null,
         availableSlots: 0,
       });
     }
@@ -128,7 +110,10 @@ export function usePhotoSessionBooking(session: PhotoSessionWithOrganizer) {
     session.id,
     session.max_participants,
     session.current_participants,
-    supabase,
+    session.is_published,
+    session.start_time,
+    session.allow_multiple_bookings,
+    initialUserBooking,
   ]);
 
   // 初回チェック
@@ -136,13 +121,13 @@ export function usePhotoSessionBooking(session: PhotoSessionWithOrganizer) {
     checkBookingState();
   }, [user, session.id]);
 
-  // リアルタイム更新の購読
+  // リアルタイム更新の購読（統合チャンネル）
   useEffect(() => {
     if (!user) return;
 
-    // 撮影会の変更を監視
-    const sessionChannel = supabase
-      .channel(`photo_session_${session.id}`)
+    // 1つのチャンネルで複数のテーブル変更を監視
+    const channel = supabase
+      .channel(`photo_session_booking_${session.id}`)
       .on(
         'postgres_changes',
         {
@@ -155,11 +140,6 @@ export function usePhotoSessionBooking(session: PhotoSessionWithOrganizer) {
           checkBookingState();
         }
       )
-      .subscribe();
-
-    // 予約の変更を監視
-    const bookingChannel = supabase
-      .channel(`bookings_${session.id}`)
       .on(
         'postgres_changes',
         {
@@ -175,10 +155,9 @@ export function usePhotoSessionBooking(session: PhotoSessionWithOrganizer) {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(sessionChannel);
-      supabase.removeChannel(bookingChannel);
+      supabase.removeChannel(channel);
     };
-  }, [user, session.id]);
+  }, [user, session.id, checkBookingState]);
 
   return {
     ...bookingState,

@@ -21,6 +21,21 @@ export interface PhotoSessionParticipant {
 export async function getPhotoSessionParticipants(
   sessionId: string
 ): Promise<PhotoSessionParticipant[]> {
+  // #region agent log
+  fetch('http://127.0.0.1:7243/ingest/0b62af13-0d04-4c38-8e09-5e16a4cac0dd', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      location: 'photo-session-participants.ts:21',
+      message: 'getPhotoSessionParticipants呼び出し',
+      data: { sessionId },
+      timestamp: Date.now(),
+      sessionId: 'debug-session',
+      runId: 'run1',
+      hypothesisId: 'D',
+    }),
+  }).catch(() => {});
+  // #endregion
   try {
     const supabase = await createClient();
 
