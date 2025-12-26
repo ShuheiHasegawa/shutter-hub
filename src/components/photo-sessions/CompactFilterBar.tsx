@@ -413,7 +413,7 @@ export function CompactFilterBar({
               {/* 場所フィルター (独立した行・全幅) */}
               <div className="space-y-2">
                 <Label className="text-sm font-medium flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-green-600" />
+                  <MapPin className="h-4 w-4 text-muted-foreground" />
                   場所
                 </Label>
                 <Input
@@ -438,7 +438,7 @@ export function CompactFilterBar({
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="text-sm font-medium flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-purple-600" />
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
                       開始日
                     </Label>
                     <Input
@@ -450,7 +450,7 @@ export function CompactFilterBar({
                   </div>
                   <div className="space-y-2">
                     <Label className="text-sm font-medium flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-purple-600" />
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
                       終了日
                     </Label>
                     <Input
@@ -468,7 +468,7 @@ export function CompactFilterBar({
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label className="text-sm font-medium flex items-center gap-2">
-                        <DollarSign className="h-4 w-4 text-orange-600" />
+                        <DollarSign className="h-4 w-4 text-muted-foreground" />
                         最低料金
                       </Label>
                       <Input
@@ -481,7 +481,7 @@ export function CompactFilterBar({
                     </div>
                     <div className="space-y-2">
                       <Label className="text-sm font-medium flex items-center gap-2">
-                        <DollarSign className="h-4 w-4 text-orange-600" />
+                        <DollarSign className="h-4 w-4 text-muted-foreground" />
                         最高料金
                       </Label>
                       <Input
@@ -497,7 +497,7 @@ export function CompactFilterBar({
                   {/* 予約方式フィルター (2x2 コンパクト) */}
                   <div className="space-y-2">
                     <Label className="text-sm font-medium flex items-center gap-2">
-                      <Star className="h-4 w-4 text-yellow-600" />
+                      <Star className="h-4 w-4 text-muted-foreground" />
                       予約方式
                     </Label>
                     <div className="grid grid-cols-2 gap-2">

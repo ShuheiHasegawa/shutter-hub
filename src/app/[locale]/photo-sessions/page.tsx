@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useState, useEffect } from 'react';
+import { Suspense, useState, useEffect, useRef } from 'react';
 import { PhotoSessionList } from '@/components/photo-sessions/PhotoSessionList';
 import { CompactFilterBar } from '@/components/photo-sessions/CompactFilterBar';
 import { AuthenticatedLayout } from '@/components/layout/authenticated-layout';
@@ -67,6 +67,44 @@ export default function PhotoSessionsPage() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [filterByActivityLocation, setFilterByActivityLocation] =
     useState(false);
+  const isInitialMountRef = useRef(true);
+
+  // 初回マウント時のスキップ
+  useEffect(() => {
+    if (isInitialMountRef.current) {
+      isInitialMountRef.current = false;
+      return;
+    }
+  }, []);
+
+  // 活動拠点フィルター変更時の処理（初回マウント時はスキップ）
+  useEffect(() => {
+    if (!isMounted || isInitialMountRef.current) return;
+
+    // filterByActivityLocationがtrueでprofile?.prefectureがnullの場合はリセット
+    if (filterByActivityLocation && !profile?.prefecture) {
+      setFilterByActivityLocation(false);
+      return;
+    }
+
+    // filterByActivityLocationが変更された時に検索を実行
+    if (filterByActivityLocation && profile?.prefecture) {
+      // フィルターがONになった場合、locationを更新して検索
+      setFilters(prev => ({
+        ...prev,
+        location: profile.prefecture || '',
+      }));
+      handleSearch();
+    } else if (!filterByActivityLocation) {
+      // フィルターがOFFになった場合、locationをクリアして検索
+      setFilters(prev => ({
+        ...prev,
+        location: '',
+      }));
+      handleSearch();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterByActivityLocation, profile?.prefecture]);
 
   // クライアントサイド初期化とレスポンシブ対応
   useEffect(() => {
@@ -111,12 +149,20 @@ export default function PhotoSessionsPage() {
   const handleSearch = () => {
     setIsSearchLoading(true);
     setSearchTrigger(prev => prev + 1);
-    // ローディング状態は PhotoSessionList 側で管理されるため、
-    // 一定時間後にリセット
-    setTimeout(() => {
-      setIsSearchLoading(false);
-    }, 1000);
   };
+
+  // searchTrigger変更時にローディング状態をリセット
+  useEffect(() => {
+    if (searchTrigger > 0) {
+      // ローディング状態は PhotoSessionList 側で管理されるため、
+      // 一定時間後にリセット（最大3秒で確実にリセット）
+      const timeoutId = setTimeout(() => {
+        setIsSearchLoading(false);
+      }, 3000);
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [searchTrigger]);
 
   // マウント前はサーバーサイド対応のため最小限のレンダリング
   if (!isMounted) {
@@ -202,22 +248,14 @@ export default function PhotoSessionsPage() {
                           'プロフィール設定で活動拠点（都道府県）を設定してください'
                         );
                         logger.warn('活動拠点フィルターエラー: 都道府県未設定');
+                        // チェックボックスの状態を元に戻す
+                        setFilterByActivityLocation(false);
                         return;
                       }
 
                       setFilterByActivityLocation(true);
-                      setFilters(prev => ({
-                        ...prev,
-                        location: profile.prefecture || '',
-                      }));
-                      handleSearch();
                     } else {
                       setFilterByActivityLocation(false);
-                      setFilters(prev => ({
-                        ...prev,
-                        location: '',
-                      }));
-                      handleSearch();
                     }
                   }}
                 />
