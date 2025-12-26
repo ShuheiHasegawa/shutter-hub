@@ -15,10 +15,10 @@ Sentry.init({
   tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
 
   // Enable logs to be sent to Sentry
-  enableLogs: true,
+  enableLogs: process.env.NODE_ENV === 'production',
 
-  // 開発環境でのみデバッグ有効
-  debug: process.env.NODE_ENV === 'development',
+  // 開発環境ではデバッグログを無効化（ターミナルログをクリーンに保つ）
+  debug: false,
 
   // ShutterHub固有のサーバーサイド設定
   beforeSend(event) {
