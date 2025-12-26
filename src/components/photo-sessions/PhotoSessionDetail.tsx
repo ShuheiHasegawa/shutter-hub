@@ -513,7 +513,7 @@ export function PhotoSessionDetail({
     <div className="w-full max-w-6xl mx-auto space-y-6">
       {/* 開催者ヘッダー（主催者の場合、最上部に表示） */}
       {isOrganizer && (
-        <Card className="border-blue-200 bg-blue-50/50">
+        <Card className="border-blue-200 bg-blue-50/50 mt-4">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">

@@ -74,7 +74,7 @@ export default function HomePage() {
                       {t('hero.title')}
                     </span>
                     <span
-                      className="block text-[clamp(2.5rem,8vw,7rem)] font-serif italic text-amber-400 leading-[0.95] tracking-[-0.02em] mt-1"
+                      className="block whitespace-nowrap text-[clamp(2.5rem,8vw,7rem)] font-serif italic text-amber-400 leading-[0.95] tracking-[-0.02em] mt-1"
                       style={{
                         fontFamily: 'var(--font-playfair-display), serif',
                       }}
