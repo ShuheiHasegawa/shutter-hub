@@ -91,11 +91,6 @@ export function Sidebar({ className }: SidebarProps) {
       icon: Zap,
     },
     {
-      title: 'お気に入り',
-      href: '/favorites',
-      icon: Heart,
-    },
-    {
       title: t('photoSessions'),
       icon: Camera,
       children: [
