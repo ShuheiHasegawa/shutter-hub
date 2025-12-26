@@ -174,8 +174,13 @@ export default function TestPaymentPage() {
             <div className="space-y-2">
               <h4 className="font-medium">2. 環境変数設定</h4>
               <div className="bg-gray-900 text-green-400 rounded-lg p-3 text-sm font-mono">
-                STRIPE_WEBHOOK_SECRET=whsec_57443120d029db7610f4584b66559ae7627b799906a8605714289e38d63704ba
+                STRIPE_WEBHOOK_SECRET=whsec_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
               </div>
+              <p className="text-xs text-gray-600 mt-2">
+                ※ Stripe CLIを実行すると、自動的にWebhook Secretが表示されます。
+                <br />
+                その値をコピーして環境変数に設定してください。
+              </p>
             </div>
 
             <div className="space-y-2">

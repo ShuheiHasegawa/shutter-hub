@@ -65,17 +65,33 @@ jobs:
             sleep 2
           done
 
+      - name: 🔒 URL検証
+        id: validate-url
+        run: |
+          INPUT_URL="${{ github.event.inputs.url }}"
+          ALLOWED_DOMAINS="localhost|shutterhub.app|shutterhub.vercel.app"
+          
+          if [[ -z "$INPUT_URL" ]]; then
+            echo "url=http://localhost:3000" >> $GITHUB_OUTPUT
+            echo "✅ デフォルトURLを使用: http://localhost:3000"
+          elif echo "$INPUT_URL" | grep -E "^https?://(${ALLOWED_DOMAINS})" > /dev/null; then
+            echo "url=$INPUT_URL" >> $GITHUB_OUTPUT
+            echo "✅ 検証済みURLを使用: $INPUT_URL"
+          else
+            echo "⚠️ 不正なURLが検出されました。デフォルト値を使用します。"
+            echo "url=http://localhost:3000" >> $GITHUB_OUTPUT
+          fi
+
       - name: ⚡ Lighthouse CI実行
         uses: treosh/lighthouse-ci-action@v10
         with:
           urls: |
-            ${{ github.event.inputs.url || 'http://localhost:3000' }}
-            ${{ github.event.inputs.url || 'http://localhost:3000' }}/ja
-            ${{ github.event.inputs.url || 'http://localhost:3000' }}/ja/photo-sessions
+            ${{ steps.validate-url.outputs.url }}
+            ${{ steps.validate-url.outputs.url }}/ja
+            ${{ steps.validate-url.outputs.url }}/ja/photo-sessions
           configPath: '.lighthouserc.json'
           uploadArtifacts: true
           temporaryPublicStorage: true
-          configPath: '.lighthouserc.json'
         continue-on-error: true
 
       - name: 📊 Lighthouse結果サマリー
@@ -84,7 +100,7 @@ jobs:
           echo "## ⚡ Lighthouse CI結果" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- **実行時刻**: $(date)" >> $GITHUB_STEP_SUMMARY
-          echo "- **対象URL**: ${{ github.event.inputs.url || 'http://localhost:3000' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **対象URL**: ${{ steps.validate-url.outputs.url }}" >> $GITHUB_STEP_SUMMARY
           echo "- **ポート**: 3000（Next.js標準ポート）" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "📋 詳細なレポートは Artifacts をダウンロードして確認できます" >> $GITHUB_STEP_SUMMARY
