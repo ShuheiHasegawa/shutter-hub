@@ -96,7 +96,7 @@ export default function HomePage() {
                   >
                     <Button
                       asChild
-                      className="h-12 px-8 bg-white text-[#0a0a0a] hover:bg-white/90 rounded-none text-sm font-medium tracking-wide transition-all duration-200"
+                      className="h-12 px-8 rounded-none text-sm font-medium tracking-wide transition-all duration-200"
                     >
                       <Link href="/photo-sessions">
                         {t('hero.findSessions')}
@@ -145,51 +145,10 @@ export default function HomePage() {
                   </div>
 
                   {/* 右カラム - 説明文 */}
-                  <div className="lg:col-span-6 lg:col-start-7">
-                    <p className="text-white/60 text-lg leading-relaxed mb-8">
+                  <div className="lg:col-span-6 lg:col-start-7 flex justify-end items-end">
+                    <p className="text-white/60 text-lg leading-relaxed">
                       ShutterHubは、プロフェッショナルなカメラマンと撮影機会を求める人々をつなぐプラットフォームです。撮影会の予約から、今すぐカメラマンを呼べる「即座撮影」まで。あなたの大切な瞬間を、最高のクオリティで残します。
                     </p>
-                    <div className="flex gap-12">
-                      <div>
-                        <div
-                          className="text-3xl md:text-4xl font-serif text-white"
-                          style={{
-                            fontFamily: 'var(--font-playfair-display), serif',
-                          }}
-                        >
-                          1,000+
-                        </div>
-                        <div className="text-xs text-white/40 uppercase tracking-wider mt-1">
-                          Photographers
-                        </div>
-                      </div>
-                      <div>
-                        <div
-                          className="text-3xl md:text-4xl font-serif text-white"
-                          style={{
-                            fontFamily: 'var(--font-playfair-display), serif',
-                          }}
-                        >
-                          50,000+
-                        </div>
-                        <div className="text-xs text-white/40 uppercase tracking-wider mt-1">
-                          Sessions
-                        </div>
-                      </div>
-                      <div>
-                        <div
-                          className="text-3xl md:text-4xl font-serif text-white"
-                          style={{
-                            fontFamily: 'var(--font-playfair-display), serif',
-                          }}
-                        >
-                          4.9
-                        </div>
-                        <div className="text-xs text-white/40 uppercase tracking-wider mt-1">
-                          Rating
-                        </div>
-                      </div>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -379,32 +338,28 @@ export default function HomePage() {
               <div className="absolute inset-0 bg-[#0a0a0a]/85" />
 
               <div className="container relative z-10">
+                <h2
+                  className="text-4xl md:text-5xl lg:text-6xl font-serif text-white leading-[1.1] mb-6 whitespace-nowrap flex justify-center items-center"
+                  style={{
+                    fontFamily: 'var(--font-playfair-display), serif',
+                  }}
+                >
+                  {t('cta.title')}
+                </h2>
                 <div className="max-w-2xl mx-auto text-center">
-                  <h2
-                    className="text-4xl md:text-5xl lg:text-6xl font-serif text-white leading-[1.1] mb-6"
-                    style={{
-                      fontFamily: 'var(--font-playfair-display), serif',
-                    }}
-                  >
-                    {t('cta.title')}
-                  </h2>
                   <p className="text-lg text-white/60 mb-10 leading-relaxed">
                     {t('cta.subtitle')}
                   </p>
 
                   <Button
                     asChild
-                    className="h-14 px-10 bg-white text-[#0a0a0a] hover:bg-white/90 rounded-none text-sm font-medium tracking-wide transition-all duration-200"
+                    className="h-14 px-10 rounded-none text-sm font-medium tracking-wide transition-all duration-200"
                   >
                     <Link href="/auth/signup">
                       {t('cta.getStarted')}
                       <ArrowRight className="w-4 h-4 ml-3" />
                     </Link>
                   </Button>
-
-                  <p className="mt-6 text-xs text-white/40">
-                    無料で始められます。クレジットカードは不要です。
-                  </p>
                 </div>
               </div>
             </section>

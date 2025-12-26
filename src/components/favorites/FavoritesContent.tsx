@@ -244,6 +244,27 @@ export function FavoritesContent({
       >
         {/* 検索・フィルターとタブを固定 */}
         <StickyHeader className="space-y-4 mb-6">
+          {/* タブ */}
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger
+              value="photo_session"
+              className="flex items-center gap-2"
+            >
+              <Camera className="h-4 w-4" />
+              {t('tabs.photoSessions')}
+              <Badge variant="secondary" className="ml-1">
+                {photoSessionFavorites.length}
+              </Badge>
+            </TabsTrigger>
+            <TabsTrigger value="studio" className="flex items-center gap-2">
+              <Building2 className="h-4 w-4" />
+              {t('tabs.studios')}
+              <Badge variant="secondary" className="ml-1">
+                {studioFavorites.length}
+              </Badge>
+            </TabsTrigger>
+          </TabsList>
+
           {/* 検索・フィルター */}
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1 relative">
@@ -273,27 +294,6 @@ export function FavoritesContent({
               </SelectContent>
             </Select>
           </div>
-
-          {/* タブ */}
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger
-              value="photo_session"
-              className="flex items-center gap-2"
-            >
-              <Camera className="h-4 w-4" />
-              {t('tabs.photoSessions')}
-              <Badge variant="secondary" className="ml-1">
-                {photoSessionFavorites.length}
-              </Badge>
-            </TabsTrigger>
-            <TabsTrigger value="studio" className="flex items-center gap-2">
-              <Building2 className="h-4 w-4" />
-              {t('tabs.studios')}
-              <Badge variant="secondary" className="ml-1">
-                {studioFavorites.length}
-              </Badge>
-            </TabsTrigger>
-          </TabsList>
         </StickyHeader>
         <TabsContent value="photo_session" className="space-y-6">
           <FavoritesTabContent

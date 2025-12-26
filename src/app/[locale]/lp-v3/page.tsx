@@ -702,10 +702,6 @@ export default function LPVariant3() {
                       <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                     </Link>
                   </Button>
-
-                  <p className="mt-10 text-sm text-white/25">
-                    無料で始められます。クレジットカードは不要です。
-                  </p>
                 </div>
               </div>
             </section>

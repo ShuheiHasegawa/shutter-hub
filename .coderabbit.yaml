@@ -1,0 +1,65 @@
+# CodeRabbit設定ファイル
+# ShutterHub v2プロジェクト用
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+
+# レビューコメントの言語
+language: "ja-JP"
+
+# レビューコメントの口調・スタイル
+tone_instructions: "丁寧語で、指摘は根拠→影響→代替案の順に簡潔に。日本語でコメントしてください。"
+
+# レビュー設定
+reviews:
+  # レビューの詳細度: "chill" (穏やか) | "assertive" (詳細) | "balanced" (バランス)
+  profile: "balanced"
+  
+  # プルリクエスト作成時に自動レビュー
+  auto_review: true
+  
+  # レビューをスキップするPRタイトルパターン
+  ignore_title_patterns:
+    - "WIP"
+    - "DRAFT"
+    - "WIP:"
+    - "[WIP]"
+    - "[DRAFT]"
+  
+  # レビュー対象のベースブランチ（すべてのブランチ）
+  base_branches:
+    - ".*"
+  
+  # レビューをスキップするパス
+  ignore_paths:
+    - "node_modules/**"
+    - ".next/**"
+    - ".cursor/**"
+    - "playwright-report/**"
+    - "test-results/**"
+    - "**/*.test.ts"
+    - "**/*.test.tsx"
+    - "**/*.spec.ts"
+    - "**/*.spec.tsx"
+    - "supabase/migrations_backup/**"
+    - "public/images/**"
+    - "messages/*.json"
+    - "*.md"  # ドキュメントファイル
+
+# レビューする項目
+checks:
+  - security
+  - performance
+  - best_practices
+  - maintainability
+  - accessibility
+
+# セキュリティチェック
+security:
+  enabled: true
+
+# パフォーマンスチェック
+performance:
+  enabled: true
+
+# コード品質チェック
+quality:
+  enabled: true

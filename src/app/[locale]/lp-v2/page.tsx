@@ -625,10 +625,6 @@ export default function LPVariant2() {
                       <ArrowRight className="w-5 h-5 ml-3" />
                     </Link>
                   </Button>
-
-                  <p className="mt-8 text-sm text-white/30">
-                    無料で始められます。クレジットカードは不要です。
-                  </p>
                 </div>
               </div>
             </section>
