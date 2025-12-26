@@ -1,0 +1,70 @@
+name: 🔍 SonarCloud分析
+
+on:
+  # mainブランチへのpush時に自動実行
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'package*.json'
+      - 'tsconfig.json'
+      - '.github/workflows/sonarcloud.yml'
+
+  # 手動実行オプション
+  workflow_dispatch:
+
+  # スケジュール実行（週1回）
+  schedule:
+    - cron: '0 2 * * 1' # 毎週月曜日 02:00 UTC
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  analyze:
+    name: 🔍 SonarCloudコード品質分析
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    continue-on-error: true # 個人開発では警告のみ
+
+    steps:
+      - name: 📥 チェックアウト
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # 全履歴を取得（SonarCloudで必要）
+
+      - name: 🔧 Node.js セットアップ
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 依存関係インストール
+        run: npm ci
+
+      - name: 🔍 SonarCloud分析実行
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        continue-on-error: true
+
+      - name: 📊 SonarCloud結果サマリー
+        if: always()
+        run: |
+          echo "## 🔍 SonarCloud分析結果" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **実行時刻**: $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📋 詳細な結果は SonarCloud Dashboard で確認できます" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### ⚙️ セットアップ手順" >> $GITHUB_STEP_SUMMARY
+          echo "1. [SonarCloud](https://sonarcloud.io/) にログイン" >> $GITHUB_STEP_SUMMARY
+          echo "2. GitHubアカウントで連携" >> $GITHUB_STEP_SUMMARY
+          echo "3. プロジェクトを作成（shutter-hub-v2）" >> $GITHUB_STEP_SUMMARY
+          echo "4. GitHub Secretsに \`SONAR_TOKEN\` を追加" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔧 個人開発最適化" >> $GITHUB_STEP_SUMMARY
+          echo "- 警告があっても開発を妨げません" >> $GITHUB_STEP_SUMMARY
+          echo "- コード品質の可視化が目的です" >> $GITHUB_STEP_SUMMARY
+

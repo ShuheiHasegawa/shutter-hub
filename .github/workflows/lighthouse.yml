@@ -1,0 +1,101 @@
+name: ⚡ Lighthouse CI
+
+on:
+  # mainブランチへのpush時に自動実行
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'package*.json'
+      - 'next.config.ts'
+      - '.github/workflows/lighthouse.yml'
+
+  # 手動実行オプション
+  workflow_dispatch:
+    inputs:
+      url:
+        description: '分析対象URL'
+        required: false
+        default: 'https://shutterhub.app'
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  lighthouse:
+    name: ⚡ Lighthouseパフォーマンス分析
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    continue-on-error: true # 個人開発では警告のみ
+
+    steps:
+      - name: 📥 チェックアウト
+        uses: actions/checkout@v4
+
+      - name: 🔧 Node.js セットアップ
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 依存関係インストール
+        run: npm ci
+
+      - name: 🏗️ アプリケーションビルド
+        run: npm run build
+        env:
+          SKIP_ENV_VALIDATION: true
+
+      - name: 🚀 アプリケーション起動
+        run: npm start &
+        env:
+          NODE_ENV: production
+          SKIP_ENV_VALIDATION: true
+
+      - name: ⏳ アプリケーション起動待機
+        run: |
+          echo "アプリケーション起動待機中..."
+          for i in {1..30}; do
+            if curl -f http://localhost:3000 > /dev/null 2>&1; then
+              echo "✅ アプリケーション起動完了"
+              break
+            fi
+            echo "待機中... ($i/30)"
+            sleep 2
+          done
+
+      - name: ⚡ Lighthouse CI実行
+        uses: treosh/lighthouse-ci-action@v10
+        with:
+          urls: |
+            ${{ github.event.inputs.url || 'http://localhost:3000' }}
+            ${{ github.event.inputs.url || 'http://localhost:3000' }}/ja
+            ${{ github.event.inputs.url || 'http://localhost:3000' }}/ja/photo-sessions
+          configPath: '.lighthouserc.json'
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+          configPath: '.lighthouserc.json'
+        continue-on-error: true
+
+      - name: 📊 Lighthouse結果サマリー
+        if: always()
+        run: |
+          echo "## ⚡ Lighthouse CI結果" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **実行時刻**: $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "- **対象URL**: ${{ github.event.inputs.url || 'http://localhost:3000' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **ポート**: 3000（Next.js標準ポート）" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📋 詳細なレポートは Artifacts をダウンロードして確認できます" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🎯 目標スコア" >> $GITHUB_STEP_SUMMARY
+          echo "- **Performance**: 90以上" >> $GITHUB_STEP_SUMMARY
+          echo "- **Accessibility**: 95以上" >> $GITHUB_STEP_SUMMARY
+          echo "- **Best Practices**: 95以上" >> $GITHUB_STEP_SUMMARY
+          echo "- **SEO**: 95以上" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔧 個人開発最適化" >> $GITHUB_STEP_SUMMARY
+          echo "- スコアが目標未達でも開発を妨げません" >> $GITHUB_STEP_SUMMARY
+          echo "- パフォーマンス劣化の早期検出が目的です" >> $GITHUB_STEP_SUMMARY
+

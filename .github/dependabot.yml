@@ -1,0 +1,38 @@
+# Dependabot設定ファイル
+# セキュリティパッチの自動検出と依存関係の更新通知
+
+version: 2
+updates:
+  # npm依存関係の更新チェック
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    # PR作成せず、GitHub ActionsでIssueとして通知（個人開発最適化）
+    open-pull-requests: false
+    # セキュリティ更新のみ通知
+    ignore:
+      # セキュリティ更新以外は無視
+      - dependency-name: "*"
+        update-types: ["version-update:semver-minor", "version-update:semver-patch"]
+    # レビュアー設定（個人開発のため空）
+    reviewers: []
+    assignees: []
+    # コミットメッセージ設定
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+
+  # GitHub Actions依存関係の更新チェック
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests: false
+    reviewers: []
+    assignees: []
+
