@@ -42,12 +42,18 @@
     "test:e2e:mcp:escrow": "MCP_ENABLED=true MCP_TEST_ENVIRONMENT=true playwright test tests/e2e/escrow-payment.spec.ts",
     "test:e2e:mcp:report": "MCP_ENABLED=true playwright show-report",
     "figma:export": "node scripts/figma-tokens-export.js",
-    "figma:palette": "node scripts/generate-color-palette-svg.js"
+    "figma:palette": "node scripts/generate-color-palette-svg.js",
+    "analyze": "ANALYZE=true npm run build",
+    "analyze:server": "ANALYZE=true BUNDLE_ANALYZE=server npm run build",
+    "analyze:browser": "ANALYZE=true BUNDLE_ANALYZE=browser npm run build"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
       "eslint --fix",
       "prettier --write"
+    ],
+    "*.{ts,tsx}": [
+      "bash -c 'npm run type-check'"
     ],
     "*.{json,css,md}": [
       "prettier --write"
@@ -142,6 +148,7 @@
     "eslint-config-prettier": "^10.1.5",
     "husky": "^9.1.7",
     "lint-staged": "^16.0.0",
+    "@next/bundle-analyzer": "^15.1.8",
     "postcss": "^8",
     "prettier": "^3.5.3",
     "tailwindcss": "^3.4.1",

@@ -1,8 +1,14 @@
 import { withSentryConfig } from '@sentry/nextjs';
 import type { NextConfig } from 'next';
 import createNextIntlPlugin from 'next-intl/plugin';
+import bundleAnalyzer from '@next/bundle-analyzer';
 
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
+
+// Bundle Analyzer設定（ANALYZE=true の時のみ有効）
+const withBundleAnalyzer = bundleAnalyzer({
+  enabled: process.env.ANALYZE === 'true',
+});
 
 const nextConfig: NextConfig = {
   typescript: {
@@ -154,7 +160,9 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withSentryConfig(withNextIntl(nextConfig), {
+export default withSentryConfig(
+  withBundleAnalyzer(withNextIntl(nextConfig)),
+  {
   // For all available options, see:
   // https://www.npmjs.com/package/@sentry/webpack-plugin#options
 
