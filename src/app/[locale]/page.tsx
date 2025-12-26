@@ -155,7 +155,7 @@ export default function HomePage() {
             </section>
 
             {/* ===== FEATURES - 非対称グリッド ===== */}
-            <section className="py-24 md:py-32 bg-[#f5f4f0]">
+            <section className="py-24 md:py-32 bg-surface-primary">
               <div className="container">
                 <div className="mb-16">
                   <span className="text-[11px] tracking-[0.3em] uppercase text-amber-600 font-medium">
@@ -213,23 +213,23 @@ export default function HomePage() {
                   ].map((feature, index) => (
                     <div
                       key={index}
-                      className="group bg-[#f5f4f0] p-8 md:p-10 transition-colors duration-300 hover:bg-white"
+                      className="group bg-surface-neutral p-8 md:p-10 transition-colors duration-300"
                     >
                       <feature.icon
-                        className="w-6 h-6 text-[#0a0a0a]/40 mb-6"
+                        className="w-6 h-6 mb-6"
                         strokeWidth={1.5}
                       />
-                      <h3 className="text-lg font-medium text-[#0a0a0a] mb-3">
+                      <h3 className="text-lg font-medium mb-3">
                         {t(feature.titleKey)}
                       </h3>
-                      <p className="text-[#0a0a0a]/60 text-sm leading-relaxed mb-6">
+                      <p className="text-sm leading-relaxed mb-6">
                         {t(feature.descKey)}
                       </p>
                       <ul className="space-y-2">
                         {[0, 1, 2].map(i => (
                           <li
                             key={i}
-                            className="flex items-start gap-2 text-sm text-[#0a0a0a]/50"
+                            className="flex items-start gap-2 text-sm"
                           >
                             <span className="w-1 h-1 rounded-full bg-amber-500 mt-2 shrink-0" />
                             {t(`${feature.featuresKey}.${i}`)}
