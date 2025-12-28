@@ -73,15 +73,16 @@ export function CertificateGenerator({
       certificateRef.current.style.position = originalPosition;
       certificateRef.current.style.left = originalLeft;
 
+      // toBlobはコールバックベースなので、コールバック内でローディング状態を解除
       canvas.toBlob(blob => {
         if (blob) {
           saveAs(blob, `shutter-hub-certificate-${slot.slot_number}.png`);
         }
+        setIsGenerating(false);
       });
     } catch {
       // エラーハンドリング: 証明書生成失敗
       // トースト通知は親コンポーネントで実装されている場合に使用
-    } finally {
       setIsGenerating(false);
     }
   };
@@ -121,29 +122,39 @@ export function CertificateGenerator({
       certificateRef.current.style.position = originalPosition;
       certificateRef.current.style.left = originalLeft;
 
+      // toBlobはコールバックベースなので、コールバック内でローディング状態を解除
       canvas.toBlob(async blob => {
-        if (blob && navigator.share) {
-          const file = new File(
-            [blob],
-            `shutter-hub-certificate-${slot.slot_number}.png`,
-            {
-              type: 'image/png',
+        try {
+          if (blob && navigator.share) {
+            const file = new File(
+              [blob],
+              `shutter-hub-certificate-${slot.slot_number}.png`,
+              {
+                type: 'image/png',
+              }
+            );
+            await navigator.share({
+              title: `${slot.photo_session.title} - 入場証明書`,
+              text: `#ShutterHub で撮影会に参加しました！`,
+              files: [file],
+            });
+          } else {
+            // フォールバック: ダウンロード
+            if (blob) {
+              saveAs(blob, `shutter-hub-certificate-${slot.slot_number}.png`);
             }
-          );
-          await navigator.share({
-            title: `${slot.photo_session.title} - 入場証明書`,
-            text: `#ShutterHub で撮影会に参加しました！`,
-            files: [file],
-          });
-        } else {
-          // フォールバック: ダウンロード
-          handleDownload();
+          }
+        } catch {
+          // エラー時はダウンロードにフォールバック
+          if (blob) {
+            saveAs(blob, `shutter-hub-certificate-${slot.slot_number}.png`);
+          }
+        } finally {
+          setIsGenerating(false);
         }
       });
     } catch {
-      // エラー時はダウンロードにフォールバック
-      handleDownload();
-    } finally {
+      // エラー時はローディング状態を解除
       setIsGenerating(false);
     }
   };

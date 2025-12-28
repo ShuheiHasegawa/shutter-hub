@@ -403,7 +403,8 @@
     "checkInInstructions": "Please scan the QR code to check in",
     "downloadCertificate": "Download Certificate",
     "share": "Share",
-    "generating": "Generating..."
+    "generating": "Generating...",
+    "bookingNotFound": "Booking not found"
   },
   "photoSessions": {
     "title": "Photo Sessions",

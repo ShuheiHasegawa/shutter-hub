@@ -358,7 +358,8 @@
     "checkInInstructions": "QRコードをスキャンしてチェックインしてください",
     "downloadCertificate": "証明書をダウンロード",
     "share": "共有",
-    "generating": "生成中..."
+    "generating": "生成中...",
+    "bookingNotFound": "予約が見つかりません"
   },
   "bookings": {
     "title": "予約一覧",

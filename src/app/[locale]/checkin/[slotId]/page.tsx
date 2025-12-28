@@ -3,6 +3,7 @@ import { checkInToSlot } from '@/app/actions/checkin';
 import { CheckInResult } from '@/app/actions/checkin';
 import { CheckInPageClient } from '@/components/checkin/CheckInPageClient';
 import { getTranslations } from 'next-intl/server';
+import { requireAuthForAction } from '@/lib/auth/server-actions';
 
 interface CheckInPageProps {
   params: Promise<{ locale: string; slotId: string }>;
@@ -51,13 +52,25 @@ export default async function CheckInPage({
   // actionパラメータがない場合は、チェックイン状態を表示するだけ
   // QRコードスキャン時のみactionパラメータ付きでアクセスされる
   if (!action || action !== 'scan') {
-    // 現在のチェックイン状態を取得して表示
-    const { data: booking } = await supabase
-      .from('bookings')
-      .select('checked_in_at, checked_out_at')
-      .eq('slot_id', slotId)
-      .eq('status', 'confirmed')
-      .single();
+    // 認証ユーザーを取得（運営者がアクセスする場合もあるため、認証は必須ではない）
+    const authResult = await requireAuthForAction();
+    let booking = null;
+
+    if (authResult.success) {
+      // 認証済みユーザーの場合、そのユーザーの予約を取得
+      const { data: userBooking } = await supabase
+        .from('bookings')
+        .select('checked_in_at, checked_out_at')
+        .eq('slot_id', slotId)
+        .eq('user_id', authResult.data.user.id)
+        .eq('status', 'confirmed')
+        .maybeSingle();
+
+      booking = userBooking;
+    } else {
+      // 未認証の場合は予約を取得しない（運営者がアクセスする場合など）
+      // この場合は予約が見つからない状態として扱う
+    }
 
     return (
       <CheckInPageClient
@@ -66,10 +79,10 @@ export default async function CheckInPage({
             ? {
                 success: true,
                 message: booking.checked_out_at
-                  ? 'チェックアウト済み'
+                  ? t('checkedOut')
                   : booking.checked_in_at
-                    ? 'チェックイン済み'
-                    : '未チェックイン',
+                    ? t('checkedInStatus')
+                    : t('notCheckedIn'),
                 type: booking.checked_out_at
                   ? 'already_completed'
                   : booking.checked_in_at
@@ -80,7 +93,7 @@ export default async function CheckInPage({
               }
             : {
                 success: false,
-                message: '予約が見つかりません',
+                message: t('bookingNotFound'),
               }
         }
         slot={slot}
