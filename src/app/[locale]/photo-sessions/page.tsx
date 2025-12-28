@@ -7,8 +7,7 @@ import { AuthenticatedLayout } from '@/components/layout/authenticated-layout';
 import { PageTitleHeader } from '@/components/ui/page-title-header';
 import { LayoutToggle } from '@/components/photo-sessions/LayoutToggle';
 import { StickyHeader } from '@/components/ui/sticky-header';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
+import { Toggle } from '@/components/ui/toggle';
 import {
   Select,
   SelectContent,
@@ -17,7 +16,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Plus, Loader2 } from 'lucide-react';
+import { Plus, Loader2, CheckCircle2, MapPin } from 'lucide-react';
 import Link from 'next/link';
 import { useLayoutPreference } from '@/hooks/useLayoutPreference';
 import { CameraIcon } from 'lucide-react';
@@ -187,10 +186,18 @@ export default function PhotoSessionsPage() {
           title="撮影会一覧"
           icon={<CameraIcon className="h-6 w-6" />}
           actions={
-            <LayoutToggle
-              currentLayout={layout}
-              onLayoutChange={updateLayout}
-            />
+            <Button asChild size="sm" variant="cta">
+              <Link
+                href={
+                  profile?.user_type === 'organizer'
+                    ? '/photo-sessions/create/organizer'
+                    : '/photo-sessions/create'
+                }
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                撮影会を作成
+              </Link>
+            </Button>
           }
         />
 
@@ -207,76 +214,64 @@ export default function PhotoSessionsPage() {
 
           {/* 2行目: チェックボックス、並び順、作成ボタン */}
           <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-2 md:gap-0">
-            {/* 左側: チェックボックス */}
+            {/* 左側: ピル型Toggleボタン */}
             <div className="flex items-center gap-2 flex-wrap">
-              <Checkbox
-                id="only-available-header"
-                checked={filters.onlyAvailable}
-                onCheckedChange={checked => {
-                  const next = checked === true;
+              <Toggle
+                pressed={filters.onlyAvailable}
+                onPressedChange={pressed => {
                   setFilters(prev => ({
                     ...prev,
-                    onlyAvailable: next,
+                    onlyAvailable: pressed,
                   }));
                   handleSearch();
                 }}
-              />
-              <Label
-                htmlFor="only-available-header"
-                className="text-sm font-normal cursor-pointer select-none"
+                aria-label={t('sidebar.onlyAvailable')}
               >
+                <CheckCircle2 className="h-4 w-4" />
                 {t('sidebar.onlyAvailable')}
-              </Label>
+              </Toggle>
 
               {/* 活動拠点で絞る */}
-              <div className="flex items-center gap-2 md:ml-4 md:border-l md:pl-4 border-gray-200 dark:border-gray-700">
-                <Checkbox
-                  id="activity-location-header"
-                  checked={filterByActivityLocation}
-                  disabled={profileLoading}
-                  onCheckedChange={checked => {
-                    const isChecked = checked === true;
-                    logger.info('活動拠点フィルター変更:', {
-                      isChecked,
-                      profilePrefecture: profile?.prefecture,
-                      profileLoading,
-                    });
+              <Toggle
+                pressed={filterByActivityLocation}
+                disabled={profileLoading}
+                onPressedChange={pressed => {
+                  logger.info('活動拠点フィルター変更:', {
+                    isChecked: pressed,
+                    profilePrefecture: profile?.prefecture,
+                    profileLoading,
+                  });
 
-                    if (isChecked) {
-                      if (!profile?.prefecture) {
-                        toast.error(
-                          'プロフィール設定で活動拠点（都道府県）を設定してください'
-                        );
-                        logger.warn('活動拠点フィルターエラー: 都道府県未設定');
-                        // チェックボックスの状態を元に戻す
-                        setFilterByActivityLocation(false);
-                        return;
-                      }
-
-                      setFilterByActivityLocation(true);
-                    } else {
-                      setFilterByActivityLocation(false);
+                  if (pressed) {
+                    if (!profile?.prefecture) {
+                      toast.error(
+                        'プロフィール設定で活動拠点（都道府県）を設定してください'
+                      );
+                      logger.warn('活動拠点フィルターエラー: 都道府県未設定');
+                      return;
                     }
-                  }}
-                />
-                <Label
-                  htmlFor="activity-location-header"
-                  className={`text-sm font-normal cursor-pointer select-none flex items-center gap-1 ${profileLoading ? 'opacity-50' : ''}`}
-                >
-                  <span>活動拠点で絞る</span>
-                  {filterByActivityLocation && profile?.prefecture && (
-                    <span className="text-xs text-muted-foreground ml-1">
-                      ({profile.prefecture})
-                    </span>
-                  )}
-                  {profileLoading && (
-                    <Loader2 className="h-3 w-3 animate-spin ml-1" />
-                  )}
-                </Label>
-              </div>
+
+                    setFilterByActivityLocation(true);
+                  } else {
+                    setFilterByActivityLocation(false);
+                  }
+                }}
+                aria-label="活動拠点で絞る"
+              >
+                <MapPin className="h-4 w-4" />
+                活動拠点で絞る
+                {filterByActivityLocation && profile?.prefecture && (
+                  <span className="text-xs opacity-80 ml-1">
+                    ({profile.prefecture})
+                  </span>
+                )}
+                {profileLoading && (
+                  <Loader2 className="h-3 w-3 animate-spin ml-1" />
+                )}
+              </Toggle>
             </div>
 
-            {/* 右側: 並び順と作成ボタン */}
+            {/* 右側: 並び順とグリッド切り替え */}
             <div className="flex items-center gap-2 flex-wrap md:flex-nowrap">
               {/* 並び順 */}
               <div className="flex items-center gap-2">
@@ -334,19 +329,11 @@ export default function PhotoSessionsPage() {
                 </Select>
               </div>
 
-              {/* 撮影会を作成ボタン */}
-              <Button asChild size="sm" variant="cta">
-                <Link
-                  href={
-                    profile?.user_type === 'organizer'
-                      ? '/photo-sessions/create/organizer'
-                      : '/photo-sessions/create'
-                  }
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  撮影会を作成
-                </Link>
-              </Button>
+              {/* グリッド切り替えボタン */}
+              <LayoutToggle
+                currentLayout={layout}
+                onLayoutChange={updateLayout}
+              />
             </div>
           </div>
         </StickyHeader>

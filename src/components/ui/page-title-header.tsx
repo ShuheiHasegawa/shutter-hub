@@ -47,7 +47,7 @@ export function PageTitleHeader({
   className,
 }: PageTitleHeaderProps) {
   return (
-    <div className={cn('pt-4 pb-2', className)}>
+    <div className={cn(className)}>
       {/* メインヘッダー行 */}
       <div className="flex items-center gap-2 min-w-0">
         {/* 戻るボタン */}
