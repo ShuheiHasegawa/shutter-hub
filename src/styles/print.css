@@ -198,7 +198,7 @@
   /* 横スクロールコンテナを完全に無効化 */
   [data-print-area='checkin-management'] [class*='overflow-x'] {
     overflow-x: visible !important;
-    overflow: visible !important;
+    overflow-y: visible !important;
   }
 
   /* 個別QRコード印刷時のスタイル */

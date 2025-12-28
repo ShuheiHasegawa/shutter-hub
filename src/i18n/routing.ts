@@ -60,6 +60,10 @@ export const routing = defineRouting({
       ja: '/photo-sessions/create',
       en: '/photo-sessions/create',
     },
+    '/photo-sessions/create/organizer': {
+      ja: '/photo-sessions/create/organizer',
+      en: '/photo-sessions/create/organizer',
+    },
     '/priority-tickets': {
       ja: '/priority-tickets',
       en: '/priority-tickets',

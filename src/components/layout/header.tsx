@@ -29,7 +29,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Link } from '@/i18n/routing';
+import { Link, useRouter } from '@/i18n/routing';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useSimpleProfile';
 import { ThemePaletteSelector } from '@/components/ui/theme-palette-selector';
@@ -45,6 +45,7 @@ export function AppHeader({
   showNavigation = true,
 }: AppHeaderProps) {
   const t = useTranslations('navigation');
+  const router = useRouter();
   const { logout } = useAuth();
   const { user, avatarUrl, displayName, profile } = useProfile();
 
@@ -92,11 +93,18 @@ export function AppHeader({
                   </div>
                 </div>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link href={user ? `/profile/${user.id}` : '/auth/signin'}>
-                    <User className="mr-2 h-4 w-4" />
-                    <span>{t('profile')}</span>
-                  </Link>
+                <DropdownMenuItem
+                  onClick={() => {
+                    if (user) {
+                      // @ts-expect-error - next-intlの型定義が厳密で動的パスを受け入れないが、実行時には動作する
+                      router.push(`/profile/${user.id}`);
+                    } else {
+                      router.push('/auth/signin');
+                    }
+                  }}
+                >
+                  <User className="mr-2 h-4 w-4" />
+                  <span>{t('profile')}</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/subscription">
@@ -207,11 +215,16 @@ export function AppHeader({
           <nav className="flex items-center space-x-2">
             {user && <NotificationCenter />}
             {user && (
-              <Link href={`/profile/${user.id}`}>
-                <Button variant="ghost" size="sm">
-                  <MessageCircle className="h-4 w-4" />
-                </Button>
-              </Link>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  // @ts-expect-error - next-intlの型定義が厳密で動的パスを受け入れないが、実行時には動作する
+                  router.push(`/profile/${user.id}`);
+                }}
+              >
+                <MessageCircle className="h-4 w-4" />
+              </Button>
             )}
             <ThemePaletteSelector />
             <LanguageToggle />
@@ -242,11 +255,18 @@ export function AppHeader({
                     </div>
                   </div>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href={user ? `/profile/${user.id}` : '/auth/signin'}>
-                      <User className="mr-2 h-4 w-4" />
-                      <span>{t('profile')}</span>
-                    </Link>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      if (user) {
+                        // @ts-expect-error - next-intlの型定義が厳密で動的パスを受け入れないが、実行時には動作する
+                        router.push(`/profile/${user.id}`);
+                      } else {
+                        router.push('/auth/signin');
+                      }
+                    }}
+                  >
+                    <User className="mr-2 h-4 w-4" />
+                    <span>{t('profile')}</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href="/bookings">
@@ -295,16 +315,18 @@ export function AppHeader({
                 撮影会を探す
               </Link>
               {user && (
-                <Link
-                  href={
-                    profile?.user_type === 'organizer'
-                      ? '/photo-sessions/create/organizer'
-                      : '/photo-sessions/create'
-                  }
-                  className="block px-2 py-1 text-lg"
+                <button
+                  onClick={() => {
+                    router.push(
+                      profile?.user_type === 'organizer'
+                        ? '/photo-sessions/create/organizer'
+                        : '/photo-sessions/create'
+                    );
+                  }}
+                  className="block px-2 py-1 text-lg text-left w-full hover:bg-muted rounded-md transition-colors"
                 >
                   撮影会を開催
-                </Link>
+                </button>
               )}
               <Link href="/instant" className="block px-2 py-1 text-lg">
                 {t('instant')}
@@ -314,12 +336,15 @@ export function AppHeader({
               </Link>
               {user ? (
                 <>
-                  <Link
-                    href={`/profile/${user.id}`}
-                    className="block px-2 py-1 text-lg"
+                  <button
+                    onClick={() => {
+                      // @ts-expect-error - next-intlの型定義が厳密で動的パスを受け入れないが、実行時には動作する
+                      router.push(`/profile/${user.id}`);
+                    }}
+                    className="block px-2 py-1 text-lg text-left w-full hover:bg-muted rounded-md transition-colors"
                   >
                     {t('profile')}
-                  </Link>
+                  </button>
                   <Link href="/bookings" className="block px-2 py-1 text-lg">
                     {t('bookings')}
                   </Link>
