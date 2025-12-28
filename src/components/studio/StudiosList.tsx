@@ -1,15 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { StudioCard } from './StudioCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { getStudiosAction } from '@/app/actions/studio';
-import { getBulkFavoriteStatusAction } from '@/app/actions/favorites';
 import { StudioWithStats, StudioSearchFilters } from '@/types/database';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { useFavoriteStates } from '@/hooks/useFavoriteStates';
 
 interface StudiosListProps {
   filters?: StudioSearchFilters;
@@ -33,9 +33,20 @@ export function StudiosList({
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [favoriteStates, setFavoriteStates] = useState<
-    Record<string, { isFavorited: boolean; favoriteCount: number }>
-  >({});
+
+  // お気に入り状態を一括取得（SWRキャッシュ経由）
+  const favoriteItems = useMemo(
+    () => studios.map(s => ({ type: 'studio' as const, id: s.id })),
+    [studios]
+  );
+  const {
+    favoriteStates,
+    isAuthenticated: favoriteIsAuthenticated,
+    ready: favoriteStatesReady,
+    updateFavoriteState,
+  } = useFavoriteStates(favoriteItems, {
+    enabled: studios.length > 0,
+  });
 
   const fetchStudios = async (page: number = 1, append: boolean = false) => {
     try {
@@ -59,45 +70,7 @@ export function StudiosList({
           setStudios(newStudios);
         }
 
-        // お気に入り状態を一括取得
-        const favoriteItems = newStudios.map(studio => ({
-          type: 'studio' as const,
-          id: studio.id,
-        }));
-
-        const favoriteResult = await getBulkFavoriteStatusAction(favoriteItems);
-
-        if (favoriteResult.success) {
-          if (append) {
-            setFavoriteStates(prev => ({
-              ...prev,
-              ...favoriteResult.favoriteStates,
-            }));
-          } else {
-            setFavoriteStates(favoriteResult.favoriteStates);
-          }
-        } else {
-          // 一括取得が失敗した場合でも、空のfavoriteStateを設定して個別の呼び出しを防ぐ
-          // 認証されていない場合は空の状態を設定
-          const emptyStates: Record<
-            string,
-            { isFavorited: boolean; favoriteCount: number }
-          > = {};
-          newStudios.forEach(studio => {
-            emptyStates[`studio_${studio.id}`] = {
-              isFavorited: false,
-              favoriteCount: 0,
-            };
-          });
-          if (append) {
-            setFavoriteStates(prev => ({
-              ...prev,
-              ...emptyStates,
-            }));
-          } else {
-            setFavoriteStates(emptyStates);
-          }
-        }
+        // お気に入り状態はuseFavoriteStatesフックで自動取得されるため、ここでは削除
 
         const totalItems = result.totalCount || result.studios.length;
         const currentItems = append
@@ -182,13 +155,7 @@ export function StudiosList({
     isFavorited: boolean,
     favoriteCount: number
   ) => {
-    setFavoriteStates(prev => ({
-      ...prev,
-      [`studio_${studioId}`]: {
-        isFavorited,
-        favoriteCount,
-      },
-    }));
+    updateFavoriteState('studio', studioId, isFavorited, favoriteCount);
   };
 
   return (
@@ -196,7 +163,10 @@ export function StudiosList({
       {/* スタジオ一覧 */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {studios.map(studio => {
-          const favoriteState = favoriteStates[`studio_${studio.id}`];
+          const favoriteState =
+            favoriteStatesReady && favoriteIsAuthenticated !== false
+              ? favoriteStates[`studio_${studio.id}`]
+              : undefined;
           return (
             <StudioCard
               key={studio.id}
@@ -204,7 +174,15 @@ export function StudiosList({
               onSelect={onStudioSelect}
               isSelected={isSelected(studio.id)}
               showSelection={showSelection}
-              favoriteState={favoriteState}
+              favoriteState={
+                favoriteState
+                  ? {
+                      isFavorited: favoriteState.isFavorited,
+                      favoriteCount: favoriteState.favoriteCount,
+                      isAuthenticated: favoriteIsAuthenticated ?? false,
+                    }
+                  : undefined
+              }
               onFavoriteToggle={(isFavorited, favoriteCount) =>
                 handleFavoriteToggle(studio.id, isFavorited, favoriteCount)
               }

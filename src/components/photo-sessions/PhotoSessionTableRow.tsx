@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { useTranslations } from 'next-intl';
 import type { PhotoSessionWithOrganizer } from '@/types/database';
 import {
@@ -11,6 +10,7 @@ import {
 } from '@/components/ui/formatted-display';
 import { EmptyImage } from '@/components/ui/empty-image';
 import { Camera } from 'lucide-react';
+import { FavoriteHeartButton } from '@/components/ui/favorite-heart-button';
 
 interface PhotoSessionTableRowProps {
   session: PhotoSessionWithOrganizer;
@@ -18,12 +18,20 @@ interface PhotoSessionTableRowProps {
   onEdit?: (sessionId: string) => void;
   showActions?: boolean;
   isOwner?: boolean;
+  favoriteState?: {
+    isFavorited: boolean;
+    favoriteCount: number;
+    isAuthenticated: boolean;
+  };
+  onFavoriteToggle?: (isFavorited: boolean, favoriteCount: number) => void;
 }
 
 export function PhotoSessionTableRow({
   session,
   onViewDetails,
   showActions = true,
+  favoriteState,
+  onFavoriteToggle,
 }: PhotoSessionTableRowProps) {
   const t = useTranslations('photoSessions');
   const tBooking = useTranslations('booking');
@@ -129,17 +137,28 @@ export function PhotoSessionTableRow({
       {/* アクション */}
       <td className="px-6 py-4 whitespace-nowrap text-right">
         {showActions && (
-          <Button
+          <FavoriteHeartButton
+            favoriteType="photo_session"
+            favoriteId={session.id}
             size="sm"
-            variant="default"
-            onClick={e => {
-              e.stopPropagation();
-              onViewDetails?.(session.id);
-            }}
-            className="text-sm whitespace-nowrap"
-          >
-            {t('viewDetails')}
-          </Button>
+            position="inline"
+            variant="outline"
+            iconOnly
+            initialState={
+              favoriteState
+                ? {
+                    isFavorited: favoriteState.isFavorited,
+                    favoriteCount: favoriteState.favoriteCount,
+                    isAuthenticated: favoriteState.isAuthenticated,
+                  }
+                : {
+                    isFavorited: false,
+                    favoriteCount: 0,
+                    isAuthenticated: false,
+                  }
+            }
+            onToggle={onFavoriteToggle}
+          />
         )}
       </td>
     </tr>

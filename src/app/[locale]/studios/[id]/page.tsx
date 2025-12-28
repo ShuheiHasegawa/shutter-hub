@@ -19,6 +19,7 @@ import { getStudioDetailAction } from '@/app/actions/studio';
 import { StudioEditHistory } from '@/components/studio/StudioEditHistory';
 import { StudioReportDialog } from '@/components/studio/StudioReportDialog';
 import { InlineFavoriteButton } from '@/components/ui/favorite-heart-button';
+import { useFavoriteStates } from '@/hooks/useFavoriteStates';
 import {
   StudioWithStats,
   StudioPhoto,
@@ -80,6 +81,17 @@ export default function StudioDetailPage() {
     null
   );
   const lastRefreshParam = useRef<string | null>(null);
+
+  // お気に入り状態を取得
+  const { favoriteStates, isAuthenticated, ready } = useFavoriteStates(
+    [{ type: 'studio', id: studioId }],
+    { enabled: !!studioId }
+  );
+
+  const favoriteState = favoriteStates[`studio_${studioId}`] || {
+    isFavorited: false,
+    favoriteCount: 0,
+  };
 
   useEffect(() => {
     const fetchStudioDetail = async () => {
@@ -340,12 +352,19 @@ export default function StudioDetailPage() {
 
         {/* お気に入り・シェア・報告ボタン */}
         <div className="flex justify-end gap-2 mb-4">
-          <InlineFavoriteButton
-            favoriteType="studio"
-            favoriteId={studioId}
-            variant="outline"
-            size="sm"
-          />
+          {ready && (
+            <InlineFavoriteButton
+              favoriteType="studio"
+              favoriteId={studioId}
+              variant="outline"
+              size="sm"
+              initialState={{
+                isFavorited: favoriteState.isFavorited,
+                favoriteCount: favoriteState.favoriteCount,
+                isAuthenticated: isAuthenticated ?? false,
+              }}
+            />
+          )}
           <Button variant="outline" size="sm" onClick={handleShare}>
             <Share2 className="w-4 h-4 mr-2" />
             シェア
