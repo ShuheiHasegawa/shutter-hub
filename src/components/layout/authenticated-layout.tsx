@@ -41,29 +41,31 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
   return (
     <div className="flex bg-background overflow-hidden h-screen">
       {/* 固定サイドバー */}
-      <div className="flex-shrink-0">
+      <div className="flex-shrink-0 print:hidden">
         <Sidebar />
       </div>
 
       {/* メインコンテンツエリア */}
       <div className="flex flex-col flex-1 min-w-0 min-h-0">
         {/* 固定ヘッダー */}
-        <div className="flex-shrink-0">
+        <div className="flex-shrink-0 print:hidden">
           <AppHeader variant="authenticated" />
         </div>
 
         {/* スクロール可能なメインコンテンツ */}
-        <main className="flex-1 overflow-y-auto min-h-0 flex flex-col">
-          <div className="flex-1 px-4 py-4 pb-16 md:pb-16 space-y-4">
+        <main className="flex-1 overflow-y-auto min-h-0 flex flex-col print:overflow-visible">
+          <div className="flex-1 px-4 py-4 pb-16 md:pb-16 space-y-4 print:px-0 print:py-0 print:pb-0">
             {children}
           </div>
           {/* フッター */}
-          <AuthenticatedFooter />
+          <div className="print:hidden">
+            <AuthenticatedFooter />
+          </div>
         </main>
       </div>
 
       {/* 固定ボトムナビゲーション */}
-      <div className="fixed bottom-0 left-0 right-0 md:hidden z-50">
+      <div className="fixed bottom-0 left-0 right-0 md:hidden z-50 print:hidden">
         <BottomNavigation />
       </div>
     </div>

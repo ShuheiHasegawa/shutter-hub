@@ -8,71 +8,101 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import type { Profile, UserType } from '@/types/database';
 
+// グローバルキャッシュ: 複数のuseAuth呼び出しで認証状態を共有
+let cachedUser: User | null | undefined = undefined;
+let cachedLoading = true;
+let authPromise: Promise<User | null> | null = null;
+
 export function useAuth() {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(cachedUser ?? null);
+  const [loading, setLoading] = useState(cachedLoading);
   const router = useRouter();
   const supabase = createClient();
 
   useEffect(() => {
-    // 初期認証状態を取得
-    const getUser = async () => {
+    // キャッシュがあればそれを使用
+    if (cachedUser !== undefined) {
+      setUser(cachedUser);
+      setLoading(false);
+      return;
+    }
+
+    // 既に取得中の場合は、その Promise を再利用
+    if (authPromise) {
+      authPromise.then(user => {
+        setUser(user);
+        setLoading(false);
+      });
+      return;
+    }
+
+    // 初回のみ認証状態を取得
+    const getUser = async (): Promise<User | null> => {
       try {
+        // getUser()の代わりにgetSession()を使用（ローカルキャッシュから取得）
         const {
-          data: { user },
+          data: { session },
           error,
-        } = await supabase.auth.getUser();
+        } = await supabase.auth.getSession();
 
         if (error) {
-          // セッションがない状態（AuthSessionMissingError）は正常な状態なのでエラーログを出力しない
           if (
             error.name === 'AuthSessionMissingError' ||
             error.message?.includes('Auth session missing') ||
             error.message?.includes('session')
           ) {
-            // セッションがない場合はユーザーをnullに設定して続行（正常な状態）
-            setUser(null);
-            setLoading(false);
-            return;
+            cachedUser = null;
+            cachedLoading = false;
+            return null;
           }
 
-          // ネットワークエラーなどの場合はログを出力しない（過度なログを避ける）
           if (
             error.message?.includes('fetch') ||
             error.message?.includes('network')
           ) {
-            // ネットワークエラーの場合はユーザーをnullに設定して続行
-            setUser(null);
-            setLoading(false);
-            return;
+            cachedUser = null;
+            cachedLoading = false;
+            return null;
           }
 
-          // その他のエラーのみログ出力
           logger.error('認証状態取得エラー:', error);
+          cachedUser = null;
+          cachedLoading = false;
+          return null;
         }
 
-        setUser(user);
+        cachedUser = session?.user || null;
+        cachedLoading = false;
+        return session?.user || null;
       } catch (error) {
-        // 予期しないエラー（ネットワークエラーなど）
         logger.error('認証状態取得中の予期しないエラー:', error);
-        setUser(null);
-      } finally {
-        setLoading(false);
+        cachedUser = null;
+        cachedLoading = false;
+        return null;
       }
     };
 
-    getUser();
+    authPromise = getUser();
+    authPromise.then(user => {
+      setUser(user);
+      setLoading(false);
+      authPromise = null; // Promise完了後にクリア
+    });
 
-    // 認証状態の変更を監視
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
+      // キャッシュを更新
+      cachedUser = session?.user || null;
+      cachedLoading = false;
       setUser(session?.user || null);
       setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
-  }, [supabase.auth]);
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []); // 空の依存配列で初回のみ実行
 
   const logout = async () => {
     setLoading(true);
@@ -85,6 +115,10 @@ export function useAuth() {
         logger.error('Logout error:', error);
         return;
       }
+
+      // キャッシュをクリア
+      cachedUser = null;
+      cachedLoading = false;
 
       toast.success('ログアウトしました');
       router.push('/ja/auth/signin');
@@ -99,10 +133,6 @@ export function useAuth() {
   return { user, loading, logout };
 }
 
-/**
- * Client Components用のプロフィール取得フック
- * ユーザーのプロフィール情報を取得する
- */
 export function useUserProfile() {
   const { user, loading: authLoading } = useAuth();
   const [profile, setProfile] = useState<
@@ -149,54 +179,26 @@ export function useUserProfile() {
     };
 
     loadProfile();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, authLoading]); // supabaseは毎回新しいインスタンスが作成されるため依存配列から除外
+  }, [user, authLoading, supabase]);
 
   return { profile, loading: authLoading || loading };
 }
 
 /**
- * Client Components用の認証必須フック
- * 認証が必要なコンポーネントで使用する
- * 認証されていない場合はnullを返す
- */
-export function useRequireAuth() {
-  const { user, loading } = useAuth();
-
-  return { user, loading };
-}
-
-/**
- * Client Components用のユーザータイプ必須フック
- * 特定のユーザータイプが必要なコンポーネントで使用する
- *
+ * 特定のユーザータイプが必要な場合に使用するフック
  * @param userType - 必要なユーザータイプ
- * @returns チェック成功時: { user, profile, loading: false }
- *          チェック失敗時: { user: null, profile: null, loading: false }
+ * @returns ユーザー、プロフィール、ローディング状態
  */
 export function useRequireUserType(userType: UserType) {
   const { user, loading: authLoading } = useAuth();
   const { profile, loading: profileLoading } = useUserProfile();
-  const [loading, setLoading] = useState(true);
+  const loading = authLoading || profileLoading;
 
-  useEffect(() => {
-    if (authLoading || profileLoading) {
-      setLoading(true);
-      return;
-    }
+  const isValid = profile?.user_type === userType;
 
-    setLoading(false);
-  }, [authLoading, profileLoading]);
-
-  // 認証されていない、またはプロフィールが取得できない場合
-  if (!user || !profile) {
-    return { user: null, profile: null, loading };
-  }
-
-  // ユーザータイプが一致しない場合
-  if (profile.user_type !== userType) {
-    return { user: null, profile: null, loading: false };
-  }
-
-  return { user, profile, loading: false };
+  return {
+    user: isValid ? user : null,
+    profile: isValid ? profile : null,
+    loading,
+  };
 }

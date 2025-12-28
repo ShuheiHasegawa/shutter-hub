@@ -196,7 +196,14 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
           total_count: 0,
           unread_count: 0,
           high_priority_unread: 0,
-          categories: {},
+          categories: {
+            instant_photo: { total: 0, unread: 0 },
+            photo_session: { total: 0, unread: 0 },
+            social: { total: 0, unread: 0 },
+            payment: { total: 0, unread: 0 },
+            system: { total: 0, unread: 0 },
+            admin: { total: 0, unread: 0 },
+          },
         },
       }));
       return;
@@ -215,7 +222,14 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
             totalCount: 0,
             unreadCount: 0,
             highPriorityUnread: 0,
-            categories: {},
+            categories: {
+              instant_photo: { total: 0, unread: 0 },
+              photo_session: { total: 0, unread: 0 },
+              social: { total: 0, unread: 0 },
+              payment: { total: 0, unread: 0 },
+              system: { total: 0, unread: 0 },
+              admin: { total: 0, unread: 0 },
+            },
           },
         };
       });
@@ -243,7 +257,14 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
             total_count: 0,
             unread_count: 0,
             high_priority_unread: 0,
-            categories: {},
+            categories: {
+              instant_photo: { total: 0, unread: 0 },
+              photo_session: { total: 0, unread: 0 },
+              social: { total: 0, unread: 0 },
+              payment: { total: 0, unread: 0 },
+              system: { total: 0, unread: 0 },
+              admin: { total: 0, unread: 0 },
+            },
           },
         }));
       }
@@ -256,7 +277,14 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
           total_count: 0,
           unread_count: 0,
           high_priority_unread: 0,
-          categories: {},
+          categories: {
+            instant_photo: { total: 0, unread: 0 },
+            photo_session: { total: 0, unread: 0 },
+            social: { total: 0, unread: 0 },
+            payment: { total: 0, unread: 0 },
+            system: { total: 0, unread: 0 },
+            admin: { total: 0, unread: 0 },
+          },
         },
       }));
     }
