@@ -3,6 +3,7 @@
 import { logger } from '@/lib/utils/logger';
 import { createClient } from '@/lib/supabase/server';
 import { requireAuthForAction } from '@/lib/auth/server-actions';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 export interface CheckInResult {
   success: boolean;
@@ -10,6 +11,87 @@ export interface CheckInResult {
   type?: 'checkin' | 'checkout' | 'already_completed';
   checked_in_at?: string | null;
   checked_out_at?: string | null;
+}
+
+interface ConditionalUpdateParams {
+  supabase: SupabaseClient;
+  bookingId: string;
+  field: 'checked_in_at' | 'checked_out_at';
+  now: string;
+  type: 'checkin' | 'checkout';
+  successMessage: string;
+  errorMessage: string;
+  logContext: {
+    bookingId: string;
+    slotId: string;
+    userId: string;
+  };
+}
+
+/**
+ * 条件付きUPDATE処理を実行する共通関数
+ * 競合状態を防ぐため、フィールドがnullの場合のみ更新する
+ */
+async function performConditionalUpdate(
+  params: ConditionalUpdateParams
+): Promise<CheckInResult | null> {
+  const {
+    supabase,
+    bookingId,
+    field,
+    now,
+    type,
+    successMessage,
+    errorMessage,
+    logContext,
+  } = params;
+
+  const { data: updatedBooking, error: updateError } = await supabase
+    .from('bookings')
+    .update({ [field]: now })
+    .eq('id', bookingId)
+    .is(field, null)
+    .select('checked_in_at, checked_out_at')
+    .single();
+
+  if (updateError || !updatedBooking) {
+    // 更新されなかった = 他のリクエストが先に更新した可能性
+    // 最新状態を再取得
+    const { data: latestBooking } = await supabase
+      .from('bookings')
+      .select('checked_in_at, checked_out_at')
+      .eq('id', bookingId)
+      .single();
+
+    if (latestBooking?.checked_out_at) {
+      return {
+        success: false,
+        message:
+          field === 'checked_in_at'
+            ? '既にチェックイン・チェックアウトが完了しています'
+            : '既にチェックアウトが完了しています',
+        type: 'already_completed',
+        checked_in_at: latestBooking.checked_in_at,
+        checked_out_at: latestBooking.checked_out_at,
+      };
+    }
+
+    logger.error(`${errorMessage}:`, updateError);
+    return {
+      success: false,
+      message: errorMessage,
+    };
+  }
+
+  logger.info(`${successMessage}`, logContext);
+
+  return {
+    success: true,
+    message: successMessage,
+    type,
+    checked_in_at: updatedBooking.checked_in_at,
+    checked_out_at: updatedBooking.checked_out_at,
+  };
 }
 
 /**
@@ -61,136 +143,86 @@ export async function checkInToSlot(slotId: string): Promise<CheckInResult> {
 
     // チェックイン状態の判定と更新（競合状態を防ぐため条件付きUPDATEを使用）
     const now = new Date().toISOString();
+    const logContext = {
+      bookingId: booking.id,
+      slotId,
+      userId: user.id,
+    };
 
     if (!booking.checked_in_at) {
       // 初回スキャン：入場記録（条件付きUPDATE: checked_in_atがnullの場合のみ更新）
-      const { data: updatedBooking, error: updateError } = await supabase
-        .from('bookings')
-        .update({ checked_in_at: now })
-        .eq('id', booking.id)
-        .is('checked_in_at', null) // まだチェックインされていない場合のみ
-        .select('checked_in_at, checked_out_at')
-        .single();
-
-      if (updateError || !updatedBooking) {
-        // 更新されなかった = 他のリクエストが先に更新した可能性
-        // 最新状態を再取得
-        const { data: latestBooking } = await supabase
-          .from('bookings')
-          .select('checked_in_at, checked_out_at')
-          .eq('id', booking.id)
-          .single();
-
-        if (latestBooking?.checked_out_at) {
-          return {
-            success: false,
-            message: '既にチェックイン・チェックアウトが完了しています',
-            type: 'already_completed',
-            checked_in_at: latestBooking.checked_in_at,
-            checked_out_at: latestBooking.checked_out_at,
-          };
-        }
-
-        if (latestBooking?.checked_in_at) {
-          // 既にチェックイン済み、チェックアウト処理へ
-          const { data: checkoutBooking, error: checkoutError } = await supabase
-            .from('bookings')
-            .update({ checked_out_at: now })
-            .eq('id', booking.id)
-            .is('checked_out_at', null)
-            .select('checked_in_at, checked_out_at')
-            .single();
-
-          if (checkoutError || !checkoutBooking) {
-            logger.error('Check-out update error:', checkoutError);
-            return {
-              success: false,
-              message: 'チェックアウトに失敗しました',
-            };
-          }
-
-          logger.info('Check-out successful', {
-            bookingId: booking.id,
-            slotId,
-            userId: user.id,
-          });
-
-          return {
-            success: true,
-            message: '退場完了しました',
-            type: 'checkout',
-            checked_in_at: checkoutBooking.checked_in_at,
-            checked_out_at: checkoutBooking.checked_out_at,
-          };
-        }
-
-        logger.error('Check-in update error:', updateError);
-        return {
-          success: false,
-          message: 'チェックインに失敗しました',
-        };
-      }
-
-      logger.info('Check-in successful', {
+      const result = await performConditionalUpdate({
+        supabase,
         bookingId: booking.id,
-        slotId,
-        userId: user.id,
+        field: 'checked_in_at',
+        now,
+        type: 'checkin',
+        successMessage: '入場完了しました',
+        errorMessage: 'チェックインに失敗しました',
+        logContext,
       });
 
+      if (result) {
+        // 更新が成功した場合、または既に完了している場合
+        if (result.type === 'checkin') {
+          return {
+            ...result,
+            checked_out_at: null,
+          };
+        }
+        return result;
+      }
+
+      // 更新されなかった = 他のリクエストが先に更新した可能性
+      // 最新状態を再取得して、チェックアウト処理へ移行する可能性を確認
+      const { data: latestBooking } = await supabase
+        .from('bookings')
+        .select('checked_in_at, checked_out_at')
+        .eq('id', booking.id)
+        .single();
+
+      if (latestBooking?.checked_in_at && !latestBooking?.checked_out_at) {
+        // 既にチェックイン済み、チェックアウト処理へ
+        const checkoutResult = await performConditionalUpdate({
+          supabase,
+          bookingId: booking.id,
+          field: 'checked_out_at',
+          now,
+          type: 'checkout',
+          successMessage: '退場完了しました',
+          errorMessage: 'チェックアウトに失敗しました',
+          logContext,
+        });
+
+        if (checkoutResult) {
+          return checkoutResult;
+        }
+      }
+
       return {
-        success: true,
-        message: '入場完了しました',
-        type: 'checkin',
-        checked_in_at: updatedBooking.checked_in_at,
-        checked_out_at: null,
+        success: false,
+        message: 'チェックインに失敗しました',
       };
     } else if (!booking.checked_out_at) {
       // 2回目スキャン：退場記録（条件付きUPDATE: checked_out_atがnullの場合のみ更新）
-      const { data: updatedBooking, error: updateError } = await supabase
-        .from('bookings')
-        .update({ checked_out_at: now })
-        .eq('id', booking.id)
-        .is('checked_out_at', null) // まだチェックアウトされていない場合のみ
-        .select('checked_in_at, checked_out_at')
-        .single();
-
-      if (updateError || !updatedBooking) {
-        // 更新されなかった = 他のリクエストが先に更新した可能性
-        const { data: latestBooking } = await supabase
-          .from('bookings')
-          .select('checked_in_at, checked_out_at')
-          .eq('id', booking.id)
-          .single();
-
-        if (latestBooking?.checked_out_at) {
-          return {
-            success: false,
-            message: '既にチェックアウトが完了しています',
-            type: 'already_completed',
-            checked_in_at: latestBooking.checked_in_at,
-            checked_out_at: latestBooking.checked_out_at,
-          };
-        }
-
-        logger.error('Check-out update error:', updateError);
-        return {
-          success: false,
-          message: 'チェックアウトに失敗しました',
-        };
-      }
-
-      logger.info('Check-out successful', {
+      const result = await performConditionalUpdate({
+        supabase,
         bookingId: booking.id,
-        slotId,
-        userId: user.id,
+        field: 'checked_out_at',
+        now,
+        type: 'checkout',
+        successMessage: '退場完了しました',
+        errorMessage: 'チェックアウトに失敗しました',
+        logContext,
       });
 
+      if (result) {
+        return result;
+      }
+
       return {
-        success: true,
-        message: '退場完了しました',
-        type: 'checkout',
-        checked_in_at: updatedBooking.checked_in_at,
-        checked_out_at: updatedBooking.checked_out_at,
+        success: false,
+        message: 'チェックアウトに失敗しました',
       };
     } else {
       // 既に完了

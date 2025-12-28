@@ -40,6 +40,82 @@ interface AppHeaderProps {
   showNavigation?: boolean;
 }
 
+interface ProfileMenuItemsProps {
+  user: { id: string; email?: string | null } | null;
+  displayName: string | undefined;
+  router: ReturnType<typeof useRouter>;
+  t: ReturnType<typeof useTranslations<'navigation'>>;
+  handleSignOut: () => Promise<void>;
+  variant?: 'default' | 'authenticated';
+}
+
+/**
+ * プロファイルメニューアイテムの共通コンポーネント
+ */
+function ProfileMenuItems({
+  user,
+  displayName,
+  router,
+  t,
+  handleSignOut,
+  variant = 'default',
+}: ProfileMenuItemsProps) {
+  return (
+    <>
+      <div className="flex items-center justify-start gap-2 p-2">
+        <div className="flex flex-col space-y-1 leading-none">
+          <p className="font-medium">{displayName || user?.email || 'User'}</p>
+          <p className="w-[200px] truncate text-sm text-muted-foreground">
+            {user?.email}
+          </p>
+        </div>
+      </div>
+      <DropdownMenuSeparator />
+      <DropdownMenuItem
+        onClick={() => {
+          if (user) {
+            // @ts-expect-error - next-intlの型定義が厳密で動的パスを受け入れないが、実行時には動作する
+            router.push(`/profile/${user.id}`);
+          } else {
+            router.push('/auth/signin');
+          }
+        }}
+      >
+        <User className="mr-2 h-4 w-4" />
+        <span>{t('profile')}</span>
+      </DropdownMenuItem>
+      {variant === 'authenticated' ? (
+        <>
+          <DropdownMenuItem asChild>
+            <Link href="/subscription">
+              <Crown className="mr-2 h-4 w-4" />
+              <span>{t('subscription')}</span>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href="/settings">
+              <User className="mr-2 h-4 w-4" />
+              <span>設定</span>
+            </Link>
+          </DropdownMenuItem>
+        </>
+      ) : (
+        <DropdownMenuItem asChild>
+          <Link href="/bookings">
+            <span className="mr-2">📅</span>
+            <span>{t('bookings')}</span>
+          </Link>
+        </DropdownMenuItem>
+      )}
+      <DropdownMenuSeparator />
+      <DropdownMenuItem onClick={handleSignOut}>
+        <LogOut className="mr-2 h-4 w-4" />
+        <span>{t('signout')}</span>
+      </DropdownMenuItem>
+    </>
+  );
+}
+
 export function AppHeader({
   variant = 'default',
   showNavigation = true,
@@ -84,45 +160,14 @@ export function AppHeader({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56" align="end" forceMount>
-                <div className="flex items-center justify-start gap-2 p-2">
-                  <div className="flex flex-col space-y-1 leading-none">
-                    <p className="font-medium">{displayName}</p>
-                    <p className="w-[200px] truncate text-sm text-muted-foreground">
-                      {user?.email}
-                    </p>
-                  </div>
-                </div>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={() => {
-                    if (user) {
-                      // @ts-expect-error - next-intlの型定義が厳密で動的パスを受け入れないが、実行時には動作する
-                      router.push(`/profile/${user.id}`);
-                    } else {
-                      router.push('/auth/signin');
-                    }
-                  }}
-                >
-                  <User className="mr-2 h-4 w-4" />
-                  <span>{t('profile')}</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/subscription">
-                    <Crown className="mr-2 h-4 w-4" />
-                    <span>{t('subscription')}</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/settings">
-                    <User className="mr-2 h-4 w-4" />
-                    <span>設定</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut}>
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>{t('signout')}</span>
-                </DropdownMenuItem>
+                <ProfileMenuItems
+                  user={user}
+                  displayName={displayName}
+                  router={router}
+                  t={t}
+                  handleSignOut={handleSignOut}
+                  variant="authenticated"
+                />
               </DropdownMenuContent>
             </DropdownMenu>
           )}
@@ -246,39 +291,14 @@ export function AppHeader({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56" align="end" forceMount>
-                  <div className="flex items-center justify-start gap-2 p-2">
-                    <div className="flex flex-col space-y-1 leading-none">
-                      <p className="font-medium">{displayName}</p>
-                      <p className="w-[200px] truncate text-sm text-muted-foreground">
-                        {user?.email}
-                      </p>
-                    </div>
-                  </div>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={() => {
-                      if (user) {
-                        // @ts-expect-error - next-intlの型定義が厳密で動的パスを受け入れないが、実行時には動作する
-                        router.push(`/profile/${user.id}`);
-                      } else {
-                        router.push('/auth/signin');
-                      }
-                    }}
-                  >
-                    <User className="mr-2 h-4 w-4" />
-                    <span>{t('profile')}</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/bookings">
-                      <span className="mr-2">📅</span>
-                      <span>{t('bookings')}</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleSignOut}>
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>{t('signout')}</span>
-                  </DropdownMenuItem>
+                  <ProfileMenuItems
+                    user={user}
+                    displayName={displayName}
+                    router={router}
+                    t={t}
+                    handleSignOut={handleSignOut}
+                    variant="default"
+                  />
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
