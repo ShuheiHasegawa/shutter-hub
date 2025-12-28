@@ -47,6 +47,7 @@ import { createClient } from '@/lib/supabase/client';
 import Image from 'next/image';
 import { getLotterySession } from '@/app/actions/photo-session-lottery';
 import { getPhotoSessionStudioAction } from '@/app/actions/photo-session-studio';
+import { BookingCheckInStatus } from '@/components/bookings/BookingCheckInStatus';
 
 interface PhotoSessionDetailProps {
   session: PhotoSessionWithOrganizer;
@@ -56,6 +57,9 @@ interface PhotoSessionDetailProps {
     photo_session_id: string;
     user_id: string;
     status: string;
+    slot_id?: string | null;
+    checked_in_at?: string | null;
+    checked_out_at?: string | null;
     created_at: string;
     updated_at: string;
   } | null;
@@ -773,7 +777,7 @@ export function PhotoSessionDetail({
     <div className="w-full max-w-6xl mx-auto space-y-6">
       {/* 開催者ヘッダー（主催者の場合、最上部に表示） */}
       {isOrganizer && (
-        <Card className="border-blue-200 bg-blue-50/50 mt-4">
+        <Card className="border-blue-200 bg-blue-50/50 mt-4 print:hidden">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -799,7 +803,7 @@ export function PhotoSessionDetail({
 
       {/* 開催者向け撮影会情報（ヘッダー直下） */}
       {isOrganizer && (
-        <Card>
+        <Card className="print:hidden">
           <CardHeader>
             {/* スマホ表示: 縦並びレイアウト */}
             <div className="flex flex-col space-y-4 md:hidden">
@@ -961,18 +965,22 @@ export function PhotoSessionDetail({
       )}
 
       {/* 開催者管理機能（撮影会情報の後） */}
-      {isOrganizer && (
-        <OrganizerManagementPanel
-          session={session}
-          slots={slots}
-          lotteryEntryCount={lotteryEntryCount}
-          lotterySession={lotterySession}
-        />
-      )}
+      {/* eslint-disable @typescript-eslint/no-explicit-any */}
+      {
+        (isOrganizer && (
+          <OrganizerManagementPanel
+            session={session}
+            slots={slots}
+            lotteryEntryCount={lotteryEntryCount}
+            lotterySession={lotterySession || undefined}
+          />
+        )) as any
+      }
+      {/* eslint-enable @typescript-eslint/no-explicit-any */}
 
       {/* 参加者・未参加者向け撮影会情報 */}
       {!isOrganizer && (
-        <Card>
+        <Card className="print:hidden">
           <CardHeader>
             {/* スマホ表示: 縦並びレイアウト */}
             <div className="flex flex-col space-y-4 md:hidden">
@@ -1146,7 +1154,7 @@ export function PhotoSessionDetail({
 
       {/* 時間枠情報表示（参加者・未参加者のみ表示、開催者は管理パネルで確認済みのため非表示） */}
       {hasSlots && !isOrganizer && (
-        <Card>
+        <Card className="print:hidden">
           <CardHeader>
             <CardTitle>撮影時間枠</CardTitle>
             <p className="text-sm text-muted-foreground">
@@ -1298,9 +1306,32 @@ export function PhotoSessionDetail({
         </Card>
       )}
 
+      {/* チェックイン状態表示（参加者でスロット予約がある場合のみ） */}
+      {user &&
+        !loading &&
+        isParticipant &&
+        hasSlots &&
+        userBooking &&
+        'slot_id' in userBooking &&
+        userBooking.slot_id && (
+          <BookingCheckInStatus
+            checkedInAt={
+              'checked_in_at' in userBooking
+                ? (userBooking.checked_in_at as string | null | undefined)
+                : undefined
+            }
+            checkedOutAt={
+              'checked_out_at' in userBooking
+                ? (userBooking.checked_out_at as string | null | undefined)
+                : undefined
+            }
+            locale={locale}
+          />
+        )}
+
       {/* グループチャット機能（メッセージシステムが利用可能な場合のみ） */}
       {user && !loading && (isOrganizer || isParticipant) && (
-        <div className="space-y-4">
+        <div className="space-y-4 print:hidden">
           <PhotoSessionGroupChat
             sessionId={session.id}
             sessionTitle={session.title}
@@ -1315,16 +1346,18 @@ export function PhotoSessionDetail({
 
       {/* ドキュメント管理機能 */}
       {user && !loading && (isOrganizer || isParticipant) && (
-        <PhotoSessionDocuments
-          sessionId={session.id}
-          currentUserId={user.id}
-          isOrganizer={isOrganizer}
-          participants={participants}
-        />
+        <div className="print:hidden">
+          <PhotoSessionDocuments
+            sessionId={session.id}
+            currentUserId={user.id}
+            isOrganizer={isOrganizer}
+            participants={participants}
+          />
+        </div>
       )}
 
       {/* レビューセクション */}
-      <Card>
+      <Card className="print:hidden">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg flex items-center gap-2">
@@ -1355,7 +1388,7 @@ export function PhotoSessionDetail({
       {/* 注意事項（主催者以外のみ表示） */}
       {!isOrganizer && (
         <>
-          <Card>
+          <Card className="print:hidden">
             <CardHeader>
               <CardTitle className="text-lg">ご注意事項</CardTitle>
             </CardHeader>
@@ -1381,7 +1414,7 @@ export function PhotoSessionDetail({
       {/* 開催者向け注意事項（主催者のみ表示、最下部） */}
       {isOrganizer && (
         <>
-          <Card>
+          <Card className="print:hidden">
             <CardHeader>
               <CardTitle className="text-lg">開催者向け注意事項</CardTitle>
             </CardHeader>

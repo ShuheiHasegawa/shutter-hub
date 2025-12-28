@@ -48,10 +48,11 @@ export default async function PhotoSessionPage({
         .order('slot_number'),
 
       // ユーザーの既存予約を取得（ログインしている場合のみ）
+      // checked_in_at, checked_out_atも取得
       user
         ? supabase
             .from('bookings')
-            .select('*')
+            .select('*, slot_id, checked_in_at, checked_out_at')
             .eq('photo_session_id', id)
             .eq('user_id', user.id)
             .in('status', ['confirmed', 'pending'])
@@ -86,14 +87,15 @@ export default async function PhotoSessionPage({
 
   // スタジオ情報を整形
   const studio = studioData?.studios
-    ? {
-        id: Array.isArray(studioData.studios)
-          ? studioData.studios[0].id
-          : studioData.studios.id,
-        name: Array.isArray(studioData.studios)
-          ? studioData.studios[0].name
-          : studioData.studios.name,
-      }
+    ? Array.isArray(studioData.studios)
+      ? {
+          id: (studioData.studios[0] as { id: string; name: string })?.id,
+          name: (studioData.studios[0] as { id: string; name: string })?.name,
+        }
+      : {
+          id: (studioData.studios as { id: string; name: string }).id,
+          name: (studioData.studios as { id: string; name: string }).name,
+        }
     : null;
 
   // データ検証ログ（開発環境のみ）
