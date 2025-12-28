@@ -571,15 +571,16 @@ export function AdminLotterySelection({
                                 {entry.cheki_unsigned_count ||
                                 entry.cheki_signed_count ? (
                                   <div className="text-sm">
-                                    {entry.cheki_unsigned_count > 0 && (
+                                    {(entry.cheki_unsigned_count ?? 0) > 0 && (
                                       <div>
-                                        サインなし: {entry.cheki_unsigned_count}
-                                        枚
+                                        サインなし:{' '}
+                                        {entry.cheki_unsigned_count ?? 0}枚
                                       </div>
                                     )}
-                                    {entry.cheki_signed_count > 0 && (
+                                    {(entry.cheki_signed_count ?? 0) > 0 && (
                                       <div>
-                                        サインあり: {entry.cheki_signed_count}枚
+                                        サインあり:{' '}
+                                        {entry.cheki_signed_count ?? 0}枚
                                       </div>
                                     )}
                                   </div>
@@ -768,9 +769,9 @@ export function AdminLotterySelection({
                                 entry.cheki_signed_count) && (
                                 <Badge variant="outline" className="text-xs">
                                   チェキ: サインなし
-                                  {entry.cheki_unsigned_count || 0}枚
-                                  {entry.cheki_signed_count > 0 &&
-                                    ` / サインあり${entry.cheki_signed_count}枚`}
+                                  {entry.cheki_unsigned_count ?? 0}枚
+                                  {(entry.cheki_signed_count ?? 0) > 0 &&
+                                    ` / サインあり${entry.cheki_signed_count ?? 0}枚`}
                                 </Badge>
                               )}
                             </div>
