@@ -137,30 +137,28 @@ export function PhotoSessionTableRow({
       {/* アクション */}
       <td className="px-6 py-4 whitespace-nowrap text-right">
         {showActions && (
-          <div onClick={e => e.stopPropagation()}>
-            <FavoriteHeartButton
-              favoriteType="photo_session"
-              favoriteId={session.id}
-              size="sm"
-              position="inline"
-              variant="outline"
-              iconOnly
-              initialState={
-                favoriteState
-                  ? {
-                      isFavorited: favoriteState.isFavorited,
-                      favoriteCount: favoriteState.favoriteCount,
-                      isAuthenticated: favoriteState.isAuthenticated,
-                    }
-                  : {
-                      isFavorited: false,
-                      favoriteCount: 0,
-                      isAuthenticated: false,
-                    }
-              }
-              onToggle={onFavoriteToggle}
-            />
-          </div>
+          <FavoriteHeartButton
+            favoriteType="photo_session"
+            favoriteId={session.id}
+            size="sm"
+            position="inline"
+            variant="outline"
+            iconOnly
+            initialState={
+              favoriteState
+                ? {
+                    isFavorited: favoriteState.isFavorited,
+                    favoriteCount: favoriteState.favoriteCount,
+                    isAuthenticated: favoriteState.isAuthenticated,
+                  }
+                : {
+                    isFavorited: false,
+                    favoriteCount: 0,
+                    isAuthenticated: false,
+                  }
+            }
+            onToggle={onFavoriteToggle}
+          />
         )}
       </td>
     </tr>

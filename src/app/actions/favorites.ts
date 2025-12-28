@@ -278,21 +278,12 @@ export async function getUserFavoritesAction(
             Logger.error('Studio data fetch error:', studioError);
           }
           // studio_photosをfeaturedPhotosに変換
-          type StudioWithPhotos = typeof studioData & {
-            studio_photos?: Array<{
-              id: string;
-              image_url: string;
-              image_filename: string | null;
-              alt_text: string | null;
-              caption: string | null;
-              category: string;
-              photo_type: string;
-              display_order: number;
-            }>;
-          };
-          if (studioData && (studioData as StudioWithPhotos).studio_photos) {
-            const studioPhotos =
-              (studioData as StudioWithPhotos).studio_photos || [];
+          if (
+            studioData &&
+            'studio_photos' in studioData &&
+            Array.isArray(studioData.studio_photos)
+          ) {
+            const studioPhotos = studioData.studio_photos;
             details = {
               ...studioData,
               featuredPhotos: studioPhotos,
