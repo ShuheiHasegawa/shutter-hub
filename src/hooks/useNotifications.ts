@@ -66,6 +66,48 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
     useState<NotificationSettings | null>(null);
   const supabase = createClient();
 
+  // 空の統計オブジェクトを作成するヘルパー関数
+  const createEmptyStats = useCallback((): NotificationStats => {
+    return {
+      total_count: 0,
+      unread_count: 0,
+      high_priority_unread: 0,
+      categories: {
+        instant_photo: { total: 0, unread: 0 },
+        photo_session: { total: 0, unread: 0 },
+        social: { total: 0, unread: 0 },
+        payment: { total: 0, unread: 0 },
+        system: { total: 0, unread: 0 },
+        admin: { total: 0, unread: 0 },
+      },
+    };
+  }, []);
+
+  // デフォルト通知設定を作成するヘルパー関数
+  const createDefaultNotificationSettings =
+    useCallback((): NotificationSettings => {
+      return {
+        email_enabled_global: true,
+        push_enabled_global: true,
+        toast_enabled: true,
+        realtime_enabled: true,
+        email_enabled: {},
+        push_enabled: {},
+      };
+    }, []);
+
+  // Server Actionエラーハンドリングの共通ヘルパー関数
+  const handleServerActionError = useCallback(
+    (actionName: string, error: unknown) => {
+      logger.error(
+        `[useNotifications] ${actionName} Server Action Error:`,
+        error
+      );
+      return { success: false, error: 'Server Action呼び出しエラー' };
+    },
+    []
+  );
+
   // 通知種別から設定キーへのマッピング
   const getNotificationSettingKey = useCallback(
     (type: NotificationType): string | null => {
@@ -137,13 +179,9 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
         const result = await getUserNotifications(
           user.id,
           currentFilters
-        ).catch(error => {
-          logger.error(
-            '[useNotifications] getUserNotifications Server Action Error:',
-            error
-          );
-          return { success: false, error: 'Server Action呼び出しエラー' };
-        });
+        ).catch(error =>
+          handleServerActionError('getUserNotifications', error)
+        );
 
         if (
           result &&
@@ -190,15 +228,7 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
   const fetchStats = useCallback(async () => {
     if (!user?.id) {
       // ユーザーが存在しない場合は空の統計を設定
-      setState(prev => ({
-        ...prev,
-        stats: {
-          total_count: 0,
-          unread_count: 0,
-          high_priority_unread: 0,
-          categories: {},
-        },
-      }));
+      setState(prev => ({ ...prev, stats: createEmptyStats() }));
       return;
     }
 
@@ -215,7 +245,14 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
             totalCount: 0,
             unreadCount: 0,
             highPriorityUnread: 0,
-            categories: {},
+            categories: {
+              instant_photo: { total: 0, unread: 0 },
+              photo_session: { total: 0, unread: 0 },
+              social: { total: 0, unread: 0 },
+              payment: { total: 0, unread: 0 },
+              system: { total: 0, unread: 0 },
+              admin: { total: 0, unread: 0 },
+            },
           },
         };
       });
@@ -237,30 +274,14 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
           '[useNotifications] 通知統計取得失敗 - レスポンスが無効:',
           result
         );
-        setState(prev => ({
-          ...prev,
-          stats: {
-            total_count: 0,
-            unread_count: 0,
-            high_priority_unread: 0,
-            categories: {},
-          },
-        }));
+        setState(prev => ({ ...prev, stats: createEmptyStats() }));
       }
     } catch (error) {
       logger.error('[useNotifications] 通知統計取得エラー:', error);
       // エラー時は空の統計を設定
-      setState(prev => ({
-        ...prev,
-        stats: {
-          total_count: 0,
-          unread_count: 0,
-          high_priority_unread: 0,
-          categories: {},
-        },
-      }));
+      setState(prev => ({ ...prev, stats: createEmptyStats() }));
     }
-  }, [user?.id]);
+  }, [user?.id, createEmptyStats]);
 
   // 通知を既読にする
   const markAsRead = useCallback(
@@ -271,13 +292,9 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
         const result = await markNotificationAsRead(
           notificationId,
           user.id
-        ).catch(error => {
-          logger.error(
-            '[useNotifications] markNotificationAsRead Server Action Error:',
-            error
-          );
-          return { success: false, error: 'Server Action呼び出しエラー' };
-        });
+        ).catch(error =>
+          handleServerActionError('markNotificationAsRead', error)
+        );
 
         if (result && result.success) {
           setState(prev => ({
@@ -303,13 +320,9 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
     if (!user?.id) return;
 
     try {
-      const result = await markAllNotificationsAsRead(user.id).catch(error => {
-        logger.error(
-          '[useNotifications] markAllNotificationsAsRead Server Action Error:',
-          error
-        );
-        return { success: false, error: 'Server Action呼び出しエラー' };
-      });
+      const result = await markAllNotificationsAsRead(user.id).catch(error =>
+        handleServerActionError('markAllNotificationsAsRead', error)
+      );
 
       if (result && result.success) {
         setState(prev => ({
@@ -333,13 +346,9 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
     if (!user?.id) return;
 
     try {
-      const result = await clearAllNotifications(user.id).catch(error => {
-        logger.error(
-          '[useNotifications] clearAllNotifications Server Action Error:',
-          error
-        );
-        return { success: false, error: 'Server Action呼び出しエラー' };
-      });
+      const result = await clearAllNotifications(user.id).catch(error =>
+        handleServerActionError('clearAllNotifications', error)
+      );
 
       if (result && result.success) {
         setState(prev => ({
@@ -379,13 +388,9 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
     if (!user?.id) return;
 
     try {
-      const result = await createTestNotifications(user.id).catch(error => {
-        logger.error(
-          '[useNotifications] createTestNotifications Server Action Error:',
-          error
-        );
-        return { success: false, error: 'Server Action呼び出しエラー' };
-      });
+      const result = await createTestNotifications(user.id).catch(error =>
+        handleServerActionError('createTestNotifications', error)
+      );
 
       if (result && result.success && 'data' in result && result.data) {
         logger.info('テスト通知作成完了', {
@@ -404,41 +409,23 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
     if (!user?.id) return;
 
     try {
-      const result = await getNotificationSettings().catch(error => {
-        logger.error(
-          '[useNotifications] getNotificationSettings Server Action Error:',
-          error
-        );
-        return { success: false, error: 'Server Action呼び出しエラー' };
-      });
+      const result = await getNotificationSettings().catch(error =>
+        handleServerActionError('getNotificationSettings', error)
+      );
 
       if (result && result.success && 'data' in result && result.data) {
         setNotificationSettings(result.data);
         logger.debug('[useNotifications] 通知設定取得成功:', result.data);
       } else {
         // 設定取得失敗時はデフォルト設定を使用
-        setNotificationSettings({
-          email_enabled_global: true,
-          push_enabled_global: true,
-          toast_enabled: true,
-          realtime_enabled: true,
-          email_enabled: {},
-          push_enabled: {},
-        });
+        setNotificationSettings(createDefaultNotificationSettings());
       }
     } catch (error) {
       logger.error('[useNotifications] 通知設定取得エラー:', error);
       // エラー時もデフォルト設定を使用
-      setNotificationSettings({
-        email_enabled_global: true,
-        push_enabled_global: true,
-        toast_enabled: true,
-        realtime_enabled: true,
-        email_enabled: {},
-        push_enabled: {},
-      });
+      setNotificationSettings(createDefaultNotificationSettings());
     }
-  }, [user?.id]);
+  }, [user?.id, handleServerActionError, createDefaultNotificationSettings]);
 
   // 通知設定から有効な設定を取得
   const effectiveRealtime = notificationSettings?.realtime_enabled ?? true;

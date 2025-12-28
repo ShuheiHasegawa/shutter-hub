@@ -13,6 +13,14 @@ if (!supabaseUrl || !supabaseAnonKey) {
   );
 }
 
+// シングルトンパターン: 複数のcreateClient()呼び出しで同じインスタンスを再利用
+let cachedClient: SupabaseClient | null = null;
+
 export const createClient = (): SupabaseClient => {
-  return createBrowserClient(supabaseUrl, supabaseAnonKey);
+  if (cachedClient) {
+    return cachedClient;
+  }
+
+  cachedClient = createBrowserClient(supabaseUrl, supabaseAnonKey);
+  return cachedClient;
 };
