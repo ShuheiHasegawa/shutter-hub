@@ -21,6 +21,7 @@ import { useTranslations } from 'next-intl';
 import { PhotoSessionWithOrganizer } from '@/types/database';
 import { FormattedDateTime } from '@/components/ui/formatted-display';
 import { formatDateLocalized, formatTimeLocalized } from '@/lib/utils/date';
+import { escapeHtml } from '@/lib/utils/html-utils';
 
 interface CheckInManagementProps {
   sessionId: string;
@@ -56,13 +57,6 @@ export function CheckInManagement({
     loadCheckInStatuses();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId]);
-
-  // HTMLエスケープ関数
-  const escapeHtml = (text: string): string => {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-  };
 
   const handlePrintAll = () => {
     // 印刷用のHTMLを生成

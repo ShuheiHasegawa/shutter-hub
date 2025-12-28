@@ -10,6 +10,7 @@ import { PhotoSessionSlot } from '@/types/photo-session';
 import { PhotoSession } from '@/types/database';
 import { formatDateTimeLocalized } from '@/lib/utils/date';
 import { QRCodeSVG } from 'qrcode.react';
+import { logger } from '@/lib/utils/logger';
 
 interface CertificateGeneratorProps {
   slot: PhotoSessionSlot & {
@@ -38,22 +39,24 @@ export function CertificateGenerator({
 
   const certificateUrl = `${baseUrl}/${locale}/checkin/${slot.id}/certificate/${certificateId}`;
 
-  const handleDownload = async () => {
-    if (!certificateRef.current) return;
+  /**
+   * 証明書をキャプチャしてBlobを生成する共通処理
+   */
+  const captureCertificate = async (): Promise<Blob | null> => {
+    if (!certificateRef.current) return null;
 
-    setIsGenerating(true);
+    // 一時的に要素を表示可能にする
+    const originalDisplay = certificateRef.current.style.display;
+    const originalVisibility = certificateRef.current.style.visibility;
+    const originalPosition = certificateRef.current.style.position;
+    const originalLeft = certificateRef.current.style.left;
+
+    certificateRef.current.style.display = 'block';
+    certificateRef.current.style.visibility = 'visible';
+    certificateRef.current.style.position = 'absolute';
+    certificateRef.current.style.left = '-9999px';
+
     try {
-      // 一時的に要素を表示可能にする
-      const originalDisplay = certificateRef.current.style.display;
-      const originalVisibility = certificateRef.current.style.visibility;
-      const originalPosition = certificateRef.current.style.position;
-      const originalLeft = certificateRef.current.style.left;
-
-      certificateRef.current.style.display = 'block';
-      certificateRef.current.style.visibility = 'visible';
-      certificateRef.current.style.position = 'absolute';
-      certificateRef.current.style.left = '-9999px';
-
       const canvas = await html2canvas(certificateRef.current, {
         backgroundColor: '#ffffff',
         scale: 2,
@@ -73,88 +76,74 @@ export function CertificateGenerator({
       certificateRef.current.style.position = originalPosition;
       certificateRef.current.style.left = originalLeft;
 
-      // toBlobはコールバックベースなので、コールバック内でローディング状態を解除
-      canvas.toBlob(blob => {
-        if (blob) {
-          saveAs(blob, `shutter-hub-certificate-${slot.slot_number}.png`);
-        }
-        setIsGenerating(false);
+      // Blobに変換して返す
+      return new Promise<Blob | null>(resolve => {
+        canvas.toBlob(blob => {
+          resolve(blob);
+        });
       });
-    } catch {
+    } catch (error) {
+      // エラー時も元に戻す
+      certificateRef.current.style.display = originalDisplay;
+      certificateRef.current.style.visibility = originalVisibility;
+      certificateRef.current.style.position = originalPosition;
+      certificateRef.current.style.left = originalLeft;
+      throw error;
+    }
+  };
+
+  const handleDownload = async () => {
+    setIsGenerating(true);
+    try {
+      const blob = await captureCertificate();
+      if (blob) {
+        saveAs(blob, `shutter-hub-certificate-${slot.slot_number}.png`);
+      }
+      setIsGenerating(false);
+    } catch (error) {
       // エラーハンドリング: 証明書生成失敗
+      logger.error('Certificate generation error:', error);
       // トースト通知は親コンポーネントで実装されている場合に使用
       setIsGenerating(false);
     }
   };
 
   const handleShare = async () => {
-    if (!certificateRef.current) return;
-
     setIsGenerating(true);
     try {
-      // 一時的に要素を表示可能にする
-      const originalDisplay = certificateRef.current.style.display;
-      const originalVisibility = certificateRef.current.style.visibility;
-      const originalPosition = certificateRef.current.style.position;
-      const originalLeft = certificateRef.current.style.left;
+      const blob = await captureCertificate();
+      if (!blob) {
+        setIsGenerating(false);
+        return;
+      }
 
-      certificateRef.current.style.display = 'block';
-      certificateRef.current.style.visibility = 'visible';
-      certificateRef.current.style.position = 'absolute';
-      certificateRef.current.style.left = '-9999px';
-
-      const canvas = await html2canvas(certificateRef.current, {
-        backgroundColor: '#ffffff',
-        scale: 2,
-        useCORS: true,
-        onclone: clonedDoc => {
-          const clonedElement = clonedDoc.querySelector('[data-certificate]');
-          if (clonedElement instanceof HTMLElement) {
-            clonedElement.style.display = 'block';
-            clonedElement.style.visibility = 'visible';
-          }
-        },
-      });
-
-      // 元に戻す
-      certificateRef.current.style.display = originalDisplay;
-      certificateRef.current.style.visibility = originalVisibility;
-      certificateRef.current.style.position = originalPosition;
-      certificateRef.current.style.left = originalLeft;
-
-      // toBlobはコールバックベースなので、コールバック内でローディング状態を解除
-      canvas.toBlob(async blob => {
-        try {
-          if (blob && navigator.share) {
-            const file = new File(
-              [blob],
-              `shutter-hub-certificate-${slot.slot_number}.png`,
-              {
-                type: 'image/png',
-              }
-            );
-            await navigator.share({
-              title: `${slot.photo_session.title} - 入場証明書`,
-              text: `#ShutterHub で撮影会に参加しました！`,
-              files: [file],
-            });
-          } else {
-            // フォールバック: ダウンロード
-            if (blob) {
-              saveAs(blob, `shutter-hub-certificate-${slot.slot_number}.png`);
+      try {
+        if (navigator.share) {
+          const file = new File(
+            [blob],
+            `shutter-hub-certificate-${slot.slot_number}.png`,
+            {
+              type: 'image/png',
             }
-          }
-        } catch {
-          // エラー時はダウンロードにフォールバック
-          if (blob) {
-            saveAs(blob, `shutter-hub-certificate-${slot.slot_number}.png`);
-          }
-        } finally {
-          setIsGenerating(false);
+          );
+          await navigator.share({
+            title: `${slot.photo_session.title} - 入場証明書`,
+            text: `#ShutterHub で撮影会に参加しました！`,
+            files: [file],
+          });
+        } else {
+          // フォールバック: ダウンロード
+          saveAs(blob, `shutter-hub-certificate-${slot.slot_number}.png`);
         }
-      });
-    } catch {
+      } catch {
+        // エラー時はダウンロードにフォールバック
+        saveAs(blob, `shutter-hub-certificate-${slot.slot_number}.png`);
+      } finally {
+        setIsGenerating(false);
+      }
+    } catch (error) {
       // エラー時はローディング状態を解除
+      logger.error('Certificate share error:', error);
       setIsGenerating(false);
     }
   };

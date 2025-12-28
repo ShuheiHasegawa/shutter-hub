@@ -9,6 +9,7 @@ import { formatDateLocalized, formatTimeLocalized } from '@/lib/utils/date';
 import { useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { PhotoSessionWithOrganizer } from '@/types/database';
+import { escapeHtml } from '@/lib/utils/html-utils';
 
 interface SlotQRCodeProps {
   slot: PhotoSessionSlot;
@@ -27,13 +28,6 @@ export function SlotQRCode({
   const qrRef = useRef<HTMLDivElement>(null);
 
   const checkInUrl = `${baseUrl}/${locale}/checkin/${slot.id}?action=scan`;
-
-  // HTMLエスケープ関数
-  const escapeHtml = (text: string): string => {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-  };
 
   const handlePrint = () => {
     // 印刷用のHTMLを生成
