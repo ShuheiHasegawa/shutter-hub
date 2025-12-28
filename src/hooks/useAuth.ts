@@ -9,22 +9,52 @@ import { toast } from 'sonner';
 import type { Profile, UserType } from '@/types/database';
 
 // グローバルキャッシュ: 複数のuseAuth呼び出しで認証状態を共有
+// SSR hydration問題を回避するため、クライアント側でのみ使用
 let cachedUser: User | null | undefined = undefined;
 let cachedLoading = true;
 let authPromise: Promise<User | null> | null = null;
 
 export function useAuth() {
-  const [user, setUser] = useState<User | null>(cachedUser ?? null);
-  const [loading, setLoading] = useState(cachedLoading);
+  // SSR hydration問題を回避: クライアント側でのみキャッシュを使用
+  const [user, setUser] = useState<User | null>(
+    typeof window !== 'undefined' ? (cachedUser ?? null) : null
+  );
+  const [loading, setLoading] = useState(
+    typeof window !== 'undefined' ? cachedLoading : true
+  );
   const router = useRouter();
   const supabase = createClient();
 
   useEffect(() => {
+    // Critical修正: リスナーは常に設定（早期リターンの前に配置）
+    // これにより、他のタブでの認証状態変更やトークンリフレッシュを検知できる
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      // キャッシュを更新（クライアント側でのみ）
+      if (typeof window !== 'undefined') {
+        cachedUser = session?.user || null;
+        cachedLoading = false;
+      }
+      setUser(session?.user || null);
+      setLoading(false);
+    });
+
+    // SSR時はリスナーのみ設定して終了
+    if (typeof window === 'undefined') {
+      return () => {
+        subscription.unsubscribe();
+      };
+    }
+
     // キャッシュがあればそれを使用
     if (cachedUser !== undefined) {
       setUser(cachedUser);
       setLoading(false);
-      return;
+      // リスナーは既に設定済みなので、クリーンアップのみ返す
+      return () => {
+        subscription.unsubscribe();
+      };
     }
 
     // 既に取得中の場合は、その Promise を再利用
@@ -33,7 +63,10 @@ export function useAuth() {
         setUser(user);
         setLoading(false);
       });
-      return;
+      // リスナーは既に設定済みなので、クリーンアップのみ返す
+      return () => {
+        subscription.unsubscribe();
+      };
     }
 
     // 初回のみ認証状態を取得
@@ -89,16 +122,7 @@ export function useAuth() {
       authPromise = null; // Promise完了後にクリア
     });
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      // キャッシュを更新
-      cachedUser = session?.user || null;
-      cachedLoading = false;
-      setUser(session?.user || null);
-      setLoading(false);
-    });
-
+    // リスナーは既に設定済みなので、クリーンアップのみ返す
     return () => {
       subscription.unsubscribe();
     };
@@ -116,9 +140,11 @@ export function useAuth() {
         return;
       }
 
-      // キャッシュをクリア
-      cachedUser = null;
-      cachedLoading = false;
+      // キャッシュをクリア（クライアント側でのみ）
+      if (typeof window !== 'undefined') {
+        cachedUser = null;
+        cachedLoading = false;
+      }
 
       toast.success('ログアウトしました');
       router.push('/ja/auth/signin');
