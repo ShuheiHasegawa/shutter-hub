@@ -18,6 +18,7 @@ interface PhotoSessionMobileListCardProps {
   favoriteState?: {
     isFavorited: boolean;
     favoriteCount: number;
+    isAuthenticated: boolean;
   };
   onFavoriteToggle?: (isFavorited: boolean, favoriteCount: number) => void;
 }
@@ -83,7 +84,7 @@ export function PhotoSessionMobileListCard({
                 ? {
                     isFavorited: favoriteState.isFavorited,
                     favoriteCount: favoriteState.favoriteCount,
-                    isAuthenticated: true,
+                    isAuthenticated: favoriteState.isAuthenticated,
                   }
                 : {
                     isFavorited: false,

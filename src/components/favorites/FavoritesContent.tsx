@@ -73,6 +73,29 @@ export function FavoritesContent({
         if (result.success) {
           const favorites = result.favorites || [];
 
+          // #region agent log
+          if (type === 'studio' && favorites.length > 0) {
+            const firstFavorite = favorites[0];
+            type StudioWithPhotos = {
+              studio?: StudioWithStats & {
+                studio_photos?: Array<unknown>;
+              };
+            };
+            const studioWithPhotos = firstFavorite as StudioWithPhotos;
+            const photosCount =
+              Array.isArray(studioWithPhotos?.studio?.studio_photos) &&
+              studioWithPhotos.studio.studio_photos.length > 0
+                ? studioWithPhotos.studio.studio_photos.length
+                : 0;
+            Logger.info('[FavoritesContent] Studio favorites data', {
+              count: favorites.length,
+              firstStudio: firstFavorite,
+              hasPhotos: photosCount > 0,
+              photosCount,
+            });
+          }
+          // #endregion
+
           if (type === 'studio') {
             setStudioFavorites(favorites as UserFavoriteWithDetails[]);
           } else if (type === 'photo_session') {

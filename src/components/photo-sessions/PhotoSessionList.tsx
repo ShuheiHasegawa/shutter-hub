@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { logger } from '@/lib/utils/logger';
 import {
   normalizeSearchKeyword,
@@ -14,13 +14,13 @@ import { PhotoSessionTableRow } from './PhotoSessionTableRow';
 import { PhotoSessionMobileCompactCard } from './PhotoSessionMobileCompactCard';
 import { PhotoSessionMobileListCard } from './PhotoSessionMobileListCard';
 import { useLayoutPreference } from '@/hooks/useLayoutPreference';
-import { getBulkFavoriteStatusAction } from '@/app/actions/favorites';
 import { EmptyState } from '@/components/ui/empty-state';
 import { LoadingState } from '@/components/ui/loading-state';
 import { Loader2, Camera } from 'lucide-react';
 import { usePhotoSessions } from '@/hooks/usePhotoSessions';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useSimpleProfile';
+import { useFavoriteStates } from '@/hooks/useFavoriteStates';
 import type { PhotoSessionWithOrganizer, BookingType } from '@/types/database';
 import { useTranslations } from 'next-intl';
 
@@ -88,9 +88,6 @@ export function PhotoSessionList({
   const sortOrder = sortOrderProp || 'asc';
   const { user: currentUser } = useAuth();
   const { profile } = useProfile();
-  const [favoriteStates, setFavoriteStates] = useState<
-    Record<string, { isFavorited: boolean; favoriteCount: number }>
-  >({});
   const [dataPage, setDataPage] = useState(0);
   // 確定済みフィルター（検索ボタン押下時のみ更新）
   const [appliedFilters, setAppliedFilters] = useState<FilterState | undefined>(
@@ -150,11 +147,29 @@ export function PhotoSessionList({
     error: swrError,
   } = usePhotoSessions(swrParams);
 
+  // お気に入り状態を一括取得（SWRキャッシュ経由）
+  const favoriteItems = useMemo(
+    () => sessions.map(s => ({ type: 'photo_session' as const, id: s.id })),
+    [sessions]
+  );
+  const {
+    favoriteStates,
+    isAuthenticated: favoriteIsAuthenticated,
+    ready: favoriteStatesReady,
+    updateFavoriteState,
+  } = useFavoriteStates(favoriteItems, {
+    enabled: sessions.length > 0,
+  });
+
   // SWRデータ反映
   useEffect(() => {
     // SWRがローディング中の場合
     if (swrLoading) {
-      setLoading(true);
+      // リセット中または既存データがない場合のみloading=trueに設定
+      // 既存データがある場合は、データが消えるまでloadingをfalseに保つ
+      if (pendingResetRef.current || sessions.length === 0) {
+        setLoading(true);
+      }
       return;
     }
 
@@ -212,83 +227,7 @@ export function PhotoSessionList({
         });
       }
 
-      // お気に入り状態を一括取得
-      if (newSessions.length > 0) {
-        const favoriteItems = newSessions.map(session => ({
-          type: 'photo_session' as const,
-          id: session.id,
-        }));
-
-        logger.debug('[PhotoSessionList] 一括お気に入り状態取得開始', {
-          itemsCount: favoriteItems.length,
-          sessionIds: favoriteItems.map(item => item.id),
-        });
-
-        getBulkFavoriteStatusAction(favoriteItems)
-          .then(favoriteResult => {
-            if (favoriteResult && favoriteResult.success) {
-              logger.debug('[PhotoSessionList] 一括お気に入り状態取得成功', {
-                statesCount: Object.keys(favoriteResult.favoriteStates).length,
-                isPendingReset: pendingResetRef.current,
-              });
-
-              if (pendingResetRef.current) {
-                setFavoriteStates(favoriteResult.favoriteStates);
-              } else {
-                setFavoriteStates(prev => ({
-                  ...prev,
-                  ...favoriteResult.favoriteStates,
-                }));
-              }
-            } else {
-              logger.warn(
-                '[PhotoSessionList] お気に入り状態取得失敗:',
-                favoriteResult
-              );
-              // 一括取得が失敗した場合でも、空のfavoriteStateを設定して個別の呼び出しを防ぐ
-              const emptyStates: Record<
-                string,
-                { isFavorited: boolean; favoriteCount: number }
-              > = {};
-              newSessions.forEach(session => {
-                emptyStates[`photo_session_${session.id}`] = {
-                  isFavorited: false,
-                  favoriteCount: 0,
-                };
-              });
-              if (pendingResetRef.current) {
-                setFavoriteStates(emptyStates);
-              } else {
-                setFavoriteStates(prev => ({
-                  ...prev,
-                  ...emptyStates,
-                }));
-              }
-            }
-          })
-          .catch(error => {
-            logger.error('[PhotoSessionList] お気に入り状態取得エラー:', error);
-            // エラー時も空のfavoriteStateを設定して個別の呼び出しを防ぐ
-            const emptyStates: Record<
-              string,
-              { isFavorited: boolean; favoriteCount: number }
-            > = {};
-            newSessions.forEach(session => {
-              emptyStates[`photo_session_${session.id}`] = {
-                isFavorited: false,
-                favoriteCount: 0,
-              };
-            });
-            if (pendingResetRef.current) {
-              setFavoriteStates(emptyStates);
-            } else {
-              setFavoriteStates(prev => ({
-                ...prev,
-                ...emptyStates,
-              }));
-            }
-          });
-      }
+      // お気に入り状態はuseFavoriteStatesフックで自動取得されるため、ここでは削除
 
       setHasMore(hasMoreData);
     } finally {
@@ -303,6 +242,7 @@ export function PhotoSessionList({
     swrError,
     dataPage,
     appliedFilters?.onlyAvailable,
+    sessions.length,
   ]);
 
   // loadSessions を通常の関数として定義（SWRトリガー用）
@@ -330,18 +270,22 @@ export function PhotoSessionList({
       filters,
       appliedBefore: appliedFilters,
     });
+
+    // リセット処理
+    setDataPage(0);
+    setHasMore(true);
+    pendingResetRef.current = true;
+
     // 確定済みフィルターを更新（これによりSWRキーが変わってフェッチが走る）
     setAppliedFilters(filters);
     setAppliedSearchQuery(searchQuery);
     setAppliedLocationFilter(locationFilter);
+
     logger.info('[PhotoSessionList] 確定済みフィルター更新完了', {
       newAppliedFilters: filters,
       newAppliedSearchQuery: searchQuery,
       newAppliedLocationFilter: locationFilter,
     });
-    setSessions([]);
-    setHasMore(true);
-    loadSessions(true);
   };
 
   // 初回ロードはSWRが自動的に行うため、明示的なloadSessionsは不要
@@ -359,8 +303,13 @@ export function PhotoSessionList({
     };
   }, []); // 依存関係なし - 1回のみ実行
 
-  // 検索トリガー変更時の処理
+  // 検索トリガー変更時の処理（初回マウント時はスキップ）
+  const isFirstSearchTrigger = useRef(true);
   useEffect(() => {
+    if (isFirstSearchTrigger.current) {
+      isFirstSearchTrigger.current = false;
+      return;
+    }
     if (searchTrigger > 0) {
       handleSearch();
     }
@@ -500,13 +449,7 @@ export function PhotoSessionList({
     isFavorited: boolean,
     favoriteCount: number
   ) => {
-    setFavoriteStates(prev => ({
-      ...prev,
-      [`photo_session_${sessionId}`]: {
-        isFavorited,
-        favoriteCount,
-      },
-    }));
+    updateFavoriteState('photo_session', sessionId, isFavorited, favoriteCount);
   };
 
   // handleLoadMore関数は無限スクロールにより不要
@@ -571,7 +514,9 @@ export function PhotoSessionList({
                   <div className="hidden md:block space-y-3 md:space-y-4 px-4 md:px-0">
                     {sessions.map(session => {
                       const favoriteState =
-                        favoriteStates[`photo_session_${session.id}`];
+                        favoriteStatesReady && favoriteIsAuthenticated !== false
+                          ? favoriteStates[`photo_session_${session.id}`]
+                          : undefined;
                       return (
                         <PhotoSessionCard
                           key={session.id}
@@ -581,7 +526,16 @@ export function PhotoSessionList({
                           isOwner={currentUser?.id === session.organizer_id}
                           showActions={true}
                           layoutMode="card"
-                          favoriteState={favoriteState}
+                          favoriteState={
+                            favoriteState
+                              ? {
+                                  isFavorited: favoriteState.isFavorited,
+                                  favoriteCount: favoriteState.favoriteCount,
+                                  isAuthenticated:
+                                    favoriteIsAuthenticated ?? false,
+                                }
+                              : undefined
+                          }
                           onFavoriteToggle={(isFavorited, favoriteCount) =>
                             handleFavoriteToggle(
                               session.id,
@@ -598,13 +552,24 @@ export function PhotoSessionList({
                   <div className="md:hidden space-y-4">
                     {sessions.map(session => {
                       const favoriteState =
-                        favoriteStates[`photo_session_${session.id}`];
+                        favoriteStatesReady && favoriteIsAuthenticated !== false
+                          ? favoriteStates[`photo_session_${session.id}`]
+                          : undefined;
                       return (
                         <PhotoSessionMobileCompactCard
                           key={session.id}
                           session={session}
                           onViewDetails={handleViewDetails}
-                          favoriteState={favoriteState}
+                          favoriteState={
+                            favoriteState
+                              ? {
+                                  isFavorited: favoriteState.isFavorited,
+                                  favoriteCount: favoriteState.favoriteCount,
+                                  isAuthenticated:
+                                    favoriteIsAuthenticated ?? false,
+                                }
+                              : undefined
+                          }
                           onFavoriteToggle={(isFavorited, favoriteCount) =>
                             handleFavoriteToggle(
                               session.id,
@@ -624,7 +589,9 @@ export function PhotoSessionList({
                 <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 lg:gap-6 md:px-0">
                   {sessions.map(session => {
                     const favoriteState =
-                      favoriteStates[`photo_session_${session.id}`];
+                      favoriteStatesReady && favoriteIsAuthenticated !== false
+                        ? favoriteStates[`photo_session_${session.id}`]
+                        : undefined;
                     return (
                       <PhotoSessionGridCard
                         key={session.id}
@@ -633,7 +600,16 @@ export function PhotoSessionList({
                         onEdit={handleEdit}
                         isOwner={currentUser?.id === session.organizer_id}
                         showActions={true}
-                        favoriteState={favoriteState}
+                        favoriteState={
+                          favoriteState
+                            ? {
+                                isFavorited: favoriteState.isFavorited,
+                                favoriteCount: favoriteState.favoriteCount,
+                                isAuthenticated:
+                                  favoriteIsAuthenticated ?? false,
+                              }
+                            : undefined
+                        }
                         onFavoriteToggle={(isFavorited, favoriteCount) =>
                           handleFavoriteToggle(
                             session.id,
@@ -680,16 +656,46 @@ export function PhotoSessionList({
                           </tr>
                         </thead>
                         <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-                          {sessions.map(session => (
-                            <PhotoSessionTableRow
-                              key={session.id}
-                              session={session}
-                              onViewDetails={handleViewDetails}
-                              onEdit={handleEdit}
-                              isOwner={currentUser?.id === session.organizer_id}
-                              showActions={true}
-                            />
-                          ))}
+                          {sessions.map(session => {
+                            const favoriteState =
+                              favoriteStatesReady &&
+                              favoriteIsAuthenticated !== false
+                                ? favoriteStates[`photo_session_${session.id}`]
+                                : undefined;
+                            return (
+                              <PhotoSessionTableRow
+                                key={session.id}
+                                session={session}
+                                onViewDetails={handleViewDetails}
+                                onEdit={handleEdit}
+                                isOwner={
+                                  currentUser?.id === session.organizer_id
+                                }
+                                showActions={true}
+                                favoriteState={
+                                  favoriteState
+                                    ? {
+                                        isFavorited: favoriteState.isFavorited,
+                                        favoriteCount:
+                                          favoriteState.favoriteCount,
+                                        isAuthenticated:
+                                          favoriteIsAuthenticated ?? false,
+                                      }
+                                    : undefined
+                                }
+                                onFavoriteToggle={(
+                                  isFavorited,
+                                  favoriteCount
+                                ) =>
+                                  handleFavoriteToggle(
+                                    session.id,
+                                    isFavorited,
+                                    favoriteCount
+                                  )
+                                }
+                              />
+                            );
+                          })}
                         </tbody>
                       </table>
                     </div>
@@ -699,13 +705,24 @@ export function PhotoSessionList({
                   <div className="md:hidden space-y-4">
                     {sessions.map(session => {
                       const favoriteState =
-                        favoriteStates[`photo_session_${session.id}`];
+                        favoriteStatesReady && favoriteIsAuthenticated !== false
+                          ? favoriteStates[`photo_session_${session.id}`]
+                          : undefined;
                       return (
                         <PhotoSessionMobileListCard
                           key={session.id}
                           session={session}
                           onViewDetails={handleViewDetails}
-                          favoriteState={favoriteState}
+                          favoriteState={
+                            favoriteState
+                              ? {
+                                  isFavorited: favoriteState.isFavorited,
+                                  favoriteCount: favoriteState.favoriteCount,
+                                  isAuthenticated:
+                                    favoriteIsAuthenticated ?? false,
+                                }
+                              : undefined
+                          }
                           onFavoriteToggle={(isFavorited, favoriteCount) =>
                             handleFavoriteToggle(
                               session.id,

@@ -26,6 +26,7 @@ interface StudioCardProps {
   favoriteState?: {
     isFavorited: boolean;
     favoriteCount: number;
+    isAuthenticated: boolean;
   };
   onFavoriteToggle?: (isFavorited: boolean, favoriteCount: number) => void;
 }
@@ -155,21 +156,27 @@ export function StudioCard({
               </div>
             </div>
           ) : (
-            <CardFavoriteButton
-              favoriteType="studio"
-              favoriteId={studio.id}
-              size="md"
-              initialState={
-                favoriteState
-                  ? {
-                      isFavorited: favoriteState.isFavorited,
-                      favoriteCount: favoriteState.favoriteCount,
-                      isAuthenticated: true,
-                    }
-                  : undefined
-              }
-              onToggle={onFavoriteToggle}
-            />
+            <>
+              <CardFavoriteButton
+                favoriteType="studio"
+                favoriteId={studio.id}
+                size="md"
+                initialState={
+                  favoriteState
+                    ? {
+                        isFavorited: favoriteState.isFavorited,
+                        favoriteCount: favoriteState.favoriteCount,
+                        isAuthenticated: favoriteState.isAuthenticated,
+                      }
+                    : {
+                        isFavorited: false,
+                        favoriteCount: 0,
+                        isAuthenticated: false,
+                      }
+                }
+                onToggle={onFavoriteToggle}
+              />
+            </>
           )}
         </div>
       </CardHeader>

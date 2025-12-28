@@ -1,6 +1,5 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
 import Logger from '@/lib/logger';
 import { requireAuthForAction } from '@/lib/auth/server-actions';
 import { createClient } from '@/lib/supabase/server';
@@ -28,6 +27,8 @@ export async function toggleFavoriteAction(
       target_id: favoriteId,
     });
 
+    // デバッグログ（一時的）
+
     if (error) {
       Logger.error('Toggle favorite error:', error);
       return {
@@ -37,12 +38,8 @@ export async function toggleFavoriteAction(
       };
     }
 
-    // 関連ページの再検証
-    revalidatePath('/favorites');
-    revalidatePath('/studios');
-    revalidatePath('/photo-sessions');
-    revalidatePath(`/studios/${favoriteId}`);
-    revalidatePath(`/photo-sessions/${favoriteId}`);
+    // 楽観的更新で即座に反映されるため、revalidatePathは不要
+    // revalidatePath()を呼ぶとページがリロードされてしまう
 
     return {
       success: true,
@@ -262,7 +259,17 @@ export async function getUserFavoritesAction(
               city,
               hourly_rate_min,
               hourly_rate_max,
-              description
+              description,
+              studio_photos(
+                id,
+                image_url,
+                image_filename,
+                alt_text,
+                caption,
+                category,
+                photo_type,
+                display_order
+              )
             `
             )
             .eq('id', favorite.favorite_id)
@@ -270,7 +277,44 @@ export async function getUserFavoritesAction(
           if (studioError) {
             Logger.error('Studio data fetch error:', studioError);
           }
-          details = studioData;
+          // studio_photosをfeaturedPhotosに変換
+          type StudioWithPhotos = typeof studioData & {
+            studio_photos?: Array<{
+              id: string;
+              image_url: string;
+              image_filename: string | null;
+              alt_text: string | null;
+              caption: string | null;
+              category: string;
+              photo_type: string;
+              display_order: number;
+            }>;
+          };
+          if (studioData && (studioData as StudioWithPhotos).studio_photos) {
+            const studioPhotos =
+              (studioData as StudioWithPhotos).studio_photos || [];
+            details = {
+              ...studioData,
+              featuredPhotos: studioPhotos,
+            };
+            // #region agent log
+            Logger.info('[getUserFavoritesAction] Studio photos conversion', {
+              studioId: studioData.id,
+              studioName: studioData.name,
+              rawPhotosCount: studioPhotos.length,
+              hasPhotos: studioPhotos.length > 0,
+              firstPhoto: studioPhotos[0],
+            });
+            // #endregion
+          } else {
+            details = studioData;
+            // #region agent log
+            Logger.warning('[getUserFavoritesAction] No studio_photos found', {
+              studioId: studioData?.id,
+              studioName: studioData?.name,
+            });
+            // #endregion
+          }
         } else if (favorite.favorite_type === 'photo_session') {
           const { data: sessionData, error: sessionError } = await supabase
             .from('photo_sessions')
@@ -285,6 +329,7 @@ export async function getUserFavoritesAction(
               price_per_person,
               max_participants,
               booking_type,
+              image_urls,
               organizer:organizer_id(
                 id,
                 display_name,
@@ -297,6 +342,20 @@ export async function getUserFavoritesAction(
           if (sessionError) {
             Logger.error('Photo session data fetch error:', sessionError);
           }
+          // #region agent log
+          if (sessionData) {
+            const imageUrls = Array.isArray(sessionData.image_urls)
+              ? sessionData.image_urls
+              : [];
+            Logger.info('[getUserFavoritesAction] Photo session data', {
+              sessionId: sessionData.id,
+              sessionTitle: sessionData.title,
+              hasImageUrls: imageUrls.length > 0,
+              imageUrlsCount: imageUrls.length,
+              firstImageUrl: imageUrls[0],
+            });
+          }
+          // #endregion
           details = sessionData;
         }
 

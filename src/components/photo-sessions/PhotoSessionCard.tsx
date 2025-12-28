@@ -18,7 +18,10 @@ import {
   FormattedPrice,
   FormattedDateTime,
 } from '@/components/ui/formatted-display';
-import { CardFavoriteButton } from '@/components/ui/favorite-heart-button';
+import {
+  CardFavoriteButton,
+  FavoriteHeartButton,
+} from '@/components/ui/favorite-heart-button';
 import { EmptyImage } from '@/components/ui/empty-image';
 import { Camera } from 'lucide-react';
 
@@ -32,6 +35,7 @@ interface PhotoSessionCardProps {
   favoriteState?: {
     isFavorited: boolean;
     favoriteCount: number;
+    isAuthenticated: boolean;
   };
   onFavoriteToggle?: (isFavorited: boolean, favoriteCount: number) => void;
 }
@@ -136,10 +140,10 @@ export function PhotoSessionCard({
                       ? {
                           isFavorited: favoriteState.isFavorited,
                           favoriteCount: favoriteState.favoriteCount,
-                          isAuthenticated: true,
+                          isAuthenticated: favoriteState.isAuthenticated,
                         }
                       : {
-                          // favoriteStateがundefinedの場合でも空のinitialStateを設定して個別の呼び出しを防ぐ
+                          // favoriteStateがundefinedの場合は非表示（nullを返す）
                           isFavorited: false,
                           favoriteCount: 0,
                           isAuthenticated: false,
@@ -262,9 +266,13 @@ export function PhotoSessionCard({
                       ? {
                           isFavorited: favoriteState.isFavorited,
                           favoriteCount: favoriteState.favoriteCount,
-                          isAuthenticated: true,
+                          isAuthenticated: favoriteState.isAuthenticated,
                         }
-                      : undefined
+                      : {
+                          isFavorited: false,
+                          favoriteCount: 0,
+                          isAuthenticated: false,
+                        }
                   }
                   onToggle={onFavoriteToggle}
                 />
@@ -392,7 +400,11 @@ export function PhotoSessionCard({
                         favoriteCount: favoriteState.favoriteCount,
                         isAuthenticated: true,
                       }
-                    : undefined
+                    : {
+                        isFavorited: false,
+                        favoriteCount: 0,
+                        isAuthenticated: false,
+                      }
                 }
                 onToggle={onFavoriteToggle}
               />
@@ -521,16 +533,30 @@ export function PhotoSessionCard({
               )}
 
               <div className="flex gap-2">
-                {onViewDetails && (
-                  <Button
-                    variant="outline"
+                <div className="flex-1">
+                  <FavoriteHeartButton
+                    favoriteType="photo_session"
+                    favoriteId={session.id}
                     size="sm"
-                    onClick={() => onViewDetails(session.id)}
-                    className="flex-1 h-11 border-gray-300 hover:border-blue-500 hover:text-blue-600 transition-all"
-                  >
-                    {t('viewDetails')}
-                  </Button>
-                )}
+                    position="inline"
+                    variant="outline"
+                    iconOnly
+                    initialState={
+                      favoriteState
+                        ? {
+                            isFavorited: favoriteState.isFavorited,
+                            favoriteCount: favoriteState.favoriteCount,
+                            isAuthenticated: favoriteState.isAuthenticated,
+                          }
+                        : {
+                            isFavorited: false,
+                            favoriteCount: 0,
+                            isAuthenticated: false,
+                          }
+                    }
+                    onToggle={onFavoriteToggle}
+                  />
+                </div>
 
                 {!isOwner &&
                   session.current_participants >= session.max_participants &&
@@ -712,16 +738,28 @@ export function PhotoSessionCard({
           {/* 右側: アクションボタン */}
           {showActions && (
             <div className="flex flex-col gap-2 ml-6 w-36 justify-center">
-              {onViewDetails && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onViewDetails(session.id)}
-                  className="border-gray-300 hover:border-blue-500 hover:text-blue-600 transition-all"
-                >
-                  {t('viewDetails')}
-                </Button>
-              )}
+              <FavoriteHeartButton
+                favoriteType="photo_session"
+                favoriteId={session.id}
+                size="sm"
+                position="inline"
+                variant="outline"
+                iconOnly
+                initialState={
+                  favoriteState
+                    ? {
+                        isFavorited: favoriteState.isFavorited,
+                        favoriteCount: favoriteState.favoriteCount,
+                        isAuthenticated: favoriteState.isAuthenticated,
+                      }
+                    : {
+                        isFavorited: false,
+                        favoriteCount: 0,
+                        isAuthenticated: false,
+                      }
+                }
+                onToggle={onFavoriteToggle}
+              />
               {!isOwner && onViewDetails && (
                 <>
                   <Button
@@ -843,16 +881,30 @@ export function PhotoSessionCard({
 
         {showActions && (
           <div className="flex gap-2 pt-2">
-            {onViewDetails && (
-              <Button
-                variant="outline"
+            <div className="flex-1">
+              <FavoriteHeartButton
+                favoriteType="photo_session"
+                favoriteId={session.id}
                 size="sm"
-                onClick={() => onViewDetails(session.id)}
-                className="flex-1"
-              >
-                {t('viewDetails')}
-              </Button>
-            )}
+                position="inline"
+                variant="outline"
+                iconOnly
+                initialState={
+                  favoriteState
+                    ? {
+                        isFavorited: favoriteState.isFavorited,
+                        favoriteCount: favoriteState.favoriteCount,
+                        isAuthenticated: favoriteState.isAuthenticated,
+                      }
+                    : {
+                        isFavorited: false,
+                        favoriteCount: 0,
+                        isAuthenticated: false,
+                      }
+                }
+                onToggle={onFavoriteToggle}
+              />
+            </div>
             {!isOwner && onViewDetails && (
               <>
                 <Button
