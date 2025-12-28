@@ -30,7 +30,7 @@ export function BookingCheckInStatus({
     }
     if (checkedInAt) {
       return {
-        label: t('checkedIn'),
+        label: t('checkedInStatus'),
         variant: 'default' as const,
         icon: CheckCircle2,
         color: 'text-blue-500',

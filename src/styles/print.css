@@ -192,7 +192,6 @@
 
   /* flex-shrink-0を印刷時に無効化 */
   [data-print-area='checkin-management'] .flex-shrink-0 {
-    flex-shrink: 1 !important;
     flex: none !important;
   }
 

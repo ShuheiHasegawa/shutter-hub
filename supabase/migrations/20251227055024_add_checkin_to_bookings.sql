@@ -25,6 +25,9 @@ COMMENT ON COLUMN bookings.slot_id IS '予約したスロットID（スロット
 
 -- RLSポリシー: 主催者は自分の撮影会の予約のチェックイン情報を更新可能
 -- （既存のポリシーで閲覧は可能だが、更新権限を追加）
+-- 冪等性を確保するため、既存ポリシーを削除してから作成
+DROP POLICY IF EXISTS "Organizers can update check-in for their sessions" ON bookings;
+
 CREATE POLICY "Organizers can update check-in for their sessions" ON bookings
   FOR UPDATE
   USING (

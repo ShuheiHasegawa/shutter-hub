@@ -57,6 +57,13 @@ export function CheckInManagement({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId]);
 
+  // HTMLエスケープ関数
+  const escapeHtml = (text: string): string => {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  };
+
   const handlePrintAll = () => {
     // 印刷用のHTMLを生成
     const printWindow = window.open('', '_blank');
@@ -64,6 +71,8 @@ export function CheckInManagement({
 
     const sessionStartTime = new Date(session.start_time);
     const sessionEndTime = new Date(session.end_time);
+    const sessionTitle = escapeHtml(session.title);
+    const sessionLocation = escapeHtml(session.location || '');
 
     // すべてのQRコードのHTMLを生成
     const qrCodesHtml = slots
@@ -97,7 +106,7 @@ export function CheckInManagement({
       <!DOCTYPE html>
       <html>
         <head>
-          <title>チェックイン管理 - ${session.title}</title>
+          <title>チェックイン管理 - ${sessionTitle}</title>
           <style>
             @page {
               margin: 0.8cm;
@@ -176,7 +185,7 @@ export function CheckInManagement({
         </head>
         <body>
           <div class="header">
-            <h1>${session.title}</h1>
+            <h1>${sessionTitle}</h1>
             <div class="info-grid">
               <div class="info-item">
                 <span class="info-label">開催日時:</span>
@@ -184,7 +193,7 @@ export function CheckInManagement({
               </div>
               <div class="info-item">
                 <span class="info-label">場所:</span>
-                <span>${session.location}</span>
+                <span>${sessionLocation}</span>
               </div>
             </div>
           </div>
@@ -304,7 +313,7 @@ export function CheckInManagement({
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <CheckCircle2 className="h-4 w-4 text-green-500" />
-                          <span className="text-sm">{t('checkedIn')}</span>
+                          <span className="text-sm">{t('checkedInCount')}</span>
                         </div>
                         <Badge variant="default" className="bg-green-500">
                           {status.checked_in_count}

@@ -26,21 +26,28 @@ export function SlotQRCode({
   const t = useTranslations('checkin');
   const qrRef = useRef<HTMLDivElement>(null);
 
-  const checkInUrl = `${baseUrl}/${locale}/checkin/${slot.id}`;
+  const checkInUrl = `${baseUrl}/${locale}/checkin/${slot.id}?action=scan`;
+
+  // HTMLエスケープ関数
+  const escapeHtml = (text: string): string => {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  };
 
   const handlePrint = () => {
     // 印刷用のHTMLを生成
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
 
-    const sessionTitle = session?.title || 'チェックイン';
+    const sessionTitle = escapeHtml(session?.title || 'チェックイン');
     const sessionStartTime = session?.start_time
       ? new Date(session.start_time)
       : new Date();
     const sessionEndTime = session?.end_time
       ? new Date(session.end_time)
       : new Date();
-    const sessionLocation = session?.location || '';
+    const sessionLocation = escapeHtml(session?.location || '');
 
     printWindow.document.write(`
       <!DOCTYPE html>

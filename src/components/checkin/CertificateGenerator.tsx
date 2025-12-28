@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useRef, useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Download, Share2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -30,7 +30,12 @@ export function CertificateGenerator({
   const certificateRef = useRef<HTMLDivElement>(null);
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const certificateId = `SH-${slot.id.slice(0, 8).toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
+  // チェックイン時刻をベースに決定論的なIDを生成
+  const certificateId = useMemo(() => {
+    const checkInTime = new Date(checkedInAt).getTime();
+    return `SH-${slot.id.slice(0, 8).toUpperCase()}-${checkInTime.toString(36).toUpperCase()}`;
+  }, [slot.id, checkedInAt]);
+
   const certificateUrl = `${baseUrl}/${locale}/checkin/${slot.id}/certificate/${certificateId}`;
 
   const handleDownload = async () => {
@@ -38,11 +43,35 @@ export function CertificateGenerator({
 
     setIsGenerating(true);
     try {
+      // 一時的に要素を表示可能にする
+      const originalDisplay = certificateRef.current.style.display;
+      const originalVisibility = certificateRef.current.style.visibility;
+      const originalPosition = certificateRef.current.style.position;
+      const originalLeft = certificateRef.current.style.left;
+
+      certificateRef.current.style.display = 'block';
+      certificateRef.current.style.visibility = 'visible';
+      certificateRef.current.style.position = 'absolute';
+      certificateRef.current.style.left = '-9999px';
+
       const canvas = await html2canvas(certificateRef.current, {
         backgroundColor: '#ffffff',
         scale: 2,
         useCORS: true,
+        onclone: clonedDoc => {
+          const clonedElement = clonedDoc.querySelector('[data-certificate]');
+          if (clonedElement instanceof HTMLElement) {
+            clonedElement.style.display = 'block';
+            clonedElement.style.visibility = 'visible';
+          }
+        },
       });
+
+      // 元に戻す
+      certificateRef.current.style.display = originalDisplay;
+      certificateRef.current.style.visibility = originalVisibility;
+      certificateRef.current.style.position = originalPosition;
+      certificateRef.current.style.left = originalLeft;
 
       canvas.toBlob(blob => {
         if (blob) {
@@ -51,6 +80,7 @@ export function CertificateGenerator({
       });
     } catch {
       // エラーハンドリング: 証明書生成失敗
+      // トースト通知は親コンポーネントで実装されている場合に使用
     } finally {
       setIsGenerating(false);
     }
@@ -61,11 +91,35 @@ export function CertificateGenerator({
 
     setIsGenerating(true);
     try {
+      // 一時的に要素を表示可能にする
+      const originalDisplay = certificateRef.current.style.display;
+      const originalVisibility = certificateRef.current.style.visibility;
+      const originalPosition = certificateRef.current.style.position;
+      const originalLeft = certificateRef.current.style.left;
+
+      certificateRef.current.style.display = 'block';
+      certificateRef.current.style.visibility = 'visible';
+      certificateRef.current.style.position = 'absolute';
+      certificateRef.current.style.left = '-9999px';
+
       const canvas = await html2canvas(certificateRef.current, {
         backgroundColor: '#ffffff',
         scale: 2,
         useCORS: true,
+        onclone: clonedDoc => {
+          const clonedElement = clonedDoc.querySelector('[data-certificate]');
+          if (clonedElement instanceof HTMLElement) {
+            clonedElement.style.display = 'block';
+            clonedElement.style.visibility = 'visible';
+          }
+        },
       });
+
+      // 元に戻す
+      certificateRef.current.style.display = originalDisplay;
+      certificateRef.current.style.visibility = originalVisibility;
+      certificateRef.current.style.position = originalPosition;
+      certificateRef.current.style.left = originalLeft;
 
       canvas.toBlob(async blob => {
         if (blob && navigator.share) {
@@ -99,6 +153,7 @@ export function CertificateGenerator({
       {/* 証明書プレビュー（非表示、画像生成用） */}
       <div
         ref={certificateRef}
+        data-certificate
         className="hidden print:block bg-gradient-to-br from-purple-50 to-pink-50 p-8 rounded-lg"
         style={{
           width: '1080px',
