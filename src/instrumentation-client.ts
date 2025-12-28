@@ -22,17 +22,18 @@ Sentry.init({
   ],
 
   // プロダクション環境ではサンプリング率を調整
-  tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+  // 開発環境ではトレースを無効化してコンソールログを削減
+  tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 0,
 
   // Enable logs to be sent to Sentry
-  enableLogs: true,
+  enableLogs: process.env.NODE_ENV === 'production',
 
   // セッションリプレイ設定 - 写真関連アプリなので慎重に
-  replaysSessionSampleRate: process.env.NODE_ENV === 'production' ? 0.01 : 0.1,
-  replaysOnErrorSampleRate: 1.0,
+  replaysSessionSampleRate: process.env.NODE_ENV === 'production' ? 0.01 : 0,
+  replaysOnErrorSampleRate: process.env.NODE_ENV === 'production' ? 1.0 : 0,
 
-  // 開発環境でのみデバッグ有効
-  debug: process.env.NODE_ENV === 'development',
+  // デバッグログを無効化（コンソールの見やすさ優先）
+  debug: false,
 
   // ShutterHub固有のタグ付け
   beforeSend(event) {
