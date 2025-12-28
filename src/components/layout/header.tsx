@@ -29,7 +29,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Link } from '@/i18n/routing';
+import { Link, useRouter } from '@/i18n/routing';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useSimpleProfile';
 import { ThemePaletteSelector } from '@/components/ui/theme-palette-selector';
@@ -40,11 +40,88 @@ interface AppHeaderProps {
   showNavigation?: boolean;
 }
 
+interface ProfileMenuItemsProps {
+  user: { id: string; email?: string | null } | null;
+  displayName: string | undefined;
+  router: ReturnType<typeof useRouter>;
+  t: ReturnType<typeof useTranslations<'navigation'>>;
+  handleSignOut: () => Promise<void>;
+  variant?: 'default' | 'authenticated';
+}
+
+/**
+ * プロファイルメニューアイテムの共通コンポーネント
+ */
+function ProfileMenuItems({
+  user,
+  displayName,
+  router,
+  t,
+  handleSignOut,
+  variant = 'default',
+}: ProfileMenuItemsProps) {
+  return (
+    <>
+      <div className="flex items-center justify-start gap-2 p-2">
+        <div className="flex flex-col space-y-1 leading-none">
+          <p className="font-medium">{displayName || user?.email || 'User'}</p>
+          <p className="w-[200px] truncate text-sm text-muted-foreground">
+            {user?.email}
+          </p>
+        </div>
+      </div>
+      <DropdownMenuSeparator />
+      <DropdownMenuItem
+        onClick={() => {
+          if (user) {
+            // @ts-expect-error - next-intlの型定義が厳密で動的パスを受け入れないが、実行時には動作する
+            router.push(`/profile/${user.id}`);
+          } else {
+            router.push('/auth/signin');
+          }
+        }}
+      >
+        <User className="mr-2 h-4 w-4" />
+        <span>{t('profile')}</span>
+      </DropdownMenuItem>
+      {variant === 'authenticated' ? (
+        <>
+          <DropdownMenuItem asChild>
+            <Link href="/subscription">
+              <Crown className="mr-2 h-4 w-4" />
+              <span>{t('subscription')}</span>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href="/settings">
+              <User className="mr-2 h-4 w-4" />
+              <span>設定</span>
+            </Link>
+          </DropdownMenuItem>
+        </>
+      ) : (
+        <DropdownMenuItem asChild>
+          <Link href="/bookings">
+            <span className="mr-2">📅</span>
+            <span>{t('bookings')}</span>
+          </Link>
+        </DropdownMenuItem>
+      )}
+      <DropdownMenuSeparator />
+      <DropdownMenuItem onClick={handleSignOut}>
+        <LogOut className="mr-2 h-4 w-4" />
+        <span>{t('signout')}</span>
+      </DropdownMenuItem>
+    </>
+  );
+}
+
 export function AppHeader({
   variant = 'default',
   showNavigation = true,
 }: AppHeaderProps) {
   const t = useTranslations('navigation');
+  const router = useRouter();
   const { logout } = useAuth();
   const { user, avatarUrl, displayName, profile } = useProfile();
 
@@ -83,38 +160,14 @@ export function AppHeader({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56" align="end" forceMount>
-                <div className="flex items-center justify-start gap-2 p-2">
-                  <div className="flex flex-col space-y-1 leading-none">
-                    <p className="font-medium">{displayName}</p>
-                    <p className="w-[200px] truncate text-sm text-muted-foreground">
-                      {user?.email}
-                    </p>
-                  </div>
-                </div>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link href={user ? `/profile/${user.id}` : '/auth/signin'}>
-                    <User className="mr-2 h-4 w-4" />
-                    <span>{t('profile')}</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/subscription">
-                    <Crown className="mr-2 h-4 w-4" />
-                    <span>{t('subscription')}</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/settings">
-                    <User className="mr-2 h-4 w-4" />
-                    <span>設定</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut}>
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>{t('signout')}</span>
-                </DropdownMenuItem>
+                <ProfileMenuItems
+                  user={user}
+                  displayName={displayName}
+                  router={router}
+                  t={t}
+                  handleSignOut={handleSignOut}
+                  variant="authenticated"
+                />
               </DropdownMenuContent>
             </DropdownMenu>
           )}
@@ -207,11 +260,16 @@ export function AppHeader({
           <nav className="flex items-center space-x-2">
             {user && <NotificationCenter />}
             {user && (
-              <Link href={`/profile/${user.id}`}>
-                <Button variant="ghost" size="sm">
-                  <MessageCircle className="h-4 w-4" />
-                </Button>
-              </Link>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  // @ts-expect-error - next-intlの型定義が厳密で動的パスを受け入れないが、実行時には動作する
+                  router.push(`/profile/${user.id}`);
+                }}
+              >
+                <MessageCircle className="h-4 w-4" />
+              </Button>
             )}
             <ThemePaletteSelector />
             <LanguageToggle />
@@ -233,32 +291,14 @@ export function AppHeader({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56" align="end" forceMount>
-                  <div className="flex items-center justify-start gap-2 p-2">
-                    <div className="flex flex-col space-y-1 leading-none">
-                      <p className="font-medium">{displayName}</p>
-                      <p className="w-[200px] truncate text-sm text-muted-foreground">
-                        {user?.email}
-                      </p>
-                    </div>
-                  </div>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href={user ? `/profile/${user.id}` : '/auth/signin'}>
-                      <User className="mr-2 h-4 w-4" />
-                      <span>{t('profile')}</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/bookings">
-                      <span className="mr-2">📅</span>
-                      <span>{t('bookings')}</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleSignOut}>
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>{t('signout')}</span>
-                  </DropdownMenuItem>
+                  <ProfileMenuItems
+                    user={user}
+                    displayName={displayName}
+                    router={router}
+                    t={t}
+                    handleSignOut={handleSignOut}
+                    variant="default"
+                  />
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
@@ -295,16 +335,18 @@ export function AppHeader({
                 撮影会を探す
               </Link>
               {user && (
-                <Link
-                  href={
-                    profile?.user_type === 'organizer'
-                      ? '/photo-sessions/create/organizer'
-                      : '/photo-sessions/create'
-                  }
-                  className="block px-2 py-1 text-lg"
+                <button
+                  onClick={() => {
+                    router.push(
+                      profile?.user_type === 'organizer'
+                        ? '/photo-sessions/create/organizer'
+                        : '/photo-sessions/create'
+                    );
+                  }}
+                  className="block px-2 py-1 text-lg text-left w-full hover:bg-muted rounded-md transition-colors"
                 >
                   撮影会を開催
-                </Link>
+                </button>
               )}
               <Link href="/instant" className="block px-2 py-1 text-lg">
                 {t('instant')}
@@ -314,12 +356,15 @@ export function AppHeader({
               </Link>
               {user ? (
                 <>
-                  <Link
-                    href={`/profile/${user.id}`}
-                    className="block px-2 py-1 text-lg"
+                  <button
+                    onClick={() => {
+                      // @ts-expect-error - next-intlの型定義が厳密で動的パスを受け入れないが、実行時には動作する
+                      router.push(`/profile/${user.id}`);
+                    }}
+                    className="block px-2 py-1 text-lg text-left w-full hover:bg-muted rounded-md transition-colors"
                   >
                     {t('profile')}
-                  </Link>
+                  </button>
                   <Link href="/bookings" className="block px-2 py-1 text-lg">
                     {t('bookings')}
                   </Link>

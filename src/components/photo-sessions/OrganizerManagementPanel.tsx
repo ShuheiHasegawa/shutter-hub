@@ -38,6 +38,8 @@ import { executeWeightedLottery } from '@/app/actions/multi-slot-lottery';
 import { getLotterySession } from '@/app/actions/photo-session-lottery';
 import { getAdminLotterySession } from '@/app/actions/admin-lottery';
 import type { LotterySessionWithSettings } from '@/types/multi-slot-lottery';
+import { CheckInManagement } from './CheckInManagement';
+import { useLocale } from 'next-intl';
 
 interface OrganizerManagementPanelProps {
   session: PhotoSessionWithOrganizer;
@@ -64,6 +66,7 @@ export function OrganizerManagementPanel({
 }: OrganizerManagementPanelProps) {
   const router = useRouter();
   const { toast } = useToast();
+  const locale = useLocale();
   const hasSlots = slots && slots.length > 0;
   const [lotterySession, setLotterySession] =
     useState<LotterySessionWithSettings | null>(null);
@@ -251,7 +254,7 @@ export function OrganizerManagementPanel({
   return (
     <div className="space-y-6">
       {/* 統計情報 */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 print:hidden">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -306,7 +309,7 @@ export function OrganizerManagementPanel({
       </div>
 
       {/* 管理アクション */}
-      <Card>
+      <Card className="print:hidden">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <SettingsIcon className="h-5 w-5" />
@@ -368,7 +371,7 @@ export function OrganizerManagementPanel({
 
       {/* 抽選管理機能（抽選方式の場合のみ） */}
       {session.booking_type === 'lottery' && hasSlots && slots.length > 1 && (
-        <Card>
+        <Card className="print:hidden">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Shuffle className="h-5 w-5" />
@@ -455,7 +458,7 @@ export function OrganizerManagementPanel({
 
       {/* タイムライン型レイアウト（スロット制の場合） */}
       {hasSlots && (
-        <Card>
+        <Card className="print:hidden">
           <CardHeader>
             <div className="mb-6 flex items-center">
               <Clock className="mr-3 h-6 w-6" />
@@ -650,20 +653,32 @@ export function OrganizerManagementPanel({
         </Card>
       )}
 
+      {/* チェックイン管理（スロットがある場合のみ） */}
+      {hasSlots && (
+        <div className="mt-6">
+          <CheckInManagement
+            sessionId={session.id}
+            slots={slots}
+            locale={locale}
+            session={session}
+          />
+        </div>
+      )}
+
       {/* 当選者リスト（抽選完了後） */}
       {session.booking_type === 'lottery' &&
         hasSlots &&
         slots.length > 1 &&
         lotterySession &&
         lotterySession.status === 'completed' && (
-          <div className="mt-6">
+          <div className="mt-6 print:hidden">
             <LotteryWinnersList lotterySessionId={lotterySession.id} />
           </div>
         )}
 
       {/* 管理抽選：応募者リスト・当選者選択 */}
       {session.booking_type === 'admin_lottery' && (
-        <div className="mt-6">
+        <div className="mt-6 print:hidden">
           {isLoadingAdminLottery ? (
             <Card>
               <CardContent className="p-6">
@@ -722,7 +737,7 @@ export function OrganizerManagementPanel({
         hasSlots &&
         adminLotterySession &&
         adminLotterySession.status === 'completed' && (
-          <div className="mt-6">
+          <div className="mt-6 print:hidden">
             <AdminLotteryWinnersList
               adminLotterySessionId={adminLotterySession.id}
               slots={slots.map(slot => ({

@@ -1,0 +1,222 @@
+/* 印刷用スタイル */
+
+@media print {
+  /* ページ全体の設定 */
+  @page {
+    margin: 0.8cm;
+    size: A4;
+  }
+
+  /* チェックイン管理エリアの印刷設定 */
+  [data-print-area='checkin-management'] {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* 開催情報セクション */
+  [data-print-area='checkin-management'] > .hidden.print\:block {
+    margin-bottom: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+  }
+
+  /* print:hiddenクラスを持つ要素を非表示 */
+  .print\:hidden {
+    display: none !important;
+  }
+
+  /* data-print-areaを持つ要素とその親要素を表示 */
+  [data-print-area] {
+    display: block !important;
+  }
+
+  /* data-print-areaの親要素も表示（チェックイン管理の親要素） */
+  [data-print-area='checkin-management'] {
+    display: block !important;
+  }
+
+  /* ヘッダー・フッター・ナビゲーションを非表示 */
+  header,
+  footer,
+  nav,
+  aside,
+  .sidebar {
+    display: none !important;
+  }
+
+  /* print:hiddenクラスを持つ要素を非表示 */
+  .print\:hidden {
+    display: none !important;
+  }
+
+  /* 背景色を白に */
+  body {
+    background: white !important;
+  }
+
+  /* QRコードのサイズ調整 */
+  .qr-code-print {
+    width: 100% !important;
+    max-width: 250px !important;
+    margin: 0 auto !important;
+  }
+
+  /* QRコードSVGのサイズ調整（印刷時） */
+  [data-print-area='checkin-management'] svg {
+    width: 120px !important;
+    height: 120px !important;
+    max-width: 120px !important;
+    max-height: 120px !important;
+  }
+
+  /* QRコードコンテナのサイズ調整 */
+  [data-print-area='checkin-management'] .card {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    margin: 0 !important;
+    padding: 0.25rem !important;
+    height: auto !important;
+    min-height: auto !important;
+  }
+
+  /* QRコードグリッドのサイズ調整 */
+  [data-print-area='checkin-management'] .print\:grid {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  /* QRコードカードのヘッダーとコンテンツのサイズ調整 */
+  [data-print-area='checkin-management'] .card-header {
+    padding: 0.25rem !important;
+    margin-bottom: 0.25rem !important;
+  }
+
+  [data-print-area='checkin-management'] .card-content {
+    padding: 0.25rem !important;
+  }
+
+  /* カードの影を削除 */
+  .card {
+    box-shadow: none !important;
+    border: 1px solid #e5e7eb !important;
+  }
+
+  /* QRコードコンテナ */
+  .qr-container {
+    padding: 15px !important;
+    margin: 10px 0 !important;
+  }
+
+  /* スロット情報のフォントサイズ調整 */
+  .slot-info {
+    font-size: 12px !important;
+  }
+
+  /* グリッドレイアウトの最適化 */
+  .print\:grid {
+    display: grid !important;
+  }
+
+  .print\:grid-cols-2 {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .print\:grid-cols-3 {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+
+  .print\:grid-cols-4 {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+
+  .print\:gap-3 {
+    gap: 0.75rem !important;
+  }
+
+  .print\:gap-4 {
+    gap: 1rem !important;
+  }
+
+  /* ページ区切りを避ける */
+  .print\:break-inside-avoid {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* 印刷時のマージン調整 */
+  .print\:overflow-visible {
+    overflow: visible !important;
+    overflow-x: visible !important;
+    overflow-y: visible !important;
+  }
+
+  .print\:mx-0 {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  .print\:px-0 {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  .print\:w-auto {
+    width: auto !important;
+  }
+
+  .print\:flex-shrink {
+    flex-shrink: 1 !important;
+  }
+
+  .print\:min-w-0 {
+    min-width: 0 !important;
+  }
+
+  /* 横スクロールを完全に無効化 */
+  [data-print-area='checkin-management'] * {
+    overflow-x: visible !important;
+    overflow-y: visible !important;
+  }
+
+  /* flexレイアウトを印刷時に無効化 */
+  [data-print-area='checkin-management'] .flex {
+    display: grid !important;
+  }
+
+  /* min-w-maxを印刷時に無効化 */
+  [data-print-area='checkin-management'] .min-w-max {
+    min-width: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* flex-shrink-0を印刷時に無効化 */
+  [data-print-area='checkin-management'] .flex-shrink-0 {
+    flex: none !important;
+  }
+
+  /* 横スクロールコンテナを完全に無効化 */
+  [data-print-area='checkin-management'] [class*='overflow-x'] {
+    overflow-x: visible !important;
+    overflow-y: visible !important;
+  }
+
+  /* 個別QRコード印刷時のスタイル */
+  /* 個別印刷モード時は、対象以外のQRコードを非表示 */
+  [data-print-area='checkin-management'][data-print-single-mode='true']
+    .slot-qr-card:not([data-print-single-slot]) {
+    display: none !important;
+  }
+
+  /* 個別印刷モード時は開催情報を表示 */
+  [data-print-area='checkin-management'][data-print-single-mode='true']
+    > .hidden.print\:block {
+    display: block !important;
+  }
+
+  /* 個別印刷モード時はグリッドレイアウトを1列に */
+  [data-print-area='checkin-management'][data-print-single-mode='true']
+    .print\:grid {
+    grid-template-columns: 1fr !important;
+  }
+}

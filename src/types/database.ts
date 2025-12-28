@@ -63,6 +63,9 @@ export interface Booking {
   photo_session_id: string;
   user_id: string;
   status: BookingStatus;
+  slot_id?: string | null;
+  checked_in_at?: string | null;
+  checked_out_at?: string | null;
   created_at: string;
   updated_at: string;
 }
