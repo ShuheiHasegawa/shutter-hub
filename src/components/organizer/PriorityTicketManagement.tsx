@@ -67,7 +67,7 @@ interface TicketWithUser extends PriorityTicket {
 
 interface UserSearchResult {
   id: string;
-  username: string;
+  username: string | null;
   display_name: string;
   user_type?: string;
   is_verified?: boolean;
@@ -327,7 +327,9 @@ export function PriorityTicketManagement() {
                           className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
                           onClick={() => {
                             setSelectedUser(user);
-                            setSearchQuery(user.display_name || user.username);
+                            setSearchQuery(
+                              user.display_name || user.username || ''
+                            );
                             setShowSearchResults(false);
                           }}
                         >
@@ -524,7 +526,7 @@ export function PriorityTicketManagement() {
                             {used ? (
                               <>
                                 <CheckCircle2 className="h-4 w-4 text-green-600" />
-                                <Badge variant="brand-success">使用済み</Badge>
+                                <Badge variant="secondary">使用済み</Badge>
                               </>
                             ) : expired ? (
                               <>
@@ -577,7 +579,9 @@ export function PriorityTicketManagement() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => setShowDeleteDialog(ticket.id)}
+                            onClick={() =>
+                              setShowDeleteDialog(ticket.id ?? null)
+                            }
                             disabled={used}
                           >
                             <Trash2 className="h-4 w-4 text-destructive" />

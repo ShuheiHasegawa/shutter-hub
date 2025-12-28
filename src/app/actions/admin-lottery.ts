@@ -569,11 +569,16 @@ export async function getPendingAdminLotterySelections() {
         (deadline.getTime() - now.getTime()) / (24 * 60 * 60 * 1000)
       );
 
+      // photo_sessionはjoinクエリの結果として単一オブジェクトになる
+      const photoSession = Array.isArray(session.photo_session)
+        ? session.photo_session[0]
+        : session.photo_session;
+
       return {
         id: session.id,
-        photoSessionId: session.photo_session?.id,
-        photoSessionTitle: session.photo_session?.title,
-        eventDate: session.photo_session?.start_time,
+        photoSessionId: photoSession?.id,
+        photoSessionTitle: photoSession?.title,
+        eventDate: photoSession?.start_time,
         selectionDeadline: session.selection_deadline,
         maxSelections: session.max_selections,
         status: session.status,
@@ -649,8 +654,20 @@ export async function autoSelectAdminLotteryWinners(sessionId?: string) {
     }> = [];
 
     for (const session of overdueSessions) {
+      // photo_sessionはjoinクエリの結果として単一オブジェクトになる
+      const photoSession = Array.isArray(session.photo_session)
+        ? session.photo_session[0]
+        : session.photo_session;
+
+      if (!photoSession) {
+        logger.warn('Photo session not found for admin lottery session', {
+          sessionId: session.id,
+        });
+        continue;
+      }
+
       // 運営者のみが自分のセッションを処理できる（または管理者）
-      if (session.photo_session.organizer_id !== user.id) {
+      if (photoSession.organizer_id !== user.id) {
         logger.warn('権限なし: 他の運営者のセッションは処理できません', {
           sessionId: session.id,
           userId: user.id,
@@ -716,29 +733,29 @@ export async function autoSelectAdminLotteryWinners(sessionId?: string) {
 
       results.push({
         sessionId: session.id,
-        photoSessionTitle: session.photo_session.title,
+        photoSessionTitle: photoSession.title,
         selectedCount: entryIdsToSelect.length,
-        organizerId: session.photo_session.organizer_id,
+        organizerId: photoSession.organizer_id,
       });
 
       // 運営者に通知を送信
       try {
         await createNotification({
-          userId: session.photo_session.organizer_id,
+          userId: photoSession.organizer_id,
           type: 'admin_lottery_auto_selection',
           category: 'photo_session',
           priority: 'high',
           title: '管理抽選の自動選択が実行されました',
-          message: `「${session.photo_session.title}」の当選者選択期限が過ぎたため、自動選択が実行されました。${entryIdsToSelect.length}名が当選者として選択されました。`,
+          message: `「${photoSession.title}」の当選者選択期限が過ぎたため、自動選択が実行されました。${entryIdsToSelect.length}名が当選者として選択されました。`,
           data: {
             admin_lottery_session_id: session.id,
-            photo_session_id: session.photo_session.id,
-            photo_session_title: session.photo_session.title,
+            photo_session_id: photoSession.id,
+            photo_session_title: photoSession.title,
             selected_count: entryIdsToSelect.length,
           },
           relatedEntityType: 'photo_session',
-          relatedEntityId: session.photo_session.id,
-          actionUrl: `/photo-sessions/${session.photo_session.id}`,
+          relatedEntityId: photoSession.id,
+          actionUrl: `/photo-sessions/${photoSession.id}`,
           actionLabel: '詳細を確認',
         });
       } catch (notificationError) {
@@ -748,7 +765,7 @@ export async function autoSelectAdminLotteryWinners(sessionId?: string) {
 
       logger.info('自動選択完了:', {
         sessionId: session.id,
-        photoSessionTitle: session.photo_session.title,
+        photoSessionTitle: photoSession.title,
         selectedCount: entryIdsToSelect.length,
       });
     }

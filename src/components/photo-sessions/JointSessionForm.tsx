@@ -1004,9 +1004,9 @@ export function JointSessionForm({
             <div className="space-y-4">
               <h3 className="text-lg font-medium">撮影枠設定</h3>
               <PhotoSessionSlotForm
+                photoSessionId=""
                 slots={photoSessionSlots}
                 onSlotsChange={setPhotoSessionSlots}
-                disabled={isLoading}
               />
             </div>
 
@@ -1174,7 +1174,9 @@ export function JointSessionForm({
         </CardContent>
       </Card>
 
-      <ActionBarSentinel />
+      <ActionBarSentinel>
+        <></>
+      </ActionBarSentinel>
       <ActionBar
         actions={actionBarButtons}
         maxColumns={onBack && !isEditing ? 2 : 1}
