@@ -4,6 +4,9 @@
 /* 新カラーシステムv2のインポート */
 @import '../styles/color-system-v2.css';
 
+/* 印刷用スタイル */
+@import '../styles/print.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -405,5 +408,40 @@
     );
     transform: rotate(45deg);
     pointer-events: none;
+  }
+
+  /* 横スクロールバーのスタイル */
+  .scrollbar-thin {
+    scrollbar-width: thin; /* Firefox */
+    scrollbar-color: rgb(209 213 219) transparent; /* Firefox */
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    height: 8px; /* Webkit系（Chrome, Safari, Edge） */
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: rgb(209 213 219);
+    border-radius: 4px;
+  }
+
+  .scrollbar-thin:hover::-webkit-scrollbar-thumb {
+    background-color: rgb(156 163 175);
+  }
+
+  .scrollbar-thumb-gray-300::-webkit-scrollbar-thumb {
+    background-color: rgb(209 213 219);
+  }
+
+  .scrollbar-track-transparent::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .hover\:scrollbar-thumb-gray-400:hover::-webkit-scrollbar-thumb {
+    background-color: rgb(156 163 175);
   }
 }
