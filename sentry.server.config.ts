@@ -12,7 +12,8 @@ Sentry.init({
   environment: process.env.NODE_ENV,
 
   // プロダクション環境ではサンプリング率を調整
-  tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+  // 開発環境ではトレースを無効化してログを削減
+  tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 0,
 
   // Enable logs to be sent to Sentry
   enableLogs: process.env.NODE_ENV === 'production',
