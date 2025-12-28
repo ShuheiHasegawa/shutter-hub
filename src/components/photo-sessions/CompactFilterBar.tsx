@@ -221,7 +221,13 @@ export function CompactFilterBar({
       });
     }
 
-    if (filters.location) {
+    // 活動拠点で絞っている場合（filters.locationがprofile.prefectureと一致する場合）、
+    // 場所フィルターはToggleボタンの色で視覚的に示されるため、「適用中：」の表示から除外する
+    const isActivityLocationFilter =
+      filters.location &&
+      profile?.prefecture &&
+      filters.location === profile.prefecture;
+    if (filters.location && !isActivityLocationFilter) {
       badges.push({
         key: 'location',
         label:
@@ -298,15 +304,17 @@ export function CompactFilterBar({
       }
     });
 
-    if (filters.onlyAvailable) {
-      badges.push({
-        key: 'onlyAvailable',
-        label: '空きあり',
-        fullLabel: '空きありのみ',
-        icon: UserCheck,
-        color: 'bg-emerald-100 text-emerald-800 border-emerald-200',
-      });
-    }
+    // onlyAvailableとfilterByActivityLocationはToggleボタンの色で視覚的に示されるため、
+    // 「適用中：」の表示から除外する
+    // if (filters.onlyAvailable) {
+    //   badges.push({
+    //     key: 'onlyAvailable',
+    //     label: '空きあり',
+    //     fullLabel: '空きありのみ',
+    //     icon: UserCheck,
+    //     color: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+    //   });
+    // }
 
     return badges;
   };
