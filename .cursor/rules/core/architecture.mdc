@@ -1,0 +1,51 @@
+# プロジェクト構造
+
+## Technology Stack
+- **Framework**: Next.js 15.3.2 with App Router
+- **Language**: TypeScript (strict mode)
+- **UI**: Shadcn/ui components (Radix UI based)
+- **Styling**: Tailwind CSS
+- **Backend**: Supabase (Auth, PostgreSQL, Storage, Realtime)
+- **Payments**: Stripe
+- **I18n**: next-intl (ja/en)
+
+## Project Structure
+```
+src/
+├── app/[locale]/          # Internationalized routes
+│   ├── (public)/         # Public photobook pages
+│   ├── admin/            # Admin dashboard
+│   ├── auth/             # Authentication
+│   ├── bookings/         # Booking management
+│   ├── instant/          # Instant photo requests
+│   ├── messages/         # Messaging system
+│   ├── photo-sessions/   # Photo session management
+│   └── photobooks/       # Digital photobooks
+├── components/           # React components
+├── lib/                 # Utilities and configs
+└── types/               # TypeScript definitions
+```
+
+## Key Design Patterns
+
+### 1. Server Components First
+- Use Server Components by default
+- Client Components only when necessary (user interaction, browser APIs)
+- Server Actions for data mutations
+
+### 2. Type Safety
+- 100% TypeScript coverage
+- No `any` types allowed
+- Next.js 15 page props must be Promise types:
+```typescript
+interface PageProps {
+  params: Promise<{ id: string; locale: string }>;
+  searchParams: Promise<{ [key: string]: string }>;
+}
+```
+
+## Database Schema
+- 35+ tables with Row Level Security (RLS)
+- Complex relationships for users, sessions, bookings, payments
+- Real-time features via Supabase
+- Migrations in `supabase/migrations/`

@@ -1,7 +1,7 @@
 ---
-description:
-globs:
-alwaysApply: true
+description: ShutterHub プロンプトルール
+globs: ["**/*prompt*", "**/prompts/**"]
+alwaysApply: false
 ---
 
 # ShutterHub プロンプトテンプレート

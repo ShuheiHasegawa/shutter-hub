@@ -1,7 +1,7 @@
 ---
-description:
-globs:
-alwaysApply: true
+description: ShutterHub システム要件
+globs: ["**/*requirements*", "**/requirements/**"]
+alwaysApply: false
 ---
 
 # ShutterHub システム要件定義

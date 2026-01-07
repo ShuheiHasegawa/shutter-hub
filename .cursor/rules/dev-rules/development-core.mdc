@@ -1,12 +1,14 @@
 ---
-alwaysApply: true
+description: ShutterHub 開発コアルール（development.mdc に統合済み、このファイルは非推奨）
+globs: []
+alwaysApply: false
 ---
 
-# ShutterHub 開発コアルール
+# ShutterHub 開発コアルール（非推奨）
 
-このファイルを参照したら、このファイル名を発言すること
+**重要**: このファイルは `development.mdc` に統合されました。このファイルは使用されていません。
 
-**重要**: 詳細な実装例やパターンは `development-guide.mdc` を参照してください。
+詳細な実装例やパターンは `development-guide.mdc` を参照してください。
 
 ## SEO/タイトル共通化（seo.ts）
 

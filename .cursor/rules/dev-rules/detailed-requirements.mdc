@@ -1,5 +1,7 @@
 ---
-alwaysApply: true
+description: ShutterHub 詳細要件
+globs: ["**/*requirements*", "**/requirements/**"]
+alwaysApply: false
 ---
 
 # ShutterHub 詳細要件定義

@@ -1,0 +1,30 @@
+# 開発コマンド
+
+## Development Commands
+```bash
+# Development
+npm run dev              # Start development server with Turbopack
+
+# Building and Production
+npm run build           # Build for production
+npm run start           # Start production server
+
+# Code Quality
+npm run lint            # Run ESLint
+npm run format          # Format code with Prettier
+npm run type-check      # TypeScript type checking
+
+# Database
+npm run migrate         # Run database migrations (via MCP)
+
+# Testing
+npm run test:e2e        # Run Playwright E2E tests
+```
+
+## Git Workflow
+```bash
+# After implementing features
+git add .
+git commit -m "feat: [実装内容の日本語要約]"
+git push origin main
+```

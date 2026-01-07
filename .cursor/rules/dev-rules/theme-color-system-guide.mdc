@@ -1,5 +1,14 @@
 ---
-alwaysApply: true
+description: ShutterHub テーマカラーシステム実装ガイド（統合版は unified-color-system.mdc を参照）
+globs:
+  [
+    '**/*color*',
+    '**/*theme*',
+    '**/ui/**',
+    '**/components/ui/**',
+    '**/styles/**',
+  ]
+alwaysApply: false
 ---
 
 # ShutterHub 統合カラーシステム実装ガイド

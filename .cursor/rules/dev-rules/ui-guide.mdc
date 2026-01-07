@@ -1,7 +1,7 @@
 ---
-description: 
-globs: 
-alwaysApply: true
+description: ShutterHub UI/UXガイドライン
+globs: ["**/*ui*", "**/ui/**", "**/components/**", "**/app/**"]
+alwaysApply: false
 ---
 # Shadcn/ui 実装ガイド
 

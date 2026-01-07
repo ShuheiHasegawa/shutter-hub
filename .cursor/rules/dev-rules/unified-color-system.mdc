@@ -1,5 +1,7 @@
 ---
-alwaysApply: true
+description: ShutterHub 統合カラーシステム実装ガイド
+globs: ["**/*color*", "**/*theme*", "**/ui/**", "**/components/ui/**", "**/styles/**"]
+alwaysApply: false
 ---
 
 # ShutterHub 統合カラーシステム実装ガイド

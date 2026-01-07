@@ -1,5 +1,7 @@
 ---
-alwaysApply: true
+description: テストコード生成ルール
+globs: ["**/*test*", "**/tests/**", "**/*spec*", "**/*.test.ts", "**/*.test.tsx"]
+alwaysApply: false
 ---
 
 # ShutterHub テストコード生成ルール

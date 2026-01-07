@@ -1,0 +1,69 @@
+# 重要ルール
+
+## UI/UX Protection Rules
+**CRITICAL**: Never modify layouts, designs, colors, spacing, or any visual elements without explicit user request. Only bug fixes and accessibility improvements are allowed.
+
+## Internationalization
+All user-facing text must use translation keys. No hardcoded Japanese/English text allowed:
+```typescript
+// ❌ Bad
+<Button>予約する</Button>
+
+// ✅ Good
+const t = useTranslations('booking');
+<Button>{t('reserve')}</Button>
+```
+
+## Date/Time Formatting
+Use provided utility functions, NOT toLocaleString():
+```typescript
+import { formatDateLocalized, formatTimeLocalized } from '@/lib/utils/date';
+
+// ✅ Correct
+formatDateLocalized(new Date(date), 'ja', 'long')
+
+// ❌ Wrong - causes errors
+<DateTime value={date} format="date-long" />
+```
+
+## TODO Management
+After implementing any feature:
+1. Update `.cursor/rules/dev-rules/todo.mdc`
+2. Mark completed tasks: `[ ]` → `[x]`
+3. Record implementation time and technical achievements
+4. Commit and push changes
+
+## Commit Rules
+- Use Japanese commit messages
+- Follow conventional commits format:
+```
+feat: 新機能追加の要約
+fix: バグ修正の内容
+docs: ドキュメント更新
+refactor: リファクタリング内容
+```
+
+## Dependency Management
+- Check compatibility before adding packages
+- Use `--legacy-peer-deps` for peer dependency conflicts
+- Always run `npm run build` after changes
+- Update `.npmrc` if needed
+
+## Critical Warnings
+
+1. **UI/UX Changes**: Absolutely forbidden without explicit request
+2. **Hardcoded Text**: All text must use i18n keys
+3. **DateTime Component**: Do NOT use - causes "Invalid time value" errors
+4. **Any Types**: Forbidden - use `unknown` instead
+5. **Console Logs**: Remove before committing
+
+## Testing
+- E2E tests with Playwright
+- Run before major changes: `npm run test:e2e`
+- Test files in `/tests/e2e/`
+
+## Useful Resources
+- Development rules: `.cursor/rules/dev-rules/development.mdc`
+- UI guide: `.cursor/rules/dev-rules/ui-guide.mdc`
+- TODO list: `.cursor/rules/dev-rules/todo.mdc`
+- Feature docs: `.cursor/rules/dev-rules/[feature].mdc`
