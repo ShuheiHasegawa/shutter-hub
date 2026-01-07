@@ -1,6 +1,14 @@
 import { test, expect } from '@playwright/test';
 import { authenticateTestUser } from '../utils/photo-session-helpers';
-import { waitForPageLoad } from '../utils/test-helpers';
+import {
+  initializeStudioListPage,
+  executeSearch,
+  assertSearchResultsVisible,
+  searchByKeyword,
+  assertGridResultsVisible,
+  checkSearchResults,
+  assertNoError,
+} from '../utils/studio-test-helpers';
 
 /**
  * スタジオ一覧 E2Eテスト
@@ -49,8 +57,7 @@ test.describe('スタジオ一覧機能', () => {
 
   test('正常系: ページ初期表示', async ({ page }) => {
     // Given: スタジオ一覧ページにアクセスする
-    await page.goto('/ja/studios');
-    await waitForPageLoad(page);
+    await initializeStudioListPage(page);
 
     // Then: タイトル「スタジオ一覧」が表示される
     await expect(page.getByText('スタジオ一覧')).toBeVisible({
@@ -72,64 +79,29 @@ test.describe('スタジオ一覧機能', () => {
 
   test('正常系: 検索実行', async ({ page }) => {
     // Given: スタジオ一覧ページにアクセスする
-    await page.goto('/ja/studios');
-    await waitForPageLoad(page);
+    await initializeStudioListPage(page);
 
     // When: 検索ボタンをクリックする
-    await page.click('button:has-text("検索")');
-    await page.waitForTimeout(3000); // 検索処理の待機
+    await executeSearch(page, 3000);
 
     // Then: スタジオ一覧が表示される（初期検索が実行される）
-    // 空状態メッセージまたはスタジオカードが表示される
-    const hasEmptyState = await page
-      .locator('text=検索条件を設定して「検索」ボタンを押してください')
-      .isVisible()
-      .catch(() => false);
-    const hasEmptyMessage = await page
-      .locator('text=条件に一致するスタジオが見つかりません')
-      .isVisible()
-      .catch(() => false);
-    const hasStudios = await page
-      .locator('[class*="card"]')
-      .first()
-      .isVisible()
-      .catch(() => false);
-
-    // いずれかが表示されていればOK
-    expect(hasEmptyState || hasEmptyMessage || hasStudios).toBe(true);
+    await assertSearchResultsVisible(page);
   });
 
   test('正常系: キーワード検索', async ({ page }) => {
     // Given: スタジオ一覧ページにアクセスする
-    await page.goto('/ja/studios');
-    await waitForPageLoad(page);
+    await initializeStudioListPage(page);
 
     // When: キーワードを入力して検索を実行する
-    const keywordInput = page.locator(
-      'input[placeholder*="スタジオ名、住所で検索"]'
-    );
-    await keywordInput.fill('スタジオ');
-    await page.click('button:has-text("検索")');
+    await searchByKeyword(page, 'スタジオ');
 
     // Then: 検索結果が表示される（空状態またはスタジオカード）
-    await page.waitForTimeout(2000); // 検索処理の待機
-
-    const hasResults = await page
-      .locator('[class*="grid"]:has([class*="card"])')
-      .isVisible()
-      .catch(() => false);
-    const hasEmptyMessage = await page
-      .locator('text=条件に一致するスタジオが見つかりません')
-      .isVisible()
-      .catch(() => false);
-
-    expect(hasResults || hasEmptyMessage).toBe(true);
+    await assertGridResultsVisible(page);
   });
 
   test('正常系: 都道府県フィルター', async ({ page }) => {
     // Given: スタジオ一覧ページにアクセスする
-    await page.goto('/ja/studios');
-    await waitForPageLoad(page);
+    await initializeStudioListPage(page);
 
     // When: 都道府県を選択して検索を実行する
     const prefectureSelect = page.locator('button:has-text("都道府県を選択")');
@@ -143,30 +115,17 @@ test.describe('スタジオ一覧機能', () => {
       .click({ force: true });
     await page.waitForTimeout(500);
 
-    await page.click('button:has-text("検索")');
+    await executeSearch(page, 3000);
 
     // Then: 検索結果が表示される
-    await page.waitForTimeout(3000);
-
-    const hasResults = await page
-      .locator('[class*="card"]')
-      .first()
-      .isVisible()
-      .catch(() => false);
-    const hasEmptyMessage = await page
-      .locator('text=条件に一致するスタジオが見つかりません')
-      .isVisible()
-      .catch(() => false);
-
+    const { hasResults, hasEmptyMessage } = await checkSearchResults(page);
     expect(hasResults || hasEmptyMessage).toBe(true);
   });
 
   test('正常系: ソート機能', async ({ page }) => {
     // Given: スタジオ一覧ページにアクセスし、検索を実行する
-    await page.goto('/ja/studios');
-    await waitForPageLoad(page);
-    await page.click('button:has-text("検索")');
-    await page.waitForTimeout(2000);
+    await initializeStudioListPage(page);
+    await executeSearch(page);
 
     // When: ソートオプションを変更する
     const sortSelect = page
@@ -180,29 +139,16 @@ test.describe('スタジオ一覧機能', () => {
 
     // 名前順（A-Z）を選択
     await page.click('text=名前順（A-Z）');
-    await page.click('button:has-text("検索")');
+    await executeSearch(page);
 
     // Then: ソートが適用される（検索結果が再表示される）
-    await page.waitForTimeout(2000);
-
-    const hasResults = await page
-      .locator('[class*="grid"]:has([class*="card"])')
-      .isVisible()
-      .catch(() => false);
-    const hasEmptyMessage = await page
-      .locator('text=条件に一致するスタジオが見つかりません')
-      .isVisible()
-      .catch(() => false);
-
-    expect(hasResults || hasEmptyMessage).toBe(true);
+    await assertGridResultsVisible(page);
   });
 
   test('正常系: もっと見る', async ({ page }) => {
     // Given: スタジオ一覧ページにアクセスし、検索を実行する
-    await page.goto('/ja/studios');
-    await waitForPageLoad(page);
-    await page.click('button:has-text("検索")');
-    await page.waitForTimeout(2000);
+    await initializeStudioListPage(page);
+    await executeSearch(page);
 
     // When: 「もっと見る」ボタンが表示されている場合、クリックする
     const loadMoreButton = page.locator('button:has-text("もっと見る")');
@@ -222,20 +168,14 @@ test.describe('スタジオ一覧機能', () => {
       ).toBeVisible({ timeout: 5000 });
     } else {
       // ボタンが表示されない場合は、結果が少ないことを確認
-      const hasResults = await page
-        .locator('[class*="grid"]:has([class*="card"])')
-        .isVisible()
-        .catch(() => false);
-      expect(hasResults).toBe(true);
+      await assertGridResultsVisible(page);
     }
   });
 
   test('正常系: スタジオ詳細遷移', async ({ page }) => {
     // Given: スタジオ一覧ページにアクセスし、検索を実行する
-    await page.goto('/ja/studios');
-    await waitForPageLoad(page);
-    await page.click('button:has-text("検索")');
-    await page.waitForTimeout(2000);
+    await initializeStudioListPage(page);
+    await executeSearch(page);
 
     // When: スタジオカードが存在する場合、クリックする
     const studioCard = page.locator('[class*="card"]').first();
@@ -263,8 +203,7 @@ test.describe('スタジオ一覧機能', () => {
 
   test('正常系: リセットボタン', async ({ page }) => {
     // Given: スタジオ一覧ページにアクセスし、フィルターを設定する
-    await page.goto('/ja/studios');
-    await waitForPageLoad(page);
+    await initializeStudioListPage(page);
 
     const keywordInput = page.locator(
       'input[placeholder*="スタジオ名、住所で検索"]'
@@ -286,8 +225,7 @@ test.describe('スタジオ一覧機能', () => {
 
   test('正常系: スタジオ作成ボタン', async ({ page }) => {
     // Given: スタジオ一覧ページにアクセスする
-    await page.goto('/ja/studios');
-    await waitForPageLoad(page);
+    await initializeStudioListPage(page);
 
     // When: 新規作成ボタンをクリックする
     await page.click('a:has-text("新しいスタジオを追加")');
@@ -303,18 +241,12 @@ test.describe('スタジオ一覧機能', () => {
 
   test('異常系: 検索結果0件', async ({ page }) => {
     // Given: スタジオ一覧ページにアクセスする
-    await page.goto('/ja/studios');
-    await waitForPageLoad(page);
+    await initializeStudioListPage(page);
 
     // When: 存在しないキーワードで検索を実行する
-    const keywordInput = page.locator(
-      'input[placeholder*="スタジオ名、住所で検索"]'
-    );
-    await keywordInput.fill('存在しないスタジオ名12345');
-    await page.click('button:has-text("検索")');
+    await searchByKeyword(page, '存在しないスタジオ名12345');
 
     // Then: 空状態メッセージが表示される
-    await page.waitForTimeout(2000);
     await expect(
       page.locator('text=条件に一致するスタジオが見つかりません')
     ).toBeVisible({ timeout: 5000 });
@@ -322,8 +254,7 @@ test.describe('スタジオ一覧機能', () => {
 
   test('異常系: 初期表示（検索未実行）', async ({ page }) => {
     // Given: スタジオ一覧ページにアクセスする（検索ボタンを押さない）
-    await page.goto('/ja/studios');
-    await waitForPageLoad(page);
+    await initializeStudioListPage(page);
 
     // Then: 初期メッセージが表示される
     // 注意: 実装では初期表示時に自動検索が実行されるため、
@@ -331,88 +262,37 @@ test.describe('スタジオ一覧機能', () => {
     await page.waitForTimeout(1000);
 
     // 初期メッセージまたは検索結果のいずれかが表示される
-    const hasInitialMessage = await page
-      .locator('text=検索条件を設定して「検索」ボタンを押してください')
-      .isVisible()
-      .catch(() => false);
-    const hasResults = await page
-      .locator('[class*="grid"]:has([class*="card"])')
-      .isVisible()
-      .catch(() => false);
-
-    expect(hasInitialMessage || hasResults).toBe(true);
+    await assertSearchResultsVisible(page);
   });
 
   test('境界値: 長文キーワード', async ({ page }) => {
     // Given: スタジオ一覧ページにアクセスする
-    await page.goto('/ja/studios');
-    await waitForPageLoad(page);
+    await initializeStudioListPage(page);
 
     // When: 100文字以上の長文キーワードを入力して検索を実行する
     const longKeyword = 'あ'.repeat(100);
-    const keywordInput = page.locator(
-      'input[placeholder*="スタジオ名、住所で検索"]'
-    );
-    await keywordInput.fill(longKeyword);
-    await page.click('button:has-text("検索")');
+    await searchByKeyword(page, longKeyword);
 
     // Then: エラーなく検索が実行される
-    await page.waitForTimeout(2000);
-
-    // エラーメッセージが表示されない
-    const hasError = await page
-      .locator('text=エラー')
-      .isVisible()
-      .catch(() => false);
-    expect(hasError).toBe(false);
+    await assertNoError(page);
 
     // 検索結果または空状態メッセージが表示される
-    const hasResults = await page
-      .locator('[class*="grid"]:has([class*="card"])')
-      .isVisible()
-      .catch(() => false);
-    const hasEmptyMessage = await page
-      .locator('text=条件に一致するスタジオが見つかりません')
-      .isVisible()
-      .catch(() => false);
-
-    expect(hasResults || hasEmptyMessage).toBe(true);
+    await assertGridResultsVisible(page);
   });
 
   test('境界値: 特殊文字キーワード', async ({ page }) => {
     // Given: スタジオ一覧ページにアクセスする
-    await page.goto('/ja/studios');
-    await waitForPageLoad(page);
+    await initializeStudioListPage(page);
 
     // When: 特殊文字・記号・絵文字を含むキーワードを入力して検索を実行する
     const specialKeyword = '!@#$%^&*()_+-=[]{}|;:,.<>?🎉📸';
-    const keywordInput = page.locator(
-      'input[placeholder*="スタジオ名、住所で検索"]'
-    );
-    await keywordInput.fill(specialKeyword);
-    await page.click('button:has-text("検索")');
+    await searchByKeyword(page, specialKeyword);
 
     // Then: エラーなく処理される
-    await page.waitForTimeout(2000);
-
-    // エラーメッセージが表示されない
-    const hasError = await page
-      .locator('text=エラー')
-      .isVisible()
-      .catch(() => false);
-    expect(hasError).toBe(false);
+    await assertNoError(page);
 
     // 検索結果または空状態メッセージが表示される
-    const hasResults = await page
-      .locator('[class*="grid"]:has([class*="card"])')
-      .isVisible()
-      .catch(() => false);
-    const hasEmptyMessage = await page
-      .locator('text=条件に一致するスタジオが見つかりません')
-      .isVisible()
-      .catch(() => false);
-
-    expect(hasResults || hasEmptyMessage).toBe(true);
+    await assertGridResultsVisible(page);
   });
 
   // ============================================================================
@@ -421,10 +301,8 @@ test.describe('スタジオ一覧機能', () => {
 
   test('UI: スタジオカード表示', async ({ page }) => {
     // Given: スタジオ一覧ページにアクセスし、検索を実行する
-    await page.goto('/ja/studios');
-    await waitForPageLoad(page);
-    await page.click('button:has-text("検索")');
-    await page.waitForTimeout(3000);
+    await initializeStudioListPage(page);
+    await executeSearch(page, 3000);
 
     // When: スタジオカードまたは空状態メッセージが表示されている
     const hasEmptyMessage = await page
@@ -458,8 +336,7 @@ test.describe('スタジオ一覧機能', () => {
 
   test('UI: ローディング状態', async ({ page }) => {
     // Given: スタジオ一覧ページにアクセスする
-    await page.goto('/ja/studios');
-    await waitForPageLoad(page);
+    await initializeStudioListPage(page);
 
     // When: 検索を実行する
     const searchButton = page.locator('button:has-text("検索")');
@@ -493,8 +370,7 @@ test.describe('スタジオ一覧機能', () => {
     await page.setViewportSize({ width: 375, height: 667 });
 
     // When: スタジオ一覧ページにアクセスする
-    await page.goto('/ja/studios');
-    await waitForPageLoad(page);
+    await initializeStudioListPage(page);
 
     // Then: レイアウトが崩れずに表示される
     // 検索フォームが表示される
@@ -514,10 +390,8 @@ test.describe('スタジオ一覧機能', () => {
     await page.setViewportSize({ width: 1920, height: 1080 });
 
     // When: スタジオ一覧ページにアクセスし、検索を実行する
-    await page.goto('/ja/studios');
-    await waitForPageLoad(page);
-    await page.click('button:has-text("検索")');
-    await page.waitForTimeout(3000);
+    await initializeStudioListPage(page);
+    await executeSearch(page, 3000);
 
     // Then: 3カラムレイアウトで表示される（スタジオカードが存在する場合）
     // スタジオカードを含むグリッドコンテナを探す
