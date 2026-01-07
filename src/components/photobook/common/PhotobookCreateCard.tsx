@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { Plus } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface PhotobookCreateCardProps {
   canCreate: boolean;
@@ -23,6 +24,8 @@ export function PhotobookCreateCard({
   maxCount,
   borderColor = 'border-emerald-300/50',
 }: PhotobookCreateCardProps) {
+  const t = useTranslations('photobooks');
+
   return (
     <div className="group transform transition-all duration-300 hover:-translate-y-2">
       {canCreate ? (
@@ -33,10 +36,12 @@ export function PhotobookCreateCard({
             <div className="aspect-[3/4] flex items-center justify-center">
               <div className="text-center">
                 <Plus className="h-12 w-12 mx-auto mb-3 opacity-80" />
-                <p className="text-sm font-medium opacity-90">新規作成</p>
+                <p className="text-sm font-medium opacity-90">
+                  {t('createNew')}
+                </p>
                 <p className="text-xs opacity-70 mt-1">{typeLabel}</p>
                 <p className="text-xs opacity-60 mt-1">
-                  {currentCount}/{maxCount}冊
+                  {t('count', { currentCount, maxCount })}
                 </p>
               </div>
             </div>
@@ -47,11 +52,15 @@ export function PhotobookCreateCard({
           <div className="aspect-[3/4] flex items-center justify-center">
             <div className="text-center">
               <Plus className="h-12 w-12 mx-auto mb-3 opacity-50" />
-              <p className="text-sm font-medium opacity-70">上限達成</p>
-              <p className="text-xs opacity-60 mt-1">
-                {currentCount}/{maxCount}冊
+              <p className="text-sm font-medium opacity-70">
+                {t('limitReached')}
               </p>
-              <p className="text-xs opacity-50 mt-1">プラン変更で増量可</p>
+              <p className="text-xs opacity-60 mt-1">
+                {t('count', { currentCount, maxCount })}
+              </p>
+              <p className="text-xs opacity-50 mt-1">
+                {t('upgradeToIncreaseLimit')}
+              </p>
             </div>
           </div>
         </div>

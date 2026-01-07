@@ -46,25 +46,36 @@
     }
   },
   "navigation": {
-    "home": "ホーム",
-    "dashboard": "ダッシュボード",
-    "search": "検索",
+    "analytics": "統計",
     "bookings": "予約一覧",
+    "calendar": "カレンダー",
+    "dashboard": "ダッシュボード",
+    "devTools": "開発ツール",
+    "favorites": "お気に入り",
+    "home": "ホーム",
     "instant": "即座撮影",
-    "profile": "プロフィール",
+    "menu": "メニュー",
+    "messages": "メッセージ",
+    "modelList": "モデル一覧",
+    "photoSessionCreate": "撮影会作成",
+    "photoSessionList": "撮影会一覧",
+    "photoSessionManage": "撮影会管理",
     "photoSessions": "撮影会",
     "photobook": "フォトブック",
-    "photobookView": "フォトブック表示",
     "photobookEdit": "フォトブック編集",
-    "subscription": "サブスクリプション",
-    "studios": "スタジオ",
-    "favorites": "お気に入り",
+    "photobookView": "フォトブック表示",
+    "priorityTickets": "優先チケット管理",
+    "profile": "プロフィール",
+    "search": "検索",
     "settings": "設定",
     "signin": "ログイン",
-    "signup": "新規登録",
     "signout": "ログアウト",
+    "signup": "新規登録",
     "sns": "SNS",
-    "messages": "メッセージ",
+    "studio": "スタジオ",
+    "studioCreate": "スタジオ作成",
+    "studioList": "スタジオ一覧",
+    "studios": "スタジオ",
     "timeline": "タイムライン"
   },
   "theme": {
@@ -186,6 +197,10 @@
     "quickPhotobookDescription": "画像をアップロードして順番を決めるだけの簡単操作",
     "published": "公開中",
     "draft": "下書き",
+    "createNew": "新規作成",
+    "limitReached": "上限達成",
+    "upgradeToIncreaseLimit": "プラン変更で増量可",
+    "count": "{currentCount}/{maxCount}冊",
     "createLimitReached": "作成上限に達しています",
     "upgradePlan": "プランをアップグレード",
     "viewAdvanced": "アドバンスド版を見る",
@@ -256,7 +271,21 @@
         "availableTime": "対応可能時間"
       },
       "requestPhotoAvailable": "リクエスト撮影対応可能",
-      "requestPhotoDescription": "所属運営との空き時間が一致しているため、リクエスト撮影に対応できます"
+      "requestPhotoDescription": "所属運営との空き時間が一致しているため、リクエスト撮影に対応できます",
+      "selectModelsLabel": "表示するモデルを選択",
+      "selectModelsPlaceholder": "モデルを選択...",
+      "photoSessions": "撮影会",
+      "availability": "空き時間",
+      "organizerAvailability": "所属運営の対応可能時間",
+      "modelAvailability": "所属モデルの空き時間",
+      "yourScheduledAvailability": "あなたの設定済み空き時間",
+      "addAvailabilitySuccess": "空き時間を追加しました",
+      "deleteAvailabilitySuccess": "空き時間を削除しました",
+      "addFailed": "追加に失敗しました",
+      "deleteFailed": "削除に失敗しました",
+      "model": "モデル",
+      "full": "満席",
+      "available": "空きあり"
     }
   },
   "booking": {
@@ -324,6 +353,21 @@
         "item1": "予約後のキャンセルは条件があります",
         "item2": "参加費は当日お支払いください",
         "item3": "開始時刻の15分前には到着してください"
+      }
+    },
+    "error": {
+      "alreadyBooked": {
+        "title": "予約エラー",
+        "message": "この撮影会には既に予約済みです。複数枠の予約は許可されていません。",
+        "existingBooking": "既存の予約情報：",
+        "bookingDateTime": "予約日時：",
+        "slot": "スロット：",
+        "price": "料金：",
+        "status": "ステータス：",
+        "statusConfirmed": "確定済み",
+        "statusPending": "決済待ち",
+        "instruction": "複数枠の予約は許可されていません。既存の予約をキャンセルしてから新しい予約を行ってください。",
+        "backToSession": "撮影会に戻る"
       }
     }
   },
@@ -825,6 +869,15 @@
       "remindersSent": "{count}名にリマインダーを送信しました",
       "errorSendingReminders": "リマインダーの送信に失敗しました",
       "errorLoadingDocuments": "書類の読み込みに失敗しました"
+    },
+    "booking": {
+      "alreadyBookedAlert": {
+        "title": "予約済み",
+        "singleBooking": "この撮影会を予約済みです",
+        "multipleBookings": "{count}件の枠を予約済みです",
+        "viewDetails": "予約詳細を見る",
+        "bookedSlot": "予約済み"
+      }
     }
   },
   "lottery": {
@@ -1693,6 +1746,53 @@
     "securePayment": "安全な決済処理"
   },
   "studio": {
+    "page": {
+      "title": "スタジオ一覧",
+      "addNew": "新しいスタジオを追加",
+      "keyword": "キーワード",
+      "keywordPlaceholder": "スタジオ名、住所で検索",
+      "prefecture": "都道府県",
+      "prefecturePlaceholder": "都道府県を選択",
+      "all": "すべて",
+      "sortBy": "並び順",
+      "search": "検索",
+      "reset": "リセット",
+      "sort": {
+        "createdAtDesc": "新着順",
+        "createdAtAsc": "古い順",
+        "nameAsc": "名前順（A-Z）",
+        "nameDesc": "名前順（Z-A）",
+        "ratingDesc": "評価順（高い順）",
+        "ratingAsc": "評価順（低い順）",
+        "priceAsc": "料金順（安い順）",
+        "priceDesc": "料金順（高い順）"
+      }
+    },
+    "card": {
+      "updatedDaysAgo": "{days}日前に更新",
+      "updatedHoursAgo": "{hours}時間前に更新",
+      "updatedMinutesAgo": "{minutes}分前に更新",
+      "updatedJustNow": "たった今更新",
+      "highRating": "高評価",
+      "hidden": "非表示",
+      "maxCapacity": "最大{count}名",
+      "priceNegotiable": "料金応相談",
+      "reviewCount": "({count}件)",
+      "parking": "駐車場",
+      "wifi": "Wi-Fi",
+      "photoCount": "写真 {count}枚",
+      "equipmentCount": "機材 {count}点"
+    },
+    "list": {
+      "fetchError": "スタジオの取得に失敗しました",
+      "fetchErrorUnexpected": "スタジオの取得中にエラーが発生しました",
+      "emptyTitle": "条件に一致するスタジオが見つかりません",
+      "emptyTitleInitial": "検索条件を設定して「検索」ボタンを押してください",
+      "emptyDescription": "検索条件を変更してお試しください",
+      "emptyDescriptionInitial": "キーワードや都道府県を選択してスタジオを検索できます",
+      "loadMore": "もっと見る",
+      "loading": "読み込み中..."
+    },
     "report": {
       "button": "報告",
       "title": "スタジオを報告",
@@ -1816,5 +1916,55 @@
       "enabled": "2段階認証が有効です",
       "disabled": "2段階認証が無効です"
     }
+  },
+  "prefecture": {
+    "selectPlaceholder": "都道府県を選択",
+    "hokkaido": "北海道",
+    "aomori": "青森県",
+    "iwate": "岩手県",
+    "miyagi": "宮城県",
+    "akita": "秋田県",
+    "yamagata": "山形県",
+    "fukushima": "福島県",
+    "ibaraki": "茨城県",
+    "tochigi": "栃木県",
+    "gunma": "群馬県",
+    "saitama": "埼玉県",
+    "chiba": "千葉県",
+    "tokyo": "東京都",
+    "kanagawa": "神奈川県",
+    "niigata": "新潟県",
+    "toyama": "富山県",
+    "ishikawa": "石川県",
+    "fukui": "福井県",
+    "yamanashi": "山梨県",
+    "nagano": "長野県",
+    "gifu": "岐阜県",
+    "shizuoka": "静岡県",
+    "aichi": "愛知県",
+    "mie": "三重県",
+    "shiga": "滋賀県",
+    "kyoto": "京都府",
+    "osaka": "大阪府",
+    "hyogo": "兵庫県",
+    "nara": "奈良県",
+    "wakayama": "和歌山県",
+    "tottori": "鳥取県",
+    "shimane": "島根県",
+    "okayama": "岡山県",
+    "hiroshima": "広島県",
+    "yamaguchi": "山口県",
+    "tokushima": "徳島県",
+    "kagawa": "香川県",
+    "ehime": "愛媛県",
+    "kochi": "高知県",
+    "fukuoka": "福岡県",
+    "saga": "佐賀県",
+    "nagasaki": "長崎県",
+    "kumamoto": "熊本県",
+    "oita": "大分県",
+    "miyazaki": "宮崎県",
+    "kagoshima": "鹿児島県",
+    "okinawa": "沖縄県"
   }
 }
