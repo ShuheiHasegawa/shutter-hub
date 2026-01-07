@@ -19,11 +19,18 @@ import type {
   OrganizerModelInvitationWithProfiles,
 } from '@/types/organizer-model';
 import type { ModelLimitCheck } from '@/lib/subscription-limits';
-import { Users, Mail } from 'lucide-react';
+import { Users, Mail, UserPlus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 interface OrganizerModelManagementProps {
   showStatistics?: boolean;
-  defaultTab?: 'models' | 'invitations' | 'invite';
+  defaultTab?: 'models' | 'invitations';
   className?: string;
 }
 
@@ -34,9 +41,10 @@ export function OrganizerModelManagement({
 }: OrganizerModelManagementProps) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<
-    'models' | 'invitations' | 'invite'
-  >(defaultTab);
+  const [activeTab, setActiveTab] = useState<'models' | 'invitations'>(
+    defaultTab || 'models'
+  );
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
 
   // データ状態
   const [models, setModels] = useState<OrganizerModelWithProfile[]>([]);
@@ -105,6 +113,7 @@ export function OrganizerModelManagement({
     loadData(); // データを再読み込み
     loadLimitCheck(); // 制限情報も再読み込み
     setActiveTab('invitations'); // 招待一覧タブに切り替え
+    setIsInviteModalOpen(false); // モーダルを閉じる
     toast({
       title: '成功',
       description: 'モデルに招待を送信しました',
@@ -125,6 +134,14 @@ export function OrganizerModelManagement({
               <Users className="h-5 w-5" />
               所属モデル管理
             </CardTitle>
+            <Button
+              variant="cta"
+              onClick={() => setIsInviteModalOpen(true)}
+              disabled={!!(limitCheck && !limitCheck.canInvite)}
+            >
+              <UserPlus className="h-4 w-4 mr-2" />
+              新規招待
+            </Button>
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -208,17 +225,6 @@ export function OrganizerModelManagement({
               >
                 送信済み招待 ({invitations.length})
               </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab('invite')}
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'invite'
-                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
-                }`}
-              >
-                新規招待
-              </button>
             </nav>
           </div>
 
@@ -231,6 +237,7 @@ export function OrganizerModelManagement({
                 showContactButton={false}
                 showStatistics={true}
                 variant="management"
+                onDataChanged={loadData}
               />
             )}
 
@@ -241,16 +248,25 @@ export function OrganizerModelManagement({
                 isLoading={isLoading}
               />
             )}
-
-            {activeTab === 'invite' && (
-              <ModelInvitationForm
-                onInvitationSent={handleInvitationSent}
-                limitCheck={limitCheck}
-              />
-            )}
           </div>
         </CardContent>
       </Card>
+
+      {/* 新規招待モーダル */}
+      <Dialog open={isInviteModalOpen} onOpenChange={setIsInviteModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <UserPlus className="h-5 w-5" />
+              新しいモデルを招待
+            </DialogTitle>
+          </DialogHeader>
+          <ModelInvitationForm
+            onInvitationSent={handleInvitationSent}
+            limitCheck={limitCheck}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

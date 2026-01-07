@@ -1,12 +1,41 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { User, Calendar, Mail, Clock, Settings } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
+  User,
+  Calendar,
+  Mail,
+  Clock,
+  Settings,
+  MoreVertical,
+  UserMinus,
+} from 'lucide-react';
 import { FormattedDateTime } from '@/components/ui/formatted-display';
 import { logger } from '@/lib/utils/logger';
+import { useToast } from '@/hooks/use-toast';
+import { removeOrganizerModelAction } from '@/app/actions/organizer-model';
+import { getUserAvailability } from '@/app/actions/user-availability';
 import Link from 'next/link';
 import type { OrganizerModelWithProfile } from '@/types/organizer-model';
 
@@ -17,6 +46,7 @@ interface OrganizerModelsCommonProps {
   showStatistics?: boolean;
   variant?: 'profile' | 'management';
   isOwnProfile?: boolean;
+  onDataChanged?: () => void;
 }
 
 /**
@@ -30,7 +60,16 @@ export function OrganizerModelsCommon({
   showStatistics = true,
   variant = 'profile',
   isOwnProfile = false,
+  onDataChanged,
 }: OrganizerModelsCommonProps) {
+  const [removingModelId, setRemovingModelId] = useState<string | null>(null);
+  const [isRemoving, setIsRemoving] = useState(false);
+  const [modelAvailabilityCounts, setModelAvailabilityCounts] = useState<
+    Record<string, number>
+  >({});
+  const [loadingAvailability, setLoadingAvailability] = useState(false);
+  const { toast } = useToast();
+
   logger.debug('[OrganizerModelsCommon] レンダリング開始', {
     modelsLength: models.length,
     isLoading,
@@ -38,6 +77,89 @@ export function OrganizerModelsCommon({
     showStatistics,
     variant,
   });
+
+  // 各モデルの空き時間数を取得
+  useEffect(() => {
+    if (models.length === 0 || isLoading) return;
+
+    const loadAvailabilityCounts = async () => {
+      setLoadingAvailability(true);
+      try {
+        const today = new Date();
+        const threeMonthsLater = new Date(today);
+        threeMonthsLater.setMonth(today.getMonth() + 3);
+
+        const startDate = today.toISOString().split('T')[0];
+        const endDate = threeMonthsLater.toISOString().split('T')[0];
+
+        const counts: Record<string, number> = {};
+
+        await Promise.all(
+          models.map(async model => {
+            try {
+              const result = await getUserAvailability(
+                model.model_id,
+                startDate,
+                endDate
+              );
+              if (result.success && result.data) {
+                counts[model.model_id] = result.data.length;
+              } else {
+                counts[model.model_id] = 0;
+              }
+            } catch (error) {
+              logger.error(
+                `モデル ${model.model_id} の空き時間取得エラー:`,
+                error
+              );
+              counts[model.model_id] = 0;
+            }
+          })
+        );
+
+        setModelAvailabilityCounts(counts);
+      } catch (error) {
+        logger.error('空き時間取得エラー:', error);
+      } finally {
+        setLoadingAvailability(false);
+      }
+    };
+
+    loadAvailabilityCounts();
+  }, [models, isLoading]);
+
+  const handleRemoveModel = async (modelId: string, modelName: string) => {
+    setIsRemoving(true);
+    try {
+      const result = await removeOrganizerModelAction(modelId);
+
+      if (result.success) {
+        toast({
+          title: '所属解除完了',
+          description: `${modelName}さんとの所属関係を解除しました`,
+        });
+
+        // データ再読み込み
+        onDataChanged?.();
+      } else {
+        toast({
+          title: 'エラー',
+          description: result.error || '所属解除に失敗しました',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      logger.error('所属解除エラー:', error);
+      toast({
+        title: 'エラー',
+        description: '予期しないエラーが発生しました',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsRemoving(false);
+      setRemovingModelId(null);
+    }
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -68,16 +190,17 @@ export function OrganizerModelsCommon({
     }
   };
 
-  if (isLoading) {
+  // 既存データがある場合はスケルトンローディングを表示しない（チカチカ防止）
+  if (isLoading && models.length === 0) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {[...Array(6)].map((_, i) => (
-          <Card key={i} className="animate-pulse">
-            <div className="h-32 bg-muted"></div>
+          <Card key={i}>
+            <Skeleton className="h-32 w-full rounded-t-lg" />
             <CardContent className="p-4 space-y-2">
-              <div className="h-4 bg-muted rounded w-3/4"></div>
-              <div className="h-3 bg-muted rounded w-1/2"></div>
-              <div className="h-3 bg-muted rounded w-2/3"></div>
+              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-3 w-1/2" />
+              <Skeleton className="h-3 w-2/3" />
             </CardContent>
           </Card>
         ))}
@@ -120,9 +243,33 @@ export function OrganizerModelsCommon({
             key={model.id}
             className="group relative overflow-hidden border shadow-sm hover:shadow-md transition-all duration-300"
           >
-            {/* ステータスバッジ */}
-            <div className="absolute top-2 right-2 z-10">
+            {/* ヘッダー部分（ステータスバッジとメニュー） */}
+            <div className="absolute top-2 right-2 z-10 flex items-center gap-2">
               {getStatusBadge(model.status)}
+
+              {/* 管理画面でのみメニューを表示 */}
+              {variant === 'management' && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0 hover:bg-background/80"
+                    >
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      className="text-error focus:text-error cursor-pointer"
+                      onClick={() => setRemovingModelId(model.id)}
+                    >
+                      <UserMinus className="h-4 w-4 mr-2" />
+                      所属解除
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </div>
 
             {/* モデル画像 */}
@@ -147,7 +294,7 @@ export function OrganizerModelsCommon({
               {/* モデル基本情報 */}
               <div className="text-center">
                 <Link href={`/profile/${model.model_id}`}>
-                  <h3 className="text-sm font-semibold text-foreground truncate hover:text-brand-primary transition-colors cursor-pointer">
+                  <h3 className="text-sm font-semibold text-foreground truncate hover:text-primary transition-colors cursor-pointer">
                     {model.model_profile?.display_name || '未設定'}
                   </h3>
                 </Link>
@@ -165,18 +312,35 @@ export function OrganizerModelsCommon({
               {/* 統計情報 - コンパクト */}
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div className="text-center p-2 bg-muted/50 rounded">
-                  <div className="font-semibold brand-info">
+                  <div className="font-semibold text-primary">
                     {model.total_sessions_participated || 0}
                   </div>
                   <div className="text-muted-foreground">参加回数</div>
                 </div>
 
                 <div className="text-center p-2 bg-muted/50 rounded">
-                  <div className="font-semibold brand-success">
+                  <div className="font-semibold text-primary">
                     ¥{Math.floor((model.total_revenue_generated || 0) / 1000)}K
                   </div>
                   <div className="text-muted-foreground">収益</div>
                 </div>
+              </div>
+
+              {/* 空き時間情報 */}
+              <div className="text-center p-2 bg-muted/30 rounded border border-primary/20">
+                <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground mb-1">
+                  <Calendar className="h-3 w-3" />
+                  <span>空き時間（3ヶ月先まで）</span>
+                </div>
+                {loadingAvailability ? (
+                  <div className="text-xs text-muted-foreground">
+                    読み込み中...
+                  </div>
+                ) : (
+                  <div className="font-semibold text-primary">
+                    {modelAvailabilityCounts[model.model_id] ?? 0}件
+                  </div>
+                )}
               </div>
 
               {/* 最終活動日 */}
@@ -218,7 +382,7 @@ export function OrganizerModelsCommon({
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <Card>
             <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold brand-primary">
+              <div className="text-2xl font-bold text-primary">
                 {models.length}
               </div>
               <div className="text-xs text-muted-foreground">総モデル数</div>
@@ -227,7 +391,7 @@ export function OrganizerModelsCommon({
 
           <Card>
             <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold brand-success">
+              <div className="text-2xl font-bold text-primary">
                 {models.filter(m => m.status === 'active').length}
               </div>
               <div className="text-xs text-muted-foreground">アクティブ</div>
@@ -236,7 +400,7 @@ export function OrganizerModelsCommon({
 
           <Card>
             <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold brand-info">
+              <div className="text-2xl font-bold text-primary">
                 {models.reduce(
                   (sum, m) => sum + (m.total_sessions_participated || 0),
                   0
@@ -248,7 +412,7 @@ export function OrganizerModelsCommon({
 
           <Card>
             <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold brand-warning">
+              <div className="text-2xl font-bold text-primary">
                 ¥
                 {Math.floor(
                   models.reduce(
@@ -263,6 +427,54 @@ export function OrganizerModelsCommon({
           </Card>
         </div>
       )}
+
+      {/* 所属解除確認ダイアログ */}
+      <AlertDialog
+        open={!!removingModelId}
+        onOpenChange={open => !open && setRemovingModelId(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>所属解除の確認</AlertDialogTitle>
+            <AlertDialogDescription>
+              {removingModelId && (
+                <>
+                  <span className="font-semibold">
+                    {
+                      models.find(m => m.id === removingModelId)?.model_profile
+                        ?.display_name
+                    }
+                  </span>
+                  さんとの所属関係を解除しますか？
+                  <br />
+                  <br />
+                  この操作は取り消せません。解除後、再度招待を送信することで所属関係を再構築できます。
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isRemoving}>
+              キャンセル
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-error text-error-foreground hover:bg-error/90"
+              disabled={isRemoving}
+              onClick={() => {
+                const model = models.find(m => m.id === removingModelId);
+                if (model && removingModelId) {
+                  handleRemoveModel(
+                    removingModelId,
+                    model.model_profile?.display_name || 'モデル'
+                  );
+                }
+              }}
+            >
+              {isRemoving ? '解除中...' : '所属解除'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
