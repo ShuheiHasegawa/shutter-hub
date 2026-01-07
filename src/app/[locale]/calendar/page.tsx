@@ -60,6 +60,7 @@ import {
 import { logger } from '@/lib/utils/logger';
 import type { OrganizerModelWithProfile } from '@/types/organizer-model';
 import { MultiSelect } from '@/components/ui/multi-select';
+import { useTranslations } from 'next-intl';
 
 // カラーパレット定義（モデルごとに異なる色）- 16色に拡張
 const MODEL_COLORS = [
@@ -380,6 +381,8 @@ export default function CalendarPage() {
   const { user, loading: authLoading } = useAuth();
   const { profile, loading: profileLoading } = useProfile();
   const router = useRouter();
+  const t = useTranslations('profile.schedule');
+  const tCommon = useTranslations('common');
 
   // 状態
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -455,8 +458,8 @@ export default function CalendarPage() {
         if (result.success && result.data) {
           setUserSlots(result.data);
         }
-      } catch {
-        logger.error('空き時間取得エラー');
+      } catch (error) {
+        logger.error('Availability fetch error:', error);
       } finally {
         setIsLoading(false);
       }
@@ -475,8 +478,8 @@ export default function CalendarPage() {
       if (result.success && result.data) {
         setPhotoSessions(result.data);
       }
-    } catch {
-      logger.error('撮影会データ取得エラー');
+    } catch (error) {
+      logger.error('Photo session data fetch error:', error);
     }
   }, [user, profile]);
 
@@ -504,12 +507,12 @@ export default function CalendarPage() {
         endAt: new Date(date + 'T23:59:59'),
         status: {
           id: 'user-available',
-          name: '空き時間',
+          name: t('availability'),
           color: '#3B82F6',
         },
       };
     });
-  }, [userSlots]);
+  }, [userSlots, t]);
 
   // 撮影会をFeatureに変換
   const transformSessionsToFeatures = useCallback((): Feature[] => {
@@ -520,11 +523,11 @@ export default function CalendarPage() {
       endAt: new Date(session.end_time),
       status: {
         id: session.booking_type,
-        name: session.is_full ? '満席' : '空きあり',
+        name: session.is_full ? t('full') : t('available'),
         color: session.is_full ? '#EF4444' : '#10B981',
       },
     }));
-  }, [photoSessions]);
+  }, [photoSessions, t]);
 
   // 日付クリック処理
   const handleDateClick = useCallback((date: Date) => {
@@ -604,13 +607,13 @@ export default function CalendarPage() {
       });
 
       if (result.success) {
-        toast.success('空き時間を追加しました');
+        toast.success(t('addAvailabilitySuccess'));
         await loadUserAvailability(displayMonth, displayYear);
         setFormData({ startTime: '10:00', endTime: '18:00', notes: '' });
         setIsCreating(false);
         setShowModal(false);
       } else {
-        toast.error(result.error || '追加に失敗しました');
+        toast.error(result.error || t('addFailed'));
       }
     } catch {
       toast.error('予期しないエラーが発生しました');
@@ -627,10 +630,10 @@ export default function CalendarPage() {
         const result = await deleteUserAvailability(slotId);
 
         if (result.success) {
-          toast.success('空き時間を削除しました');
+          toast.success(t('deleteAvailabilitySuccess'));
           await loadUserAvailability(displayMonth, displayYear);
         } else {
-          toast.error(result.error || '削除に失敗しました');
+          toast.error(result.error || t('deleteFailed'));
         }
       } catch {
         toast.error('予期しないエラーが発生しました');
@@ -889,7 +892,7 @@ export default function CalendarPage() {
               organizerModels.length > 0 && (
                 <div className="mb-4 p-3 rounded-lg bg-muted/30">
                   <Label className="text-sm font-medium mb-2 block">
-                    表示するモデルを選択
+                    {t('selectModelsLabel')}
                   </Label>
                   <MultiSelect
                     options={organizerModels.map(model => {
@@ -908,14 +911,14 @@ export default function CalendarPage() {
                         />
                       );
                       return {
-                        label: model.model_profile?.display_name || 'モデル',
+                        label: model.model_profile?.display_name || t('model'),
                         value: model.model_id,
                         icon: ColorIcon,
                       };
                     })}
                     onValueChange={setSelectedModelIds}
                     defaultValue={selectedModelIds}
-                    placeholder="モデルを選択..."
+                    placeholder={t('selectModelsPlaceholder')}
                     className="w-full"
                   />
                 </div>
@@ -951,7 +954,9 @@ export default function CalendarPage() {
                   />
                   <div className="flex items-center gap-2">
                     <div className="h-3 w-3 rounded-full bg-green-500 flex-shrink-0" />
-                    <span className="text-sm font-medium">撮影会</span>
+                    <span className="text-sm font-medium">
+                      {t('photoSessions')}
+                    </span>
                   </div>
                 </label>
 
@@ -964,7 +969,9 @@ export default function CalendarPage() {
                   />
                   <div className="flex items-center gap-2">
                     <div className="h-3 w-3 rounded-full bg-blue-500 flex-shrink-0" />
-                    <span className="text-sm font-medium">空き時間</span>
+                    <span className="text-sm font-medium">
+                      {t('availability')}
+                    </span>
                   </div>
                 </label>
 
@@ -979,7 +986,7 @@ export default function CalendarPage() {
                     <div className="flex items-center gap-2">
                       <div className="h-3 w-3 rounded-full bg-green-600 flex-shrink-0" />
                       <span className="text-sm font-medium">
-                        所属運営の対応可能時間
+                        {t('organizerAvailability')}
                       </span>
                     </div>
                   </label>
@@ -996,7 +1003,7 @@ export default function CalendarPage() {
                     <div className="flex items-center gap-2">
                       <div className="h-3 w-3 rounded-full bg-purple-500 flex-shrink-0" />
                       <span className="text-sm font-medium">
-                        所属モデルの空き時間
+                        {t('modelAvailability')}
                       </span>
                     </div>
                   </label>
@@ -1012,7 +1019,7 @@ export default function CalendarPage() {
         <CardHeader className="pb-3 lg:pb-6">
           <CardTitle className="flex items-center gap-2 text-base lg:text-lg">
             <Clock className="h-4 w-4 lg:h-5 lg:w-5" />
-            設定済み空き時間
+            {t('availableTimes')}
           </CardTitle>
         </CardHeader>
         <CardContent className="p-3 lg:p-6 lg:pt-0">
@@ -1020,15 +1027,11 @@ export default function CalendarPage() {
             {userSlots.length === 0 ? (
               <div className="text-center py-4 space-y-4">
                 <p className="text-muted-foreground text-sm lg:text-base">
-                  空き時間が設定されていません。
-                  カレンダーから日付を選択して設定してください。
+                  {t('noAvailability')} {t('noAvailabilityOwn')}
                 </p>
                 <div className="p-3 rounded border border-blue-200 mx-2 lg:mx-0">
                   <p className="text-xs lg:text-sm">
-                    💡{' '}
-                    <strong>
-                      空き時間を設定して撮影チャンスを増やしましょう
-                    </strong>
+                    💡 <strong>{t('encourageSet')}</strong>
                   </p>
                 </div>
               </div>
@@ -1084,7 +1087,7 @@ export default function CalendarPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Calendar className="h-5 w-5" />
-              スケジュール編集 -{' '}
+              {t('editTitle')} -{' '}
               {selectedDate ? (
                 <FormattedDateTime value={selectedDate} format="date-short" />
               ) : (
@@ -1098,7 +1101,7 @@ export default function CalendarPage() {
             {getSelectedDateSlots().length > 0 && (
               <div className="space-y-2">
                 <h4 className="font-medium text-sm">
-                  あなたの設定済み空き時間
+                  {t('yourScheduledAvailability')}
                 </h4>
                 {getSelectedDateSlots().map(slot => (
                   <div
@@ -1113,7 +1116,7 @@ export default function CalendarPage() {
                       size="sm"
                       onClick={() => handleDeleteSlot(slot.id)}
                     >
-                      削除
+                      {tCommon('delete')}
                     </Button>
                   </div>
                 ))}
@@ -1130,13 +1133,13 @@ export default function CalendarPage() {
                 onClick={() => setIsCreating(true)}
               >
                 <Plus className="h-4 w-4" />
-                空き時間を追加
+                {t('addButton')}
               </Button>
             ) : (
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="startTime">開始時間</Label>
+                    <Label htmlFor="startTime">{t('startTime')}</Label>
                     <Input
                       id="startTime"
                       type="time"
@@ -1150,7 +1153,7 @@ export default function CalendarPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="endTime">終了時間</Label>
+                    <Label htmlFor="endTime">{t('endTime')}</Label>
                     <Input
                       id="endTime"
                       type="time"
@@ -1166,10 +1169,10 @@ export default function CalendarPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="notes">メモ（任意）</Label>
+                  <Label htmlFor="notes">{t('notes')}</Label>
                   <Textarea
                     id="notes"
-                    placeholder="この時間帯に関するメモ..."
+                    placeholder={t('notesPlaceholder')}
                     value={formData.notes}
                     onChange={e =>
                       setFormData(prev => ({
@@ -1182,7 +1185,7 @@ export default function CalendarPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>よく使う時間設定</Label>
+                  <Label>{t('commonTimes')}</Label>
                   <div className="flex flex-wrap gap-2">
                     <Button
                       variant="outline"
@@ -1240,14 +1243,14 @@ export default function CalendarPage() {
                       });
                     }}
                   >
-                    キャンセル
+                    {tCommon('cancel')}
                   </Button>
                   <Button
                     variant="cta"
                     onClick={handleAddSlot}
                     disabled={isLoading}
                   >
-                    追加
+                    {t('add')}
                   </Button>
                 </div>
               </div>
@@ -1261,7 +1264,9 @@ export default function CalendarPage() {
             {profile.user_type === 'organizer' &&
               getSelectedDateModelSlots().length > 0 && (
                 <div className="space-y-2">
-                  <h4 className="font-medium text-sm">所属モデルの空き時間</h4>
+                  <h4 className="font-medium text-sm">
+                    {t('modelAvailability')}
+                  </h4>
                   <div className="space-y-1.5">
                     {getSelectedDateModelSlots().map(item => (
                       <div
@@ -1295,7 +1300,7 @@ export default function CalendarPage() {
               getSelectedDateOrganizerSlots() && (
                 <div className="space-y-2">
                   <h4 className="font-medium text-sm">
-                    所属運営の対応可能時間
+                    {t('organizerAvailability')}
                   </h4>
                   <div className="p-2 border rounded bg-muted/30">
                     <div className="text-xs text-muted-foreground font-mono">
