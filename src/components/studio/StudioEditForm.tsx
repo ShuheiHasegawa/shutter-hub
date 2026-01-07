@@ -10,13 +10,6 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
   Form,
   FormControl,
   FormField,
@@ -29,8 +22,8 @@ import { Save, X, Info } from 'lucide-react';
 import { toast } from 'sonner';
 import { updateStudioAction } from '@/app/actions/studio';
 import { StudioWithStats, StudioPhoto } from '@/types/database';
-import { PREFECTURES } from '@/constants/japan';
 import { VALIDATION } from '@/constants/common';
+import { PrefectureSelect } from '@/components/ui/prefecture-select';
 import { StudioImageUpload } from './StudioImageUpload';
 import {
   ActionBar,
@@ -292,20 +285,12 @@ export function StudioEditForm({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>都道府県 *</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="都道府県を選択" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {PREFECTURES.map(pref => (
-                          <SelectItem key={pref} value={pref}>
-                            {pref}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <FormControl>
+                      <PrefectureSelect
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}

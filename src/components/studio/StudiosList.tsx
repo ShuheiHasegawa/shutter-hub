@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { StudioCard } from './StudioCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -28,6 +29,7 @@ export function StudiosList({
   limit = 20,
   triggerSearch = false,
 }: StudiosListProps) {
+  const t = useTranslations('studio.list');
   const [studios, setStudios] = useState<StudioWithStats[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -78,10 +80,10 @@ export function StudiosList({
           : result.studios.length;
         setHasMore(currentItems < totalItems);
       } else {
-        setError(result.error || 'スタジオの取得に失敗しました');
+        setError(result.error || t('fetchError'));
       }
     } catch {
-      setError('スタジオの取得中にエラーが発生しました');
+      setError(t('fetchErrorUnexpected'));
     } finally {
       setLoading(false);
     }
@@ -133,15 +135,9 @@ export function StudiosList({
   if (studios.length === 0 && !loading) {
     return (
       <EmptyState
-        title={
-          triggerSearch
-            ? '条件に一致するスタジオが見つかりません'
-            : '検索条件を設定して「検索」ボタンを押してください'
-        }
+        title={triggerSearch ? t('emptyTitle') : t('emptyTitleInitial')}
         description={
-          triggerSearch
-            ? '検索条件を変更してお試しください'
-            : 'キーワードや都道府県を選択してスタジオを検索できます'
+          triggerSearch ? t('emptyDescription') : t('emptyDescriptionInitial')
         }
         variant={triggerSearch ? 'search' : 'default'}
         wrapped={false}
@@ -195,7 +191,7 @@ export function StudiosList({
       {hasMore && (
         <div className="text-center">
           <Button variant="outline" onClick={handleLoadMore} disabled={loading}>
-            {loading ? '読み込み中...' : 'もっと見る'}
+            {loading ? t('loading') : t('loadMore')}
           </Button>
         </div>
       )}

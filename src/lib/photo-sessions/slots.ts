@@ -246,15 +246,30 @@ export async function createPendingSlotBooking(
 
   if (bookingError) {
     logger.error('Error creating pending booking:', bookingError);
-    // 一意制約違反エラーの場合
-    if (
-      bookingError.code === '23505' &&
-      bookingError.message?.includes('bookings_photo_session_id_user_id_key')
-    ) {
+    // 一意制約違反エラーの場合（複数の制約パターンに対応）
+    if (bookingError.code === '23505') {
+      // bookings_photo_session_id_user_id_key: 一人一枠制限
+      if (
+        bookingError.message?.includes('bookings_photo_session_id_user_id_key')
+      ) {
+        return {
+          success: false,
+          message:
+            'この撮影会には既に予約済みです。複数枠の予約は許可されていません。',
+        };
+      }
+      // idx_bookings_single_slot_per_user: 同一スロットへの重複予約防止
+      if (bookingError.message?.includes('idx_bookings_single_slot_per_user')) {
+        return {
+          success: false,
+          message:
+            'このスロットは既に予約済みです。同じスロットを複数回予約することはできません。',
+        };
+      }
+      // その他の一意制約違反
       return {
         success: false,
-        message:
-          'この撮影会には既に予約済みです。複数枠の予約は許可されていません。',
+        message: 'この予約は既に存在します。',
       };
     }
     return { success: false, message: '予約の作成に失敗しました' };

@@ -81,11 +81,10 @@ export function ModelLimitDisplay({ limitCheck }: ModelLimitDisplayProps) {
 
             {!canInvite && (
               <Button
-                variant="outline"
+                variant="navigation"
                 size="sm"
                 onClick={() => {
-                  // プラン変更ページへのリダイレクト（将来実装）
-                  // console.log('プラン変更ページへ');
+                  window.location.href = '/subscription';
                 }}
               >
                 プランを変更

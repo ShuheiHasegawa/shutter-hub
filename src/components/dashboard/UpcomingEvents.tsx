@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { UpcomingEvent } from '@/app/actions/dashboard-stats';
 import {
   Calendar,
@@ -103,14 +104,11 @@ export function UpcomingEvents({ events, isLoading }: UpcomingEventsProps) {
         <CardContent>
           <div className="space-y-4">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div
-                key={i}
-                className="flex items-center space-x-4 animate-pulse"
-              >
-                <div className="w-8 h-8 bg-gray-200 rounded-full" />
+              <div key={i} className="flex items-center space-x-4">
+                <Skeleton className="w-8 h-8 rounded-full" />
                 <div className="flex-1 space-y-2">
-                  <div className="h-4 bg-gray-200 rounded w-3/4" />
-                  <div className="h-3 bg-gray-200 rounded w-1/2" />
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-3 w-1/2" />
                 </div>
               </div>
             ))}

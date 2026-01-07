@@ -327,7 +327,7 @@ export function UserScheduleManager({
   isOwnProfile,
   userType,
 }: UserScheduleManagerProps) {
-  const _t = useTranslations('profile');
+  const t = useTranslations('profile.schedule');
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [userSlots, setUserSlots] = useState<TimeSlot[]>([]);
@@ -388,15 +388,15 @@ export function UserScheduleManager({
         if (result.success && result.data) {
           setUserSlots(result.data);
         } else {
-          toast.error(result.error || '空き時間の取得に失敗しました');
+          toast.error(result.error || t('unexpectedError'));
         }
       } catch {
-        toast.error('予期しないエラーが発生しました');
+        toast.error(t('unexpectedError'));
       } finally {
         setIsLoading(false);
       }
     },
-    [userId]
+    [userId, t]
   );
 
   // ユーザーの空き時間をカレンダー用Featureに変換
@@ -467,21 +467,21 @@ export function UserScheduleManager({
       });
 
       if (result.success) {
-        toast.success('空き時間を追加しました');
+        toast.success(t('addAvailabilitySuccess'));
         await loadUserAvailability();
         setFormData({ startTime: '10:00', endTime: '18:00', notes: '' });
         setIsCreating(false);
         // モーダルを閉じる
         setShowModal(false);
       } else {
-        toast.error(result.error || '追加に失敗しました');
+        toast.error(result.error || t('addFailed'));
       }
     } catch {
-      toast.error('予期しないエラーが発生しました');
+      toast.error(t('unexpectedError'));
     } finally {
       setIsLoading(false);
     }
-  }, [selectedDate, formData, loadUserAvailability]);
+  }, [selectedDate, formData, loadUserAvailability, t]);
 
   // 時間枠削除
   const handleDeleteSlot = useCallback(
@@ -491,19 +491,19 @@ export function UserScheduleManager({
         const result = await deleteUserAvailability(slotId);
 
         if (result.success) {
-          toast.success('空き時間を削除しました');
+          toast.success(t('deleteAvailabilitySuccess'));
           await loadUserAvailability();
           setEditingSlot(null);
         } else {
-          toast.error(result.error || '削除に失敗しました');
+          toast.error(result.error || t('deleteFailed'));
         }
       } catch {
-        toast.error('予期しないエラーが発生しました');
+        toast.error(t('unexpectedError'));
       } finally {
         setIsLoading(false);
       }
     },
-    [loadUserAvailability]
+    [loadUserAvailability, t]
   );
 
   // 初期データ読み込み
@@ -682,18 +682,10 @@ export function UserScheduleManager({
   return (
     <div>
       {/* 閲覧専用の案内 */}
-      <Alert className="mb-4">
-        <AlertCircle className="h-5 w-5 text-blue-500 mt-0.5" />
-        <AlertDescription className="flex flex-col sm:flex-row sm:items-center gap-2">
-          <span>このページではスケジュールの確認のみ可能です。</span>
-          {isOwnProfile && (
-            <Link
-              href="/calendar"
-              className="text-blue-600 hover:underline font-medium"
-            >
-              空き時間の編集はカレンダーページへ →
-            </Link>
-          )}
+      <Alert className="py-2">
+        <AlertCircle className="h-5 w-5 text-blue-500" />
+        <AlertDescription className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mt-3">
+          <span className="flex-1">{t('readOnlyNotice')}</span>
         </AlertDescription>
       </Alert>
 
@@ -703,6 +695,15 @@ export function UserScheduleManager({
           <CardTitle className="flex items-center gap-2 text-base lg:text-lg">
             <Calendar className="h-4 w-4 lg:h-5 lg:w-5" />
             スケジュールカレンダー
+            {isOwnProfile && (
+              <div className="flex items-center justify-end">
+                <Link href="/calendar">
+                  <Button variant="navigation" size="sm">
+                    {t('editOnCalendarPage')}
+                  </Button>
+                </Link>
+              </div>
+            )}
           </CardTitle>
         </CardHeader>
         <CardContent className="p-2 sm:p-6 sm:pt-0 overflow-hidden">
@@ -948,16 +949,17 @@ export function UserScheduleManager({
                       {/* アクションボタン */}
                       <div className="flex flex-col sm:flex-row gap-2">
                         <Button
-                          variant="accent"
+                          variant="cta"
+                          className="w-full sm:w-auto"
                           onClick={() => setIsCreating(true)}
                         >
-                          <Plus className="h-4 w-4 mr-2" />
-                          空き時間を追加
+                          <Plus className="h-4 w-4" />
+                          {t('addButton')}
                         </Button>
                         {getSelectedDateSlots().length > 0 && (
                           <Button variant="outline">
-                            <Copy className="h-4 w-4 mr-2" />
-                            他の日に複製
+                            <Copy className="h-4 w-4" />
+                            {t('copyButton')}
                           </Button>
                         )}
                       </div>

@@ -339,7 +339,7 @@ export default function HomePage() {
 
               <div className="container relative z-10">
                 <h2
-                  className="text-4xl md:text-5xl lg:text-6xl font-serif text-white leading-[1.1] mb-6 whitespace-nowrap flex justify-center items-center"
+                  className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif text-white leading-[1.1] mb-6 flex justify-center items-center text-center"
                   style={{
                     fontFamily: 'var(--font-playfair-display), serif',
                   }}

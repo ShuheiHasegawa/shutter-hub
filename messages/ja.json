@@ -265,6 +265,8 @@
       "update": "更新",
       "add": "追加",
       "readOnlyAccess": "他のユーザーのスケジュールは閲覧のみ可能です",
+      "readOnlyNotice": "このページではスケジュールの確認のみ可能です。",
+      "editOnCalendarPage": "空き時間の編集はカレンダーページへ →",
       "layerControl": {
         "userTime": "自分の空き時間",
         "organizerTime": "所属運営の空き時間",

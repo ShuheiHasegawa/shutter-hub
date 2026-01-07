@@ -13,6 +13,7 @@ import {
   FormattedPrice,
   FormattedDateTime,
 } from '@/components/ui/formatted-display';
+import { Skeleton } from '@/components/ui/skeleton';
 
 /**
  * 現在のサブスクリプション状況を表示するコンポーネント（Phase 1: 基本実装）
@@ -62,14 +63,24 @@ export function SubscriptionStatus() {
 
   if (isLoading) {
     return (
-      <Card className="animate-pulse">
+      <Card>
         <CardHeader>
-          <div className="h-6 bg-gray-200 rounded"></div>
+          <Skeleton className="h-6 w-48" />
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            <div className="h-4 bg-gray-200 rounded"></div>
-            <div className="h-4 bg-gray-200 rounded"></div>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <Skeleton className="h-4 w-16" />
+              <Skeleton className="h-5 w-20 rounded-full" />
+            </div>
+            <div className="flex items-center justify-between">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-32" />
+            </div>
+            <div className="flex items-center justify-between">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-5 w-24 rounded-full" />
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -87,7 +98,7 @@ export function SubscriptionStatus() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
+          <div className="space-y-4 p-2">
             <div className="flex items-center justify-between">
               <span>プラン</span>
               <Badge variant="default">フリープラン</Badge>

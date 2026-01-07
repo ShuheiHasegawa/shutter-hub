@@ -270,6 +270,8 @@
       "update": "Update",
       "add": "Add",
       "readOnlyAccess": "Other users' schedules are read-only",
+      "readOnlyNotice": "This page allows viewing schedules only.",
+      "editOnCalendarPage": "Edit availability on calendar page →",
       "layerControl": {
         "userTime": "My Availability",
         "organizerTime": "Organizer Availability",
@@ -288,6 +290,7 @@
       "deleteAvailabilitySuccess": "Availability deleted successfully",
       "addFailed": "Failed to add",
       "deleteFailed": "Failed to delete",
+      "unexpectedError": "An unexpected error occurred",
       "model": "Model",
       "full": "Full",
       "available": "Available"

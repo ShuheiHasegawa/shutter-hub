@@ -5,6 +5,7 @@ import { logger } from '@/lib/utils/logger';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -273,11 +274,9 @@ export function PhotoSessionBookingForm({
               </Button>
             </div>
           ) : !canJoin ? (
-            <div className="text-center">
-              <div className="animate-pulse">
-                <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto mb-4"></div>
-                <div className="h-10 bg-gray-200 rounded"></div>
-              </div>
+            <div className="text-center space-y-4">
+              <Skeleton className="h-4 w-1/2 mx-auto" />
+              <Skeleton className="h-10 w-full" />
             </div>
           ) : canBookNow ? (
             <div className="text-center">

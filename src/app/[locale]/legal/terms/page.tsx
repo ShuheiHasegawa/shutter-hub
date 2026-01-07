@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Calendar, FileText, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { sanitizeHtml } from '@/lib/utils/sanitize';
 
 interface TermsPageProps {
   params: Promise<{
@@ -107,7 +108,7 @@ export default async function TermsPage({ params }: TermsPageProps) {
           <div
             className="prose prose-gray dark:prose-invert max-w-none"
             dangerouslySetInnerHTML={{
-              __html: document.content.replace(/\n/g, '<br />'),
+              __html: sanitizeHtml(document.content.replace(/\n/g, '<br />')),
             }}
           />
         </CardContent>

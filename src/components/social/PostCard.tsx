@@ -50,6 +50,7 @@ import {
 } from '@/app/actions/posts';
 import { PostWithUser } from '@/types/social';
 import Link from 'next/link';
+import { sanitizeHtml } from '@/lib/utils/sanitize';
 
 interface PostCardProps {
   post: PostWithUser;
@@ -375,7 +376,7 @@ export function PostCard({
         <div
           className="text-sm leading-relaxed"
           dangerouslySetInnerHTML={{
-            __html: formatContent(displayPost.content),
+            __html: sanitizeHtml(formatContent(displayPost.content)),
           }}
         />
 

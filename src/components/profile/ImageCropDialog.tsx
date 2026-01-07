@@ -238,27 +238,28 @@ export function ImageCropDialog({
         </div>
 
         <DialogFooter className="gap-2">
-          <Button variant="outline" onClick={handleReset} size="sm">
-            <RotateCcw className="h-4 w-4 mr-2" />
+          <Button variant="navigation" onClick={handleReset} size="sm">
+            <RotateCcw className="h-4 w-4" />
             リセット
           </Button>
-          <Button variant="outline" onClick={onClose} size="sm">
-            <X className="h-4 w-4 mr-2" />
+          <Button variant="neutral" onClick={onClose} size="sm">
+            <X className="h-4 w-4" />
             キャンセル
           </Button>
           <Button
             onClick={handleCropAndCompress}
             disabled={isProcessing}
             size="sm"
+            variant="cta"
           >
             {isProcessing ? (
               <>
-                <FileImage className="h-4 w-4 mr-2 animate-spin" />
+                <FileImage className="h-4 w-4 animate-spin" />
                 処理中...
               </>
             ) : (
               <>
-                <Check className="h-4 w-4 mr-2" />
+                <Check className="h-4 w-4" />
                 適用
               </>
             )}

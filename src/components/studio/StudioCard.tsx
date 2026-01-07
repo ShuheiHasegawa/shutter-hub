@@ -13,6 +13,7 @@ import {
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import { Building2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { EmptyImage } from '@/components/ui/empty-image';
 import { StudioWithStats } from '@/types/database';
 import { CardFavoriteButton } from '@/components/ui/favorite-heart-button';
@@ -40,6 +41,8 @@ export function StudioCard({
   onFavoriteToggle,
 }: StudioCardProps) {
   const router = useRouter();
+  const t = useTranslations('studio.card');
+  const tPrefecture = useTranslations('prefecture');
 
   const handleClick = () => {
     if (onSelect) {
@@ -58,13 +61,13 @@ export function StudioCard({
     const diffMinutes = Math.floor(diffMs / (1000 * 60));
 
     if (diffDays > 0) {
-      return `${diffDays}日前に更新`;
+      return t('updatedDaysAgo', { days: diffDays });
     } else if (diffHours > 0) {
-      return `${diffHours}時間前に更新`;
+      return t('updatedHoursAgo', { hours: diffHours });
     } else if (diffMinutes > 0) {
-      return `${diffMinutes}分前に更新`;
+      return t('updatedMinutesAgo', { minutes: diffMinutes });
     } else {
-      return 'たった今更新';
+      return t('updatedJustNow');
     }
   };
 
@@ -129,15 +132,17 @@ export function StudioCard({
           <div className="absolute top-2 left-2 flex gap-2 flex-wrap">
             {studio.prefecture && (
               <Badge className="bg-theme-primary text-xs">
-                {studio.prefecture}
+                {tPrefecture(studio.prefecture)}
               </Badge>
             )}
             {studio.average_rating > 4.5 && studio.evaluation_count > 0 && (
-              <Badge className="bg-theme-accent text-xs">高評価</Badge>
+              <Badge className="bg-theme-accent text-xs">
+                {t('highRating')}
+              </Badge>
             )}
             {studio.is_hidden && (
               <Badge variant="destructive" className="text-xs">
-                非表示
+                {t('hidden')}
               </Badge>
             )}
           </div>
@@ -193,7 +198,9 @@ export function StudioCard({
 
           <div className="flex items-center gap-2 text-sm">
             <UsersIcon className="w-4 h-4 flex-shrink-0" />
-            <span>最大{studio.max_capacity || '-'}名</span>
+            <span>
+              {t('maxCapacity', { count: studio.max_capacity || '-' })}
+            </span>
           </div>
 
           <div className="flex items-center gap-2 text-sm">
@@ -220,7 +227,7 @@ export function StudioCard({
                   ～
                 </>
               ) : (
-                '料金応相談'
+                t('priceNegotiable')
               )}
             </span>
           </div>
@@ -231,7 +238,8 @@ export function StudioCard({
           <div className="flex items-center gap-2 mb-3">
             <div className="flex">{renderStars(studio.average_rating)}</div>
             <span className="text-sm">
-              {studio.average_rating.toFixed(1)} ({studio.evaluation_count}件)
+              {studio.average_rating.toFixed(1)}{' '}
+              {t('reviewCount', { count: studio.evaluation_count })}
             </span>
           </div>
         )}
@@ -241,13 +249,13 @@ export function StudioCard({
           {studio.parking_available && (
             <div className="flex items-center gap-1 text-xs">
               <TruckIcon className="w-4 h-4" />
-              <span>駐車場</span>
+              <span>{t('parking')}</span>
             </div>
           )}
           {studio.wifi_available && (
             <div className="flex items-center gap-1 text-xs">
               <WifiIcon className="w-4 h-4" />
-              <span>Wi-Fi</span>
+              <span>{t('wifi')}</span>
             </div>
           )}
         </div>
@@ -255,8 +263,10 @@ export function StudioCard({
         {/* 統計情報 */}
         <div className="space-y-1 border-t border-theme-neutral/20 pt-4">
           <div className="flex justify-between text-xs">
-            <span>写真 {studio.photo_count}枚</span>
-            <span>機材 {studio.equipment_count}点</span>
+            <span>{t('photoCount', { count: studio.photo_count })}</span>
+            <span>
+              {t('equipmentCount', { count: studio.equipment_count })}
+            </span>
           </div>
           {studio.updated_at && (
             <div className="text-xs text-theme-text-muted">

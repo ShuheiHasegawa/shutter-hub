@@ -43,7 +43,7 @@ import { getCurrentUsername } from '@/app/actions/username';
 import { logger } from '@/lib/utils/logger';
 import { User, Camera, AtSign } from 'lucide-react';
 import { OrganizerModelManagement } from '@/components/profile/organizer/OrganizerModelManagement';
-import { PREFECTURES } from '@/constants/japan';
+import { PrefectureSelect } from '@/components/ui/prefecture-select';
 
 const profileEditSchema = z.object({
   user_type: z.enum(['model', 'photographer', 'organizer']),
@@ -329,23 +329,23 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
       <CardContent className="p-6">
         <div className="flex flex-col items-center mb-6">
           <div className="relative group">
-            <Avatar className="h-24 w-24">
-              <AvatarImage src={displayImageUrl || undefined} />
-              <AvatarFallback className="text-lg">
-                {profile.display_name ? (
-                  getInitials(profile.display_name)
-                ) : (
-                  <User className="h-8 w-8" />
-                )}
-              </AvatarFallback>
-            </Avatar>
+            <label htmlFor="avatar-upload" className="cursor-pointer">
+              <Avatar className="h-24 w-24">
+                <AvatarImage src={displayImageUrl || undefined} />
+                <AvatarFallback className="text-lg">
+                  {profile.display_name ? (
+                    getInitials(profile.display_name)
+                  ) : (
+                    <User className="h-8 w-8" />
+                  )}
+                </AvatarFallback>
+              </Avatar>
 
-            {/* アップロードボタンのオーバーレイ */}
-            <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-              <label htmlFor="avatar-upload" className="cursor-pointer">
+              {/* アップロードボタンのオーバーレイ */}
+              <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                 <Camera className="h-6 w-6 text-white" />
-              </label>
-            </div>
+              </div>
+            </label>
 
             {/* 隠しファイル入力 */}
             <input
@@ -489,23 +489,12 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
                       <FormLabel className="text-sm text-muted-foreground">
                         都道府県
                       </FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value || ''}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="都道府県を選択" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {PREFECTURES.map(pref => (
-                            <SelectItem key={pref} value={pref}>
-                              {pref}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <FormControl>
+                        <PrefectureSelect
+                          value={field.value || undefined}
+                          onValueChange={field.onChange}
+                        />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}

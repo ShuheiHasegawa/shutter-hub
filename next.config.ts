@@ -101,6 +101,28 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      // セキュリティヘッダー（全ルートに適用）
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'origin-when-cross-origin',
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=()',
+          },
+        ],
+      },
     ];
   },
 
@@ -160,9 +182,7 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withSentryConfig(
-  withBundleAnalyzer(withNextIntl(nextConfig)),
-  {
+export default withSentryConfig(withBundleAnalyzer(withNextIntl(nextConfig)), {
   // For all available options, see:
   // https://www.npmjs.com/package/@sentry/webpack-plugin#options
 
