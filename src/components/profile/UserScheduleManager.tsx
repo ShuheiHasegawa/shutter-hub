@@ -327,7 +327,7 @@ export function UserScheduleManager({
   isOwnProfile,
   userType,
 }: UserScheduleManagerProps) {
-  const _t = useTranslations('profile');
+  const t = useTranslations('profile.schedule');
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [userSlots, setUserSlots] = useState<TimeSlot[]>([]);
@@ -388,15 +388,15 @@ export function UserScheduleManager({
         if (result.success && result.data) {
           setUserSlots(result.data);
         } else {
-          toast.error(result.error || '空き時間の取得に失敗しました');
+          toast.error(result.error || t('unexpectedError'));
         }
       } catch {
-        toast.error('予期しないエラーが発生しました');
+        toast.error(t('unexpectedError'));
       } finally {
         setIsLoading(false);
       }
     },
-    [userId]
+    [userId, t]
   );
 
   // ユーザーの空き時間をカレンダー用Featureに変換
@@ -467,21 +467,21 @@ export function UserScheduleManager({
       });
 
       if (result.success) {
-        toast.success('空き時間を追加しました');
+        toast.success(t('addAvailabilitySuccess'));
         await loadUserAvailability();
         setFormData({ startTime: '10:00', endTime: '18:00', notes: '' });
         setIsCreating(false);
         // モーダルを閉じる
         setShowModal(false);
       } else {
-        toast.error(result.error || '追加に失敗しました');
+        toast.error(result.error || t('addFailed'));
       }
     } catch {
-      toast.error('予期しないエラーが発生しました');
+      toast.error(t('unexpectedError'));
     } finally {
       setIsLoading(false);
     }
-  }, [selectedDate, formData, loadUserAvailability]);
+  }, [selectedDate, formData, loadUserAvailability, t]);
 
   // 時間枠削除
   const handleDeleteSlot = useCallback(
@@ -491,19 +491,19 @@ export function UserScheduleManager({
         const result = await deleteUserAvailability(slotId);
 
         if (result.success) {
-          toast.success('空き時間を削除しました');
+          toast.success(t('deleteAvailabilitySuccess'));
           await loadUserAvailability();
           setEditingSlot(null);
         } else {
-          toast.error(result.error || '削除に失敗しました');
+          toast.error(result.error || t('deleteFailed'));
         }
       } catch {
-        toast.error('予期しないエラーが発生しました');
+        toast.error(t('unexpectedError'));
       } finally {
         setIsLoading(false);
       }
     },
-    [loadUserAvailability]
+    [loadUserAvailability, t]
   );
 
   // 初期データ読み込み
@@ -685,9 +685,7 @@ export function UserScheduleManager({
       <Alert className="py-2">
         <AlertCircle className="h-5 w-5 text-blue-500" />
         <AlertDescription className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mt-3">
-          <span className="flex-1">
-            このページではスケジュールの確認のみ可能です。
-          </span>
+          <span className="flex-1">{t('readOnlyNotice')}</span>
         </AlertDescription>
       </Alert>
 
@@ -701,7 +699,7 @@ export function UserScheduleManager({
               <div className="flex items-center justify-end">
                 <Link href="/calendar">
                   <Button variant="navigation" size="sm">
-                    空き時間の編集はカレンダーページへ →
+                    {t('editOnCalendarPage')}
                   </Button>
                 </Link>
               </div>
@@ -956,12 +954,12 @@ export function UserScheduleManager({
                           onClick={() => setIsCreating(true)}
                         >
                           <Plus className="h-4 w-4" />
-                          空き時間を追加
+                          {t('addButton')}
                         </Button>
                         {getSelectedDateSlots().length > 0 && (
                           <Button variant="outline">
                             <Copy className="h-4 w-4" />
-                            他の日に複製
+                            {t('copyButton')}
                           </Button>
                         )}
                       </div>
