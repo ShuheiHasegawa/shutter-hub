@@ -39,10 +39,8 @@ export function PublicHeader() {
         <div className="container mx-auto px-4">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center gap-2">
-              <Camera className="h-8 w-8 brand-primary" />
-              <span className="text-xl font-bold brand-primary">
-                ShutterHub
-              </span>
+              <Camera className="h-8 w-8 text-primary" />
+              <span className="text-xl font-bold text-primary">ShutterHub</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="h-9 w-9" /> {/* パレット選択ボタン */}
@@ -65,8 +63,8 @@ export function PublicHeader() {
             href="/"
             className="flex items-center gap-2 hover:opacity-80 transition-opacity"
           >
-            <Camera className="h-8 w-8 brand-primary" />
-            <span className="text-xl font-bold brand-primary">ShutterHub</span>
+            <Camera className="h-8 w-8 text-primary" />
+            <span className="text-xl font-bold text-primary">ShutterHub</span>
           </Link>
 
           {/* Navigation */}

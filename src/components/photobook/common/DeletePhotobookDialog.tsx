@@ -62,7 +62,7 @@ export function DeletePhotobookDialog({
           e.preventDefault();
           setOpen(true);
         }}
-        className="brand-error focus:brand-error cursor-pointer"
+        className="text-error focus:text-error cursor-pointer"
       >
         <Trash2 className="mr-2 h-4 w-4" />
         削除

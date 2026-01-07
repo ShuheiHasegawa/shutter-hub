@@ -286,7 +286,7 @@ export const PhotobookGallery: React.FC<PhotobookGalleryProps> = ({
                         </div>
                       )}
                       {photobook.subscription_plan === 'premium' && (
-                        <div className="brand-primary p-1.5 rounded-full">
+                        <div className="bg-primary p-1.5 rounded-full">
                           <Crown size={12} />
                         </div>
                       )}

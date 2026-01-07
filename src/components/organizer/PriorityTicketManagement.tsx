@@ -223,7 +223,7 @@ export function PriorityTicketManagement() {
       defaultDate.setDate(defaultDate.getDate() + 30);
       setExpiresAt(defaultDate.toISOString().slice(0, 16));
     }
-  }, []);
+  }, [expiresAt]);
 
   const isTicketExpired = (expiresAt: string) => {
     return new Date(expiresAt) < new Date();
@@ -260,7 +260,7 @@ export function PriorityTicketManagement() {
         <Card>
           <CardContent className="p-4">
             <div className="text-center">
-              <p className="text-2xl font-bold brand-success">{stats.active}</p>
+              <p className="text-2xl font-bold text-success">{stats.active}</p>
               <p className="text-sm text-muted-foreground">有効</p>
             </div>
           </CardContent>
@@ -278,7 +278,7 @@ export function PriorityTicketManagement() {
         <Card>
           <CardContent className="p-4">
             <div className="text-center">
-              <p className="text-2xl font-bold brand-error">{stats.expired}</p>
+              <p className="text-2xl font-bold text-error">{stats.expired}</p>
               <p className="text-sm text-muted-foreground">期限切れ</p>
             </div>
           </CardContent>
