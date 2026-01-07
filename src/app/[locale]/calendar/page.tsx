@@ -423,6 +423,9 @@ export default function CalendarPage() {
   } | null>(null);
   const CACHE_TTL = 60000;
 
+  // 初期選択が行われたかどうかを追跡
+  const hasInitializedModelSelection = useRef(false);
+
   // フォーム状態
   const [formData, setFormData] = useState({
     startTime: '10:00',
@@ -826,11 +829,12 @@ export default function CalendarPage() {
     if (
       profile?.user_type === 'organizer' &&
       organizerModels.length > 0 &&
-      selectedModelIds.length === 0
+      !hasInitializedModelSelection.current
     ) {
       setSelectedModelIds(organizerModels.map(m => m.model_id));
+      hasInitializedModelSelection.current = true;
     }
-  }, [organizerModels, profile?.user_type, selectedModelIds.length]);
+  }, [organizerModels, profile?.user_type]);
 
   const userFeatures = transformUserSlotsToFeatures();
   const sessionFeatures = transformSessionsToFeatures();
