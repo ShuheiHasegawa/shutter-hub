@@ -239,6 +239,13 @@ export async function getOrganizerInvitationsAction(): Promise<InvitationRespons
     }
     const { user, supabase } = typeResult.data;
 
+    // 期限切れ招待を自動更新
+    const { error: expiryError } = await supabase.rpc('expire_old_invitations');
+    if (expiryError) {
+      logger.warn('期限切れ招待の自動更新エラー:', expiryError);
+      // エラーが発生しても処理は続行（関数が存在しない場合など）
+    }
+
     // 招待基本情報を取得
     const { data: invitations, error } = await supabase
       .from('organizer_model_invitations')
@@ -377,7 +384,7 @@ export async function cancelModelInvitationAction(
     // 招待の存在確認と権限チェック
     const { data: invitation } = await supabase
       .from('organizer_model_invitations')
-      .select('id, organizer_id, status')
+      .select('id, organizer_id, status, expires_at')
       .eq('id', invitationId)
       .eq('organizer_id', user.id)
       .single();
@@ -387,6 +394,11 @@ export async function cancelModelInvitationAction(
         success: false,
         error: '招待が見つからないか、キャンセル権限がありません',
       };
+    }
+
+    // 期限チェック
+    if (invitation.expires_at && new Date(invitation.expires_at) < new Date()) {
+      return { success: false, error: 'この招待は既に期限切れです' };
     }
 
     if (invitation.status !== 'pending') {
