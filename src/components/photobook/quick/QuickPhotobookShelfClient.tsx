@@ -7,7 +7,6 @@ import {
   Eye,
   Edit3,
   MoreVertical,
-  Plus,
   Calendar,
   Zap,
 } from 'lucide-react';
@@ -19,6 +18,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { DeletePhotobookDialog } from '../common/DeletePhotobookDialog';
+import { PhotobookCreateCard } from '../common/PhotobookCreateCard';
+import { PhotobookStatusBadge } from '../common/PhotobookStatusBadge';
 import type {
   PhotobookListItem,
   PhotobookPlanLimits,
@@ -49,39 +50,14 @@ export function QuickPhotobookShelfClient({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {/* 新規作成カード */}
-      <div className="group transform transition-all duration-300 hover:-translate-y-2">
-        {canCreateNew ? (
-          <Link href="/photobooks/quick/create">
-            <div className="surface-accent rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-dashed border-emerald-300/50">
-              <div className="aspect-[3/4] flex items-center justify-center">
-                <div className="text-center">
-                  <Plus className="h-12 w-12 mx-auto mb-3 opacity-80" />
-                  <p className="text-sm font-medium opacity-90">新規作成</p>
-                  <p className="text-xs opacity-70 mt-1">
-                    クイックフォトブック
-                  </p>
-                  <p className="text-xs opacity-60 mt-1">
-                    {displayPhotobooks.length}/{maxDisplayCount}冊
-                  </p>
-                </div>
-              </div>
-            </div>
-          </Link>
-        ) : (
-          <div className="surface-neutral rounded-lg shadow-lg border-2 border-dashed border-gray-400/50 opacity-60">
-            <div className="aspect-[3/4] flex items-center justify-center">
-              <div className="text-center">
-                <Plus className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p className="text-sm font-medium opacity-70">上限達成</p>
-                <p className="text-xs opacity-60 mt-1">
-                  {displayPhotobooks.length}/{maxDisplayCount}冊
-                </p>
-                <p className="text-xs opacity-50 mt-1">プラン変更で増量可</p>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
+      <PhotobookCreateCard
+        canCreate={canCreateNew}
+        createUrl="/photobooks/quick/create"
+        typeLabel="クイックフォトブック"
+        currentCount={displayPhotobooks.length}
+        maxCount={maxDisplayCount}
+        borderColor="border-emerald-300/50"
+      />
 
       {/* 既存フォトブック */}
       {displayPhotobooks.map(photobook => (
@@ -162,19 +138,9 @@ export function QuickPhotobookShelfClient({
                       </span>
                     </div>
 
-                    <div className="flex items-center text-xs text-success">
-                      {photobook.is_published ? (
-                        <>
-                          <Eye className="h-3 w-3 mr-1" />
-                          <span>公開中</span>
-                        </>
-                      ) : (
-                        <>
-                          <Edit3 className="h-3 w-3 mr-1" />
-                          <span>下書き</span>
-                        </>
-                      )}
-                    </div>
+                    <PhotobookStatusBadge
+                      isPublished={photobook.is_published}
+                    />
                   </div>
                 </div>
               </div>
