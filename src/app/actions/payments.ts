@@ -53,16 +53,33 @@ export async function createPaymentIntent(
     }
 
     // Stripe PaymentIntentを作成
-    const paymentIntent = await stripe.paymentIntents.create({
+    // payment_method_typesとautomatic_payment_methodsは同時に指定できない
+    const paymentIntentParams: {
+      amount: number;
+      currency: string;
+      metadata: Record<string, string>;
+      capture_method: 'automatic' | 'manual';
+      payment_method_types?: string[];
+      automatic_payment_methods?: { enabled: boolean };
+    } = {
       amount: data.amount,
       currency: data.currency,
-      payment_method_types: data.payment_method_types,
       metadata: data.metadata,
-      capture_method: data.capture_method || 'automatic',
-      automatic_payment_methods: {
+      capture_method:
+        (data.capture_method as 'automatic' | 'manual') || 'automatic',
+    };
+
+    // payment_method_typesが指定されている場合はそれを使用、そうでない場合はautomatic_payment_methodsを使用
+    if (data.payment_method_types && data.payment_method_types.length > 0) {
+      paymentIntentParams.payment_method_types = data.payment_method_types;
+    } else {
+      paymentIntentParams.automatic_payment_methods = {
         enabled: true,
-      },
-    });
+      };
+    }
+
+    const paymentIntent =
+      await stripe.paymentIntents.create(paymentIntentParams);
 
     // データベースに決済レコードを作成
     const fees = calculateTotalFees(data.amount);

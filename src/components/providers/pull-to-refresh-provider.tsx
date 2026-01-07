@@ -8,7 +8,7 @@ import React, {
   useRef,
   useEffect,
 } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 
 interface PullToRefreshContextType {
   isRefreshing: boolean;
@@ -29,12 +29,22 @@ export function PullToRefreshProvider({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
   const touchStartY = useRef(0);
   const touchStartScrollTop = useRef(0);
   const isPulling = useRef(false);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // publicページ（ログイン不要なページ）でPull-to-Refreshを無効化
+  const isPublicPage =
+    pathname === '/ja' ||
+    pathname === '/en' ||
+    pathname?.startsWith('/ja/instant') ||
+    pathname?.startsWith('/en/instant') ||
+    pathname === '/' ||
+    pathname?.match(/^\/(ja|en)\/?$/);
 
   const triggerRefresh = useCallback(async () => {
     if (isRefreshing) return;
@@ -90,6 +100,9 @@ export function PullToRefreshProvider({
 
   const handleTouchStart = useCallback(
     (e: TouchEvent) => {
+      // publicページではPull-to-Refreshを無効化
+      if (isPublicPage) return;
+
       // リフレッシュ中は無視
       if (isRefreshing) return;
 
@@ -106,11 +119,14 @@ export function PullToRefreshProvider({
         isPulling.current = false;
       }
     },
-    [isRefreshing, getScrollTop, isAtTop, isAtBottom]
+    [isRefreshing, getScrollTop, isAtTop, isAtBottom, isPublicPage]
   );
 
   const handleTouchMove = useCallback(
     (e: TouchEvent) => {
+      // publicページではPull-to-Refreshを無効化
+      if (isPublicPage) return;
+
       if (!isPulling.current || isRefreshing) return;
 
       const scrollTop = getScrollTop();
@@ -140,10 +156,13 @@ export function PullToRefreshProvider({
         setPullDistance(0);
       }
     },
-    [isRefreshing, getScrollTop, isAtBottom]
+    [isRefreshing, getScrollTop, isAtBottom, isPublicPage]
   );
 
   const handleTouchEnd = useCallback(() => {
+    // publicページではPull-to-Refreshを無効化
+    if (isPublicPage) return;
+
     if (!isPulling.current) return;
     isPulling.current = false;
 
@@ -152,9 +171,12 @@ export function PullToRefreshProvider({
     } else {
       setPullDistance(0);
     }
-  }, [pullDistance, isRefreshing, triggerRefresh]);
+  }, [pullDistance, isRefreshing, triggerRefresh, isPublicPage]);
 
   useEffect(() => {
+    // publicページではイベントリスナーを登録しない
+    if (isPublicPage) return;
+
     const options: AddEventListenerOptions = { passive: false };
 
     window.addEventListener('touchstart', handleTouchStart, { passive: true });
@@ -166,7 +188,7 @@ export function PullToRefreshProvider({
       window.removeEventListener('touchmove', handleTouchMove);
       window.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [handleTouchStart, handleTouchMove, handleTouchEnd]);
+  }, [handleTouchStart, handleTouchMove, handleTouchEnd, isPublicPage]);
 
   const pullProgress = Math.min(pullDistance / PULL_THRESHOLD, 1);
 
@@ -175,55 +197,59 @@ export function PullToRefreshProvider({
       value={{ isRefreshing, pullProgress, triggerRefresh }}
     >
       <div ref={containerRef} className="relative min-h-screen">
-        {/* プルインジケーター */}
-        <div
-          className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center pointer-events-none transition-transform duration-200 ease-out"
-          style={{
-            transform: `translateY(${pullDistance - 50}px)`,
-            opacity: pullProgress,
-          }}
-        >
+        {/* プルインジケーター（publicページでは非表示） */}
+        {!isPublicPage && (
           <div
-            className={`
+            className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center pointer-events-none transition-transform duration-200 ease-out"
+            style={{
+              transform: `translateY(${pullDistance - 50}px)`,
+              opacity: pullProgress,
+            }}
+          >
+            <div
+              className={`
               flex items-center justify-center w-10 h-10 rounded-full 
               bg-background border border-border shadow-lg
               ${isRefreshing ? 'animate-spin' : ''}
             `}
-            style={{
-              transform: isRefreshing
-                ? undefined
-                : `rotate(${pullProgress * 360}deg)`,
-            }}
-          >
-            <svg
-              className="w-5 h-5 text-primary"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+              style={{
+                transform: isRefreshing
+                  ? undefined
+                  : `rotate(${pullProgress * 360}deg)`,
+              }}
             >
-              {isRefreshing ? (
-                // ローディングスピナー
-                <path d="M21 12a9 9 0 11-6.219-8.56" />
-              ) : (
-                // 矢印アイコン
-                <>
-                  <path d="M12 3v15" />
-                  <path d="m19 12-7 7-7-7" />
-                </>
-              )}
-            </svg>
+              <svg
+                className="w-5 h-5 text-primary"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                {isRefreshing ? (
+                  // ローディングスピナー
+                  <path d="M21 12a9 9 0 11-6.219-8.56" />
+                ) : (
+                  // 矢印アイコン
+                  <>
+                    <path d="M12 3v15" />
+                    <path d="m19 12-7 7-7-7" />
+                  </>
+                )}
+              </svg>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* メインコンテンツ */}
         <div
           className="transition-transform duration-200 ease-out"
           style={{
             transform:
-              pullDistance > 0 ? `translateY(${pullDistance}px)` : undefined,
+              !isPublicPage && pullDistance > 0
+                ? `translateY(${pullDistance}px)`
+                : undefined,
           }}
         >
           {children}

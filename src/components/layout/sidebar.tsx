@@ -46,6 +46,7 @@ interface SidebarProps {
 
 interface NavItem {
   title: string;
+  key?: string; // セクション展開用のキー（翻訳キー）
   href?: string;
   icon: React.ComponentType<{ className?: string }>;
   children?: NavItem[];
@@ -58,8 +59,8 @@ export function Sidebar({ className }: SidebarProps) {
   const t = useTranslations('navigation');
   const { profile } = useProfile();
   const [openSections, setOpenSections] = useState<string[]>([
-    '撮影会',
-    'スタジオ',
+    'photoSessions',
+    'studio',
   ]);
 
   const toggleSection = (section: string) => {
@@ -81,7 +82,7 @@ export function Sidebar({ className }: SidebarProps) {
       icon: Home,
     },
     {
-      title: 'カレンダー',
+      title: t('calendar'),
       href: '/calendar',
       icon: Calendar,
     },
@@ -92,15 +93,16 @@ export function Sidebar({ className }: SidebarProps) {
     },
     {
       title: t('photoSessions'),
+      key: 'photoSessions',
       icon: Camera,
       children: [
         {
-          title: '撮影会一覧',
+          title: t('photoSessionList'),
           href: '/photo-sessions',
           icon: List,
         },
         {
-          title: '撮影会作成',
+          title: t('photoSessionCreate'),
           href:
             profile?.user_type === 'organizer'
               ? '/photo-sessions/create/organizer'
@@ -108,7 +110,7 @@ export function Sidebar({ className }: SidebarProps) {
           icon: Plus,
         },
         {
-          title: '撮影会管理',
+          title: t('photoSessionManage'),
           href: '/dashboard/my-sessions',
           icon: Camera,
         },
@@ -118,62 +120,63 @@ export function Sidebar({ className }: SidebarProps) {
           icon: Calendar,
         },
         {
-          title: '優先チケット管理',
+          title: t('priorityTickets'),
           href: '/priority-tickets',
           icon: Ticket,
         },
         {
-          title: 'お気に入り',
+          title: t('favorites'),
           href: '/favorites?tab=photo_session',
           icon: Heart,
         },
       ],
     },
     {
-      title: 'スタジオ',
+      title: t('studio'),
+      key: 'studio',
       icon: Building,
       children: [
         {
-          title: 'スタジオ一覧',
+          title: t('studioList'),
           href: '/studios',
           icon: List,
         },
         {
-          title: 'スタジオ作成',
+          title: t('studioCreate'),
           href: '/studios/create',
           icon: Plus,
         },
         {
-          title: 'お気に入り',
+          title: t('favorites'),
           href: '/favorites?tab=studio',
           icon: Heart,
         },
       ],
     },
     {
-      title: 'フォトブック',
+      title: t('photobook'),
       href: '/photobooks',
       icon: Book,
     },
     {
-      title: 'メッセージ',
+      title: t('messages'),
       href: '/messages',
       icon: MessageCircle,
     },
     {
-      title: 'タイムライン',
+      title: t('timeline'),
       href: '/timeline',
       icon: Hash,
     },
     {
-      title: '統計',
+      title: t('analytics'),
       href: '/analytics',
       icon: BarChart3,
     },
     ...(profile?.user_type === 'organizer'
       ? [
           {
-            title: 'モデル一覧',
+            title: t('modelList'),
             href: '/models',
             icon: Users,
           },
@@ -183,7 +186,7 @@ export function Sidebar({ className }: SidebarProps) {
     ...(process.env.NODE_ENV === 'development'
       ? [
           {
-            title: '開発ツール',
+            title: t('devTools'),
             href: '/dev',
             icon: Code,
           },
@@ -238,17 +241,14 @@ export function Sidebar({ className }: SidebarProps) {
   const renderNavItem = (item: NavItem, level = 0) => {
     const hasChildren = item.children && item.children.length > 0;
     const isExpanded =
-      hasChildren &&
-      openSections.includes(item.title.toLowerCase().replace(/\s+/g, '-'));
+      hasChildren && item.key ? openSections.includes(item.key) : false;
 
     if (hasChildren) {
       return (
         <Collapsible
           key={item.title}
           open={isExpanded}
-          onOpenChange={() =>
-            toggleSection(item.title.toLowerCase().replace(/\s+/g, '-'))
-          }
+          onOpenChange={() => item.key && toggleSection(item.key)}
         >
           <CollapsibleTrigger asChild>
             <Button
@@ -333,8 +333,8 @@ export function MobileSidebarTrigger() {
   const t = useTranslations('navigation');
   const { profile } = useProfile();
   const [openSections, setOpenSections] = useState<string[]>([
-    '撮影会',
-    'スタジオ',
+    'photoSessions',
+    'studio',
   ]);
 
   const toggleSection = (section: string) => {
@@ -356,7 +356,7 @@ export function MobileSidebarTrigger() {
       icon: Home,
     },
     {
-      title: 'カレンダー',
+      title: t('calendar'),
       href: '/calendar',
       icon: Calendar,
     },
@@ -367,15 +367,16 @@ export function MobileSidebarTrigger() {
     },
     {
       title: t('photoSessions'),
+      key: 'photoSessions',
       icon: Camera,
       children: [
         {
-          title: '撮影会一覧',
+          title: t('photoSessionList'),
           href: '/photo-sessions',
           icon: List,
         },
         {
-          title: '撮影会作成',
+          title: t('photoSessionCreate'),
           href:
             profile?.user_type === 'organizer'
               ? '/photo-sessions/create/organizer'
@@ -383,7 +384,7 @@ export function MobileSidebarTrigger() {
           icon: Plus,
         },
         {
-          title: '撮影会管理',
+          title: t('photoSessionManage'),
           href: '/dashboard/my-sessions',
           icon: Camera,
         },
@@ -393,62 +394,63 @@ export function MobileSidebarTrigger() {
           icon: Calendar,
         },
         {
-          title: '優先チケット管理',
+          title: t('priorityTickets'),
           href: '/priority-tickets',
           icon: Ticket,
         },
         {
-          title: 'お気に入り',
+          title: t('favorites'),
           href: '/favorites?tab=photo_session',
           icon: Heart,
         },
       ],
     },
     {
-      title: 'スタジオ',
+      title: t('studio'),
+      key: 'studio',
       icon: Building,
       children: [
         {
-          title: 'スタジオ一覧',
+          title: t('studioList'),
           href: '/studios',
           icon: List,
         },
         {
-          title: 'スタジオ作成',
+          title: t('studioCreate'),
           href: '/studios/create',
           icon: Plus,
         },
         {
-          title: 'お気に入り',
+          title: t('favorites'),
           href: '/favorites?tab=studio',
           icon: Heart,
         },
       ],
     },
     {
-      title: 'フォトブック',
+      title: t('photobook'),
       href: '/photobooks',
       icon: Book,
     },
     {
-      title: 'メッセージ',
+      title: t('messages'),
       href: '/messages',
       icon: MessageCircle,
     },
     {
-      title: 'タイムライン',
+      title: t('timeline'),
       href: '/timeline',
       icon: Hash,
     },
     {
-      title: '統計',
+      title: t('analytics'),
       href: '/analytics',
       icon: BarChart3,
     },
     ...(profile?.user_type === 'organizer'
       ? [
           {
-            title: 'モデル一覧',
+            title: t('modelList'),
             href: '/models',
             icon: Users,
           },
@@ -458,7 +460,7 @@ export function MobileSidebarTrigger() {
     ...(process.env.NODE_ENV === 'development'
       ? [
           {
-            title: '開発ツール',
+            title: t('devTools'),
             href: '/dev',
             icon: Code,
           },
@@ -513,17 +515,14 @@ export function MobileSidebarTrigger() {
   const renderNavItem = (item: NavItem, level = 0) => {
     const hasChildren = item.children && item.children.length > 0;
     const isExpanded =
-      hasChildren &&
-      openSections.includes(item.title.toLowerCase().replace(/\s+/g, '-'));
+      hasChildren && item.key ? openSections.includes(item.key) : false;
 
     if (hasChildren) {
       return (
         <Collapsible
           key={item.title}
           open={isExpanded}
-          onOpenChange={() =>
-            toggleSection(item.title.toLowerCase().replace(/\s+/g, '-'))
-          }
+          onOpenChange={() => item.key && toggleSection(item.key)}
         >
           <CollapsibleTrigger asChild>
             <Button
@@ -581,7 +580,7 @@ export function MobileSidebarTrigger() {
       <SheetContent side="left" className="w-64 p-0">
         <div className="flex h-full flex-col">
           <SheetHeader className="px-4 py-3 border-b">
-            <SheetTitle>メニュー</SheetTitle>
+            <SheetTitle>{t('menu')}</SheetTitle>
           </SheetHeader>
           <ScrollArea className="flex-1 px-3">
             <div className="space-y-1 py-4">

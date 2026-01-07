@@ -16,13 +16,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Plus, Loader2, CheckCircle2, MapPin } from 'lucide-react';
+import { Plus, CheckCircle2, MapPin } from 'lucide-react';
 import Link from 'next/link';
 import { useLayoutPreference } from '@/hooks/useLayoutPreference';
 import { CameraIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useUserProfile } from '@/hooks/useAuth';
-import { toast } from 'sonner';
 import { logger } from '@/lib/utils/logger';
 import type { BookingType } from '@/types/database';
 
@@ -231,44 +230,24 @@ export default function PhotoSessionsPage() {
                 {t('sidebar.onlyAvailable')}
               </Toggle>
 
-              {/* 活動拠点で絞る */}
-              <Toggle
-                pressed={filterByActivityLocation}
-                disabled={profileLoading}
-                onPressedChange={pressed => {
-                  logger.info('活動拠点フィルター変更:', {
-                    isChecked: pressed,
-                    profilePrefecture: profile?.prefecture,
-                    profileLoading,
-                  });
+              {/* 活動拠点で絞る（プロフィールに都道府県が設定されている場合のみ表示） */}
+              {!profileLoading && profile?.prefecture && (
+                <Toggle
+                  pressed={filterByActivityLocation}
+                  onPressedChange={pressed => {
+                    logger.info('活動拠点フィルター変更:', {
+                      isChecked: pressed,
+                      profilePrefecture: profile?.prefecture,
+                    });
 
-                  if (pressed) {
-                    if (!profile?.prefecture) {
-                      toast.error(
-                        'プロフィール設定で活動拠点（都道府県）を設定してください'
-                      );
-                      logger.warn('活動拠点フィルターエラー: 都道府県未設定');
-                      return;
-                    }
-
-                    setFilterByActivityLocation(true);
-                  } else {
-                    setFilterByActivityLocation(false);
-                  }
-                }}
-                aria-label="活動拠点で絞る"
-              >
-                <MapPin className="h-4 w-4" />
-                活動拠点で絞る
-                {filterByActivityLocation && profile?.prefecture && (
-                  <span className="text-xs opacity-80 ml-1">
-                    ({profile.prefecture})
-                  </span>
-                )}
-                {profileLoading && (
-                  <Loader2 className="h-3 w-3 animate-spin ml-1" />
-                )}
-              </Toggle>
+                    setFilterByActivityLocation(pressed);
+                  }}
+                  aria-label={`${profile.prefecture}で絞る`}
+                >
+                  <MapPin className="h-4 w-4" />
+                  {profile.prefecture}で絞る
+                </Toggle>
+              )}
             </div>
 
             {/* 右側: 並び順とグリッド切り替え */}

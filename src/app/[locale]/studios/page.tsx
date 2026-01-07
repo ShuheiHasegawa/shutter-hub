@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { AuthenticatedLayout } from '@/components/layout/authenticated-layout';
 import { StudiosList } from '@/components/studio/StudiosList';
 import { Button } from '@/components/ui/button';
@@ -15,14 +16,16 @@ import {
 } from '@/components/ui/select';
 import { StudioSearchFilters } from '@/types/database';
 import { PlusIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
-import { PREFECTURES } from '@/constants/japan';
 import { STUDIO_SORT_OPTIONS, DEFAULT_STUDIO_SEARCH } from '@/constants/studio';
+import { PREFECTURE_KEYS } from '@/constants/japan';
 import Link from 'next/link';
 import { PageTitleHeader } from '@/components/ui/page-title-header';
 import { StickyHeader } from '@/components/ui/sticky-header';
 import { BuildingIcon } from 'lucide-react';
 
 export default function StudiosPage() {
+  const t = useTranslations('studio.page');
+  const tPrefecture = useTranslations('prefecture');
   const searchParams = useSearchParams();
   const [filters, setFilters] = useState<StudioSearchFilters>({
     query: searchParams.get('q') || '',
@@ -31,6 +34,24 @@ export default function StudiosPage() {
     sort_order: DEFAULT_STUDIO_SEARCH.sort_order,
   });
   const [triggerSearch, setTriggerSearch] = useState(false);
+
+  // ソートオプションを翻訳キーから動的に生成
+  const sortOptions = useMemo(() => {
+    const valueToKeyMap: Record<string, string> = {
+      created_at_desc: 'createdAtDesc',
+      created_at_asc: 'createdAtAsc',
+      name_asc: 'nameAsc',
+      name_desc: 'nameDesc',
+      rating_desc: 'ratingDesc',
+      rating_asc: 'ratingAsc',
+      price_asc: 'priceAsc',
+      price_desc: 'priceDesc',
+    };
+    return STUDIO_SORT_OPTIONS.map(option => ({
+      ...option,
+      label: t(`sort.${valueToKeyMap[option.value]}` as string),
+    }));
+  }, [t]);
 
   // 初期表示時に自動で検索を実行
   useEffect(() => {
@@ -66,7 +87,7 @@ export default function StudiosPage() {
   return (
     <AuthenticatedLayout>
       <PageTitleHeader
-        title="スタジオ一覧"
+        title={t('title')}
         icon={<BuildingIcon className="h-6 w-6" />}
         actions={
           <Link href="/studios/create">
@@ -75,7 +96,7 @@ export default function StudiosPage() {
               variant="cta"
             >
               <PlusIcon className="w-4 h-4" />
-              新しいスタジオを追加
+              {t('addNew')}
             </Button>
           </Link>
         }
@@ -87,10 +108,10 @@ export default function StudiosPage() {
             {/* キーワード検索 */}
             <div>
               <label className="text-sm font-medium text-theme-text-primary">
-                キーワード
+                {t('keyword')}
               </label>
               <Input
-                placeholder="スタジオ名、住所で検索"
+                placeholder={t('keywordPlaceholder')}
                 value={filters.query || ''}
                 onChange={e => handleSearchChange('query', e.target.value)}
               />
@@ -99,20 +120,22 @@ export default function StudiosPage() {
             {/* 都道府県 */}
             <div>
               <label className="text-sm font-medium text-theme-text-primary">
-                都道府県
+                {t('prefecture')}
               </label>
               <Select
-                value={filters.prefecture || ''}
-                onValueChange={value => handleSearchChange('prefecture', value)}
+                value={filters.prefecture || 'all'}
+                onValueChange={value =>
+                  handleSearchChange('prefecture', value === 'all' ? '' : value)
+                }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="都道府県を選択" />
+                  <SelectValue placeholder={t('prefecturePlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">すべて</SelectItem>
-                  {PREFECTURES.map(prefecture => (
-                    <SelectItem key={prefecture} value={prefecture}>
-                      {prefecture}
+                  <SelectItem value="all">{t('all')}</SelectItem>
+                  {PREFECTURE_KEYS.map(key => (
+                    <SelectItem key={key} value={key}>
+                      {tPrefecture(key)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -122,7 +145,7 @@ export default function StudiosPage() {
             {/* ソート */}
             <div>
               <label className="text-sm font-medium text-theme-text-primary">
-                並び順
+                {t('sortBy')}
               </label>
               <Select
                 value={`${filters.sort_by}_${filters.sort_order}`}
@@ -144,7 +167,7 @@ export default function StudiosPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {STUDIO_SORT_OPTIONS.map(option => (
+                  {sortOptions.map(option => (
                     <SelectItem key={option.value} value={option.value}>
                       {option.label}
                     </SelectItem>
@@ -161,14 +184,14 @@ export default function StudiosPage() {
                 variant="accent"
               >
                 <MagnifyingGlassIcon className="w-4 h-4 mr-2" />
-                検索
+                {t('search')}
               </Button>
               <Button
                 variant="outline"
                 onClick={handleReset}
                 className="flex-1"
               >
-                リセット
+                {t('reset')}
               </Button>
             </div>
           </div>

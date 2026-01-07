@@ -682,18 +682,12 @@ export function UserScheduleManager({
   return (
     <div>
       {/* 閲覧専用の案内 */}
-      <Alert className="mb-4">
-        <AlertCircle className="h-5 w-5 text-blue-500 mt-0.5" />
-        <AlertDescription className="flex flex-col sm:flex-row sm:items-center gap-2">
-          <span>このページではスケジュールの確認のみ可能です。</span>
-          {isOwnProfile && (
-            <Link
-              href="/calendar"
-              className="text-blue-600 hover:underline font-medium"
-            >
-              空き時間の編集はカレンダーページへ →
-            </Link>
-          )}
+      <Alert className="py-2">
+        <AlertCircle className="h-5 w-5 text-blue-500" />
+        <AlertDescription className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mt-3">
+          <span className="flex-1">
+            このページではスケジュールの確認のみ可能です。
+          </span>
         </AlertDescription>
       </Alert>
 
@@ -703,6 +697,15 @@ export function UserScheduleManager({
           <CardTitle className="flex items-center gap-2 text-base lg:text-lg">
             <Calendar className="h-4 w-4 lg:h-5 lg:w-5" />
             スケジュールカレンダー
+            {isOwnProfile && (
+              <div className="flex items-center justify-end">
+                <Link href="/calendar">
+                  <Button variant="navigation" size="sm">
+                    空き時間の編集はカレンダーページへ →
+                  </Button>
+                </Link>
+              </div>
+            )}
           </CardTitle>
         </CardHeader>
         <CardContent className="p-2 sm:p-6 sm:pt-0 overflow-hidden">
@@ -948,15 +951,16 @@ export function UserScheduleManager({
                       {/* アクションボタン */}
                       <div className="flex flex-col sm:flex-row gap-2">
                         <Button
-                          variant="accent"
+                          variant="cta"
+                          className="w-full sm:w-auto"
                           onClick={() => setIsCreating(true)}
                         >
-                          <Plus className="h-4 w-4 mr-2" />
+                          <Plus className="h-4 w-4" />
                           空き時間を追加
                         </Button>
                         {getSelectedDateSlots().length > 0 && (
                           <Button variant="outline">
-                            <Copy className="h-4 w-4 mr-2" />
+                            <Copy className="h-4 w-4" />
                             他の日に複製
                           </Button>
                         )}

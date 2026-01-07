@@ -4,6 +4,7 @@ import {
   executeQuery,
   executeParallelQueries,
 } from '@/lib/supabase/query-wrapper';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 // プロフィールデータの型定義
 export interface ProfileData {
@@ -47,12 +48,31 @@ async function fetchProfile(userId: string): Promise<ProfileData> {
   );
 }
 
+// UUID形式の簡易バリデーション
+function isValidUUID(uuid: string): boolean {
+  if (!uuid || uuid.trim() === '') return false;
+  // UUID v4形式の簡易チェック
+  const uuidRegex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(uuid);
+}
+
 // フォロー統計取得関数
 async function fetchFollowStats(
   userId: string,
   currentUserId: string
 ): Promise<FollowStats> {
-  const results = await executeParallelQueries({
+  // currentUserIdが無効な場合は、フォロー状態チェックをスキップ
+  const shouldCheckFollowStatus = isValidUUID(currentUserId);
+
+  const queries: Record<
+    string,
+    {
+      operation: string;
+      queryBuilder: (supabase: SupabaseClient) => PromiseLike<unknown>;
+      options: { detailed: boolean };
+    }
+  > = {
     followersData: {
       operation: 'fetchFollowersCount',
       queryBuilder: supabase =>
@@ -73,7 +93,11 @@ async function fetchFollowStats(
           .single(),
       options: { detailed: false },
     },
-    isFollowingData: {
+  };
+
+  // currentUserIdが有効な場合のみフォロー状態をチェック
+  if (shouldCheckFollowStatus) {
+    queries.isFollowingData = {
       operation: 'checkFollowStatus',
       queryBuilder: supabase =>
         supabase
@@ -84,8 +108,10 @@ async function fetchFollowStats(
           .eq('status', 'accepted')
           .maybeSingle(),
       options: { detailed: false },
-    },
-  });
+    };
+  }
+
+  const results = await executeParallelQueries(queries);
 
   const { followersData, followingData, isFollowingData } = results;
 
@@ -96,11 +122,15 @@ async function fetchFollowStats(
     following_count:
       (followingData as { following_count?: number } | null)?.following_count ||
       0,
-    is_following: !!(isFollowingData as { status?: string } | null)?.status,
-    follow_status: (isFollowingData as { status?: string } | null)?.status as
-      | 'accepted'
-      | 'pending'
-      | undefined,
+    is_following: shouldCheckFollowStatus
+      ? !!(isFollowingData as { status?: string } | null)?.status
+      : false,
+    follow_status: shouldCheckFollowStatus
+      ? ((isFollowingData as { status?: string } | null)?.status as
+          | 'accepted'
+          | 'pending'
+          | undefined)
+      : undefined,
     is_mutual_follow: false, // 後で実装
   };
 }

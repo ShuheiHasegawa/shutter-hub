@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { sanitizeHtml } from '@/lib/utils/sanitize';
 
 interface PrivacyPageProps {
   params: Promise<{
@@ -204,7 +205,7 @@ export default async function PrivacyPage({ params }: PrivacyPageProps) {
           <div
             className="prose prose-gray dark:prose-invert max-w-none"
             dangerouslySetInnerHTML={{
-              __html: document.content.replace(/\n/g, '<br />'),
+              __html: sanitizeHtml(document.content.replace(/\n/g, '<br />')),
             }}
           />
         </CardContent>

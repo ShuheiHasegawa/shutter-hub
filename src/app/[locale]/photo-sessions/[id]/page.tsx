@@ -47,17 +47,28 @@ export default async function PhotoSessionPage({
         .eq('is_active', true)
         .order('slot_number'),
 
-      // ユーザーの既存予約を取得（ログインしている場合のみ）
-      // checked_in_at, checked_out_atも取得
+      // ユーザーの既存予約を取得（ログインしている場合のみ、複数予約対応）
+      // スロット情報も含める
       user
         ? supabase
             .from('bookings')
-            .select('*, slot_id, checked_in_at, checked_out_at')
+            .select(
+              `
+              *,
+              slot:photo_session_slots(
+                id,
+                slot_number,
+                start_time,
+                end_time,
+                price_per_person
+              )
+            `
+            )
             .eq('photo_session_id', id)
             .eq('user_id', user.id)
             .in('status', ['confirmed', 'pending'])
-            .maybeSingle()
-        : Promise.resolve({ data: null, error: null }),
+            .order('created_at', { ascending: false })
+        : Promise.resolve({ data: [], error: null }),
 
       // スタジオ情報を取得
       supabase
@@ -82,8 +93,14 @@ export default async function PhotoSessionPage({
 
   const session = sessionResult.data;
   const slots = slotsResult.data || [];
-  const userBooking = userBookingResult.data;
+  const userBookings = userBookingResult.data || [];
   const studioData = studioResult.data;
+
+  // 後方互換性のため、最初の予約をuserBookingとして保持
+  const userBooking =
+    Array.isArray(userBookings) && userBookings.length > 0
+      ? userBookings[0]
+      : null;
 
   // スタジオ情報を整形
   const studio = studioData?.studios

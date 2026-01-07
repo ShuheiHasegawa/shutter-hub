@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { logger } from '@/lib/utils/logger';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -56,11 +57,7 @@ export function PhotoSessionAdminLotteryEntry({
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [applicationMessage, setApplicationMessage] = useState('');
 
-  useEffect(() => {
-    loadData();
-  }, [adminLotterySessionId, user]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setIsLoadingData(true);
     try {
       // 管理抽選撮影会の詳細を取得
@@ -86,7 +83,11 @@ export function PhotoSessionAdminLotteryEntry({
     } finally {
       setIsLoadingData(false);
     }
-  };
+  }, [adminLotterySessionId, user]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const handleEntry = async () => {
     if (!user || !adminLotterySession) {
@@ -151,12 +152,12 @@ export function PhotoSessionAdminLotteryEntry({
     return (
       <Card className="w-full">
         <CardContent className="p-6">
-          <div className="animate-pulse space-y-4">
-            <div className="h-6 bg-gray-200 rounded w-3/4"></div>
-            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+          <div className="space-y-4">
+            <Skeleton className="h-6 w-3/4" />
+            <Skeleton className="h-4 w-1/2" />
             <div className="space-y-2">
-              <div className="h-4 bg-gray-200 rounded"></div>
-              <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-5/6" />
             </div>
           </div>
         </CardContent>

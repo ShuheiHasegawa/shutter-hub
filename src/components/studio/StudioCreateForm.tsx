@@ -8,20 +8,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { createStudioAction } from '@/app/actions/studio';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
-import { PREFECTURES } from '@/constants/japan';
 import { VALIDATION } from '@/constants/common';
+import { PrefectureSelect } from '@/components/ui/prefecture-select';
 import dynamic from 'next/dynamic';
 import {
   ActionBar,
@@ -271,20 +264,10 @@ export function StudioCreateForm({ onSuccess }: StudioCreateFormProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="prefecture">都道府県 *</Label>
-                <Select
+                <PrefectureSelect
+                  value={form.watch('prefecture')}
                   onValueChange={value => form.setValue('prefecture', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="都道府県を選択" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {PREFECTURES.map(prefecture => (
-                      <SelectItem key={prefecture} value={prefecture}>
-                        {prefecture}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                />
                 {form.formState.errors.prefecture && (
                   <p className="text-red-500 text-sm mt-1">
                     {form.formState.errors.prefecture.message}

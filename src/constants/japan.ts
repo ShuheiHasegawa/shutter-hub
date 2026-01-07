@@ -3,8 +3,68 @@
  */
 
 /**
- * 日本の都道府県一覧
+ * 都道府県キー（英語）の定義
  * JIS X 0401（都道府県コード）の順序で配列
+ */
+export const PREFECTURE_KEYS = [
+  'hokkaido',
+  'aomori',
+  'iwate',
+  'miyagi',
+  'akita',
+  'yamagata',
+  'fukushima',
+  'ibaraki',
+  'tochigi',
+  'gunma',
+  'saitama',
+  'chiba',
+  'tokyo',
+  'kanagawa',
+  'niigata',
+  'toyama',
+  'ishikawa',
+  'fukui',
+  'yamanashi',
+  'nagano',
+  'gifu',
+  'shizuoka',
+  'aichi',
+  'mie',
+  'shiga',
+  'kyoto',
+  'osaka',
+  'hyogo',
+  'nara',
+  'wakayama',
+  'tottori',
+  'shimane',
+  'okayama',
+  'hiroshima',
+  'yamaguchi',
+  'tokushima',
+  'kagawa',
+  'ehime',
+  'kochi',
+  'fukuoka',
+  'saga',
+  'nagasaki',
+  'kumamoto',
+  'oita',
+  'miyazaki',
+  'kagoshima',
+  'okinawa',
+] as const;
+
+/**
+ * 都道府県キーの型定義
+ */
+export type PrefectureKey = (typeof PREFECTURE_KEYS)[number];
+
+/**
+ * 日本の都道府県一覧（日本語名）
+ * JIS X 0401（都道府県コード）の順序で配列
+ * @deprecated 後方互換性のため残しています。新規コードでは PREFECTURE_KEYS を使用してください。
  */
 export const PREFECTURES = [
   '北海道',
@@ -57,9 +117,116 @@ export const PREFECTURES = [
 ] as const;
 
 /**
- * 都道府県の型定義
+ * 都道府県の型定義（日本語名）
+ * @deprecated 後方互換性のため残しています。新規コードでは PrefectureKey を使用してください。
  */
 export type Prefecture = (typeof PREFECTURES)[number];
+
+/**
+ * 日本語名 → キー の変換マップ（既存データ対応）
+ */
+export const PREFECTURE_JA_TO_KEY: Record<string, PrefectureKey> = {
+  北海道: 'hokkaido',
+  青森県: 'aomori',
+  岩手県: 'iwate',
+  宮城県: 'miyagi',
+  秋田県: 'akita',
+  山形県: 'yamagata',
+  福島県: 'fukushima',
+  茨城県: 'ibaraki',
+  栃木県: 'tochigi',
+  群馬県: 'gunma',
+  埼玉県: 'saitama',
+  千葉県: 'chiba',
+  東京都: 'tokyo',
+  神奈川県: 'kanagawa',
+  新潟県: 'niigata',
+  富山県: 'toyama',
+  石川県: 'ishikawa',
+  福井県: 'fukui',
+  山梨県: 'yamanashi',
+  長野県: 'nagano',
+  岐阜県: 'gifu',
+  静岡県: 'shizuoka',
+  愛知県: 'aichi',
+  三重県: 'mie',
+  滋賀県: 'shiga',
+  京都府: 'kyoto',
+  大阪府: 'osaka',
+  兵庫県: 'hyogo',
+  奈良県: 'nara',
+  和歌山県: 'wakayama',
+  鳥取県: 'tottori',
+  島根県: 'shimane',
+  岡山県: 'okayama',
+  広島県: 'hiroshima',
+  山口県: 'yamaguchi',
+  徳島県: 'tokushima',
+  香川県: 'kagawa',
+  愛媛県: 'ehime',
+  高知県: 'kochi',
+  福岡県: 'fukuoka',
+  佐賀県: 'saga',
+  長崎県: 'nagasaki',
+  熊本県: 'kumamoto',
+  大分県: 'oita',
+  宮崎県: 'miyazaki',
+  鹿児島県: 'kagoshima',
+  沖縄県: 'okinawa',
+};
+
+/**
+ * キー → 日本語名 の変換マップ（後方互換性）
+ */
+export const PREFECTURE_KEY_TO_JA: Record<PrefectureKey, string> = {
+  hokkaido: '北海道',
+  aomori: '青森県',
+  iwate: '岩手県',
+  miyagi: '宮城県',
+  akita: '秋田県',
+  yamagata: '山形県',
+  fukushima: '福島県',
+  ibaraki: '茨城県',
+  tochigi: '栃木県',
+  gunma: '群馬県',
+  saitama: '埼玉県',
+  chiba: '千葉県',
+  tokyo: '東京都',
+  kanagawa: '神奈川県',
+  niigata: '新潟県',
+  toyama: '富山県',
+  ishikawa: '石川県',
+  fukui: '福井県',
+  yamanashi: '山梨県',
+  nagano: '長野県',
+  gifu: '岐阜県',
+  shizuoka: '静岡県',
+  aichi: '愛知県',
+  mie: '三重県',
+  shiga: '滋賀県',
+  kyoto: '京都府',
+  osaka: '大阪府',
+  hyogo: '兵庫県',
+  nara: '奈良県',
+  wakayama: '和歌山県',
+  tottori: '鳥取県',
+  shimane: '島根県',
+  okayama: '岡山県',
+  hiroshima: '広島県',
+  yamaguchi: '山口県',
+  tokushima: '徳島県',
+  kagawa: '香川県',
+  ehime: '愛媛県',
+  kochi: '高知県',
+  fukuoka: '福岡県',
+  saga: '佐賀県',
+  nagasaki: '長崎県',
+  kumamoto: '熊本県',
+  oita: '大分県',
+  miyazaki: '宮崎県',
+  kagoshima: '鹿児島県',
+  okinawa: '沖縄県',
+};
 
 /**
  * 地域別の都道府県グループ

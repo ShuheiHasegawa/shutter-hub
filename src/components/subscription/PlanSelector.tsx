@@ -23,6 +23,7 @@ import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/utils/logger';
 import { PlanChangeConfirmDialog } from './PlanChangeConfirmDialog';
 import { FormattedPrice } from '@/components/ui/formatted-display';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface PlanSelectorProps {
   userType: 'model' | 'photographer' | 'organizer';
@@ -397,24 +398,37 @@ export function PlanSelector({ userType }: PlanSelectorProps) {
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {[...Array(3)].map((_, i) => (
-          <Card key={i} className="animate-pulse h-[520px] flex flex-col">
-            <CardHeader className="space-y-2">
-              <div className="h-6 bg-gray-200 rounded"></div>
-              <div className="h-4 bg-gray-200 rounded"></div>
-            </CardHeader>
-            <CardContent className="flex-1 flex flex-col space-y-3">
-              <div className="h-8 bg-gray-200 rounded"></div>
-              <div className="flex-1 space-y-2">
-                {[...Array(4)].map((_, j) => (
-                  <div key={j} className="h-4 bg-gray-200 rounded"></div>
-                ))}
-              </div>
-              <div className="h-10 bg-gray-200 rounded mt-auto"></div>
-            </CardContent>
-          </Card>
-        ))}
+      <div className="space-y-6">
+        <div className="text-center space-y-2">
+          <Skeleton className="h-8 w-48 mx-auto" />
+          <Skeleton className="h-5 w-64 mx-auto" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[...Array(3)].map((_, i) => (
+            <Card key={i} className="h-[520px] flex flex-col">
+              <CardHeader className="space-y-4 text-center">
+                <Skeleton className="h-6 w-32 mx-auto" />
+                <div className="space-y-1">
+                  <Skeleton className="h-8 w-24 mx-auto" />
+                  <Skeleton className="h-4 w-40 mx-auto" />
+                </div>
+              </CardHeader>
+              <CardContent className="flex-1 flex flex-col space-y-4">
+                <ul className="space-y-2 flex-1">
+                  {[...Array(4)].map((_, j) => (
+                    <li key={j} className="flex items-center space-x-2">
+                      <Skeleton className="h-4 w-4 rounded" />
+                      <Skeleton className="h-4 flex-1" />
+                    </li>
+                  ))}
+                </ul>
+                <div className="pt-4 mt-auto">
+                  <Skeleton className="h-10 w-full rounded-md" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     );
   }
@@ -443,7 +457,7 @@ export function PlanSelector({ userType }: PlanSelectorProps) {
           return (
             <Card
               key={plan.id}
-              className={`relative transition-all duration-200 h-[520px] flex flex-col ${
+              className={`relative transition-all duration-200 h-[520px] flex flex-col p-2 ${
                 isCurrentPlan
                   ? 'ring-2 ring-primary shadow-lg'
                   : 'hover:shadow-md'
@@ -465,13 +479,17 @@ export function PlanSelector({ userType }: PlanSelectorProps) {
                 </Badge>
               )}
 
-              <CardHeader className="text-center space-y-4">
-                <div className="flex items-center justify-center space-x-2">
-                  {getPlanIcon(plan.tier)}
-                  <CardTitle className="text-xl">{plan.name}</CardTitle>
+              <CardHeader className="text-center h-[200px] flex flex-col justify-start pt-6 pb-4">
+                {/* プラン名（アイコン + タイトル） */}
+                <div className="h-12 flex items-center justify-center mb-4">
+                  <div className="flex items-center justify-center space-x-2">
+                    {getPlanIcon(plan.tier)}
+                    <CardTitle className="text-xl">{plan.name}</CardTitle>
+                  </div>
                 </div>
 
-                <div className="space-y-1">
+                {/* 料金 */}
+                <div className="h-16 flex items-center justify-center mb-4">
                   <div className="text-3xl font-bold">
                     {isFreePlan ? (
                       '無料'
@@ -484,27 +502,50 @@ export function PlanSelector({ userType }: PlanSelectorProps) {
                       </>
                     )}
                   </div>
-                  {plan.description && (
+                </div>
+
+                {/* 説明文 */}
+                <div className="h-10 flex items-center justify-center">
+                  {plan.description ? (
                     <CardDescription className="text-sm">
                       {plan.description}
                     </CardDescription>
+                  ) : (
+                    <div className="text-sm text-muted-foreground opacity-0">
+                      &nbsp;
+                    </div>
                   )}
                 </div>
               </CardHeader>
 
-              <CardContent className="flex-1 flex flex-col space-y-4">
+              <CardContent className="flex-1 flex flex-col h-[280px] pb-6">
                 {/* 機能リスト */}
-                <ul className="space-y-2 flex-1">
-                  {features.map((feature, index) => (
-                    <li
-                      key={index}
-                      className="flex items-center space-x-2 text-sm"
-                    >
-                      <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
+                <div className="flex-1 flex flex-col justify-start mb-4">
+                  <ul className="space-y-2">
+                    {features.slice(0, 4).map((feature, index) => (
+                      <li
+                        key={index}
+                        className="flex items-center space-x-2 text-sm h-6"
+                      >
+                        <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
+                        <span className="line-clamp-1">{feature}</span>
+                      </li>
+                    ))}
+                    {/* 機能が4つ未満の場合、空のスペースを確保 */}
+                    {features.length < 4 &&
+                      Array.from({ length: 4 - features.length }).map(
+                        (_, index) => (
+                          <li
+                            key={`empty-${index}`}
+                            className="h-6 opacity-0"
+                            aria-hidden="true"
+                          >
+                            <span>&nbsp;</span>
+                          </li>
+                        )
+                      )}
+                  </ul>
+                </div>
 
                 {/* アクションボタン */}
                 <div className="pt-4 mt-auto">

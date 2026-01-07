@@ -1,6 +1,5 @@
 import { Skeleton } from '@/components/ui/skeleton';
-import { Card, CardContent } from '@/components/ui/card';
-import { Heart } from 'lucide-react';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 
 export function FavoritesLoading() {
   return (
@@ -8,7 +7,6 @@ export function FavoritesLoading() {
       {/* ヘッダー */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-4">
-          <Heart className="h-8 w-8 text-pink-600" />
           <div>
             <Skeleton className="h-9 w-48 mb-2" />
             <Skeleton className="h-5 w-64" />
@@ -41,33 +39,69 @@ export function FavoritesLoading() {
 
       {/* タブ */}
       <div className="space-y-6">
-        <div className="grid w-full grid-cols-3 bg-theme-neutral/10 p-1 rounded-lg">
-          {[...Array(3)].map((_, i) => (
+        <div className="grid w-full grid-cols-2 bg-theme-neutral/10 p-1 rounded-lg">
+          {[...Array(2)].map((_, i) => (
             <Skeleton key={i} className="h-10 rounded-md" />
           ))}
         </div>
 
-        {/* コンテンツグリッド */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* コンテンツ（StudioCardの構造に合わせる） */}
+        <div className="space-y-3 md:space-y-4 pb-8">
           {[...Array(6)].map((_, i) => (
             <Card key={i} className="overflow-hidden">
-              <div className="aspect-video relative bg-theme-neutral/10">
-                <Skeleton className="w-full h-full" />
-                {/* お気に入りボタン */}
-                <div className="absolute top-4 right-4">
-                  <Skeleton className="h-9 w-9 rounded-full" />
+              <CardHeader className="p-0">
+                {/* メイン画像 */}
+                <div className="aspect-video relative bg-theme-neutral/10 rounded-t-lg overflow-hidden">
+                  <Skeleton className="w-full h-full" />
+                  {/* バッジ（左上） */}
+                  <div className="absolute top-2 left-2 flex gap-2">
+                    <Skeleton className="h-5 w-16 rounded-full" />
+                  </div>
+                  {/* お気に入りボタン（右上） */}
+                  <div className="absolute top-2 right-2">
+                    <Skeleton className="h-9 w-9 rounded-full" />
+                  </div>
                 </div>
-              </div>
-              <CardContent className="p-4 space-y-3">
-                <Skeleton className="h-6 w-full" />
-                <Skeleton className="h-4 w-3/4" />
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-2/3" />
+              </CardHeader>
+              <CardContent className="p-4">
+                {/* スタジオ名 */}
+                <Skeleton className="h-6 w-full mb-2" />
+
+                {/* 基本情報 */}
+                <div className="space-y-2 mb-4">
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-4 w-4 rounded" />
+                    <Skeleton className="h-4 w-3/4" />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-4 w-4 rounded" />
+                    <Skeleton className="h-4 w-32" />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-4 w-4 rounded" />
+                    <Skeleton className="h-4 w-40" />
+                  </div>
                 </div>
-                <div className="flex justify-between">
-                  <Skeleton className="h-4 w-16" />
+
+                {/* 評価 */}
+                <div className="flex items-center gap-2 mb-3">
                   <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-4 w-24" />
+                </div>
+
+                {/* 設備アイコン */}
+                <div className="flex items-center gap-3 mb-4">
+                  <Skeleton className="h-4 w-16" />
+                  <Skeleton className="h-4 w-12" />
+                </div>
+
+                {/* 統計情報 */}
+                <div className="space-y-1 border-t border-theme-neutral/20 pt-4">
+                  <div className="flex justify-between">
+                    <Skeleton className="h-3 w-20" />
+                    <Skeleton className="h-3 w-20" />
+                  </div>
+                  <Skeleton className="h-3 w-32" />
                 </div>
               </CardContent>
             </Card>

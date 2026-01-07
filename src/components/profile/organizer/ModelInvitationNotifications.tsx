@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -205,7 +206,9 @@ export function ModelInvitationNotifications({
           <Badge
             variant="secondary"
             className={`${
-              isExpiring(expiresAt) ? 'brand-warning' : 'brand-info'
+              isExpiring(expiresAt)
+                ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
             }`}
           >
             <Clock className="h-3 w-3 mr-1" />
@@ -214,14 +217,14 @@ export function ModelInvitationNotifications({
         );
       case 'accepted':
         return (
-          <Badge variant="default" className="brand-success">
+          <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
             <CheckCircle className="h-3 w-3 mr-1" />
             承認済み
           </Badge>
         );
       case 'rejected':
         return (
-          <Badge variant="destructive" className="brand-error">
+          <Badge variant="destructive">
             <XCircle className="h-3 w-3 mr-1" />
             拒否済み
           </Badge>
@@ -246,9 +249,9 @@ export function ModelInvitationNotifications({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="animate-pulse space-y-4">
+          <div className="space-y-4">
             {Array.from({ length: 2 }).map((_, i) => (
-              <div key={i} className="h-20 rounded"></div>
+              <Skeleton key={i} className="h-20 w-full" />
             ))}
           </div>
         </CardContent>
@@ -282,7 +285,7 @@ export function ModelInvitationNotifications({
               className={`${
                 invitation.status === 'pending' &&
                 isExpiring(invitation.expires_at)
-                  ? 'brand-warning'
+                  ? 'border-yellow-300 bg-yellow-50 dark:border-yellow-700 dark:bg-yellow-950'
                   : ''
               }`}
             >
@@ -308,9 +311,9 @@ export function ModelInvitationNotifications({
 
                     {/* 招待メッセージ */}
                     {invitation.invitation_message && (
-                      <div className="mb-3 p-3 brand-info rounded-lg">
+                      <div className="mb-3 p-3 bg-blue-50 border border-blue-200 dark:bg-blue-950 dark:border-blue-800 rounded-lg">
                         <div className="flex items-start gap-2">
-                          <MessageSquare className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                          <MessageSquare className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
                           <div>
                             <p className="text-sm font-medium mb-1">
                               招待メッセージ
@@ -365,10 +368,10 @@ export function ModelInvitationNotifications({
                       !isExpired(invitation.expires_at) && (
                         <div className="flex gap-2 mt-4">
                           <Button
+                            variant="cta"
                             size="sm"
                             onClick={() => handleAccept(invitation.id)}
                             disabled={actionLoading[invitation.id]}
-                            className="brand-success"
                           >
                             <CheckCircle className="h-4 w-4 mr-1" />
                             {actionLoading[invitation.id]
@@ -387,12 +390,11 @@ export function ModelInvitationNotifications({
                           >
                             <DialogTrigger asChild>
                               <Button
-                                variant="outline"
+                                variant="destructive"
                                 size="sm"
                                 onClick={() =>
                                   setShowRejectDialog(invitation.id)
                                 }
-                                className="brand-error"
                               >
                                 <XCircle className="h-4 w-4 mr-1" />
                                 拒否
@@ -425,7 +427,7 @@ export function ModelInvitationNotifications({
                               </div>
                               <DialogFooter>
                                 <Button
-                                  variant="cta"
+                                  variant="navigation"
                                   onClick={() => {
                                     setShowRejectDialog(null);
                                     setRejectionReason('');
@@ -434,7 +436,7 @@ export function ModelInvitationNotifications({
                                   キャンセル
                                 </Button>
                                 <Button
-                                  variant="destructive"
+                                  variant="neutral"
                                   onClick={() => handleReject(invitation.id)}
                                   disabled={actionLoading[invitation.id]}
                                 >

@@ -14,6 +14,7 @@ import {
   StudioEditHistory,
 } from '@/types/database';
 import { DEFAULT_STUDIO_SEARCH } from '@/constants/studio';
+import { normalizePrefecture } from '@/lib/utils/prefecture';
 
 // =============================================================================
 // スタジオ一覧・検索
@@ -137,6 +138,7 @@ export async function getStudiosAction(
 
         return {
           ...studio,
+          prefecture: normalizePrefecture(studio.prefecture) || '',
           featuredPhotos,
           equipment_count: 0, // TODO: 実際のカウント
           photo_count: photos.length,
@@ -265,7 +267,7 @@ export async function getStudioForAutoFillAction(studioId: string): Promise<{
         id: data.id,
         name: data.name,
         address: data.address,
-        prefecture: data.prefecture,
+        prefecture: normalizePrefecture(data.prefecture) || undefined,
         city: data.city,
         access_info: data.access_info || undefined,
       },
@@ -404,6 +406,7 @@ export async function getStudioDetailAction(studioId: string): Promise<{
 
     const studioWithStats: StudioWithStats = {
       ...studio,
+      prefecture: normalizePrefecture(studio.prefecture),
       featuredPhotos,
       equipment_count: equipment?.length || 0,
       photo_count: photos?.length || 0,
