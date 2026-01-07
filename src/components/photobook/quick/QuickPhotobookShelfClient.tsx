@@ -162,7 +162,7 @@ export function QuickPhotobookShelfClient({
                       </span>
                     </div>
 
-                    <div className="flex items-center text-xs brand-success">
+                    <div className="flex items-center text-xs text-success">
                       {photobook.is_published ? (
                         <>
                           <Eye className="h-3 w-3 mr-1" />

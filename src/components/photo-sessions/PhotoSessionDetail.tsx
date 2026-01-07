@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { UserProfileDisplay } from '@/components/ui/user-profile-display';
 import { ClickableText } from '@/components/ui/clickable-text';
 import { ActionBar, ActionBarButton } from '@/components/ui/action-bar';
@@ -20,6 +21,8 @@ import {
   ShieldCheckIcon,
   CalendarPlus,
   Star,
+  CheckCircle,
+  ExternalLink,
 } from 'lucide-react';
 import { PhotoSessionWithOrganizer } from '@/types/database';
 import { PhotoSessionSlot } from '@/types/photo-session';
@@ -62,7 +65,32 @@ interface PhotoSessionDetailProps {
     checked_out_at?: string | null;
     created_at: string;
     updated_at: string;
+    slot?: {
+      id: string;
+      slot_number: number;
+      start_time: string;
+      end_time: string;
+      price_per_person: number;
+    } | null;
   } | null;
+  userBookings?: Array<{
+    id: string;
+    photo_session_id: string;
+    user_id: string;
+    status: string;
+    slot_id?: string | null;
+    checked_in_at?: string | null;
+    checked_out_at?: string | null;
+    created_at: string;
+    updated_at: string;
+    slot?: {
+      id: string;
+      slot_number: number;
+      start_time: string;
+      end_time: string;
+      price_per_person: number;
+    } | null;
+  }>;
   studio?: {
     id: string;
     name: string;
@@ -97,6 +125,7 @@ export function PhotoSessionDetail({
   session,
   slots,
   userBooking: initialUserBooking,
+  userBookings: initialUserBookings = [],
   studio: initialStudio,
 }: PhotoSessionDetailProps) {
   // #region agent log
@@ -143,6 +172,7 @@ export function PhotoSessionDetail({
   const router = useRouter();
   const { toast } = useToast();
   const t = useTranslations('photoSessions');
+  const tBooking = useTranslations('photoSessions.booking.alreadyBookedAlert');
   const locale = useLocale();
 
   const [participants, setParticipants] = useState<PhotoSessionParticipant[]>(
@@ -183,6 +213,12 @@ export function PhotoSessionDetail({
   const stableUserBooking = useMemo(
     () => initialUserBooking,
     [initialUserBooking]
+  );
+
+  // userBookingsの参照を安定化
+  const stableUserBookings = useMemo(
+    () => initialUserBookings || [],
+    [initialUserBookings]
   );
 
   // サーバーサイドで取得した予約情報を優先使用
@@ -523,21 +559,30 @@ export function PhotoSessionDetail({
   const getStatusBadge = () => {
     if (isPast) {
       return (
-        <Badge variant="destructive" className="text-sm px-3 py-1">
+        <Badge
+          variant="destructive"
+          className="text-sm px-3 py-1 whitespace-nowrap"
+        >
           終了
         </Badge>
       );
     }
     if (isOngoing) {
       return (
-        <Badge variant="outline" className="text-sm px-3 py-1">
+        <Badge
+          variant="outline"
+          className="text-sm px-3 py-1 whitespace-nowrap"
+        >
           開催中
         </Badge>
       );
     }
     if (isUpcoming) {
       return (
-        <Badge variant="outline" className="text-sm px-3 py-1">
+        <Badge
+          variant="outline"
+          className="text-sm px-3 py-1 whitespace-nowrap"
+        >
           予定
         </Badge>
       );
@@ -684,71 +729,108 @@ export function PhotoSessionDetail({
 
     const buttons: ActionBarButton[] = [];
 
-    // 抽選の場合、全てのスロットがエントリー上限に達しているかチェック
-    const allSlotsEntryFull =
-      session.booking_type === 'lottery' &&
-      lotterySession?.max_entries !== null &&
-      lotterySession?.max_entries !== undefined &&
-      lotteryEntryCount?.entries_by_slot &&
+    // 予約済み状態の判定
+    const hasBookings = stableUserBookings.length > 0;
+    const bookedSlotIds = stableUserBookings
+      .map(b => b.slot_id)
+      .filter((id): id is string => !!id);
+    const allSlotsBooked =
+      hasSlots &&
+      hasBookings &&
       slots.length > 0 &&
-      slots.every(slot => {
-        const slotEntry = lotteryEntryCount.entries_by_slot!.find(
-          e => e.slot_id === slot.id
-        );
-        return (
-          slotEntry && slotEntry.entry_count >= lotterySession.max_entries!
-        );
-      });
+      slots.every(slot => bookedSlotIds.includes(slot.id));
+    const _someSlotsBooked =
+      hasSlots &&
+      hasBookings &&
+      slots.length > 0 &&
+      slots.some(slot => bookedSlotIds.includes(slot.id));
 
-    // 予約可能な場合は予約ボタンを追加
-    if (canBook) {
-      if (hasSlots) {
+    // 一人一枠 + 予約済み、またはスロットなし + 予約済み、または全枠予約済みの場合
+    if (
+      hasBookings &&
+      ((!session.allow_multiple_bookings && hasBookings) ||
+        (!hasSlots && hasBookings) ||
+        (hasSlots && allSlotsBooked))
+    ) {
+      // 「予約詳細を見る」ボタンを表示
+      buttons.push({
+        id: 'view-booking-details',
+        label: tBooking('viewDetails'),
+        variant: 'primary',
+        onClick: () => {
+          router.push(`/${locale}/bookings`);
+        },
+        icon: <ExternalLink className="h-4 w-4" />,
+      });
+    } else {
+      // 抽選の場合、全てのスロットがエントリー上限に達しているかチェック
+      const allSlotsEntryFull =
+        session.booking_type === 'lottery' &&
+        lotterySession?.max_entries !== null &&
+        lotterySession?.max_entries !== undefined &&
+        lotteryEntryCount?.entries_by_slot &&
+        slots.length > 0 &&
+        slots.every(slot => {
+          const slotEntry = lotteryEntryCount.entries_by_slot!.find(
+            e => e.slot_id === slot.id
+          );
+          return (
+            slotEntry && slotEntry.entry_count >= lotterySession.max_entries!
+          );
+        });
+
+      // 予約可能な場合は予約ボタンを追加
+      if (canBook) {
+        if (hasSlots) {
+          // 複数枠可能 + 一部予約済みの場合も「時間枠を選択」を表示
+          // （予約フロー内で予約済み枠は選択不可になる）
+          buttons.push({
+            id: 'select-slot',
+            label: bookingLoading
+              ? '確認中...'
+              : allSlotsEntryFull
+                ? 'エントリー上限'
+                : '時間枠を選択',
+            variant: 'accent',
+            onClick: async () => {
+              const canProceed = await handleRatingCheck();
+              if (canProceed) {
+                router.push(`?step=select`, { scroll: false });
+              }
+            },
+            disabled: bookingLoading || allSlotsEntryFull,
+            icon: <Calendar className="h-4 w-4" />,
+          });
+        } else {
+          buttons.push({
+            id: 'book-now',
+            label: bookingLoading
+              ? '確認中...'
+              : isFull
+                ? 'キャンセル待ち'
+                : '予約する',
+            variant: isFull ? 'accent' : 'primary',
+            onClick: async () => {
+              const canProceed = await handleRatingCheck();
+              if (canProceed) {
+                router.push(`?step=select`, { scroll: false });
+              }
+            },
+            disabled: bookingLoading,
+            icon: <CreditCard className="h-4 w-4" />,
+          });
+        }
+      } else if (!canBook) {
+        // 予約できない場合は無効化されたボタンを表示
         buttons.push({
-          id: 'select-slot',
-          label: bookingLoading
-            ? '確認中...'
-            : allSlotsEntryFull
-              ? 'エントリー上限'
-              : '時間枠を選択',
-          variant: 'accent',
-          onClick: async () => {
-            const canProceed = await handleRatingCheck();
-            if (canProceed) {
-              router.push(`?step=select`, { scroll: false });
-            }
-          },
-          disabled: bookingLoading || allSlotsEntryFull,
+          id: 'cannot-book',
+          label: '予約不可',
+          variant: 'outline',
+          onClick: () => {}, // 何もしない
+          disabled: true,
           icon: <Calendar className="h-4 w-4" />,
         });
-      } else {
-        buttons.push({
-          id: 'book-now',
-          label: bookingLoading
-            ? '確認中...'
-            : isFull
-              ? 'キャンセル待ち'
-              : '予約する',
-          variant: isFull ? 'accent' : 'primary',
-          onClick: async () => {
-            const canProceed = await handleRatingCheck();
-            if (canProceed) {
-              router.push(`?step=select`, { scroll: false });
-            }
-          },
-          disabled: bookingLoading,
-          icon: <CreditCard className="h-4 w-4" />,
-        });
       }
-    } else if (!canBook) {
-      // 予約できない場合は無効化されたボタンを表示
-      buttons.push({
-        id: 'cannot-book',
-        label: '予約不可',
-        variant: 'outline',
-        onClick: () => {}, // 何もしない
-        disabled: true,
-        icon: <Calendar className="h-4 w-4" />,
-      });
     }
 
     // レビュー可能な場合はレビューボタンを追加（予約ボタンの下に表示）
@@ -833,17 +915,17 @@ export function PhotoSessionDetail({
                 <BackButton />
                 <CardTitle className="text-2xl">{session.title}</CardTitle>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-nowrap">
                 {/* Googleカレンダー追加ボタン */}
                 <Button
                   variant="navigation"
                   onClick={handleAddToGoogleCalendar}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 whitespace-nowrap shrink-0"
                 >
                   <CalendarPlus className="h-4 w-4" />
                   <span className="text-sm">カレンダーに追加</span>
                 </Button>
-                {getStatusBadge()}
+                <div className="shrink-0">{getStatusBadge()}</div>
               </div>
             </div>
           </CardHeader>
@@ -978,6 +1060,38 @@ export function PhotoSessionDetail({
       }
       {/* eslint-enable @typescript-eslint/no-explicit-any */}
 
+      {/* 予約済みアラート（参加者・未参加者のみ、予約がある場合） */}
+      {!isOrganizer && user && stableUserBookings.length > 0 && (
+        <Alert className="border-success/30 bg-success/10 print:hidden">
+          <CheckCircle className="h-5 w-5 text-success" />
+          <AlertTitle className="text-success font-semibold">
+            {tBooking('title')}
+          </AlertTitle>
+          <AlertDescription className="mt-2">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <span>
+                {stableUserBookings.length === 1
+                  ? tBooking('singleBooking')
+                  : tBooking('multipleBookings', {
+                      count: stableUserBookings.length,
+                    })}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  router.push(`/${locale}/bookings`);
+                }}
+                className="border-success text-success hover:bg-success/10"
+              >
+                {tBooking('viewDetails')}
+                <ExternalLink className="h-3 w-3 ml-1" />
+              </Button>
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* 参加者・未参加者向け撮影会情報 */}
       {!isOrganizer && (
         <Card className="print:hidden">
@@ -1010,17 +1124,17 @@ export function PhotoSessionDetail({
                 <BackButton />
                 <CardTitle className="text-2xl">{session.title}</CardTitle>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-nowrap">
                 {/* Googleカレンダー追加ボタン */}
                 <Button
                   variant="navigation"
                   onClick={handleAddToGoogleCalendar}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 whitespace-nowrap shrink-0"
                 >
                   <CalendarPlus className="h-4 w-4" />
                   <span className="text-sm">カレンダーに追加</span>
                 </Button>
-                {getStatusBadge()}
+                <div className="shrink-0">{getStatusBadge()}</div>
               </div>
             </div>
           </CardHeader>
@@ -1171,15 +1285,22 @@ export function PhotoSessionDetail({
                 const participationRate =
                   (slot.current_participants / slot.max_participants) * 100;
 
+                // このスロットがユーザーによって予約済みかチェック
+                const isUserBooked = stableUserBookings.some(
+                  booking => booking.slot_id === slot.id
+                );
+
                 return (
                   <div
                     key={slot.id}
                     className={`w-full p-4 sm:p-6 rounded-lg border-2 transition-all duration-200 ${
-                      isSlotFull
-                        ? 'border-error/20 bg-error/5 dark:border-error/80 dark:bg-error/20'
-                        : participationRate >= 70
-                          ? 'border-warning/30 text-warning bg-warning/10 dark:border-warning/70 dark:text-warning dark:bg-warning/30'
-                          : 'border-green-200 bg-green-50/50 dark:border-green-800 dark:bg-green-900/20'
+                      isUserBooked
+                        ? 'border-success/30 bg-success/10'
+                        : isSlotFull
+                          ? 'border-error/20 bg-error/5 dark:border-error/80 dark:bg-error/20'
+                          : participationRate >= 70
+                            ? 'border-warning/30 text-warning bg-warning/10 dark:border-warning/70 dark:text-warning dark:bg-warning/30'
+                            : 'border-green-200 bg-green-50/50 dark:border-green-800 dark:bg-green-900/20'
                     }`}
                   >
                     {/* ヘッダー部分 */}
@@ -1187,12 +1308,22 @@ export function PhotoSessionDetail({
                       <Badge variant="outline" className="font-medium">
                         枠 {index + 1}
                       </Badge>
-                      <Badge
-                        variant={isSlotFull ? 'destructive' : 'default'}
-                        className="text-sm font-medium"
-                      >
-                        {isSlotFull ? '満席' : '空きあり'}
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        {isUserBooked && (
+                          <Badge
+                            variant="outline"
+                            className="text-success border-success bg-success/10 font-medium"
+                          >
+                            {tBooking('bookedSlot')}
+                          </Badge>
+                        )}
+                        <Badge
+                          variant={isSlotFull ? 'destructive' : 'default'}
+                          className="text-sm font-medium"
+                        >
+                          {isSlotFull ? '満席' : '空きあり'}
+                        </Badge>
+                      </div>
                     </div>
 
                     {/* 抽選エントリー数表示（抽選方式の場合） */}

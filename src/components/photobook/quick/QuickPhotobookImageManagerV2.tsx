@@ -394,7 +394,7 @@ function UploadArea({
         </div>
       ) : isDisabled ? (
         <div className="space-y-2">
-          <ImageIcon className="h-8 w-8 mx-auto brand-warning" />
+          <ImageIcon className="h-8 w-8 mx-auto text-warning" />
           <p className="text-sm font-bold">
             ページ数の上限に達しています ({currentPages}/{maxPages})
           </p>
@@ -853,7 +853,15 @@ export function QuickPhotobookImageManagerV2({
     } finally {
       setIsProcessing(false);
     }
-  }, [tempImages, localSavedImages, photobookId, userId, onImagesChange]);
+  }, [
+    tempImages,
+    localSavedImages,
+    photobookId,
+    userId,
+    onImagesChange,
+    onDeleteChange,
+    pendingDeleteImages,
+  ]);
 
   // リセット処理（仮操作を元に戻す）
   const handleReset = useCallback(() => {

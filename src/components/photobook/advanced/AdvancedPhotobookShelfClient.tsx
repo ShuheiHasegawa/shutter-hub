@@ -128,7 +128,7 @@ export function AdvancedPhotobookShelfClient({
                       // logger.info('Delete photobook:', photobook.id);
                     }
                   }}
-                  className="brand-error focus:brand-error cursor-pointer"
+                  className="text-error focus:text-error cursor-pointer"
                 >
                   <Trash2 className="mr-2 h-4 w-4" />
                   削除
@@ -175,7 +175,7 @@ export function AdvancedPhotobookShelfClient({
                       </span>
                     </div>
 
-                    <div className="flex items-center text-xs brand-success">
+                    <div className="flex items-center text-xs text-success">
                       {photobook.is_published ? (
                         <>
                           <Eye className="h-3 w-3 mr-1" />
