@@ -53,8 +53,43 @@ import {
   formatDateToLocalString,
 } from '@/lib/utils/time-utils';
 import type { TimeSlot } from '@/types/user-availability';
-import { getOrganizersOfModelAction } from '@/app/actions/organizer-model';
+import {
+  getOrganizersOfModelAction,
+  getOrganizerModelsByUserIdAction,
+} from '@/app/actions/organizer-model';
 import { logger } from '@/lib/utils/logger';
+import type { OrganizerModelWithProfile } from '@/types/organizer-model';
+import { MultiSelect } from '@/components/ui/multi-select';
+import { useTranslations } from 'next-intl';
+
+// カラーパレット定義（モデルごとに異なる色）- 16色に拡張
+const MODEL_COLORS = [
+  '#a855f7', // 紫
+  '#f97316', // オレンジ
+  '#ec4899', // ピンク
+  '#06b6d4', // シアン
+  '#84cc16', // ライム
+  '#f59e0b', // アンバー
+  '#8b5cf6', // バイオレット
+  '#14b8a6', // ティール
+  '#ef4444', // レッド
+  '#3b82f6', // ブルー
+  '#10b981', // エメラルド
+  '#f43f5e', // ローズ
+  '#6366f1', // インディゴ
+  '#eab308', // イエロー
+  '#d946ef', // フクシア
+  '#0ea5e9', // スカイ
+];
+
+// モデルIDに基づいて色を割り当てる関数
+const getModelColor = (
+  modelId: string,
+  allModels: OrganizerModelWithProfile[]
+): string => {
+  const index = allModels.findIndex(m => m.model_id === modelId);
+  return MODEL_COLORS[index % MODEL_COLORS.length];
+};
 
 // カレンダーの状態変更を監視するコンポーネント
 function CalendarStateWatcher({
@@ -78,8 +113,12 @@ interface UnifiedCalendarGridProps {
   photoSessionFeatures: Feature[];
   onDateClick: (date: Date) => void;
   organizerLabelsByDay?: { [day: number]: string };
+  modelAvailabilityMap?: { [modelId: string]: { [day: number]: string } };
+  selectedModelIds?: string[];
+  organizerModels?: OrganizerModelWithProfile[];
   showUserSchedule: boolean;
   showOrganizerSchedule: boolean;
+  showModelSchedule: boolean;
   showPhotoSessions: boolean;
   onPhotoSessionClick: (featureId: string) => void;
 }
@@ -89,8 +128,12 @@ function UnifiedCalendarGrid({
   photoSessionFeatures,
   onDateClick,
   organizerLabelsByDay,
+  modelAvailabilityMap,
+  selectedModelIds,
+  organizerModels,
   showUserSchedule,
   showOrganizerSchedule,
+  showModelSchedule,
   showPhotoSessions,
   onPhotoSessionClick,
 }: UnifiedCalendarGridProps) {
@@ -234,6 +277,46 @@ function UnifiedCalendarGrid({
                                 </div>
                               )}
 
+                            {/* 所属モデルスケジュール - モデルごとに色分けして表示 */}
+                            {showModelSchedule &&
+                              selectedModelIds &&
+                              organizerModels &&
+                              selectedModelIds.map(modelId => {
+                                const modelData = organizerModels.find(
+                                  m => m.model_id === modelId
+                                );
+                                const availability =
+                                  modelAvailabilityMap?.[modelId]?.[day];
+
+                                if (!availability || !modelData) return null;
+
+                                const modelColor = getModelColor(
+                                  modelId,
+                                  organizerModels
+                                );
+                                const modelName =
+                                  modelData.model_profile?.display_name ||
+                                  'モデル';
+
+                                return (
+                                  <div
+                                    key={`model-${modelId}-${day}`}
+                                    className="relative text-xs px-0.5 py-0.5 rounded truncate"
+                                    style={{
+                                      backgroundColor: modelColor + '20',
+                                    }}
+                                  >
+                                    <div
+                                      className="absolute left-0 top-0 bottom-0 w-0.5 rounded-full"
+                                      style={{ backgroundColor: modelColor }}
+                                    />
+                                    <span className="ml-1 text-[10px] lg:text-xs truncate block">
+                                      {availability}: {modelName}
+                                    </span>
+                                  </div>
+                                );
+                              })}
+
                             {/* ユーザー空き時間 */}
                             {showUserSchedule &&
                               userFeaturesForDay.map((feature, idx) => (
@@ -298,6 +381,8 @@ export default function CalendarPage() {
   const { user, loading: authLoading } = useAuth();
   const { profile, loading: profileLoading } = useProfile();
   const router = useRouter();
+  const t = useTranslations('profile.schedule');
+  const tCommon = useTranslations('common');
 
   // 状態
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -311,10 +396,18 @@ export default function CalendarPage() {
   const [organizerLabelsByDay, setOrganizerLabelsByDay] = useState<{
     [day: number]: string;
   }>({});
+  const [organizerModels, setOrganizerModels] = useState<
+    OrganizerModelWithProfile[]
+  >([]);
+  const [selectedModelIds, setSelectedModelIds] = useState<string[]>([]);
+  const [modelAvailabilityMap, setModelAvailabilityMap] = useState<{
+    [modelId: string]: { [day: number]: string };
+  }>({});
 
   // 表示切り替え
   const [showUserSchedule, setShowUserSchedule] = useState(true);
   const [showOrganizerSchedule, setShowOrganizerSchedule] = useState(true);
+  const [showModelSchedule, setShowModelSchedule] = useState(true);
   const [showPhotoSessions, setShowPhotoSessions] = useState(true);
 
   // カレンダー月
@@ -332,6 +425,9 @@ export default function CalendarPage() {
     timestamp: number;
   } | null>(null);
   const CACHE_TTL = 60000;
+
+  // 初期選択が行われたかどうかを追跡
+  const hasInitializedModelSelection = useRef(false);
 
   // フォーム状態
   const [formData, setFormData] = useState({
@@ -362,8 +458,8 @@ export default function CalendarPage() {
         if (result.success && result.data) {
           setUserSlots(result.data);
         }
-      } catch {
-        logger.error('空き時間取得エラー');
+      } catch (error) {
+        logger.error('Availability fetch error:', error);
       } finally {
         setIsLoading(false);
       }
@@ -382,8 +478,8 @@ export default function CalendarPage() {
       if (result.success && result.data) {
         setPhotoSessions(result.data);
       }
-    } catch {
-      logger.error('撮影会データ取得エラー');
+    } catch (error) {
+      logger.error('Photo session data fetch error:', error);
     }
   }, [user, profile]);
 
@@ -411,12 +507,12 @@ export default function CalendarPage() {
         endAt: new Date(date + 'T23:59:59'),
         status: {
           id: 'user-available',
-          name: '空き時間',
+          name: t('availability'),
           color: '#3B82F6',
         },
       };
     });
-  }, [userSlots]);
+  }, [userSlots, t]);
 
   // 撮影会をFeatureに変換
   const transformSessionsToFeatures = useCallback((): Feature[] => {
@@ -427,11 +523,11 @@ export default function CalendarPage() {
       endAt: new Date(session.end_time),
       status: {
         id: session.booking_type,
-        name: session.is_full ? '満席' : '空きあり',
+        name: session.is_full ? t('full') : t('available'),
         color: session.is_full ? '#EF4444' : '#10B981',
       },
     }));
-  }, [photoSessions]);
+  }, [photoSessions, t]);
 
   // 日付クリック処理
   const handleDateClick = useCallback((date: Date) => {
@@ -455,6 +551,42 @@ export default function CalendarPage() {
     return userSlots.filter(slot => slot.date === dateStr);
   }, [selectedDate, userSlots]);
 
+  // 選択日の所属モデル空き時間取得
+  const getSelectedDateModelSlots = useCallback((): {
+    modelId: string;
+    modelName: string;
+    modelColor: string;
+    availability: string;
+  }[] => {
+    if (!selectedDate || profile?.user_type !== 'organizer') return [];
+
+    const day = selectedDate.getDate();
+
+    return organizerModels
+      .filter(model => selectedModelIds.includes(model.model_id))
+      .map(model => ({
+        modelId: model.model_id,
+        modelName: model.model_profile?.display_name || 'モデル',
+        modelColor: getModelColor(model.model_id, organizerModels),
+        availability: modelAvailabilityMap?.[model.model_id]?.[day] || '',
+      }))
+      .filter(item => item.availability); // 空き時間があるモデルのみ
+  }, [
+    selectedDate,
+    profile?.user_type,
+    organizerModels,
+    selectedModelIds,
+    modelAvailabilityMap,
+  ]);
+
+  // 選択日の所属運営空き時間取得（モデル側）
+  const getSelectedDateOrganizerSlots = useCallback((): string | null => {
+    if (!selectedDate || profile?.user_type !== 'model') return null;
+
+    const day = selectedDate.getDate();
+    return organizerLabelsByDay[day] || null;
+  }, [selectedDate, profile?.user_type, organizerLabelsByDay]);
+
   // 時間枠追加
   const handleAddSlot = useCallback(async () => {
     if (!selectedDate) return;
@@ -475,13 +607,13 @@ export default function CalendarPage() {
       });
 
       if (result.success) {
-        toast.success('空き時間を追加しました');
+        toast.success(t('addAvailabilitySuccess'));
         await loadUserAvailability(displayMonth, displayYear);
         setFormData({ startTime: '10:00', endTime: '18:00', notes: '' });
         setIsCreating(false);
         setShowModal(false);
       } else {
-        toast.error(result.error || '追加に失敗しました');
+        toast.error(result.error || t('addFailed'));
       }
     } catch {
       toast.error('予期しないエラーが発生しました');
@@ -498,10 +630,10 @@ export default function CalendarPage() {
         const result = await deleteUserAvailability(slotId);
 
         if (result.success) {
-          toast.success('空き時間を削除しました');
+          toast.success(t('deleteAvailabilitySuccess'));
           await loadUserAvailability(displayMonth, displayYear);
         } else {
-          toast.error(result.error || '削除に失敗しました');
+          toast.error(result.error || t('deleteFailed'));
         }
       } catch {
         toast.error('予期しないエラーが発生しました');
@@ -611,6 +743,81 @@ export default function CalendarPage() {
 
       loadOrganizerData();
     }
+
+    // 運営者の場合、所属モデルのスケジュールを取得
+    if (profile.user_type === 'organizer') {
+      const loadModelData = async () => {
+        try {
+          const modelsRes = await getOrganizerModelsByUserIdAction(user.id);
+
+          if (
+            modelsRes.success &&
+            modelsRes.data &&
+            Array.isArray(modelsRes.data) &&
+            modelsRes.data.length > 0
+          ) {
+            setOrganizerModels(modelsRes.data);
+
+            const monthStart = new Date(displayYear, displayMonth, 1);
+            const monthEnd = new Date(displayYear, displayMonth + 1, 0);
+            const supabase = await (
+              await import('@/lib/supabase/client')
+            ).createClient();
+
+            // モデルごとに空き時間を取得し、個別に管理
+            const modelAvailabilityData: typeof modelAvailabilityMap = {};
+
+            for (const model of modelsRes.data) {
+              const { data: slots } = await supabase
+                .from('user_availability')
+                .select('available_date, start_time_minutes, end_time_minutes')
+                .eq('user_id', model.model_id)
+                .eq('is_active', true)
+                .gte('available_date', monthStart.toISOString().split('T')[0])
+                .lte('available_date', monthEnd.toISOString().split('T')[0]);
+
+              const labels: { [day: number]: string } = {};
+              (slots || []).forEach(
+                (s: {
+                  available_date: string;
+                  start_time_minutes: number;
+                  end_time_minutes: number;
+                }) => {
+                  const d = new Date(s.available_date);
+                  const day = d.getDate();
+                  const start = `${String(
+                    Math.floor(s.start_time_minutes / 60)
+                  ).padStart(2, '0')}:${String(
+                    s.start_time_minutes % 60
+                  ).padStart(2, '0')}`;
+                  const end = `${String(
+                    Math.floor(s.end_time_minutes / 60)
+                  ).padStart(
+                    2,
+                    '0'
+                  )}:${String(s.end_time_minutes % 60).padStart(2, '0')}`;
+                  const range = `${start}-${end}`;
+                  const prev = labels[day];
+                  labels[day] = prev ? `${prev}, ${range}` : range;
+                }
+              );
+
+              modelAvailabilityData[model.model_id] = labels;
+            }
+
+            setModelAvailabilityMap(modelAvailabilityData);
+          } else {
+            setOrganizerModels([]);
+            setModelAvailabilityMap({});
+          }
+        } catch {
+          setOrganizerModels([]);
+          setModelAvailabilityMap({});
+        }
+      };
+
+      loadModelData();
+    }
   }, [
     displayMonth,
     displayYear,
@@ -619,6 +826,18 @@ export default function CalendarPage() {
     loadUserAvailability,
     CACHE_TTL,
   ]);
+
+  // 所属モデルが取得されたら、初期状態で全モデルを選択
+  useEffect(() => {
+    if (
+      profile?.user_type === 'organizer' &&
+      organizerModels.length > 0 &&
+      !hasInitializedModelSelection.current
+    ) {
+      setSelectedModelIds(organizerModels.map(m => m.model_id));
+      hasInitializedModelSelection.current = true;
+    }
+  }, [organizerModels, profile?.user_type]);
 
   const userFeatures = transformUserSlotsToFeatures();
   const sessionFeatures = transformSessionsToFeatures();
@@ -640,12 +859,6 @@ export default function CalendarPage() {
 
       {/* メインカレンダー */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base lg:text-lg">
-            <Calendar className="h-4 w-4 lg:h-5 lg:w-5" />
-            スケジュールカレンダー
-          </CardTitle>
-        </CardHeader>
         <CardContent className="p-2 sm:p-6 sm:pt-0 overflow-hidden">
           <CalendarProvider locale="ja-JP" startDay={0}>
             <CalendarStateWatcher
@@ -674,63 +887,128 @@ export default function CalendarPage() {
               </div>
             </CalendarDate>
 
+            {/* 運営者の場合：モデルフィルター */}
+            {profile.user_type === 'organizer' &&
+              organizerModels.length > 0 && (
+                <div className="mb-4 p-3 rounded-lg bg-muted/30">
+                  <Label className="text-sm font-medium mb-2 block">
+                    {t('selectModelsLabel')}
+                  </Label>
+                  <MultiSelect
+                    options={organizerModels.map(model => {
+                      const modelColor = getModelColor(
+                        model.model_id,
+                        organizerModels
+                      );
+                      const ColorIcon = ({
+                        className,
+                      }: {
+                        className?: string;
+                      }) => (
+                        <div
+                          className={`h-3 w-3 rounded-full flex-shrink-0 ${className || ''}`}
+                          style={{ backgroundColor: modelColor }}
+                        />
+                      );
+                      return {
+                        label: model.model_profile?.display_name || t('model'),
+                        value: model.model_id,
+                        icon: ColorIcon,
+                      };
+                    })}
+                    onValueChange={setSelectedModelIds}
+                    defaultValue={selectedModelIds}
+                    placeholder={t('selectModelsPlaceholder')}
+                    className="w-full"
+                  />
+                </div>
+              )}
+
             <div className="w-full">
               <UnifiedCalendarGrid
                 userFeatures={userFeatures}
                 photoSessionFeatures={sessionFeatures}
                 onDateClick={handleDateClick}
                 organizerLabelsByDay={organizerLabelsByDay}
+                modelAvailabilityMap={modelAvailabilityMap}
+                selectedModelIds={selectedModelIds}
+                organizerModels={organizerModels}
                 showUserSchedule={showUserSchedule}
                 showOrganizerSchedule={showOrganizerSchedule}
+                showModelSchedule={showModelSchedule}
                 showPhotoSessions={showPhotoSessions}
                 onPhotoSessionClick={handlePhotoSessionClick}
               />
             </div>
 
             {/* 凡例・フィルタ */}
-            <div className="mt-4 flex flex-wrap justify-center gap-4 p-3 rounded-lg bg-muted/30">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <Checkbox
-                  checked={showPhotoSessions}
-                  onCheckedChange={checked =>
-                    setShowPhotoSessions(checked === true)
-                  }
-                />
-                <div className="flex items-center gap-2">
-                  <div className="h-3 w-3 rounded-full bg-green-500 flex-shrink-0" />
-                  <span className="text-sm font-medium">撮影会</span>
-                </div>
-              </label>
-
-              <label className="flex items-center gap-2 cursor-pointer">
-                <Checkbox
-                  checked={showUserSchedule}
-                  onCheckedChange={checked =>
-                    setShowUserSchedule(checked === true)
-                  }
-                />
-                <div className="flex items-center gap-2">
-                  <div className="h-3 w-3 rounded-full bg-blue-500 flex-shrink-0" />
-                  <span className="text-sm font-medium">空き時間</span>
-                </div>
-              </label>
-
-              {profile.user_type === 'model' && (
+            <div className="mt-4">
+              {/* 既存のチェックボックスフィルター */}
+              <div className="flex flex-wrap justify-center gap-4 p-3 rounded-lg bg-muted/30">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <Checkbox
-                    checked={showOrganizerSchedule}
+                    checked={showPhotoSessions}
                     onCheckedChange={checked =>
-                      setShowOrganizerSchedule(checked === true)
+                      setShowPhotoSessions(checked === true)
                     }
                   />
                   <div className="flex items-center gap-2">
-                    <div className="h-3 w-3 rounded-full bg-green-600 flex-shrink-0" />
+                    <div className="h-3 w-3 rounded-full bg-green-500 flex-shrink-0" />
                     <span className="text-sm font-medium">
-                      所属運営の対応可能時間
+                      {t('photoSessions')}
                     </span>
                   </div>
                 </label>
-              )}
+
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <Checkbox
+                    checked={showUserSchedule}
+                    onCheckedChange={checked =>
+                      setShowUserSchedule(checked === true)
+                    }
+                  />
+                  <div className="flex items-center gap-2">
+                    <div className="h-3 w-3 rounded-full bg-blue-500 flex-shrink-0" />
+                    <span className="text-sm font-medium">
+                      {t('availability')}
+                    </span>
+                  </div>
+                </label>
+
+                {profile.user_type === 'model' && (
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <Checkbox
+                      checked={showOrganizerSchedule}
+                      onCheckedChange={checked =>
+                        setShowOrganizerSchedule(checked === true)
+                      }
+                    />
+                    <div className="flex items-center gap-2">
+                      <div className="h-3 w-3 rounded-full bg-green-600 flex-shrink-0" />
+                      <span className="text-sm font-medium">
+                        {t('organizerAvailability')}
+                      </span>
+                    </div>
+                  </label>
+                )}
+
+                {profile.user_type === 'organizer' && (
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <Checkbox
+                      checked={showModelSchedule}
+                      onCheckedChange={checked =>
+                        setShowModelSchedule(checked === true)
+                      }
+                    />
+                    <div className="flex items-center gap-2">
+                      <div className="h-3 w-3 rounded-full bg-purple-500 flex-shrink-0" />
+                      <span className="text-sm font-medium">
+                        {t('modelAvailability')}
+                      </span>
+                    </div>
+                  </label>
+                )}
+              </div>
             </div>
           </CalendarProvider>
         </CardContent>
@@ -741,7 +1019,7 @@ export default function CalendarPage() {
         <CardHeader className="pb-3 lg:pb-6">
           <CardTitle className="flex items-center gap-2 text-base lg:text-lg">
             <Clock className="h-4 w-4 lg:h-5 lg:w-5" />
-            設定済み空き時間
+            {t('availableTimes')}
           </CardTitle>
         </CardHeader>
         <CardContent className="p-3 lg:p-6 lg:pt-0">
@@ -749,15 +1027,11 @@ export default function CalendarPage() {
             {userSlots.length === 0 ? (
               <div className="text-center py-4 space-y-4">
                 <p className="text-muted-foreground text-sm lg:text-base">
-                  空き時間が設定されていません。
-                  カレンダーから日付を選択して設定してください。
+                  {t('noAvailability')} {t('noAvailabilityOwn')}
                 </p>
                 <div className="p-3 rounded border border-blue-200 mx-2 lg:mx-0">
                   <p className="text-xs lg:text-sm">
-                    💡{' '}
-                    <strong>
-                      空き時間を設定して撮影チャンスを増やしましょう
-                    </strong>
+                    💡 <strong>{t('encourageSet')}</strong>
                   </p>
                 </div>
               </div>
@@ -813,7 +1087,7 @@ export default function CalendarPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Calendar className="h-5 w-5" />
-              スケジュール編集 -{' '}
+              {t('editTitle')} -{' '}
               {selectedDate ? (
                 <FormattedDateTime value={selectedDate} format="date-short" />
               ) : (
@@ -827,7 +1101,7 @@ export default function CalendarPage() {
             {getSelectedDateSlots().length > 0 && (
               <div className="space-y-2">
                 <h4 className="font-medium text-sm">
-                  この日の設定済み空き時間
+                  {t('yourScheduledAvailability')}
                 </h4>
                 {getSelectedDateSlots().map(slot => (
                   <div
@@ -842,23 +1116,30 @@ export default function CalendarPage() {
                       size="sm"
                       onClick={() => handleDeleteSlot(slot.id)}
                     >
-                      削除
+                      {tCommon('delete')}
                     </Button>
                   </div>
                 ))}
               </div>
             )}
 
+            {/* 区切り線 - 空き時間追加UIの前 */}
+            {getSelectedDateSlots().length > 0 && <Separator />}
+
             {!isCreating ? (
-              <Button variant="accent" onClick={() => setIsCreating(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                空き時間を追加
+              <Button
+                className="w-full sm:w-auto"
+                variant="cta"
+                onClick={() => setIsCreating(true)}
+              >
+                <Plus className="h-4 w-4" />
+                {t('addButton')}
               </Button>
             ) : (
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="startTime">開始時間</Label>
+                    <Label htmlFor="startTime">{t('startTime')}</Label>
                     <Input
                       id="startTime"
                       type="time"
@@ -872,7 +1153,7 @@ export default function CalendarPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="endTime">終了時間</Label>
+                    <Label htmlFor="endTime">{t('endTime')}</Label>
                     <Input
                       id="endTime"
                       type="time"
@@ -888,10 +1169,10 @@ export default function CalendarPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="notes">メモ（任意）</Label>
+                  <Label htmlFor="notes">{t('notes')}</Label>
                   <Textarea
                     id="notes"
-                    placeholder="この時間帯に関するメモ..."
+                    placeholder={t('notesPlaceholder')}
                     value={formData.notes}
                     onChange={e =>
                       setFormData(prev => ({
@@ -904,7 +1185,7 @@ export default function CalendarPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>よく使う時間設定</Label>
+                  <Label>{t('commonTimes')}</Label>
                   <div className="flex flex-wrap gap-2">
                     <Button
                       variant="outline"
@@ -962,18 +1243,72 @@ export default function CalendarPage() {
                       });
                     }}
                   >
-                    キャンセル
+                    {tCommon('cancel')}
                   </Button>
                   <Button
                     variant="cta"
                     onClick={handleAddSlot}
                     disabled={isLoading}
                   >
-                    追加
+                    {t('add')}
                   </Button>
                 </div>
               </div>
             )}
+
+            {/* 区切り線 - 所属モデルの空き時間の前 */}
+            {profile.user_type === 'organizer' &&
+              getSelectedDateModelSlots().length > 0 && <Separator />}
+
+            {/* 所属モデルの空き時間 - 新規追加 */}
+            {profile.user_type === 'organizer' &&
+              getSelectedDateModelSlots().length > 0 && (
+                <div className="space-y-2">
+                  <h4 className="font-medium text-sm">
+                    {t('modelAvailability')}
+                  </h4>
+                  <div className="space-y-1.5">
+                    {getSelectedDateModelSlots().map(item => (
+                      <div
+                        key={item.modelId}
+                        className="flex items-start gap-2 p-2 border rounded bg-muted/30"
+                      >
+                        <div
+                          className="h-3 w-3 rounded-full flex-shrink-0 mt-0.5"
+                          style={{ backgroundColor: item.modelColor }}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-medium truncate">
+                            {item.modelName}
+                          </div>
+                          <div className="text-xs text-muted-foreground font-mono">
+                            {item.availability}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+            {/* 区切り線 - 所属運営の空き時間の前（モデル側） */}
+            {profile.user_type === 'model' &&
+              getSelectedDateOrganizerSlots() && <Separator />}
+
+            {/* 所属運営の空き時間 - モデル側 */}
+            {profile.user_type === 'model' &&
+              getSelectedDateOrganizerSlots() && (
+                <div className="space-y-2">
+                  <h4 className="font-medium text-sm">
+                    {t('organizerAvailability')}
+                  </h4>
+                  <div className="p-2 border rounded bg-muted/30">
+                    <div className="text-xs text-muted-foreground font-mono">
+                      {getSelectedDateOrganizerSlots()}
+                    </div>
+                  </div>
+                </div>
+              )}
           </div>
         </DialogContent>
       </Dialog>
