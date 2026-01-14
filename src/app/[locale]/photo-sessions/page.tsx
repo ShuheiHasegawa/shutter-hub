@@ -43,6 +43,7 @@ interface FilterState {
 export default function PhotoSessionsPage() {
   const t = useTranslations('photoSessions');
   const tPrefecture = useTranslations('prefecture');
+  const tCommon = useTranslations('common');
   const { layout, updateLayout } = useLayoutPreference();
   const { profile, loading: profileLoading } = useUserProfile();
   // 初期状態はfalse（閉じた状態）
@@ -285,10 +286,14 @@ export default function PhotoSessionsPage() {
 
                     setFilterByActivityLocation(pressed);
                   }}
-                  aria-label={`${tPrefecture(profile.prefecture)}で絞る`}
+                  aria-label={tCommon('filterByLocation', {
+                    prefecture: tPrefecture(profile.prefecture),
+                  })}
                 >
                   <MapPin className="h-4 w-4" />
-                  {tPrefecture(profile.prefecture)}で絞る
+                  {tCommon('filterByLocation', {
+                    prefecture: tPrefecture(profile.prefecture),
+                  })}
                 </Toggle>
               )}
             </div>
@@ -453,13 +458,13 @@ export default function PhotoSessionsPage() {
         {/* モバイル用フィルターボタンとシート */}
         <div className="md:hidden">
           <MobileFilterSheet
-            title={t('sidebar.filters') || 'フィルター設定'}
-            subtitle="条件を選択してください"
-            floatButtonLabel="絞込"
+            title={t('sidebar.filters')}
+            subtitle={t('mobileFilter.subtitle')}
+            floatButtonLabel={t('mobileFilter.floatButton')}
             onReset={handleMobileReset}
             onApply={handleMobileApply}
-            resetLabel="クリア"
-            applyLabel="検索"
+            resetLabel={t('mobileFilter.clear')}
+            applyLabel={t('mobileFilter.search')}
           >
             <PhotoSessionFilterContent
               filters={pendingFilters}

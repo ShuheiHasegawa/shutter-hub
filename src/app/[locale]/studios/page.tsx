@@ -34,6 +34,7 @@ export default function StudiosPage() {
   const t = useTranslations('studio.page');
   const tLayout = useTranslations('studio.layout');
   const tPrefecture = useTranslations('prefecture');
+  const tCommon = useTranslations('common');
   const searchParams = useSearchParams();
   const { layout, updateLayout } = useLayoutPreference('studio-layout');
   const { profile, loading: profileLoading } = useUserProfile();
@@ -226,10 +227,14 @@ export default function StudiosPage() {
 
                     setFilterByActivityLocation(pressed);
                   }}
-                  aria-label={`${tPrefecture(profile.prefecture)}で絞る`}
+                  aria-label={tCommon('filterByLocation', {
+                    prefecture: tPrefecture(profile.prefecture),
+                  })}
                 >
                   <MapPin className="h-4 w-4" />
-                  {tPrefecture(profile.prefecture)}で絞る
+                  {tCommon('filterByLocation', {
+                    prefecture: tPrefecture(profile.prefecture),
+                  })}
                 </Toggle>
               )}
             </div>
