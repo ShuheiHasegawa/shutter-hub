@@ -457,7 +457,7 @@
   inset: 0;
   background-color: transparent;
   pointer-events: none;
-  z-index: 9999 !important;
+  z-index: 1 !important;
   transition: background-color 0.1s ease-out;
   border-radius: inherit;
 }

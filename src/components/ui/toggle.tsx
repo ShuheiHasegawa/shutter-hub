@@ -44,7 +44,7 @@ const Toggle = React.forwardRef<
     setIsPressed(pressed);
   }, [pressed]);
 
-  // pressedがtrueの場合、デザインシステムのsuccessカラーをインラインスタイルで適用
+  // pressedがtrueの場合、デザインシステムのsurface-accentカラーをインラインスタイルで適用
   const activeStyle = isPressed
     ? {
         backgroundColor: 'hsl(var(--surface-accent))',

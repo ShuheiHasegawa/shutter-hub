@@ -142,7 +142,9 @@ export default async function LocaleLayout({
               disableTransitionOnChange
             >
               <PullToRefreshProvider>{children}</PullToRefreshProvider>
+              {/* Toaster (shadcn/ui): ReviewCard.tsxでuseToastを使用 */}
               <Toaster />
+              {/* SonnerToaster: 多数のコンポーネントでtoast from 'sonner'を使用 */}
               <SonnerToaster richColors position="top-right" />
             </ThemeProvider>
           </SWRProvider>

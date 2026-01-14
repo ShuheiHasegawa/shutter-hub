@@ -695,7 +695,7 @@ export function UserScheduleManager({
           <CardTitle className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 text-base lg:text-lg">
             <div className="flex items-center gap-2">
               <Calendar className="h-4 w-4 lg:h-5 lg:w-5" />
-              <span>スケジュールカレンダー</span>
+              <span>{t('calendar')}</span>
             </div>
             {isOwnProfile && (
               <div className="w-full sm:w-auto sm:ml-auto">
