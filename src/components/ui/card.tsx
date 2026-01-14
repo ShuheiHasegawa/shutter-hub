@@ -7,17 +7,67 @@ const Card = React.forwardRef<
   React.HTMLAttributes<HTMLDivElement> & {
     hover?: boolean; // hover効果のON/OFF
   }
->(({ className, hover = true, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn(
-      'rounded-lg border bg-card text-card-foreground shadow-sm',
-      hover && 'hover:shadow-lg transition-shadow duration-300',
-      className
-    )}
-    {...props}
-  />
-));
+>(({ className, hover = true, onClick, children, ...props }, ref) => {
+  const [isActive, setIsActive] = React.useState(false);
+  const deactivateTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  const handleActivate = () => {
+    if (onClick) {
+      // 既存のタイマーをクリア（重複防止）
+      if (deactivateTimerRef.current) {
+        clearTimeout(deactivateTimerRef.current);
+        deactivateTimerRef.current = null;
+      }
+      setIsActive(true);
+    }
+  };
+
+  const handleDeactivate = () => {
+    // 既存のタイマーをクリア
+    if (deactivateTimerRef.current) {
+      clearTimeout(deactivateTimerRef.current);
+    }
+    // 150ms後にオーバーレイを解除
+    deactivateTimerRef.current = setTimeout(() => {
+      setIsActive(false);
+      deactivateTimerRef.current = null;
+    }, 150);
+  };
+
+  // クリーンアップ
+  React.useEffect(() => {
+    return () => {
+      if (deactivateTimerRef.current) {
+        clearTimeout(deactivateTimerRef.current);
+      }
+    };
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      className={cn(
+        'rounded-lg border bg-card text-card-foreground shadow-sm',
+        hover && 'hover:shadow-lg transition-shadow duration-300',
+        onClick && 'cursor-pointer',
+        'relative',
+        onClick && 'active-overlay',
+        onClick && isActive && 'active',
+        className
+      )}
+      onClick={onClick}
+      onMouseDown={handleActivate}
+      onMouseUp={handleDeactivate}
+      onMouseLeave={handleDeactivate}
+      onTouchStart={handleActivate}
+      onTouchEnd={handleDeactivate}
+      onTouchCancel={handleDeactivate}
+      {...props}
+    >
+      {children}
+    </div>
+  );
+});
 Card.displayName = 'Card';
 
 const CardHeader = React.forwardRef<

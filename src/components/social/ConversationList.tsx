@@ -207,7 +207,7 @@ export function ConversationList({
                 <Link
                   key={conversation.id}
                   href={`/messages/${conversation.id}`}
-                  className="block hover:bg-muted/50 transition-colors"
+                  className="block hover:bg-muted/50 transition-colors active-overlay"
                 >
                   <div className="p-4">
                     <div className="flex items-start gap-3">

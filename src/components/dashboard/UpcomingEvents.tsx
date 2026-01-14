@@ -167,19 +167,19 @@ export function UpcomingEvents({ events, isLoading }: UpcomingEventsProps) {
                       : 'border-gray-200 hover:border-theme-primary'
                 }`}
               >
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start space-x-3">
+                <div className="flex items-start">
+                  <div className="flex items-start space-x-3 min-w-0 flex-1">
                     <div className="flex-shrink-0 mt-1">
                       {getEventIcon(event.type)}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex-1 mr-2">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="flex-1 min-w-0">
                           <h4 className="text-sm font-semibold text-card-foreground truncate">
                             {event.title}
                           </h4>
                         </div>
-                        <div className="flex justify-end">
+                        <div className="flex-shrink-0">
                           {getStatusBadge(event.status)}
                         </div>
                       </div>

@@ -110,7 +110,7 @@ export function ClickableText({
         'inline-flex items-center justify-center rounded-lg transition-all duration-200',
         'cursor-pointer',
         'hover:shadow-md',
-        'active:scale-[0.98]',
+        'active-overlay',
         'focus-visible:outline-none',
         'focus-visible:ring-2',
         'focus-visible:ring-ring',

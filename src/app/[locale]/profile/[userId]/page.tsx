@@ -329,9 +329,9 @@ export default function UserProfilePage() {
             icon={<UserIcon className="h-6 w-6" />}
           />
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
+          <div className="space-y-4 lg:space-y-6">
             {/* プロフィール情報 */}
-            <div className="lg:col-span-1 space-y-4 lg:space-y-6">
+            <div className="space-y-4 lg:space-y-6">
               <Card>
                 <CardContent className="p-6 relative">
                   {/* 右上の編集/フォローボタン */}
@@ -475,7 +475,7 @@ export default function UserProfilePage() {
             </div>
 
             {/* メインコンテンツ */}
-            <div className="lg:col-span-2 space-y-4 lg:space-y-6">
+            <div className="space-y-4 lg:space-y-6">
               <Tabs
                 value={currentTab}
                 onValueChange={newTab => {

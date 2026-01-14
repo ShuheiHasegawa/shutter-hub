@@ -47,9 +47,9 @@ const Toggle = React.forwardRef<
   // pressedがtrueの場合、デザインシステムのsuccessカラーをインラインスタイルで適用
   const activeStyle = isPressed
     ? {
-        backgroundColor: 'hsl(var(--success))',
-        color: 'hsl(var(--success-foreground))',
-        borderColor: 'hsl(var(--success))',
+        backgroundColor: 'hsl(var(--surface-accent))',
+        color: 'hsl(var(--surface-accent-text))',
+        borderColor: 'hsl(var(--surface-accent))',
         ...style,
       }
     : style;
@@ -61,8 +61,8 @@ const Toggle = React.forwardRef<
       style={activeStyle}
       className={cn(
         toggleVariants({ variant, size }),
-        // 選択時のスタイル（data-[state=on]セレクタでデザインシステムのsuccessカラーを適用）
-        'data-[state=on]:bg-success data-[state=on]:text-success-foreground data-[state=on]:border-success data-[state=on]:shadow-md data-[state=on]:hover:bg-success/90',
+        // 選択時のスタイル（data-[state=on]セレクタでデザインシステムのsurface-accentカラーを適用）
+        'data-[state=on]:bg-surface-accent data-[state=on]:text-surface-accent-text data-[state=on]:border-surface-accent data-[state=on]:shadow-md data-[state=on]:hover:bg-surface-accent/90',
         className
       )}
       {...props}

@@ -14,6 +14,7 @@ import { ThemeProvider } from '@/components/providers/theme-provider';
 import { SWRProvider } from '@/components/providers/swr-provider';
 import { PullToRefreshProvider } from '@/components/providers/pull-to-refresh-provider';
 import { Toaster } from '@/components/ui/toaster';
+import { Toaster as SonnerToaster } from 'sonner';
 import { enableQueryStatistics } from '@/lib/supabase/query-wrapper';
 
 const inter = Inter({
@@ -142,6 +143,7 @@ export default async function LocaleLayout({
             >
               <PullToRefreshProvider>{children}</PullToRefreshProvider>
               <Toaster />
+              <SonnerToaster richColors position="top-right" />
             </ThemeProvider>
           </SWRProvider>
         </NextIntlClientProvider>
