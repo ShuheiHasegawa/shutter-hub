@@ -24,6 +24,8 @@ import { useTranslations } from 'next-intl';
 import { useUserProfile } from '@/hooks/useAuth';
 import { logger } from '@/lib/utils/logger';
 import type { BookingType } from '@/types/database';
+import { MobileFilterSheet } from '@/components/ui/mobile-filter-sheet';
+import { PhotoSessionFilterContent } from '@/components/photo-sessions/PhotoSessionFilterContent';
 
 interface FilterState {
   keyword: string;
@@ -40,6 +42,8 @@ interface FilterState {
 
 export default function PhotoSessionsPage() {
   const t = useTranslations('photoSessions');
+  const tPrefecture = useTranslations('prefecture');
+  const tCommon = useTranslations('common');
   const { layout, updateLayout } = useLayoutPreference();
   const { profile, loading: profileLoading } = useUserProfile();
   // 初期状態はfalse（閉じた状態）
@@ -65,6 +69,18 @@ export default function PhotoSessionsPage() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [filterByActivityLocation, setFilterByActivityLocation] =
     useState(false);
+  const [pendingFilters, setPendingFilters] = useState<FilterState>({
+    keyword: '',
+    location: '',
+    priceMin: '',
+    priceMax: '',
+    dateFrom: '',
+    dateTo: '',
+    bookingTypes: [],
+    participantsMin: '',
+    participantsMax: '',
+    onlyAvailable: false,
+  });
   const isInitialMountRef = useRef(true);
 
   // 初回マウント時のスキップ
@@ -149,6 +165,32 @@ export default function PhotoSessionsPage() {
     setSearchTrigger(prev => prev + 1);
   };
 
+  const handleMobileFilterChange = (newFilters: FilterState) => {
+    setPendingFilters(newFilters);
+  };
+
+  const handleMobileApply = () => {
+    setFilters(pendingFilters);
+    handleSearch();
+  };
+
+  const handleMobileReset = () => {
+    const resetValues: FilterState = {
+      keyword: '',
+      location: '',
+      priceMin: '',
+      priceMax: '',
+      dateFrom: '',
+      dateTo: '',
+      bookingTypes: [],
+      participantsMin: '',
+      participantsMax: '',
+      onlyAvailable: filters.onlyAvailable, // 空きありは保持
+    };
+    setPendingFilters(resetValues);
+    setFilters(resetValues);
+  };
+
   // searchTrigger変更時にローディング状態をリセット
   useEffect(() => {
     if (searchTrigger > 0) {
@@ -202,14 +244,16 @@ export default function PhotoSessionsPage() {
 
         {/* フィルターとコントロール（StickyHeaderで固定） */}
         <StickyHeader className="px-4 py-3 space-y-3">
-          {/* 1行目: CompactFilterBar（検索バーとフィルターボタン） */}
-          <CompactFilterBar
-            filters={filters}
-            onFiltersChange={setFilters}
-            onClearFilters={clearFilters}
-            onSearch={handleSearch}
-            isSearchLoading={isSearchLoading}
-          />
+          {/* 1行目: CompactFilterBar（検索バーとフィルターボタン） - デスクトップ表示 */}
+          <div className="hidden md:block">
+            <CompactFilterBar
+              filters={filters}
+              onFiltersChange={setFilters}
+              onClearFilters={clearFilters}
+              onSearch={handleSearch}
+              isSearchLoading={isSearchLoading}
+            />
+          </div>
 
           {/* 2行目: チェックボックス、並び順、作成ボタン */}
           <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-2 md:gap-0">
@@ -242,10 +286,14 @@ export default function PhotoSessionsPage() {
 
                     setFilterByActivityLocation(pressed);
                   }}
-                  aria-label={`${profile.prefecture}で絞る`}
+                  aria-label={tCommon('filterByLocation', {
+                    prefecture: tPrefecture(profile.prefecture),
+                  })}
                 >
                   <MapPin className="h-4 w-4" />
-                  {profile.prefecture}で絞る
+                  {tCommon('filterByLocation', {
+                    prefecture: tPrefecture(profile.prefecture),
+                  })}
                 </Toggle>
               )}
             </div>
@@ -405,6 +453,24 @@ export default function PhotoSessionsPage() {
               />
             </Suspense>
           </main>
+        </div>
+
+        {/* モバイル用フィルターボタンとシート */}
+        <div className="md:hidden">
+          <MobileFilterSheet
+            title={t('sidebar.filters')}
+            subtitle={t('mobileFilter.subtitle')}
+            floatButtonLabel={t('mobileFilter.floatButton')}
+            onReset={handleMobileReset}
+            onApply={handleMobileApply}
+            resetLabel={t('mobileFilter.clear')}
+            applyLabel={t('mobileFilter.search')}
+          >
+            <PhotoSessionFilterContent
+              filters={pendingFilters}
+              onFiltersChange={handleMobileFilterChange}
+            />
+          </MobileFilterSheet>
         </div>
       </div>
     </AuthenticatedLayout>

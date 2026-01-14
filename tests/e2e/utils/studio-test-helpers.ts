@@ -8,10 +8,27 @@ import { waitForPageLoad } from './test-helpers';
 
 /**
  * スタジオ一覧ページを開いて初期化する
+ * 認証後のページ遷移を考慮し、主要な要素が表示されるまで待機する
  */
 export async function initializeStudioListPage(page: Page): Promise<void> {
-  await page.goto('/ja/studios');
+  await page.goto('/ja/studios', {
+    waitUntil: 'domcontentloaded',
+    timeout: 15000,
+  });
+
+  // ページの読み込み完了を待機
   await waitForPageLoad(page);
+
+  // ネットワーク処理完了を待機（APIリクエストの完了を待つ）
+  await page.waitForLoadState('networkidle', { timeout: 20000 }).catch(() => {
+    // networkidleがタイムアウトしても続行（長時間実行されるリクエストがある場合）
+  });
+
+  // 主要な要素（検索フォーム）が表示されるまで待機
+  const searchInput = page.locator(
+    'input[placeholder*="スタジオ名、住所で検索"]'
+  );
+  await expect(searchInput).toBeVisible({ timeout: 10000 });
 }
 
 /**

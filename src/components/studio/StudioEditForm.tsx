@@ -20,6 +20,7 @@ import {
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Save, X, Info } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 import { updateStudioAction } from '@/app/actions/studio';
 import { StudioWithStats, StudioPhoto } from '@/types/database';
 import { VALIDATION } from '@/constants/common';
@@ -115,6 +116,7 @@ export function StudioEditForm({
   onSuccess,
   onCancel,
 }: StudioEditFormProps) {
+  const t = useTranslations('studio');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [photos, setPhotos] = useState<StudioPhoto[]>(initialPhotos);
@@ -196,10 +198,8 @@ export function StudioEditForm({
         <Info className="h-4 w-4" />
         <AlertDescription>
           <div className="space-y-2">
-            <p className="font-medium">このスタジオ情報は誰でも編集可能です</p>
-            <p className="text-sm">
-              不適切な編集は報告機能で対応します。報告数が3件に達すると自動的に非表示になります。
-            </p>
+            <p className="font-medium">{t('editNotice.title')}</p>
+            <p className="text-sm">{t('editNotice.description')}</p>
           </div>
         </AlertDescription>
       </Alert>

@@ -1,6 +1,6 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
   MapPinIcon,
@@ -20,7 +20,7 @@ import { StarRating } from '@/components/ui/star-rating';
 import { getDefaultFavoriteState } from '@/lib/utils/favorite';
 import { getStudioImageUrl, getStudioImageAlt } from '@/lib/utils/studio';
 
-interface StudioCardProps {
+interface StudioGridCardProps {
   studio: StudioWithStats;
   onSelect?: (studio: StudioWithStats) => void;
   isSelected?: boolean;
@@ -33,14 +33,14 @@ interface StudioCardProps {
   onFavoriteToggle?: (isFavorited: boolean, favoriteCount: number) => void;
 }
 
-export function StudioCard({
+export function StudioGridCard({
   studio,
   onSelect,
   isSelected = false,
   showSelection = false,
   favoriteState,
   onFavoriteToggle,
-}: StudioCardProps) {
+}: StudioGridCardProps) {
   const router = useRouter();
   const t = useTranslations('studio.card');
   const tPrefecture = useTranslations('prefecture');
@@ -53,36 +53,17 @@ export function StudioCard({
     }
   };
 
-  const formatUpdateTime = (updatedAt: string) => {
-    const updated = new Date(updatedAt);
-    const now = new Date();
-    const diffMs = now.getTime() - updated.getTime();
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffMinutes = Math.floor(diffMs / (1000 * 60));
-
-    if (diffDays > 0) {
-      return t('updatedDaysAgo', { days: diffDays });
-    } else if (diffHours > 0) {
-      return t('updatedHoursAgo', { hours: diffHours });
-    } else if (diffMinutes > 0) {
-      return t('updatedMinutesAgo', { minutes: diffMinutes });
-    } else {
-      return t('updatedJustNow');
-    }
-  };
-
   return (
     <Card
-      data-testid={`studio-card-${studio.id}`}
-      className={`hover:shadow-lg transition-all duration-200 cursor-pointer ${
+      data-testid={`studio-grid-card-${studio.id}`}
+      className={`overflow-hidden hover:shadow-lg transition-shadow cursor-pointer bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 ${
         isSelected ? 'ring-2 ring-theme-primary' : ''
       }`}
       onClick={handleClick}
     >
       <CardHeader className="p-0">
         {/* メイン画像 */}
-        <div className="aspect-video relative bg-theme-neutral/10 rounded-t-lg overflow-hidden">
+        <div className="relative h-40 md:h-48 w-full overflow-hidden">
           <EmptyImage
             src={getStudioImageUrl(studio)}
             alt={getStudioImageAlt(studio)}
@@ -90,11 +71,11 @@ export function StudioCard({
             fallbackIconSize="lg"
             fill
             className="object-cover object-center"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
           />
 
           {/* バッジ */}
-          <div className="absolute top-2 left-2 flex gap-2 flex-wrap">
+          <div className="absolute top-2 md:top-4 left-2 md:left-4 flex gap-2 flex-wrap">
             {studio.prefecture && (
               <Badge className="bg-theme-primary text-xs">
                 {tPrefecture(studio.prefecture)}
@@ -103,11 +84,6 @@ export function StudioCard({
             {studio.average_rating > 4.5 && studio.evaluation_count > 0 && (
               <Badge className="bg-theme-accent text-xs">
                 {t('highRating')}
-              </Badge>
-            )}
-            {studio.is_hidden && (
-              <Badge variant="destructive" className="text-xs">
-                {t('hidden')}
               </Badge>
             )}
           </div>
@@ -129,7 +105,7 @@ export function StudioCard({
             <CardFavoriteButton
               favoriteType="studio"
               favoriteId={studio.id}
-              size="md"
+              size="sm"
               initialState={getDefaultFavoriteState(favoriteState)}
               onToggle={onFavoriteToggle}
             />
@@ -137,27 +113,28 @@ export function StudioCard({
         </div>
       </CardHeader>
 
-      <CardContent className="p-4">
-        <CardTitle className="text-lg font-semibold mb-2 line-clamp-2">
+      <CardContent className="p-3 md:p-4 lg:p-5">
+        {/* タイトル */}
+        <h3 className="text-sm md:text-base lg:text-lg font-semibold md:font-bold text-gray-900 dark:text-white mb-2 line-clamp-2 min-h-[2.5rem]">
           {studio.name}
-        </CardTitle>
+        </h3>
 
         {/* 基本情報 */}
-        <div className="space-y-2 mb-4">
-          <div className="flex items-center gap-2 text-sm">
-            <MapPinIcon className="w-4 h-4 flex-shrink-0" />
+        <div className="space-y-1 md:space-y-2 text-xs md:text-sm text-gray-600 dark:text-gray-300 mb-3">
+          <div className="flex items-center gap-1">
+            <MapPinIcon className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
             <span className="truncate">{studio.address}</span>
           </div>
 
-          <div className="flex items-center gap-2 text-sm">
-            <UsersIcon className="w-4 h-4 flex-shrink-0" />
+          <div className="flex items-center gap-1">
+            <UsersIcon className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
             <span>
               {t('maxCapacity', { count: studio.max_capacity || '-' })}
             </span>
           </div>
 
-          <div className="flex items-center gap-2 text-sm">
-            <CurrencyYenIcon className="w-4 h-4 flex-shrink-0" />
+          <div className="flex items-center gap-1">
+            <CurrencyYenIcon className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
             <span>
               {studio.hourly_rate_min && studio.hourly_rate_max ? (
                 <>
@@ -189,8 +166,8 @@ export function StudioCard({
         {/* 評価 */}
         {studio.evaluation_count > 0 && (
           <div className="flex items-center gap-2 mb-3">
-            <StarRating rating={studio.average_rating} size="md" />
-            <span className="text-sm">
+            <StarRating rating={studio.average_rating} size="sm" />
+            <span className="text-xs md:text-sm">
               {studio.average_rating.toFixed(1)}{' '}
               {t('reviewCount', { count: studio.evaluation_count })}
             </span>
@@ -198,34 +175,29 @@ export function StudioCard({
         )}
 
         {/* 設備アイコン */}
-        <div className="flex items-center gap-3 mb-4">
+        <div className="flex items-center gap-3 mb-3 md:mb-4">
           {studio.parking_available && (
             <div className="flex items-center gap-1 text-xs">
-              <TruckIcon className="w-4 h-4" />
+              <TruckIcon className="w-3 h-3 md:w-4 md:h-4" />
               <span>{t('parking')}</span>
             </div>
           )}
           {studio.wifi_available && (
             <div className="flex items-center gap-1 text-xs">
-              <WifiIcon className="w-4 h-4" />
+              <WifiIcon className="w-3 h-3 md:w-4 md:h-4" />
               <span>{t('wifi')}</span>
             </div>
           )}
         </div>
 
-        {/* 統計情報 */}
-        <div className="space-y-1 border-t border-theme-neutral/20 pt-4">
-          <div className="flex justify-between text-xs">
-            <span>{t('photoCount', { count: studio.photo_count })}</span>
-            <span>
-              {t('equipmentCount', { count: studio.equipment_count })}
-            </span>
+        {/* フッター: 統計情報 */}
+        <div className="flex items-center justify-between pt-2 md:pt-3 border-t border-gray-100 md:border-gray-200 dark:border-gray-700">
+          <div className="text-xs text-gray-500 dark:text-gray-400">
+            {t('photoCount', { count: studio.photo_count })}
           </div>
-          {studio.updated_at && (
-            <div className="text-xs text-theme-text-muted">
-              {formatUpdateTime(studio.updated_at)}
-            </div>
-          )}
+          <div className="text-xs text-gray-500 dark:text-gray-400">
+            {t('equipmentCount', { count: studio.equipment_count })}
+          </div>
         </div>
       </CardContent>
     </Card>

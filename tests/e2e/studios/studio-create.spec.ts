@@ -1,6 +1,33 @@
 import { test, expect } from '@playwright/test';
 import { authenticateTestUser } from '../utils/photo-session-helpers';
 
+/**
+ * スタジオ作成 E2Eテスト
+ *
+ * テスト観点表:
+ *
+ * ## 1. 正常系テスト
+ * | 分類   | テストケース       | 入力/操作                    | 期待結果                       | 優先度 |
+ * | ------ | ------------------ | ---------------------------- | ------------------------------ | ------ |
+ * | 正常系 | ページ初期表示     | 作成ページアクセス           | フォームが表示される           | 高     |
+ * | 正常系 | 新規スタジオ作成   | すべての必須フィールド入力   | スタジオが作成され詳細ページへ | 高     |
+ * | 正常系 | オプショナル入力   | 料金・説明を入力             | 正常に保存される               | 中     |
+ * | 正常系 | 都道府県選択       | 都道府県を選択               | 選択が反映される               | 高     |
+ *
+ * ## 2. 異常系・エッジケーステスト
+ * | 分類   | テストケース           | 入力/操作            | 期待結果                   | 優先度 |
+ * | ------ | ---------------------- | -------------------- | -------------------------- | ------ |
+ * | 異常系 | スタジオ名未入力       | 名前を空で送信       | バリデーションエラー表示   | 高     |
+ * | 異常系 | 都道府県未選択         | 都道府県を選択せず送信 | バリデーションエラー表示   | 高     |
+ * | 異常系 | 市区町村未入力         | 市区町村を空で送信   | バリデーションエラー表示   | 高     |
+ * | 異常系 | 住所未入力             | 住所を空で送信       | バリデーションエラー表示   | 高     |
+ * | 境界値 | 長文スタジオ名         | 100文字以上の名前    | 正常に処理される           | 低     |
+ * | 境界値 | 特殊文字入力           | 記号・絵文字を含む   | エラーなく処理される       | 低     |
+ * | 境界値 | 料金最小値             | 0円                  | 正常に処理される           | 中     |
+ * | 境界値 | 料金最大値             | 上限値               | 正常に処理される           | 中     |
+ * | 境界値 | 料金範囲エラー         | 最小値 > 最大値      | バリデーションエラー表示   | 中     |
+ */
+
 test.describe('スタジオ作成機能', () => {
   test.beforeEach(async ({ page }) => {
     // 認証済みユーザーでログイン（誰でもスタジオ作成可能）
@@ -9,13 +36,7 @@ test.describe('スタジオ作成機能', () => {
   });
 
   test('新規スタジオ作成', async ({ page }) => {
-    // 認証後のページ遷移を確実に待機
-    await page.waitForURL('**/dashboard', { timeout: 10000 });
-
-    // セッションを保持するために、gotoの前に少し待機
-    await page.waitForTimeout(500);
-
-    // リダイレクトを許可してページ遷移
+    // 認証完了後、直接ページ遷移（待機処理はauthenticateTestUser内で完結）
     await page.goto('/ja/studios/create', {
       waitUntil: 'domcontentloaded',
       timeout: 15000,
@@ -24,10 +45,8 @@ test.describe('スタジオ作成機能', () => {
     // 認証チェック：サインインページにリダイレクトされていないか確認
     const currentUrl = page.url();
     if (currentUrl.includes('/auth/signin')) {
-      // 認証が切れている場合は再認証
+      // 認証が切れている場合は再認証（待機処理はauthenticateTestUser内で完結）
       await authenticateTestUser(page, 'organizer');
-      await page.waitForURL('**/dashboard', { timeout: 10000 });
-      await page.waitForTimeout(500);
       await page.goto('/ja/studios/create', {
         waitUntil: 'domcontentloaded',
         timeout: 15000,
@@ -99,21 +118,17 @@ test.describe('スタジオ作成機能', () => {
   });
 
   test('必須フィールドの検証', async ({ page }) => {
-    // 認証後のページ遷移を確実に待機
-    await page.waitForURL('**/dashboard', { timeout: 10000 });
-
-    await page.waitForTimeout(500);
+    // 認証完了後、直接ページ遷移（待機処理はauthenticateTestUser内で完結）
     await page.goto('/ja/studios/create', {
       waitUntil: 'domcontentloaded',
       timeout: 15000,
     });
 
-    // 認証チェック
+    // 認証チェック：サインインページにリダイレクトされていないか確認
     const currentUrl = page.url();
     if (currentUrl.includes('/auth/signin')) {
+      // 認証が切れている場合は再認証（待機処理はauthenticateTestUser内で完結）
       await authenticateTestUser(page, 'organizer');
-      await page.waitForURL('**/dashboard', { timeout: 10000 });
-      await page.waitForTimeout(500);
       await page.goto('/ja/studios/create', {
         waitUntil: 'domcontentloaded',
         timeout: 15000,

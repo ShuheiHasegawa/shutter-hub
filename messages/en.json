@@ -18,8 +18,11 @@
     "previous": "Previous",
     "search": "Search",
     "filter": "Filter",
+    "filterByLocation": "Filter by {prefecture}",
     "sort": "Sort",
     "more": "More",
+    "reset": "Reset",
+    "apply": "Apply",
     "priceInputPlaceholder": "Enter price",
     "empty": {
       "default": {
@@ -77,6 +80,7 @@
     "studioCreate": "Create Studio",
     "studioList": "Studio List",
     "studios": "Studios",
+    "subscription": "Subscription",
     "timeline": "Timeline"
   },
   "theme": {
@@ -629,6 +633,8 @@
       "clearFilters": "Clear Filters"
     },
     "sidebar": {
+      "keyword": "Keyword",
+      "location": "Location",
       "dateRange": "Event Date",
       "dateFrom": "From Date",
       "dateTo": "To Date",
@@ -638,8 +644,15 @@
       "participantsRange": "Participants",
       "participantsMin": "Min Participants",
       "participantsMax": "Max Participants",
+      "bookingTypes": "Booking Types",
       "options": "Other Options",
-      "onlyAvailable": "Available sessions only"
+      "onlyAvailable": "Available"
+    },
+    "mobileFilter": {
+      "subtitle": "Please select conditions",
+      "floatButton": "Filter",
+      "clear": "Clear",
+      "search": "Search"
     },
     "bookingType": {
       "title": "Booking Type",
@@ -1254,7 +1267,7 @@
       "participantsMax": "Max Participants",
       "bookingTypes": "Booking Types",
       "options": "Other Options",
-      "onlyAvailable": "Available sessions only",
+      "onlyAvailable": "Available",
       "sortBy": "Sort By",
       "sortByStartTime": "Start Time",
       "sortByPrice": "Price",
@@ -1756,6 +1769,10 @@
         "ratingAsc": "Rating (Low to High)",
         "priceAsc": "Price (Low to High)",
         "priceDesc": "Price (High to Low)"
+      },
+      "mobileFilter": {
+        "title": "Filter",
+        "floatButton": "Filter"
       }
     },
     "card": {
@@ -1783,6 +1800,24 @@
       "loadMore": "Load More",
       "loading": "Loading..."
     },
+    "layout": {
+      "card": "Card",
+      "grid": "Grid",
+      "table": "Table",
+      "toggle": "Layout toggle"
+    },
+    "table": {
+      "headers": {
+        "studioName": "Studio Name",
+        "address": "Address",
+        "maxCapacity": "Max Capacity",
+        "price": "Price",
+        "rating": "Rating",
+        "facilities": "Facilities",
+        "stats": "Statistics",
+        "actions": "Actions"
+      }
+    },
     "report": {
       "button": "Report",
       "title": "Report Studio",
@@ -1796,17 +1831,18 @@
       },
       "details": "Details",
       "detailsPlaceholder": "Enter report details (optional)",
-      "warning": "This studio will be automatically hidden when 3 reports are received.",
+      "warning": "This studio will be automatically hidden when a certain number of reports are received.",
       "selectReason": "Please select a report reason",
       "success": "Report submitted successfully",
       "error": "Failed to submit report",
       "submitting": "Submitting...",
       "submit": "Submit Report",
-      "autoHiddenMessage": "This studio has been automatically hidden due to 3 reports."
+      "autoHiddenMessage": "This studio has been automatically hidden due to a certain number of reports."
     },
     "editNotice": {
       "title": "This studio information can be edited by anyone",
-      "description": "Inappropriate edits will be handled through the report function. The studio will be automatically hidden when 3 reports are received."
+      "description": "Inappropriate edits will be handled through the report function. The studio will be automatically hidden when a certain number of reports are received.",
+      "detailDescription": "Please report if you find inappropriate content. The studio will be automatically hidden when a certain number of reports are received."
     },
     "hiddenNotice": {
       "title": "This studio is temporarily hidden",
