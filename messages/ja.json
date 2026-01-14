@@ -18,6 +18,7 @@
     "previous": "前へ",
     "search": "検索",
     "filter": "フィルター",
+    "filterByLocation": "{prefecture}で絞る",
     "sort": "並び替え",
     "more": "もっと見る",
     "clear": "クリア",
@@ -637,6 +638,12 @@
       "filters": "フィルター",
       "closeFilters": "フィルターを閉じる",
       "openFilters": "フィルターを開く"
+    },
+    "mobileFilter": {
+      "subtitle": "条件を選択してください",
+      "floatButton": "絞込",
+      "clear": "クリア",
+      "search": "検索"
     },
     "card": {
       "labels": {
@@ -1810,6 +1817,18 @@
       "grid": "グリッド",
       "table": "テーブル",
       "toggle": "レイアウト切り替え"
+    },
+    "table": {
+      "headers": {
+        "studioName": "スタジオ名",
+        "address": "住所",
+        "maxCapacity": "最大収容人数",
+        "price": "料金",
+        "rating": "評価",
+        "facilities": "設備",
+        "stats": "統計情報",
+        "actions": "アクション"
+      }
     },
     "report": {
       "button": "報告",

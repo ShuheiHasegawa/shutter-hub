@@ -18,6 +18,7 @@
     "previous": "Previous",
     "search": "Search",
     "filter": "Filter",
+    "filterByLocation": "Filter by {prefecture}",
     "sort": "Sort",
     "more": "More",
     "reset": "Reset",
@@ -646,6 +647,12 @@
       "bookingTypes": "Booking Types",
       "options": "Other Options",
       "onlyAvailable": "Available"
+    },
+    "mobileFilter": {
+      "subtitle": "Please select conditions",
+      "floatButton": "Filter",
+      "clear": "Clear",
+      "search": "Search"
     },
     "bookingType": {
       "title": "Booking Type",
@@ -1798,6 +1805,18 @@
       "grid": "Grid",
       "table": "Table",
       "toggle": "Layout toggle"
+    },
+    "table": {
+      "headers": {
+        "studioName": "Studio Name",
+        "address": "Address",
+        "maxCapacity": "Max Capacity",
+        "price": "Price",
+        "rating": "Rating",
+        "facilities": "Facilities",
+        "stats": "Statistics",
+        "actions": "Actions"
+      }
     },
     "report": {
       "button": "Report",

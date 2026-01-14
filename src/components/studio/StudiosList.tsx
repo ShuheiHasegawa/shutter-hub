@@ -37,6 +37,7 @@ export function StudiosList({
   layout = 'grid',
 }: StudiosListProps) {
   const t = useTranslations('studio.list');
+  const tTable = useTranslations('studio.table.headers');
   const [studios, setStudios] = useState<StudioWithStats[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -124,28 +125,28 @@ export function StudiosList({
               <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
                 <tr>
                   <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    スタジオ名
+                    {tTable('studioName')}
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    住所
+                    {tTable('address')}
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    最大収容人数
+                    {tTable('maxCapacity')}
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    料金
+                    {tTable('price')}
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    評価
+                    {tTable('rating')}
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    設備
+                    {tTable('facilities')}
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    統計情報
+                    {tTable('stats')}
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    {/* アクション列 */}
+                    {/* {tTable('actions')} */}
                   </th>
                 </tr>
               </thead>
