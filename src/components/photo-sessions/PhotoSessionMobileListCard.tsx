@@ -54,7 +54,7 @@ export function PhotoSessionMobileListCard({
   return (
     <Link
       href={`/photo-sessions/${session.id}`}
-      className="block bg-white dark:bg-gray-900 rounded-lg shadow-sm hover:shadow-md transition-all p-4 border border-gray-200 dark:border-gray-800"
+      className="block bg-white dark:bg-gray-900 rounded-lg shadow-sm hover:shadow-md transition-all p-4 border border-gray-200 dark:border-gray-800 active-overlay"
       onClick={e => {
         if (onViewDetails) {
           e.preventDefault();

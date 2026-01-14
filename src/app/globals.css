@@ -445,3 +445,30 @@
     background-color: rgb(156 163 175);
   }
 }
+
+/* 押下時オーバーレイ効果 - ::before疑似要素で子要素の上に描画 */
+.active-overlay {
+  position: relative !important;
+}
+
+.active-overlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: transparent;
+  pointer-events: none;
+  z-index: 1 !important;
+  transition: background-color 0.1s ease-out;
+  border-radius: inherit;
+}
+
+.active-overlay:active::before,
+.active-overlay.active::before {
+  background-color: rgba(0, 0, 0, 0.25) !important;
+}
+
+/* ダークモード */
+.dark .active-overlay:active::before,
+.dark .active-overlay.active::before {
+  background-color: rgba(255, 255, 255, 0.25) !important;
+}

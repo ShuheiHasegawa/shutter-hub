@@ -692,13 +692,19 @@ export function UserScheduleManager({
       {/* メインカレンダー */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base lg:text-lg">
-            <Calendar className="h-4 w-4 lg:h-5 lg:w-5" />
-            スケジュールカレンダー
+          <CardTitle className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 text-base lg:text-lg">
+            <div className="flex items-center gap-2">
+              <Calendar className="h-4 w-4 lg:h-5 lg:w-5" />
+              <span>{t('calendar')}</span>
+            </div>
             {isOwnProfile && (
-              <div className="flex items-center justify-end">
-                <Link href="/calendar">
-                  <Button variant="navigation" size="sm">
+              <div className="w-full sm:w-auto sm:ml-auto">
+                <Link href="/calendar" className="w-full sm:w-auto inline-flex">
+                  <Button
+                    variant="navigation"
+                    size="sm"
+                    className="w-full sm:w-auto"
+                  >
                     {t('editOnCalendarPage')}
                   </Button>
                 </Link>

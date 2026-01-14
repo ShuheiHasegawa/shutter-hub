@@ -15,8 +15,8 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { Toggle } from '@/components/ui/toggle';
 import {
   Search,
   X,
@@ -502,13 +502,13 @@ export function CompactFilterBar({
                     </div>
                   </div>
 
-                  {/* 予約方式フィルター (2x2 コンパクト) */}
+                  {/* 予約方式フィルター */}
                   <div className="space-y-2">
                     <Label className="text-sm font-medium flex items-center gap-2">
                       <Star className="h-4 w-4 text-muted-foreground" />
                       予約方式
                     </Label>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="flex flex-wrap gap-2">
                       {Object.entries(bookingTypeLabels).map(
                         ([key, typeInfo]) => {
                           const Icon = typeInfo.icon;
@@ -516,28 +516,18 @@ export function CompactFilterBar({
                             key as BookingType
                           );
                           return (
-                            <div
+                            <Toggle
                               key={key}
-                              className="flex items-center space-x-2"
+                              pressed={isChecked}
+                              onPressedChange={() =>
+                                toggleBookingType(key as BookingType)
+                              }
+                              size="sm"
+                              aria-label={typeInfo.label}
                             >
-                              <Checkbox
-                                id={key}
-                                checked={isChecked}
-                                onCheckedChange={() =>
-                                  toggleBookingType(key as BookingType)
-                                }
-                                className="w-4 h-4"
-                              />
-                              <Label
-                                htmlFor={key}
-                                className="flex items-center gap-1.5 text-sm cursor-pointer flex-1 min-w-0"
-                              >
-                                <Icon className="h-3.5 w-3.5 flex-shrink-0" />
-                                <span className="truncate text-xs sm:text-sm">
-                                  {typeInfo.label}
-                                </span>
-                              </Label>
-                            </div>
+                              <Icon className="h-4 w-4" />
+                              {typeInfo.label}
+                            </Toggle>
                           );
                         }
                       )}

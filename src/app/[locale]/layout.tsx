@@ -14,6 +14,7 @@ import { ThemeProvider } from '@/components/providers/theme-provider';
 import { SWRProvider } from '@/components/providers/swr-provider';
 import { PullToRefreshProvider } from '@/components/providers/pull-to-refresh-provider';
 import { Toaster } from '@/components/ui/toaster';
+import { Toaster as SonnerToaster } from 'sonner';
 import { enableQueryStatistics } from '@/lib/supabase/query-wrapper';
 
 const inter = Inter({
@@ -141,7 +142,10 @@ export default async function LocaleLayout({
               disableTransitionOnChange
             >
               <PullToRefreshProvider>{children}</PullToRefreshProvider>
+              {/* Toaster (shadcn/ui): ReviewCard.tsxでuseToastを使用 */}
               <Toaster />
+              {/* SonnerToaster: 多数のコンポーネントでtoast from 'sonner'を使用 */}
+              <SonnerToaster richColors position="top-right" />
             </ThemeProvider>
           </SWRProvider>
         </NextIntlClientProvider>
