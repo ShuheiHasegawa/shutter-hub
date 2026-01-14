@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { logger } from '@/lib/utils/logger';
-
-export type LayoutType = 'card' | 'grid' | 'table';
+import type { LayoutType } from '@/components/ui/layout-toggle';
 
 const DEFAULT_LAYOUT: LayoutType = 'card';
 
