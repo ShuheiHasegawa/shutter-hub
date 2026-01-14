@@ -20,6 +20,8 @@
     "filter": "フィルター",
     "sort": "並び替え",
     "more": "もっと見る",
+    "clear": "クリア",
+    "apply": "適用する",
     "priceInputPlaceholder": "料金を入力してください",
     "empty": {
       "default": {
@@ -76,6 +78,7 @@
     "studioCreate": "スタジオ作成",
     "studioList": "スタジオ一覧",
     "studios": "スタジオ",
+    "subscription": "サブスクリプション",
     "timeline": "タイムライン"
   },
   "theme": {
@@ -266,7 +269,7 @@
       "add": "追加",
       "readOnlyAccess": "他のユーザーのスケジュールは閲覧のみ可能です",
       "readOnlyNotice": "このページではスケジュールの確認のみ可能です。",
-      "editOnCalendarPage": "空き時間の編集はカレンダーページへ →",
+      "editOnCalendarPage": "空き時間の編集はカレンダーページへ",
       "layerControl": {
         "userTime": "自分の空き時間",
         "organizerTime": "所属運営の空き時間",
@@ -617,6 +620,8 @@
       "clearFilters": "クリア"
     },
     "sidebar": {
+      "keyword": "キーワード",
+      "location": "場所",
       "dateRange": "開催日",
       "dateFrom": "開始日",
       "dateTo": "終了日",
@@ -626,8 +631,9 @@
       "participantsRange": "参加者数",
       "participantsMin": "最少人数",
       "participantsMax": "最多人数",
+      "bookingTypes": "予約方式",
       "options": "その他のオプション",
-      "onlyAvailable": "空きがある撮影会のみ",
+      "onlyAvailable": "空きあり",
       "filters": "フィルター",
       "closeFilters": "フィルターを閉じる",
       "openFilters": "フィルターを開く"
@@ -1348,7 +1354,7 @@
       "participantsMax": "最多人数",
       "bookingTypes": "予約方式",
       "options": "その他のオプション",
-      "onlyAvailable": "空きがある撮影会のみ",
+      "onlyAvailable": "空きあり",
       "sortBy": "並び順",
       "sortByStartTime": "開始日時順",
       "sortByPrice": "料金順",
@@ -1359,7 +1365,7 @@
     },
     "search": "検索",
     "searching": "検索中...",
-    "reset": "リセット",
+    "clear": "クリア",
     "results": {
       "title": "検索結果",
       "count": "件",
@@ -1758,7 +1764,7 @@
       "all": "すべて",
       "sortBy": "並び順",
       "search": "検索",
-      "reset": "リセット",
+      "clear": "クリア",
       "sort": {
         "createdAtDesc": "新着順",
         "createdAtAsc": "古い順",
@@ -1768,6 +1774,10 @@
         "ratingAsc": "評価順（低い順）",
         "priceAsc": "料金順（安い順）",
         "priceDesc": "料金順（高い順）"
+      },
+      "mobileFilter": {
+        "title": "絞り込み条件",
+        "floatButton": "絞り込み"
       }
     },
     "card": {
@@ -1795,6 +1805,12 @@
       "loadMore": "もっと見る",
       "loading": "読み込み中..."
     },
+    "layout": {
+      "card": "カード",
+      "grid": "グリッド",
+      "table": "テーブル",
+      "toggle": "レイアウト切り替え"
+    },
     "report": {
       "button": "報告",
       "title": "スタジオを報告",
@@ -1808,17 +1824,18 @@
       },
       "details": "詳細説明",
       "detailsPlaceholder": "報告の詳細を入力してください（任意）",
-      "warning": "報告数が3件に達すると自動的に非表示になります。",
+      "warning": "報告数が一定に達すると自動的に非表示になります。",
       "selectReason": "報告理由を選択してください",
       "success": "報告を送信しました",
       "error": "報告の送信に失敗しました",
       "submitting": "送信中...",
       "submit": "報告を送信",
-      "autoHiddenMessage": "報告数が3件に達したため、このスタジオは自動的に非表示になりました。"
+      "autoHiddenMessage": "報告数が一定に達したため、このスタジオは自動的に非表示になりました。"
     },
     "editNotice": {
       "title": "このスタジオ情報は誰でも編集可能です",
-      "description": "不適切な編集は報告機能で対応します。報告数が3件に達すると自動的に非表示になります。"
+      "description": "不適切な編集は報告機能で対応します。報告数が一定に達すると自動的に非表示になります。",
+      "detailDescription": "不適切な内容を見つけた場合は報告してください。報告数が一定に達すると自動的に非表示になります。"
     },
     "hiddenNotice": {
       "title": "このスタジオは一時的に非表示になっています",
