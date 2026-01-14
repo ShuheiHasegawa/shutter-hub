@@ -36,6 +36,16 @@ const Card = React.forwardRef<
     }, 150);
   };
 
+  // キーボードイベントハンドラ
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (onClick && (e.key === 'Enter' || e.key === ' ')) {
+      e.preventDefault();
+      handleActivate();
+      onClick(e as unknown as React.MouseEvent<HTMLDivElement>);
+      handleDeactivate();
+    }
+  };
+
   // クリーンアップ
   React.useEffect(() => {
     return () => {
@@ -64,6 +74,9 @@ const Card = React.forwardRef<
       onTouchStart={handleActivate}
       onTouchEnd={handleDeactivate}
       onTouchCancel={handleDeactivate}
+      onKeyDown={handleKeyDown}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
       {...props}
     >
       {children}
