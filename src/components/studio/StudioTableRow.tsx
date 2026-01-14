@@ -4,17 +4,18 @@ import React from 'react';
 import {
   MapPinIcon,
   UsersIcon,
-  StarIcon,
   TruckIcon,
   WifiIcon,
 } from '@heroicons/react/24/outline';
-import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import { useTranslations } from 'next-intl';
 import { EmptyImage } from '@/components/ui/empty-image';
 import { Building2 } from 'lucide-react';
 import { StudioWithStats } from '@/types/database';
 import { FavoriteHeartButton } from '@/components/ui/favorite-heart-button';
 import { FormattedPrice } from '@/components/ui/formatted-display';
+import { StarRating } from '@/components/ui/star-rating';
+import { getDefaultFavoriteState } from '@/lib/utils/favorite';
+import { getStudioImageUrl, getStudioImageAlt } from '@/lib/utils/studio';
 
 interface StudioTableRowProps {
   studio: StudioWithStats;
@@ -46,35 +47,6 @@ export function StudioTableRow({
     }
   };
 
-  const renderStars = (rating: number) => {
-    const stars = [];
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 >= 0.5;
-
-    for (let i = 0; i < 5; i++) {
-      if (i < fullStars) {
-        stars.push(
-          <StarIconSolid key={i} className="w-4 h-4 text-yellow-400" />
-        );
-      } else if (i === fullStars && hasHalfStar) {
-        stars.push(
-          <div key={i} className="relative">
-            <StarIcon className="w-4 h-4 text-theme-text-muted" />
-            <div className="absolute inset-0 overflow-hidden w-1/2">
-              <StarIconSolid className="w-4 h-4 text-yellow-400" />
-            </div>
-          </div>
-        );
-      } else {
-        stars.push(
-          <StarIcon key={i} className="w-4 h-4 text-theme-text-muted" />
-        );
-      }
-    }
-
-    return stars;
-  };
-
   return (
     <tr
       className={`hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
@@ -87,16 +59,8 @@ export function StudioTableRow({
         <div className="flex items-center gap-3">
           <div className="w-16 h-12 rounded overflow-hidden flex-shrink-0 relative">
             <EmptyImage
-              src={
-                studio.featuredPhotos && studio.featuredPhotos.length > 0
-                  ? studio.featuredPhotos[0].image_url
-                  : undefined
-              }
-              alt={
-                studio.featuredPhotos && studio.featuredPhotos.length > 0
-                  ? studio.featuredPhotos[0].alt_text || studio.name
-                  : studio.name
-              }
+              src={getStudioImageUrl(studio)}
+              alt={getStudioImageAlt(studio)}
               fallbackIcon={Building2}
               fallbackIconSize="sm"
               fill
@@ -158,7 +122,7 @@ export function StudioTableRow({
       <td className="px-6 py-4 whitespace-nowrap">
         {studio.evaluation_count > 0 ? (
           <div className="flex items-center gap-2">
-            <div className="flex">{renderStars(studio.average_rating)}</div>
+            <StarRating rating={studio.average_rating} size="md" />
             <div className="text-sm text-gray-900 dark:text-white">
               {studio.average_rating.toFixed(1)}
             </div>
@@ -220,19 +184,7 @@ export function StudioTableRow({
             position="inline"
             variant="outline"
             iconOnly
-            initialState={
-              favoriteState
-                ? {
-                    isFavorited: favoriteState.isFavorited,
-                    favoriteCount: favoriteState.favoriteCount,
-                    isAuthenticated: favoriteState.isAuthenticated,
-                  }
-                : {
-                    isFavorited: false,
-                    favoriteCount: 0,
-                    isAuthenticated: false,
-                  }
-            }
+            initialState={getDefaultFavoriteState(favoriteState)}
             onToggle={onFavoriteToggle}
           />
         )}

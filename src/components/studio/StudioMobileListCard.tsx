@@ -5,17 +5,17 @@ import {
   MapPinIcon,
   UsersIcon,
   CurrencyYenIcon,
-  StarIcon,
   TruckIcon,
   WifiIcon,
 } from '@heroicons/react/24/outline';
-import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import { Badge } from '@/components/ui/badge';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import type { StudioWithStats } from '@/types/database';
 import { FormattedPrice } from '@/components/ui/formatted-display';
 import { FavoriteHeartButton } from '@/components/ui/favorite-heart-button';
+import { StarRating } from '@/components/ui/star-rating';
+import { getDefaultFavoriteState } from '@/lib/utils/favorite';
 
 interface StudioMobileListCardProps {
   studio: StudioWithStats;
@@ -48,35 +48,6 @@ export function StudioMobileListCard({
     } else {
       router.push(`/studios/${studio.id}`);
     }
-  };
-
-  const renderStars = (rating: number) => {
-    const stars = [];
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 >= 0.5;
-
-    for (let i = 0; i < 5; i++) {
-      if (i < fullStars) {
-        stars.push(
-          <StarIconSolid key={i} className="w-3 h-3 text-yellow-400" />
-        );
-      } else if (i === fullStars && hasHalfStar) {
-        stars.push(
-          <div key={i} className="relative">
-            <StarIcon className="w-3 h-3 text-theme-text-muted" />
-            <div className="absolute inset-0 overflow-hidden w-1/2">
-              <StarIconSolid className="w-3 h-3 text-yellow-400" />
-            </div>
-          </div>
-        );
-      } else {
-        stars.push(
-          <StarIcon key={i} className="w-3 h-3 text-theme-text-muted" />
-        );
-      }
-    }
-
-    return stars;
   };
 
   return (
@@ -118,19 +89,7 @@ export function StudioMobileListCard({
               position="inline"
               variant="ghost"
               iconOnly
-              initialState={
-                favoriteState
-                  ? {
-                      isFavorited: favoriteState.isFavorited,
-                      favoriteCount: favoriteState.favoriteCount,
-                      isAuthenticated: favoriteState.isAuthenticated,
-                    }
-                  : {
-                      isFavorited: false,
-                      favoriteCount: 0,
-                      isAuthenticated: false,
-                    }
-              }
+              initialState={getDefaultFavoriteState(favoriteState)}
               onToggle={onFavoriteToggle}
             />
           )}
@@ -177,7 +136,7 @@ export function StudioMobileListCard({
         <div className="flex items-center gap-1">
           {studio.evaluation_count > 0 ? (
             <>
-              <div className="flex">{renderStars(studio.average_rating)}</div>
+              <StarRating rating={studio.average_rating} size="sm" />
               <span className="text-xs">
                 {studio.average_rating.toFixed(1)} ({studio.evaluation_count})
               </span>

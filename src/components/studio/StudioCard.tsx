@@ -6,11 +6,9 @@ import {
   MapPinIcon,
   UsersIcon,
   CurrencyYenIcon,
-  StarIcon,
   TruckIcon,
   WifiIcon,
 } from '@heroicons/react/24/outline';
-import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import { Building2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -18,6 +16,9 @@ import { EmptyImage } from '@/components/ui/empty-image';
 import { StudioWithStats } from '@/types/database';
 import { CardFavoriteButton } from '@/components/ui/favorite-heart-button';
 import { FormattedPrice } from '@/components/ui/formatted-display';
+import { StarRating } from '@/components/ui/star-rating';
+import { getDefaultFavoriteState } from '@/lib/utils/favorite';
+import { getStudioImageUrl, getStudioImageAlt } from '@/lib/utils/studio';
 
 interface StudioCardProps {
   studio: StudioWithStats;
@@ -71,35 +72,6 @@ export function StudioCard({
     }
   };
 
-  const renderStars = (rating: number) => {
-    const stars = [];
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 >= 0.5;
-
-    for (let i = 0; i < 5; i++) {
-      if (i < fullStars) {
-        stars.push(
-          <StarIconSolid key={i} className="w-4 h-4 text-yellow-400" />
-        );
-      } else if (i === fullStars && hasHalfStar) {
-        stars.push(
-          <div key={i} className="relative">
-            <StarIcon className="w-4 h-4 text-theme-text-muted" />
-            <div className="absolute inset-0 overflow-hidden w-1/2">
-              <StarIconSolid className="w-4 h-4 text-yellow-400" />
-            </div>
-          </div>
-        );
-      } else {
-        stars.push(
-          <StarIcon key={i} className="w-4 h-4 text-theme-text-muted" />
-        );
-      }
-    }
-
-    return stars;
-  };
-
   return (
     <Card
       data-testid={`studio-card-${studio.id}`}
@@ -112,16 +84,8 @@ export function StudioCard({
         {/* メイン画像 */}
         <div className="aspect-video relative bg-theme-neutral/10 rounded-t-lg overflow-hidden">
           <EmptyImage
-            src={
-              studio.featuredPhotos && studio.featuredPhotos.length > 0
-                ? studio.featuredPhotos[0].image_url
-                : undefined
-            }
-            alt={
-              studio.featuredPhotos && studio.featuredPhotos.length > 0
-                ? studio.featuredPhotos[0].alt_text || studio.name
-                : studio.name
-            }
+            src={getStudioImageUrl(studio)}
+            alt={getStudioImageAlt(studio)}
             fallbackIcon={Building2}
             fallbackIconSize="lg"
             fill
@@ -166,19 +130,7 @@ export function StudioCard({
               favoriteType="studio"
               favoriteId={studio.id}
               size="md"
-              initialState={
-                favoriteState
-                  ? {
-                      isFavorited: favoriteState.isFavorited,
-                      favoriteCount: favoriteState.favoriteCount,
-                      isAuthenticated: favoriteState.isAuthenticated,
-                    }
-                  : {
-                      isFavorited: false,
-                      favoriteCount: 0,
-                      isAuthenticated: false,
-                    }
-              }
+              initialState={getDefaultFavoriteState(favoriteState)}
               onToggle={onFavoriteToggle}
             />
           )}
@@ -237,7 +189,7 @@ export function StudioCard({
         {/* 評価 */}
         {studio.evaluation_count > 0 && (
           <div className="flex items-center gap-2 mb-3">
-            <div className="flex">{renderStars(studio.average_rating)}</div>
+            <StarRating rating={studio.average_rating} size="md" />
             <span className="text-sm">
               {studio.average_rating.toFixed(1)}{' '}
               {t('reviewCount', { count: studio.evaluation_count })}

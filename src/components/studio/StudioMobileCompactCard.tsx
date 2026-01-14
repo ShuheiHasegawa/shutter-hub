@@ -10,6 +10,8 @@ import { FormattedPrice } from '@/components/ui/formatted-display';
 import { FavoriteHeartButton } from '@/components/ui/favorite-heart-button';
 import { EmptyImage } from '@/components/ui/empty-image';
 import { Building2 } from 'lucide-react';
+import { getDefaultFavoriteState } from '@/lib/utils/favorite';
+import { getStudioImageUrl, getStudioImageAlt } from '@/lib/utils/studio';
 
 interface StudioMobileCompactCardProps {
   studio: StudioWithStats;
@@ -54,16 +56,8 @@ export function StudioMobileCompactCard({
       {/* 画像セクション */}
       <div className="relative w-24 h-24 flex-shrink-0 rounded-lg overflow-hidden">
         <EmptyImage
-          src={
-            studio.featuredPhotos && studio.featuredPhotos.length > 0
-              ? studio.featuredPhotos[0].image_url
-              : undefined
-          }
-          alt={
-            studio.featuredPhotos && studio.featuredPhotos.length > 0
-              ? studio.featuredPhotos[0].alt_text || studio.name
-              : studio.name
-          }
+          src={getStudioImageUrl(studio)}
+          alt={getStudioImageAlt(studio)}
           fallbackIcon={Building2}
           fallbackIconSize="sm"
           fill
@@ -141,19 +135,7 @@ export function StudioMobileCompactCard({
             position="inline"
             variant="ghost"
             iconOnly
-            initialState={
-              favoriteState
-                ? {
-                    isFavorited: favoriteState.isFavorited,
-                    favoriteCount: favoriteState.favoriteCount,
-                    isAuthenticated: favoriteState.isAuthenticated,
-                  }
-                : {
-                    isFavorited: false,
-                    favoriteCount: 0,
-                    isAuthenticated: false,
-                  }
-            }
+            initialState={getDefaultFavoriteState(favoriteState)}
             onToggle={onFavoriteToggle}
           />
         )}
