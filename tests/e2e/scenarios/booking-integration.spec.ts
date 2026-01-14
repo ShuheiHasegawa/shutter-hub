@@ -90,7 +90,8 @@ test.describe('予約システム統合シナリオ', () => {
     const participantCount = await userPage
       .locator('[data-testid="participant-count"]')
       .textContent();
-    expect(participantCount).toMatch(/\d+\/\d+/);
+    // バックトラッキングを避けるため、より明確なパターンを使用
+    expect(participantCount).toMatch(/^\d+\/\d+$/);
 
     // Step 5: 予約一覧確認
     await userPage.goto('/ja/bookings');
@@ -240,7 +241,8 @@ test.describe('予約システム統合シナリオ', () => {
     const participantCount = await organizerPage
       .locator('[data-testid="participant-count"]')
       .textContent();
-    const match = participantCount?.match(/(\d+)\/(\d+)/);
+    // バックトラッキングを避けるため、より明確なパターンを使用
+    const match = participantCount?.match(/^(\d+)\/(\d+)$/);
     if (match) {
       const current = parseInt(match[1]);
       const max = parseInt(match[2]);
