@@ -64,7 +64,6 @@ export function MobileFilterSheet({
         className={cn(
           'fixed right-6 w-12 h-12 bg-surface-neutral text-surface-primary-foreground rounded-full shadow-2xl hover:scale-110 z-50 flex flex-col items-center justify-center',
           'transition-transform duration-300 ease-in-out',
-          isVisible ? 'translate-y-0' : 'translate-y-full',
           className
         )}
         aria-label={floatButtonLabel || t('filter')}

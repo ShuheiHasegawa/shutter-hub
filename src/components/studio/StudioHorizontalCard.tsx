@@ -86,16 +86,8 @@ export function StudioHorizontalCard({
           {/* 画像エリア */}
           <div className="relative w-64 lg:w-80 flex-shrink-0 h-48 lg:h-56 overflow-hidden">
             <EmptyImage
-              src={
-                studio.featuredPhotos && studio.featuredPhotos.length > 0
-                  ? studio.featuredPhotos[0].image_url
-                  : undefined
-              }
-              alt={
-                studio.featuredPhotos && studio.featuredPhotos.length > 0
-                  ? studio.featuredPhotos[0].alt_text || studio.name
-                  : studio.name
-              }
+              src={getStudioImageUrl(studio)}
+              alt={getStudioImageAlt(studio)}
               fallbackIcon={Building2}
               fallbackIconSize="lg"
               fill

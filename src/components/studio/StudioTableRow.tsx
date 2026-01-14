@@ -8,6 +8,7 @@ import {
   WifiIcon,
 } from '@heroicons/react/24/outline';
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 import { EmptyImage } from '@/components/ui/empty-image';
 import { Building2 } from 'lucide-react';
 import { StudioWithStats } from '@/types/database';
@@ -38,17 +39,21 @@ export function StudioTableRow({
   favoriteState,
   onFavoriteToggle,
 }: StudioTableRowProps) {
+  const router = useRouter();
   const t = useTranslations('studio.card');
   const tPrefecture = useTranslations('prefecture');
 
   const handleClick = () => {
     if (onSelect) {
       onSelect(studio);
+    } else {
+      router.push(`/studios/${studio.id}`);
     }
   };
 
   return (
     <tr
+      data-testid={`studio-table-row-${studio.id}`}
       className={`hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
         onSelect ? 'cursor-pointer' : ''
       } ${isSelected ? 'bg-theme-primary/10' : ''}`}
