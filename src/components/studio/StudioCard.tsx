@@ -102,6 +102,7 @@ export function StudioCard({
 
   return (
     <Card
+      data-testid={`studio-card-${studio.id}`}
       className={`hover:shadow-lg transition-all duration-200 cursor-pointer ${
         isSelected ? 'ring-2 ring-theme-primary' : ''
       }`}

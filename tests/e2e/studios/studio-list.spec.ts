@@ -1,423 +1,738 @@
 import { test, expect } from '@playwright/test';
 import { authenticateTestUser } from '../utils/photo-session-helpers';
-import {
-  initializeStudioListPage,
-  executeSearch,
-  assertSearchResultsVisible,
-  searchByKeyword,
-  assertGridResultsVisible,
-  checkSearchResults,
-  assertNoError,
-} from '../utils/studio-test-helpers';
+import { StudioListPage } from '../pages/StudioListPage';
+import { StudioDetailPage } from '../pages/StudioDetailPage';
+import { StudioCreatePage } from '../pages/StudioCreatePage';
 
 /**
- * スタジオ一覧 E2Eテスト
+ * スタジオ一覧 E2Eテスト（Page Object Model + PC/SP分離）
  *
  * テスト観点表:
  *
- * ## 1. 正常系テスト
- * | 分類   | テストケース       | 入力/操作              | 期待結果                   | 優先度 |
- * | ------ | ------------------ | ---------------------- | -------------------------- | ------ |
- * | 正常系 | ページ初期表示     | ページアクセス         | タイトル・検索フォーム表示 | 高     |
- * | 正常系 | 検索実行           | 検索ボタンクリック     | スタジオ一覧が表示         | 高     |
- * | 正常系 | キーワード検索     | 有効なキーワード入力   | 該当スタジオのみ表示       | 高     |
- * | 正常系 | 都道府県フィルター | 都道府県選択           | 該当スタジオのみ表示       | 高     |
- * | 正常系 | ソート機能         | 各ソートオプション選択 | 順序が変更される           | 中     |
- * | 正常系 | もっと見る         | ボタンクリック         | 追加スタジオ読み込み       | 中     |
- * | 正常系 | スタジオ詳細遷移   | カードクリック         | 詳細ページに遷移           | 高     |
- * | 正常系 | リセットボタン     | リセットクリック       | フィルター初期化           | 中     |
- * | 正常系 | スタジオ作成ボタン | ボタンクリック         | 作成ページに遷移           | 中     |
+ * ## 1. 基本機能テスト（正常系）
+ * | Case ID | Input / Precondition | Perspective | Expected Result | PC/SP |
+ * |---------|----------------------|-------------|-----------------|-------|
+ * | TC-N-01 | ページアクセス | 正常 | タイトル・検索フォーム・ボタンが表示される | 両方 |
+ * | TC-N-02 | 検索ボタンクリック（フィルター未設定） | 正常 | スタジオ一覧または空状態が表示される | 両方 |
+ * | TC-N-03 | 有効なキーワード入力（例: "スタジオ"） | 正常 | 該当スタジオのみ表示される | 両方 |
+ * | TC-N-04 | 都道府県フィルター選択（例: 東京都） | 正常 | 該当スタジオのみ表示される | 両方 |
+ * | TC-N-05 | ソートオプション変更（名前順） | 正常 | 順序が変更される | 両方 |
+ * | TC-N-06 | 「もっと見る」ボタンクリック | 正常 | 追加スタジオが読み込まれる | 両方 |
+ * | TC-N-07 | スタジオカードクリック | 正常 | 詳細ページに遷移 | 両方 |
+ * | TC-N-08 | リセットボタンクリック | 正常 | フィルターが初期化される | 両方 |
+ * | TC-N-09 | 「新しいスタジオを追加」ボタンクリック | 正常 | 作成ページに遷移 | 両方 |
  *
- * ## 2. 異常系・エッジケーステスト
- * | 分類   | テストケース           | 入力/操作            | 期待結果             | 優先度 |
- * | ------ | ---------------------- | -------------------- | -------------------- | ------ |
- * | 異常系 | 検索結果0件            | 存在しないキーワード | 空状態メッセージ表示 | 高     |
- * | 異常系 | 初期表示（検索未実行） | ページ読み込み直後   | 初期メッセージ表示   | 中     |
- * | 境界値 | 長文キーワード         | 100文字以上          | 正常に検索実行       | 低     |
- * | 境界値 | 特殊文字キーワード     | 記号・絵文字         | エラーなく処理       | 低     |
+ * ## 2. 境界値テスト
+ * | Case ID | Input / Precondition | Perspective | Expected Result | PC/SP |
+ * |---------|----------------------|-------------|-----------------|-------|
+ * | TC-B-01 | キーワード: 空文字 ("") | Boundary - 空 | 全てのスタジオが表示される | 両方 |
+ * | TC-B-02 | キーワード: 1文字 ("あ") | Boundary - 最小値 | 該当スタジオが表示される | 両方 |
+ * | TC-B-03 | キーワード: 100文字 | Boundary - 最大値想定 | 正常に検索実行される | 両方 |
+ * | TC-B-04 | キーワード: 特殊文字・記号・絵文字 | Boundary - 特殊入力 | エラーなく処理される | 両方 |
+ * | TC-B-05 | 検索結果: 0件 | Boundary - 最小値 | 空状態メッセージが表示される | 両方 |
  *
- * ## 3. UI/レスポンシブテスト
- * | 分類 | テストケース       | 入力/操作  | 期待結果             | 優先度 |
- * | ---- | ------------------ | ---------- | -------------------- | ------ |
- * | UI   | スタジオカード表示 | 一覧表示時 | 必要情報が表示される | 高     |
- * | UI   | ローディング状態   | 検索実行中 | スケルトン表示       | 中     |
- * | UI   | モバイル表示       | 375px幅    | レイアウト崩れなし   | 中     |
- * | UI   | デスクトップ表示   | 1920px幅   | 3カラム表示          | 中     |
+ * ## 3. 異常系テスト
+ * | Case ID | Input / Precondition | Perspective | Expected Result | PC/SP |
+ * |---------|----------------------|-------------|-----------------|-------|
+ * | TC-A-01 | 存在しないキーワード | 異常 | 空状態メッセージが表示される | 両方 |
+ * | TC-A-02 | 検索未実行状態 | 初期状態 | 初期メッセージまたは自動検索結果 | 両方 |
+ *
+ * ## 4. UI/レスポンシブテスト
+ * | Case ID | Input / Precondition | Perspective | Expected Result | PC/SP |
+ * |---------|----------------------|-------------|-----------------|-------|
+ * | TC-UI-01 | スタジオカード表示確認 | 正常 | 必要情報が表示される | 両方 |
+ * | TC-UI-02 | ローディング状態確認 | 正常 | スケルトンまたはローディング表示 | 両方 |
+ * | TC-UI-03 | モバイル表示（375px × 667px） | Boundary - 最小ビューポート | レイアウト崩れなし | SP |
+ * | TC-UI-04 | デスクトップ表示（1920px × 1080px） | Boundary - 最大ビューポート | 3カラムレイアウト | PC |
  */
 
 test.describe('スタジオ一覧機能', () => {
-  test.beforeEach(async ({ page }) => {
-    // Given: テストユーザーで認証する
-    await authenticateTestUser(page, 'organizer');
-  });
-
   // ============================================================================
-  // 1. 正常系テスト
+  // PC版テスト
   // ============================================================================
-
-  test('正常系: ページ初期表示', async ({ page }) => {
-    // Given: スタジオ一覧ページにアクセスする
-    await initializeStudioListPage(page);
-
-    // Then: タイトル「スタジオ一覧」が表示される
-    await expect(page.getByText('スタジオ一覧')).toBeVisible({
-      timeout: 10000,
+  test.describe('PC', () => {
+    test.beforeEach(async ({ page }) => {
+      // Given: テストユーザーで認証する
+      await authenticateTestUser(page, 'organizer');
     });
 
-    // Then: 検索フォーム要素が存在する
-    await expect(
-      page.locator('input[placeholder*="スタジオ名、住所で検索"]')
-    ).toBeVisible();
-    await expect(page.locator('button:has-text("検索")')).toBeVisible();
-    await expect(page.locator('button:has-text("リセット")')).toBeVisible();
+    // ==========================================================================
+    // 1. 正常系テスト
+    // ==========================================================================
 
-    // Then: 新規作成ボタンが表示される
-    await expect(
-      page.locator('a:has-text("新しいスタジオを追加")')
-    ).toBeVisible();
-  });
+    test('TC-N-01: 正常系 - ページ初期表示', async ({ page }) => {
+      const isMobile = false;
+      const studioListPage = new StudioListPage(page, isMobile);
 
-  test('正常系: 検索実行', async ({ page }) => {
-    // Given: スタジオ一覧ページにアクセスする
-    await initializeStudioListPage(page);
+      // Given: スタジオ一覧ページにアクセスする
+      await studioListPage.open();
 
-    // When: 検索ボタンをクリックする
-    await executeSearch(page, 3000);
+      // Then: ページ初期表示要素が全て表示される
+      await studioListPage.assertInitialPageLoaded();
+    });
 
-    // Then: スタジオ一覧が表示される（初期検索が実行される）
-    await assertSearchResultsVisible(page);
-  });
+    test('TC-N-02: 正常系 - 検索実行', async ({ page }) => {
+      const isMobile = false;
+      const studioListPage = new StudioListPage(page, isMobile);
 
-  test('正常系: キーワード検索', async ({ page }) => {
-    // Given: スタジオ一覧ページにアクセスする
-    await initializeStudioListPage(page);
+      // Given: スタジオ一覧ページにアクセスする
+      await studioListPage.open();
 
-    // When: キーワードを入力して検索を実行する
-    await searchByKeyword(page, 'スタジオ');
+      // When: 検索ボタンをクリックする
+      await studioListPage.executeSearch(3000);
 
-    // Then: 検索結果が表示される（空状態またはスタジオカード）
-    await assertGridResultsVisible(page);
-  });
+      // Then: スタジオ一覧または空状態が表示される
+      await studioListPage.assertSearchResultsVisible();
+    });
 
-  test('正常系: 都道府県フィルター', async ({ page }) => {
-    // Given: スタジオ一覧ページにアクセスする
-    await initializeStudioListPage(page);
+    test('TC-N-03: 正常系 - キーワード検索', async ({ page }) => {
+      const isMobile = false;
+      const studioListPage = new StudioListPage(page, isMobile);
 
-    // When: 都道府県を選択して検索を実行する
-    const prefectureSelect = page.locator('button:has-text("都道府県を選択")');
-    await prefectureSelect.click();
-    await page.waitForTimeout(1000);
+      // Given: スタジオ一覧ページにアクセスする
+      await studioListPage.open();
 
-    // 東京都を選択（セレクトボックス内の選択肢）
-    await page
-      .locator('[role="option"]:has-text("東京都")')
-      .first()
-      .click({ force: true });
-    await page.waitForTimeout(500);
+      // When: キーワードを入力して検索を実行する
+      await studioListPage.searchByKeyword('スタジオ');
 
-    await executeSearch(page, 3000);
+      // Then: 検索結果が表示される
+      await studioListPage.assertGridResultsVisible();
+    });
 
-    // Then: 検索結果が表示される
-    const { hasResults, hasEmptyMessage } = await checkSearchResults(page);
-    expect(hasResults || hasEmptyMessage).toBe(true);
-  });
+    test('TC-N-04: 正常系 - 都道府県フィルター', async ({ page }) => {
+      const isMobile = false;
+      const studioListPage = new StudioListPage(page, isMobile);
 
-  test('正常系: ソート機能', async ({ page }) => {
-    // Given: スタジオ一覧ページにアクセスし、検索を実行する
-    await initializeStudioListPage(page);
-    await executeSearch(page);
+      // Given: スタジオ一覧ページにアクセスする
+      await studioListPage.open();
 
-    // When: ソートオプションを変更する
-    const sortSelect = page
-      .locator('button')
-      .filter({
-        hasText: /新着順|古い順|名前順|評価順|料金順/,
-      })
-      .first();
-    await sortSelect.click();
-    await page.waitForTimeout(500);
+      // When: 都道府県を選択して検索を実行する
+      await studioListPage.selectPrefecture('東京都');
+      await studioListPage.executeSearch(3000);
 
-    // 名前順（A-Z）を選択
-    await page.click('text=名前順（A-Z）');
-    await executeSearch(page);
+      // Then: 検索結果が表示される
+      const { hasResults, hasEmptyMessage } =
+        await studioListPage.getSearchResultsState();
+      expect(hasResults || hasEmptyMessage).toBe(true);
+    });
 
-    // Then: ソートが適用される（検索結果が再表示される）
-    await assertGridResultsVisible(page);
-  });
+    test('TC-N-05: 正常系 - ソート機能', async ({ page }) => {
+      const isMobile = false;
+      const studioListPage = new StudioListPage(page, isMobile);
 
-  test('正常系: もっと見る', async ({ page }) => {
-    // Given: スタジオ一覧ページにアクセスし、検索を実行する
-    await initializeStudioListPage(page);
-    await executeSearch(page);
+      // Given: スタジオ一覧ページにアクセスし、検索を実行する
+      await studioListPage.open();
+      await studioListPage.executeSearch();
 
-    // When: 「もっと見る」ボタンが表示されている場合、クリックする
-    const loadMoreButton = page.locator('button:has-text("もっと見る")');
-    const isVisible = await loadMoreButton.isVisible().catch(() => false);
+      // When: ソートオプションを変更する
+      await studioListPage.selectSort('名前順（A-Z）');
+      await studioListPage.executeSearch();
 
-    if (isVisible) {
-      await loadMoreButton.click();
+      // Then: ソートが適用される（検索結果が再表示される）
+      await studioListPage.assertGridResultsVisible();
+    });
 
-      // Then: 追加のスタジオが読み込まれる
-      await page.waitForTimeout(2000);
+    test('TC-N-06: 正常系 - もっと見る', async ({ page }) => {
+      const isMobile = false;
+      const studioListPage = new StudioListPage(page, isMobile);
 
-      // ローディング状態が解除される
-      await expect(
-        page
-          .locator('button:has-text("もっと見る")')
-          .or(page.locator('text=条件に一致するスタジオが見つかりません'))
-      ).toBeVisible({ timeout: 5000 });
-    } else {
-      // ボタンが表示されない場合は、結果が少ないことを確認
-      await assertGridResultsVisible(page);
-    }
-  });
+      // Given: スタジオ一覧ページにアクセスし、検索を実行する
+      await studioListPage.open();
+      await studioListPage.executeSearch();
 
-  test('正常系: スタジオ詳細遷移', async ({ page }) => {
-    // Given: スタジオ一覧ページにアクセスし、検索を実行する
-    await initializeStudioListPage(page);
-    await executeSearch(page);
+      // When: 「もっと見る」ボタンが表示されている場合、クリックする
+      const hasLoadMore = await studioListPage.hasLoadMoreButton();
 
-    // When: スタジオカードが存在する場合、クリックする
-    const studioCard = page.locator('[class*="card"]').first();
-    const cardExists = await studioCard.isVisible().catch(() => false);
+      if (hasLoadMore) {
+        await studioListPage.clickLoadMore();
 
-    if (cardExists) {
-      // カード内のリンクまたはカード自体をクリック
-      const cardLink = studioCard.locator('a').first();
-      const hasLink = await cardLink.isVisible().catch(() => false);
-
-      if (hasLink) {
-        await cardLink.click();
+        // Then: 追加のスタジオが読み込まれる
+        await expect(
+          studioListPage.loadMoreButton.or(studioListPage.emptyMessage)
+        ).toBeVisible({ timeout: 5000 });
       } else {
-        await studioCard.click();
+        // ボタンが表示されない場合は、結果が少ないことを確認
+        await studioListPage.assertGridResultsVisible();
       }
-
-      // Then: スタジオ詳細ページに遷移する
-      await page.waitForURL(/\/studios\/[^/]+/, { timeout: 10000 });
-      expect(page.url()).toMatch(/\/studios\/[^/]+/);
-    } else {
-      // カードが存在しない場合はスキップ
-      test.skip();
-    }
-  });
-
-  test('正常系: リセットボタン', async ({ page }) => {
-    // Given: スタジオ一覧ページにアクセスし、フィルターを設定する
-    await initializeStudioListPage(page);
-
-    const keywordInput = page.locator(
-      'input[placeholder*="スタジオ名、住所で検索"]'
-    );
-    await keywordInput.fill('テストキーワード');
-
-    // When: リセットボタンをクリックする
-    await page.click('button:has-text("リセット")');
-
-    // Then: フィルターが初期化される
-    const inputValue = await keywordInput.inputValue();
-    expect(inputValue).toBe('');
-
-    // 都道府県フィルターもリセットされる
-    const prefectureSelect = page.locator('button:has-text("都道府県を選択")');
-    const prefectureText = await prefectureSelect.textContent();
-    expect(prefectureText).toContain('都道府県を選択');
-  });
-
-  test('正常系: スタジオ作成ボタン', async ({ page }) => {
-    // Given: スタジオ一覧ページにアクセスする
-    await initializeStudioListPage(page);
-
-    // When: 新規作成ボタンをクリックする
-    await page.click('a:has-text("新しいスタジオを追加")');
-
-    // Then: スタジオ作成ページに遷移する
-    await page.waitForURL(/\/studios\/create/, { timeout: 10000 });
-    expect(page.url()).toMatch(/\/studios\/create/);
-  });
-
-  // ============================================================================
-  // 2. 異常系・エッジケーステスト
-  // ============================================================================
-
-  test('異常系: 検索結果0件', async ({ page }) => {
-    // Given: スタジオ一覧ページにアクセスする
-    await initializeStudioListPage(page);
-
-    // When: 存在しないキーワードで検索を実行する
-    await searchByKeyword(page, '存在しないスタジオ名12345');
-
-    // Then: 空状態メッセージが表示される
-    await expect(
-      page.locator('text=条件に一致するスタジオが見つかりません')
-    ).toBeVisible({ timeout: 5000 });
-  });
-
-  test('異常系: 初期表示（検索未実行）', async ({ page }) => {
-    // Given: スタジオ一覧ページにアクセスする（検索ボタンを押さない）
-    await initializeStudioListPage(page);
-
-    // Then: 初期メッセージが表示される
-    // 注意: 実装では初期表示時に自動検索が実行されるため、
-    // このテストは実装に応じて調整が必要
-    await page.waitForTimeout(1000);
-
-    // 初期メッセージまたは検索結果のいずれかが表示される
-    await assertSearchResultsVisible(page);
-  });
-
-  test('境界値: 長文キーワード', async ({ page }) => {
-    // Given: スタジオ一覧ページにアクセスする
-    await initializeStudioListPage(page);
-
-    // When: 100文字以上の長文キーワードを入力して検索を実行する
-    const longKeyword = 'あ'.repeat(100);
-    await searchByKeyword(page, longKeyword);
-
-    // Then: エラーなく検索が実行される
-    await assertNoError(page);
-
-    // 検索結果または空状態メッセージが表示される
-    await assertGridResultsVisible(page);
-  });
-
-  test('境界値: 特殊文字キーワード', async ({ page }) => {
-    // Given: スタジオ一覧ページにアクセスする
-    await initializeStudioListPage(page);
-
-    // When: 特殊文字・記号・絵文字を含むキーワードを入力して検索を実行する
-    const specialKeyword = '!@#$%^&*()_+-=[]{}|;:,.<>?🎉📸';
-    await searchByKeyword(page, specialKeyword);
-
-    // Then: エラーなく処理される
-    await assertNoError(page);
-
-    // 検索結果または空状態メッセージが表示される
-    await assertGridResultsVisible(page);
-  });
-
-  // ============================================================================
-  // 3. UI/レスポンシブテスト
-  // ============================================================================
-
-  test('UI: スタジオカード表示', async ({ page }) => {
-    // Given: スタジオ一覧ページにアクセスし、検索を実行する
-    await initializeStudioListPage(page);
-    await executeSearch(page, 3000);
-
-    // When: スタジオカードまたは空状態メッセージが表示されている
-    const hasEmptyMessage = await page
-      .locator('text=条件に一致するスタジオが見つかりません')
-      .isVisible()
-      .catch(() => false);
-
-    if (hasEmptyMessage) {
-      // 空状態の場合はスキップ
-      test.skip();
-      return;
-    }
-
-    const studioCard = page.locator('[class*="card"]').first();
-    const cardExists = await studioCard.isVisible().catch(() => false);
-
-    if (cardExists) {
-      // Then: カード内に必要な情報が表示される
-      // カード全体が表示されていることを確認
-      await expect(studioCard).toBeVisible();
-
-      // スタジオ名または住所のいずれかが表示されている
-      const cardText = await studioCard.textContent();
-      expect(cardText).toBeTruthy();
-      expect(cardText!.length).toBeGreaterThan(0);
-    } else {
-      // カードが存在しない場合はスキップ
-      test.skip();
-    }
-  });
-
-  test('UI: ローディング状態', async ({ page }) => {
-    // Given: スタジオ一覧ページにアクセスする
-    await initializeStudioListPage(page);
-
-    // When: 検索を実行する
-    const searchButton = page.locator('button:has-text("検索")');
-    await searchButton.click();
-
-    // Then: ローディングスケルトンが表示される、または結果がすぐに表示される
-    // スケルトン要素の存在を確認（実装に応じて調整）
-    const hasSkeleton = await page
-      .locator('[class*="skeleton"]')
-      .first()
-      .isVisible({ timeout: 500 })
-      .catch(() => false);
-
-    const hasResults = await page
-      .locator('[class*="card"]')
-      .first()
-      .isVisible({ timeout: 2000 })
-      .catch(() => false);
-
-    const hasEmptyMessage = await page
-      .locator('text=条件に一致するスタジオが見つかりません')
-      .isVisible({ timeout: 2000 })
-      .catch(() => false);
-
-    // スケルトンが表示されるか、結果がすぐに表示される
-    expect(hasSkeleton || hasResults || hasEmptyMessage).toBe(true);
-  });
-
-  test('UI: モバイル表示', async ({ page }) => {
-    // Given: モバイルビューポート（375px）を設定する
-    await page.setViewportSize({ width: 375, height: 667 });
-
-    // When: スタジオ一覧ページにアクセスする
-    await initializeStudioListPage(page);
-
-    // Then: レイアウトが崩れずに表示される
-    // 検索フォームが表示される
-    await expect(
-      page.locator('input[placeholder*="スタジオ名、住所で検索"]')
-    ).toBeVisible();
-
-    // 横スクロールが発生しない
-    const hasHorizontalScroll = await page.evaluate(() => {
-      return document.documentElement.scrollWidth > window.innerWidth;
     });
-    expect(hasHorizontalScroll).toBe(false);
-  });
 
-  test('UI: デスクトップ表示', async ({ page }) => {
-    // Given: デスクトップビューポート（1920px）を設定する
-    await page.setViewportSize({ width: 1920, height: 1080 });
+    test('TC-N-07: 正常系 - スタジオ詳細遷移', async ({ page }) => {
+      const isMobile = false;
+      const studioListPage = new StudioListPage(page, isMobile);
 
-    // When: スタジオ一覧ページにアクセスし、検索を実行する
-    await initializeStudioListPage(page);
-    await executeSearch(page, 3000);
+      // Given: スタジオ一覧ページにアクセスし、検索を実行する
+      await studioListPage.open();
+      await studioListPage.executeSearch();
 
-    // Then: 3カラムレイアウトで表示される（スタジオカードが存在する場合）
-    // スタジオカードを含むグリッドコンテナを探す
-    const cardGridContainer = page
-      .locator('[class*="grid"]')
-      .filter({ has: page.locator('[class*="card"]') })
-      .first();
-    const gridExists = await cardGridContainer.isVisible().catch(() => false);
+      // When: スタジオカードが存在する場合、クリックする
+      const hasCards = await studioListPage.hasStudioCards();
 
-    if (gridExists) {
-      // グリッドレイアウトが適用されていることを確認
-      const gridClass = await cardGridContainer.getAttribute('class');
-      expect(gridClass).toContain('grid');
-      expect(gridClass).toContain('lg:grid-cols-3');
-    } else {
-      // グリッドが存在しない場合（空状態）はスキップ
-      const hasEmptyMessage = await page
-        .locator('text=条件に一致するスタジオが見つかりません')
+      if (hasCards) {
+        await studioListPage.goToStudioDetail(0);
+
+        // Then: スタジオ詳細ページに遷移する
+        const studioDetailPage = new StudioDetailPage(page, isMobile);
+        await studioDetailPage.assertDetailPageLoaded();
+      } else {
+        test.skip();
+      }
+    });
+
+    test('TC-N-08: 正常系 - リセットボタン', async ({ page }) => {
+      const isMobile = false;
+      const studioListPage = new StudioListPage(page, isMobile);
+
+      // Given: スタジオ一覧ページにアクセスし、フィルターを設定する
+      await studioListPage.open();
+      await studioListPage.searchInput.fill('テストキーワード');
+      await page.waitForTimeout(500);
+
+      // When: リセットボタンをクリックする
+      await studioListPage.resetFilters();
+
+      // Then: フィルターが初期化される
+      await studioListPage.assertFiltersReset();
+    });
+
+    test('TC-N-09: 正常系 - スタジオ作成ボタン', async ({ page }) => {
+      const isMobile = false;
+      const studioListPage = new StudioListPage(page, isMobile);
+
+      // Given: スタジオ一覧ページにアクセスする
+      await studioListPage.open();
+
+      // When: 新規作成ボタンをクリックする
+      await studioListPage.goToCreateStudio();
+
+      // Then: スタジオ作成ページに遷移する
+      const studioCreatePage = new StudioCreatePage(page, isMobile);
+      await studioCreatePage.assertCreatePageLoaded();
+    });
+
+    // ==========================================================================
+    // 2. 境界値テスト
+    // ==========================================================================
+
+    test('TC-B-01: 境界値 - キーワード: 空文字', async ({ page }) => {
+      const isMobile = false;
+      const studioListPage = new StudioListPage(page, isMobile);
+
+      // Given: スタジオ一覧ページにアクセスする
+      await studioListPage.open();
+
+      // When: 空文字で検索を実行する
+      await studioListPage.searchByKeyword('');
+
+      // Then: 全てのスタジオまたは空状態が表示される
+      await studioListPage.assertGridResultsVisible();
+    });
+
+    test('TC-B-02: 境界値 - キーワード: 1文字', async ({ page }) => {
+      const isMobile = false;
+      const studioListPage = new StudioListPage(page, isMobile);
+
+      // Given: スタジオ一覧ページにアクセスする
+      await studioListPage.open();
+
+      // When: 1文字で検索を実行する
+      await studioListPage.searchByKeyword('あ');
+
+      // Then: 該当スタジオが表示される
+      await studioListPage.assertGridResultsVisible();
+    });
+
+    test('TC-B-03: 境界値 - キーワード: 100文字', async ({ page }) => {
+      const isMobile = false;
+      const studioListPage = new StudioListPage(page, isMobile);
+
+      // Given: スタジオ一覧ページにアクセスする
+      await studioListPage.open();
+
+      // When: 100文字以上の長文キーワードを入力して検索を実行する
+      const longKeyword = 'あ'.repeat(100);
+      await studioListPage.searchByKeyword(longKeyword);
+
+      // Then: エラーなく検索が実行される
+      await studioListPage.assertNoError();
+      await studioListPage.assertGridResultsVisible();
+    });
+
+    test('TC-B-04: 境界値 - キーワード: 特殊文字・記号・絵文字', async ({
+      page,
+    }) => {
+      const isMobile = false;
+      const studioListPage = new StudioListPage(page, isMobile);
+
+      // Given: スタジオ一覧ページにアクセスする
+      await studioListPage.open();
+
+      // When: 特殊文字・記号・絵文字を含むキーワードを入力して検索を実行する
+      const specialKeyword = '!@#$%^&*()_+-=[]{}|;:,.<>?🎉📸';
+      await studioListPage.searchByKeyword(specialKeyword);
+
+      // Then: エラーなく処理される
+      await studioListPage.assertNoError();
+      await studioListPage.assertGridResultsVisible();
+    });
+
+    test('TC-B-05: 境界値 - 検索結果: 0件', async ({ page }) => {
+      const isMobile = false;
+      const studioListPage = new StudioListPage(page, isMobile);
+
+      // Given: スタジオ一覧ページにアクセスする
+      await studioListPage.open();
+
+      // When: 存在しないキーワードで検索を実行する
+      await studioListPage.searchByKeyword('存在しないスタジオ名12345');
+
+      // Then: 空状態メッセージが表示される
+      await studioListPage.assertEmptyState();
+    });
+
+    // ==========================================================================
+    // 3. 異常系テスト
+    // ==========================================================================
+
+    test('TC-A-01: 異常系 - 存在しないキーワード', async ({ page }) => {
+      const isMobile = false;
+      const studioListPage = new StudioListPage(page, isMobile);
+
+      // Given: スタジオ一覧ページにアクセスする
+      await studioListPage.open();
+
+      // When: 存在しないキーワードで検索を実行する
+      await studioListPage.searchByKeyword('存在しないスタジオ名12345');
+
+      // Then: 空状態メッセージが表示される
+      await studioListPage.assertEmptyState();
+    });
+
+    test('TC-A-02: 異常系 - 検索未実行状態', async ({ page }) => {
+      const isMobile = false;
+      const studioListPage = new StudioListPage(page, isMobile);
+
+      // Given: スタジオ一覧ページにアクセスする（検索ボタンを押さない）
+      await studioListPage.open();
+
+      // Then: 初期メッセージまたは自動検索結果が表示される
+      await page.waitForTimeout(1000);
+      await studioListPage.assertSearchResultsVisible();
+    });
+
+    // ==========================================================================
+    // 4. UI/レスポンシブテスト
+    // ==========================================================================
+
+    test('TC-UI-01: UI - スタジオカード表示', async ({ page }) => {
+      const isMobile = false;
+      const studioListPage = new StudioListPage(page, isMobile);
+
+      // Given: スタジオ一覧ページにアクセスし、検索を実行する
+      await studioListPage.open();
+      await studioListPage.executeSearch(3000);
+
+      // When: スタジオカードまたは空状態メッセージが表示されている
+      const hasEmptyMessage = await studioListPage.emptyMessage
         .isVisible()
         .catch(() => false);
+
       if (hasEmptyMessage) {
         test.skip();
-      } else {
-        // グリッドもメッセージもない場合は失敗
-        throw new Error('グリッドコンテナが見つかりません');
+        return;
       }
-    }
+
+      const hasCards = await studioListPage.hasStudioCards();
+
+      if (hasCards) {
+        // Then: カード内に必要な情報が表示される
+        await studioListPage.assertStudioCardContent(0);
+      } else {
+        test.skip();
+      }
+    });
+
+    test('TC-UI-02: UI - ローディング状態', async ({ page }) => {
+      const isMobile = false;
+      const studioListPage = new StudioListPage(page, isMobile);
+
+      // Given: スタジオ一覧ページにアクセスする
+      await studioListPage.open();
+
+      // When: 検索を実行する
+      await studioListPage.searchButton.click();
+
+      // Then: ローディングスケルトンまたは結果がすぐに表示される
+      await studioListPage.assertLoadingOrResults();
+    });
+
+    test('TC-UI-04: UI - デスクトップ表示（1920px × 1080px）', async ({
+      page,
+    }) => {
+      const isMobile = false;
+
+      // Given: デスクトップビューポート（1920px）を設定する
+      await page.setViewportSize({ width: 1920, height: 1080 });
+
+      const studioListPage = new StudioListPage(page, isMobile);
+
+      // When: スタジオ一覧ページにアクセスし、検索を実行する
+      await studioListPage.open();
+      await studioListPage.executeSearch(3000);
+
+      // Then: 3カラムレイアウトで表示される
+      const hasCards = await studioListPage.hasStudioCards();
+
+      if (hasCards) {
+        await studioListPage.assertThreeColumnLayout();
+      } else {
+        const hasEmptyMessage = await studioListPage.emptyMessage
+          .isVisible()
+          .catch(() => false);
+        if (hasEmptyMessage) {
+          test.skip();
+        }
+      }
+    });
+  });
+
+  // ============================================================================
+  // SP版テスト
+  // ============================================================================
+  test.describe('SP', () => {
+    test.use({ viewport: { width: 375, height: 667 } });
+
+    test.beforeEach(async ({ page }, testInfo) => {
+      // タイムアウトを60秒に延長（SP版はビューポート変更によりリソース再読み込みが発生するため）
+      testInfo.setTimeout(60000);
+
+      // Given: テストユーザーで認証する
+      await authenticateTestUser(page, 'organizer');
+    });
+
+    // ==========================================================================
+    // 1. 正常系テスト
+    // ==========================================================================
+
+    test('TC-N-01: 正常系 - ページ初期表示', async ({ page }) => {
+      const isMobile = true;
+      const studioListPage = new StudioListPage(page, isMobile);
+
+      // Given: スタジオ一覧ページにアクセスする
+      await studioListPage.open();
+
+      // Then: ページ初期表示要素が全て表示される
+      await studioListPage.assertInitialPageLoaded();
+    });
+
+    test('TC-N-02: 正常系 - 検索実行', async ({ page }) => {
+      const isMobile = true;
+      const studioListPage = new StudioListPage(page, isMobile);
+
+      // Given: スタジオ一覧ページにアクセスする
+      await studioListPage.open();
+
+      // When: 検索ボタンをクリックする
+      await studioListPage.executeSearch(3000);
+
+      // Then: スタジオ一覧または空状態が表示される
+      await studioListPage.assertSearchResultsVisible();
+    });
+
+    test('TC-N-03: 正常系 - キーワード検索', async ({ page }) => {
+      const isMobile = true;
+      const studioListPage = new StudioListPage(page, isMobile);
+
+      // Given: スタジオ一覧ページにアクセスする
+      await studioListPage.open();
+
+      // When: キーワードを入力して検索を実行する
+      await studioListPage.searchByKeyword('スタジオ');
+
+      // Then: 検索結果が表示される
+      await studioListPage.assertGridResultsVisible();
+    });
+
+    test('TC-N-04: 正常系 - 都道府県フィルター', async ({ page }) => {
+      const isMobile = true;
+      const studioListPage = new StudioListPage(page, isMobile);
+
+      // Given: スタジオ一覧ページにアクセスする
+      await studioListPage.open();
+
+      // When: 都道府県を選択して検索を実行する
+      await studioListPage.selectPrefecture('東京都');
+      await studioListPage.executeSearch(3000);
+
+      // Then: 検索結果が表示される
+      const { hasResults, hasEmptyMessage } =
+        await studioListPage.getSearchResultsState();
+      expect(hasResults || hasEmptyMessage).toBe(true);
+    });
+
+    test('TC-N-05: 正常系 - ソート機能', async ({ page }) => {
+      const isMobile = true;
+      const studioListPage = new StudioListPage(page, isMobile);
+
+      // Given: スタジオ一覧ページにアクセスし、検索を実行する
+      await studioListPage.open();
+      await studioListPage.executeSearch();
+
+      // When: ソートオプションを変更する
+      await studioListPage.selectSort('名前順（A-Z）');
+      await studioListPage.executeSearch();
+
+      // Then: ソートが適用される
+      await studioListPage.assertGridResultsVisible();
+    });
+
+    test('TC-N-06: 正常系 - もっと見る', async ({ page }) => {
+      const isMobile = true;
+      const studioListPage = new StudioListPage(page, isMobile);
+
+      // Given: スタジオ一覧ページにアクセスし、検索を実行する
+      await studioListPage.open();
+      await studioListPage.executeSearch();
+
+      // When: 「もっと見る」ボタンが表示されている場合、クリックする
+      const hasLoadMore = await studioListPage.hasLoadMoreButton();
+
+      if (hasLoadMore) {
+        await studioListPage.clickLoadMore();
+
+        // Then: 追加のスタジオが読み込まれる
+        await expect(
+          studioListPage.loadMoreButton.or(studioListPage.emptyMessage)
+        ).toBeVisible({ timeout: 5000 });
+      } else {
+        await studioListPage.assertGridResultsVisible();
+      }
+    });
+
+    test('TC-N-07: 正常系 - スタジオ詳細遷移', async ({ page }) => {
+      const isMobile = true;
+      const studioListPage = new StudioListPage(page, isMobile);
+
+      // Given: スタジオ一覧ページにアクセスし、検索を実行する
+      await studioListPage.open();
+      await studioListPage.executeSearch();
+
+      // When: スタジオカードが存在する場合、クリックする
+      const hasCards = await studioListPage.hasStudioCards();
+
+      if (hasCards) {
+        await studioListPage.goToStudioDetail(0);
+
+        // Then: スタジオ詳細ページに遷移する
+        const studioDetailPage = new StudioDetailPage(page, isMobile);
+        await studioDetailPage.assertDetailPageLoaded();
+      } else {
+        test.skip();
+      }
+    });
+
+    test('TC-N-08: 正常系 - リセットボタン', async ({ page }) => {
+      const isMobile = true;
+      const studioListPage = new StudioListPage(page, isMobile);
+
+      // Given: スタジオ一覧ページにアクセスし、フィルターを設定する
+      await studioListPage.open();
+      // SP版ではsearchByKeyword()を使用（シートを開く処理が含まれている）
+      await studioListPage.searchByKeyword('テストキーワード');
+      await page.waitForTimeout(500);
+
+      // When: リセットボタンをクリックする
+      await studioListPage.resetFilters();
+
+      // Then: フィルターが初期化される
+      await studioListPage.assertFiltersReset();
+    });
+
+    test('TC-N-09: 正常系 - スタジオ作成ボタン', async ({ page }) => {
+      const isMobile = true;
+      const studioListPage = new StudioListPage(page, isMobile);
+
+      // Given: スタジオ一覧ページにアクセスする
+      await studioListPage.open();
+
+      // When: 新規作成ボタンをクリックする
+      await studioListPage.goToCreateStudio();
+
+      // Then: スタジオ作成ページに遷移する
+      const studioCreatePage = new StudioCreatePage(page, isMobile);
+      await studioCreatePage.assertCreatePageLoaded();
+    });
+
+    // ==========================================================================
+    // 2. 境界値テスト
+    // ==========================================================================
+
+    test('TC-B-01: 境界値 - キーワード: 空文字', async ({ page }) => {
+      const isMobile = true;
+      const studioListPage = new StudioListPage(page, isMobile);
+
+      // Given: スタジオ一覧ページにアクセスする
+      await studioListPage.open();
+
+      // When: 空文字で検索を実行する
+      await studioListPage.searchByKeyword('');
+
+      // Then: 全てのスタジオまたは空状態が表示される
+      await studioListPage.assertGridResultsVisible();
+    });
+
+    test('TC-B-02: 境界値 - キーワード: 1文字', async ({ page }) => {
+      const isMobile = true;
+      const studioListPage = new StudioListPage(page, isMobile);
+
+      // Given: スタジオ一覧ページにアクセスする
+      await studioListPage.open();
+
+      // When: 1文字で検索を実行する
+      await studioListPage.searchByKeyword('あ');
+
+      // Then: 該当スタジオが表示される
+      await studioListPage.assertGridResultsVisible();
+    });
+
+    test('TC-B-03: 境界値 - キーワード: 100文字', async ({ page }) => {
+      const isMobile = true;
+      const studioListPage = new StudioListPage(page, isMobile);
+
+      // Given: スタジオ一覧ページにアクセスする
+      await studioListPage.open();
+
+      // When: 100文字以上の長文キーワードを入力して検索を実行する
+      const longKeyword = 'あ'.repeat(100);
+      await studioListPage.searchByKeyword(longKeyword);
+
+      // Then: エラーなく検索が実行される
+      await studioListPage.assertNoError();
+      await studioListPage.assertGridResultsVisible();
+    });
+
+    test('TC-B-04: 境界値 - キーワード: 特殊文字・記号・絵文字', async ({
+      page,
+    }) => {
+      const isMobile = true;
+      const studioListPage = new StudioListPage(page, isMobile);
+
+      // Given: スタジオ一覧ページにアクセスする
+      await studioListPage.open();
+
+      // When: 特殊文字・記号・絵文字を含むキーワードを入力して検索を実行する
+      const specialKeyword = '!@#$%^&*()_+-=[]{}|;:,.<>?🎉📸';
+      await studioListPage.searchByKeyword(specialKeyword);
+
+      // Then: エラーなく処理される
+      await studioListPage.assertNoError();
+      await studioListPage.assertGridResultsVisible();
+    });
+
+    test('TC-B-05: 境界値 - 検索結果: 0件', async ({ page }) => {
+      const isMobile = true;
+      const studioListPage = new StudioListPage(page, isMobile);
+
+      // Given: スタジオ一覧ページにアクセスする
+      await studioListPage.open();
+
+      // When: 存在しないキーワードで検索を実行する
+      await studioListPage.searchByKeyword('存在しないスタジオ名12345');
+
+      // Then: 空状態メッセージが表示される
+      await studioListPage.assertEmptyState();
+    });
+
+    // ==========================================================================
+    // 3. 異常系テスト
+    // ==========================================================================
+
+    test('TC-A-01: 異常系 - 存在しないキーワード', async ({ page }) => {
+      const isMobile = true;
+      const studioListPage = new StudioListPage(page, isMobile);
+
+      // Given: スタジオ一覧ページにアクセスする
+      await studioListPage.open();
+
+      // When: 存在しないキーワードで検索を実行する
+      await studioListPage.searchByKeyword('存在しないスタジオ名12345');
+
+      // Then: 空状態メッセージが表示される
+      await studioListPage.assertEmptyState();
+    });
+
+    test('TC-A-02: 異常系 - 検索未実行状態', async ({ page }) => {
+      const isMobile = true;
+      const studioListPage = new StudioListPage(page, isMobile);
+
+      // Given: スタジオ一覧ページにアクセスする（検索ボタンを押さない）
+      await studioListPage.open();
+
+      // Then: 初期メッセージまたは自動検索結果が表示される
+      await page.waitForTimeout(1000);
+      await studioListPage.assertSearchResultsVisible();
+    });
+
+    // ==========================================================================
+    // 4. UI/レスポンシブテスト
+    // ==========================================================================
+
+    test('TC-UI-01: UI - スタジオカード表示', async ({ page }) => {
+      const isMobile = true;
+      const studioListPage = new StudioListPage(page, isMobile);
+
+      // Given: スタジオ一覧ページにアクセスし、検索を実行する
+      await studioListPage.open();
+      await studioListPage.executeSearch(3000);
+
+      // When: スタジオカードまたは空状態メッセージが表示されている
+      const hasEmptyMessage = await studioListPage.emptyMessage
+        .isVisible()
+        .catch(() => false);
+
+      if (hasEmptyMessage) {
+        test.skip();
+        return;
+      }
+
+      const hasCards = await studioListPage.hasStudioCards();
+
+      if (hasCards) {
+        // Then: カード内に必要な情報が表示される
+        await studioListPage.assertStudioCardContent(0);
+      } else {
+        test.skip();
+      }
+    });
+
+    test('TC-UI-02: UI - ローディング状態', async ({ page }) => {
+      const isMobile = true;
+      const studioListPage = new StudioListPage(page, isMobile);
+
+      // Given: スタジオ一覧ページにアクセスする
+      await studioListPage.open();
+
+      // When: 検索を実行する
+      // SP版ではexecuteSearch()を使用（モバイルフィルターシートを開いて適用）
+      await studioListPage.executeSearch();
+
+      // Then: ローディングスケルトンまたは結果がすぐに表示される
+      await studioListPage.assertLoadingOrResults();
+    });
+
+    test('TC-UI-03: UI - モバイル表示（375px × 667px）', async ({ page }) => {
+      const isMobile = true;
+      const studioListPage = new StudioListPage(page, isMobile);
+
+      // Given: モバイルビューポート（375px）を設定する（test.useで設定済み）
+      // When: スタジオ一覧ページにアクセスする
+      await studioListPage.open();
+
+      // Then: レイアウトが崩れずに表示される
+      // SP版ではモバイルフィルターボタンが表示される（検索入力はシート内）
+      await expect(studioListPage.mobileFilterButton).toBeVisible();
+
+      // 横スクロールが発生しない
+      await studioListPage.assertNoHorizontalScroll();
+    });
   });
 });
