@@ -48,6 +48,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 import {
   FormattedPrice,
   FormattedDateTime,
@@ -58,6 +59,7 @@ export default function StudioDetailPage() {
   const params = useParams();
   const searchParams = useSearchParams();
   const studioId = params.id as string;
+  const t = useTranslations('studio');
 
   const [studio, setStudio] = useState<StudioWithStats | null>(null);
   const [photos, setPhotos] = useState<StudioPhoto[]>([]);
@@ -251,7 +253,7 @@ export default function StudioDetailPage() {
   if (loading) {
     return (
       <AuthenticatedLayout>
-        <div className="container mx-auto px-4 py-6 max-w-6xl">
+        <div className="mx-auto py-6 max-w-6xl">
           <Skeleton className="h-8 w-64 mb-6" />
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
@@ -284,7 +286,7 @@ export default function StudioDetailPage() {
 
   return (
     <AuthenticatedLayout>
-      <div className="container mx-auto px-4 py-6 max-w-6xl">
+      <div className="mx-auto py-6 max-w-6xl">
         {/* ヘッダー */}
         <div className="mb-6">
           {/* 戻るボタンと編集ボタン */}
@@ -329,9 +331,9 @@ export default function StudioDetailPage() {
         {/* スタジオ情報の注意書き */}
         <Alert className="mb-4">
           <Info className="h-4 w-4" />
-          <AlertTitle>このスタジオ情報は誰でも編集可能です</AlertTitle>
+          <AlertTitle>{t('editNotice.title')}</AlertTitle>
           <AlertDescription>
-            不適切な内容を見つけた場合は報告してください。報告数が3件に達すると自動的に非表示になります。
+            {t('editNotice.detailDescription')}
           </AlertDescription>
         </Alert>
 

@@ -74,16 +74,20 @@ export function StudioReportDialog({
     }
   };
 
-  const defaultTrigger = (
-    <Button variant="outline" size="sm">
-      <Flag className="w-4 h-4 mr-2" />
-      {t('button')}
-    </Button>
-  );
-
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>{trigger || defaultTrigger}</DialogTrigger>
+      <DialogTrigger asChild>
+        {trigger || (
+          <Button
+            variant="outline"
+            size="sm"
+            data-testid="studio-report-trigger"
+          >
+            <Flag className="w-4 h-4 mr-2" />
+            {t('button')}
+          </Button>
+        )}
+      </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{t('title')}</DialogTitle>
@@ -96,6 +100,7 @@ export function StudioReportDialog({
           <div>
             <Label className="text-sm font-medium">{t('reason')}</Label>
             <RadioGroup
+              data-testid="studio-report-reason"
               value={reportReason}
               onValueChange={value =>
                 setReportReason(
@@ -105,13 +110,21 @@ export function StudioReportDialog({
               className="mt-2"
             >
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="spam" id="spam" />
+                <RadioGroupItem
+                  data-testid="report-reason-spam"
+                  value="spam"
+                  id="spam"
+                />
                 <label htmlFor="spam" className="text-sm cursor-pointer">
                   {t('reasons.spam')}
                 </label>
               </div>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="inappropriate" id="inappropriate" />
+                <RadioGroupItem
+                  data-testid="report-reason-inappropriate"
+                  value="inappropriate"
+                  id="inappropriate"
+                />
                 <label
                   htmlFor="inappropriate"
                   className="text-sm cursor-pointer"
@@ -120,13 +133,21 @@ export function StudioReportDialog({
                 </label>
               </div>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="false_info" id="false_info" />
+                <RadioGroupItem
+                  data-testid="report-reason-false_info"
+                  value="false_info"
+                  id="false_info"
+                />
                 <label htmlFor="false_info" className="text-sm cursor-pointer">
                   {t('reasons.falseInfo')}
                 </label>
               </div>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="other" id="other" />
+                <RadioGroupItem
+                  data-testid="report-reason-other"
+                  value="other"
+                  id="other"
+                />
                 <label htmlFor="other" className="text-sm cursor-pointer">
                   {t('reasons.other')}
                 </label>
@@ -163,6 +184,7 @@ export function StudioReportDialog({
             {tCommon('cancel')}
           </Button>
           <Button
+            data-testid="studio-report-submit"
             onClick={handleReport}
             disabled={isSubmitting || !reportReason}
             variant="destructive"
