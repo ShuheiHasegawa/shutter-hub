@@ -234,7 +234,7 @@ export function ComparisonDemo() {
       <div className="surface-neutral-0 p-6 rounded-lg">
         <h4 className="font-semibold mb-4">🎯 ホバー効果の適用</h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <div className="space-y-3">
+          <div className="space-y-4">
             <h5 className="font-medium">基本（ホバー効果なし）</h5>
             <div className="surface-primary p-3 rounded cursor-pointer">
               基本のsurface-primary
@@ -243,7 +243,7 @@ export function ComparisonDemo() {
               surface-primary
             </code>
           </div>
-          <div className="space-y-3">
+          <div className="space-y-4">
             <h5 className="font-medium">ホバー効果あり</h5>
             <div className="surface-primary hover:surface-primary p-3 rounded cursor-pointer transition-colors">
               hover:surface-primaryを追加

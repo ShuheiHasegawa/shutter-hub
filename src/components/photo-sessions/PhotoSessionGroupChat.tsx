@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { logger } from '@/lib/utils/logger';
 import { useTranslations } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
@@ -59,13 +59,7 @@ export function PhotoSessionGroupChat({
   const isParticipant = participants.some(p => p.user_id === currentUserId);
   const hasAccess = isOrganizer || isParticipant;
 
-  useEffect(() => {
-    if (hasAccess) {
-      checkExistingGroupChat();
-    }
-  }, [sessionId, hasAccess, sessionTitle]);
-
-  const checkExistingGroupChat = async () => {
+  const checkExistingGroupChat = useCallback(async () => {
     try {
       const supabase = createClient();
 
@@ -140,7 +134,13 @@ export function PhotoSessionGroupChat({
     } finally {
       setLoading(false);
     }
-  };
+  }, [sessionId, sessionTitle, currentUserId]);
+
+  useEffect(() => {
+    if (hasAccess) {
+      checkExistingGroupChat();
+    }
+  }, [hasAccess, checkExistingGroupChat]);
 
   const createPhotoSessionGroupChat = async () => {
     if (!hasAccess) return;
@@ -320,7 +320,7 @@ export function PhotoSessionGroupChat({
                       </>
                     ) : (
                       <>
-                        <Users className="h-4 w-4 mr-2" />
+                        <Users className="h-4 w-4" />
                         {t('createGroupChat')}
                       </>
                     )}
@@ -357,13 +357,13 @@ export function PhotoSessionGroupChat({
 
               <div className="flex gap-2">
                 <Button onClick={() => setShowChat(true)} className="flex-1">
-                  <MessageCircle className="h-4 w-4 mr-2" />
+                  <MessageCircle className="h-4 w-4" />
                   {t('openChat')}
                 </Button>
 
                 {isOrganizer && (
                   <Button variant="outline" onClick={addNewParticipants}>
-                    <Users className="h-4 w-4 mr-2" />
+                    <Users className="h-4 w-4" />
                     {t('addParticipants')}
                   </Button>
                 )}

@@ -56,7 +56,7 @@ export function PhotoSessionMobileCompactCard({
   return (
     <Link
       href={`/photo-sessions/${session.id}`}
-      className="flex gap-3 bg-white dark:bg-gray-900 rounded-xl shadow-sm hover:shadow-md transition-all p-3 border border-gray-200 dark:border-gray-800"
+      className="flex py-2 gap-4 rounded-xl shadow-sm hover:shadow-md transition-all border border-gray-200 dark:border-gray-800"
       onClick={e => {
         if (onViewDetails) {
           e.preventDefault();

@@ -30,6 +30,7 @@ import {
 } from '@/lib/photo-sessions/slots';
 import { createSlotBooking } from '@/lib/photo-sessions/slots';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 
 interface PhotoSessionSlotCardProps {
   slot: PhotoSessionSlot;
@@ -37,7 +38,6 @@ interface PhotoSessionSlotCardProps {
   photoSessionDate: string;
   onBookingSuccess?: () => void;
   isLoggedIn: boolean;
-  locale?: string;
 }
 
 export default function PhotoSessionSlotCard({
@@ -46,8 +46,8 @@ export default function PhotoSessionSlotCard({
   photoSessionDate,
   onBookingSuccess,
   isLoggedIn,
-  locale = 'ja',
 }: PhotoSessionSlotCardProps) {
+  const t = useTranslations('photoSessions.slotCard');
   const [isBooking, setIsBooking] = useState(false);
   const [showCostumeDialog, setShowCostumeDialog] = useState(false);
 
@@ -64,16 +64,12 @@ export default function PhotoSessionSlotCard({
 
   const handleBooking = async () => {
     if (!isLoggedIn) {
-      toast.error(
-        locale === 'ja' ? 'ログインが必要です' : 'Please log in to book'
-      );
+      toast.error(t('loginRequired'));
       return;
     }
 
     if (availability.status === 'full') {
-      toast.error(
-        locale === 'ja' ? 'この撮影枠は満席です' : 'This slot is full'
-      );
+      toast.error(t('slotFull'));
       return;
     }
 
@@ -88,60 +84,11 @@ export default function PhotoSessionSlotCard({
       }
     } catch (error) {
       logger.error('Error booking slot:', error);
-      toast.error(locale === 'ja' ? '予約に失敗しました' : 'Booking failed');
+      toast.error(t('bookingFailed'));
     } finally {
       setIsBooking(false);
     }
   };
-
-  const texts = {
-    ja: {
-      slotNumber: '撮影枠',
-      time: '時間',
-      participants: '参加者',
-      price: '料金',
-      costume: '衣装',
-      book: '予約する',
-      booking: '予約中...',
-      full: '満席',
-      available: '空きあり',
-      fewLeft: '残りわずか',
-      discount: '割引',
-      originalPrice: '元の料金',
-      discountedPrice: '割引後料金',
-      costumePreview: '衣装プレビュー',
-      close: '閉じる',
-      breakTime: '休憩時間',
-      minutes: '分',
-      notes: 'メモ',
-      location: '場所',
-      date: '日付',
-    },
-    en: {
-      slotNumber: 'Slot',
-      time: 'Time',
-      participants: 'Participants',
-      price: 'Price',
-      costume: 'Costume',
-      book: 'Book Now',
-      booking: 'Booking...',
-      full: 'Full',
-      available: 'Available',
-      fewLeft: 'Few Left',
-      discount: 'Discount',
-      originalPrice: 'Original Price',
-      discountedPrice: 'Discounted Price',
-      costumePreview: 'Costume Preview',
-      close: 'Close',
-      breakTime: 'Break Time',
-      minutes: 'minutes',
-      notes: 'Notes',
-      location: 'Location',
-      date: 'Date',
-    },
-  };
-
-  const t = texts[locale as keyof typeof texts];
 
   return (
     <Card className="w-full max-w-md">
@@ -149,7 +96,7 @@ export default function PhotoSessionSlotCard({
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg flex items-center gap-2">
             <Badge variant="outline">#{slot.slot_number}</Badge>
-            {t.slotNumber} {slot.slot_number}
+            {t('slotNumber')} {slot.slot_number}
           </CardTitle>
           <Badge
             variant={
@@ -167,7 +114,7 @@ export default function PhotoSessionSlotCard({
 
       <CardContent className="space-y-4">
         {/* 基本情報 */}
-        <div className="space-y-3">
+        <div className="space-y-4">
           <div className="flex items-center gap-2 text-sm">
             <Calendar className="h-4 w-4 text-muted-foreground" />
             <span>{photoSessionDate}</span>
@@ -179,7 +126,7 @@ export default function PhotoSessionSlotCard({
             {slot.break_duration_minutes > 0 && (
               <span className="text-muted-foreground">
                 (+{slot.break_duration_minutes}
-                {t.minutes} {t.breakTime})
+                {t('minutes')} {t('breakTime')})
               </span>
             )}
           </div>
@@ -195,7 +142,7 @@ export default function PhotoSessionSlotCard({
             <Users className="h-4 w-4 text-muted-foreground" />
             <span>
               {slot.current_participants}/{slot.max_participants}{' '}
-              {t.participants}
+              {t('participants')}
             </span>
           </div>
 
@@ -211,7 +158,7 @@ export default function PhotoSessionSlotCard({
                     ¥{discountedPrice.toLocaleString()}
                   </span>
                   <Badge variant="secondary" className="text-xs">
-                    {t.discount}
+                    {t('discount')}
                   </Badge>
                 </>
               ) : (
@@ -228,7 +175,7 @@ export default function PhotoSessionSlotCard({
           <div className="border-t pt-4">
             <div className="flex items-center gap-2 mb-2">
               <ImageIcon className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium">{t.costume}</span>
+              <span className="text-sm font-medium">{t('costume')}</span>
             </div>
 
             <div className="flex items-center gap-3">
@@ -253,7 +200,7 @@ export default function PhotoSessionSlotCard({
                   </DialogTrigger>
                   <DialogContent className="max-w-md">
                     <DialogHeader>
-                      <DialogTitle>{t.costumePreview}</DialogTitle>
+                      <DialogTitle>{t('costumePreview')}</DialogTitle>
                     </DialogHeader>
                     <div className="relative flex justify-center max-h-96 w-full">
                       <Image
@@ -286,7 +233,7 @@ export default function PhotoSessionSlotCard({
         {hasDiscount && slot.discount_condition && (
           <div className="bg-green-50 border border-green-200 rounded-lg p-3">
             <p className="text-sm text-green-800">
-              <strong>{t.discount}:</strong> {slot.discount_condition}
+              <strong>{t('discount')}:</strong> {slot.discount_condition}
             </p>
           </div>
         )}
@@ -295,7 +242,7 @@ export default function PhotoSessionSlotCard({
         {slot.notes && (
           <div className="bg-muted rounded-lg p-3">
             <p className="text-sm">
-              <strong>{t.notes}:</strong> {slot.notes}
+              <strong>{t('notes')}:</strong> {slot.notes}
             </p>
           </div>
         )}
@@ -308,15 +255,15 @@ export default function PhotoSessionSlotCard({
           variant={availability.status === 'full' ? 'secondary' : 'default'}
         >
           {isBooking
-            ? t.booking
+            ? t('booking')
             : availability.status === 'full'
-              ? t.full
-              : t.book}
+              ? t('full')
+              : t('book')}
         </Button>
 
         {!isLoggedIn && (
           <p className="text-xs text-muted-foreground text-center">
-            {locale === 'ja' ? 'ログインして予約' : 'Login to book'}
+            {t('loginToBook')}
           </p>
         )}
       </CardContent>

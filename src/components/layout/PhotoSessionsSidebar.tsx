@@ -226,7 +226,7 @@ export function PhotoSessionsSidebar({
               <Calendar className="h-4 w-4" />
               {t('sidebar.dateRange')}
             </Label>
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div>
                 <Label className="text-sm">{t('sidebar.dateFrom')}</Label>
                 <Input
@@ -252,7 +252,7 @@ export function PhotoSessionsSidebar({
               <DollarSign className="h-4 w-4" />
               {t('sidebar.priceRange')}
             </Label>
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div>
                 <Label className="text-sm">{t('sidebar.priceMin')}</Label>
                 <Input
@@ -282,7 +282,7 @@ export function PhotoSessionsSidebar({
               <Users className="h-4 w-4" />
               {t('sidebar.participantsRange')}
             </Label>
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div>
                 <Label className="text-sm">
                   {t('sidebar.participantsMin')}
@@ -315,7 +315,7 @@ export function PhotoSessionsSidebar({
             <Label className="text-base font-semibold mb-3 block">
               {t('bookingType.title')}
             </Label>
-            <div className="space-y-3">
+            <div className="space-y-4">
               {bookingTypeOptions.map(option => {
                 const Icon = option.icon;
                 const isChecked = bookingTypes.includes(option.value);
@@ -367,7 +367,7 @@ export function PhotoSessionsSidebar({
                   </>
                 ) : (
                   <>
-                    <Search className="h-4 w-4 mr-2" />
+                    <Search className="h-4 w-4" />
                     検索
                   </>
                 )}
@@ -380,7 +380,7 @@ export function PhotoSessionsSidebar({
             onClick={handleClearFilters}
             className="w-full mt-2"
           >
-            <X className="h-4 w-4 mr-2" />
+            <X className="h-4 w-4" />
             {t('list.clearFilters')}
           </Button>
         </CardContent>

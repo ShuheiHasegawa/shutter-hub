@@ -326,7 +326,7 @@ export function PhotoSessionAdminLotteryEntry({
         </div>
 
         {/* 管理抽選スケジュール */}
-        <div className="border rounded-lg p-4 space-y-3">
+        <div className="border rounded-lg p-4 space-y-4">
           <h3 className="font-medium">{t('schedule.title')}</h3>
           <div className="space-y-2 text-sm">
             <div className="flex items-center gap-2">
@@ -371,7 +371,7 @@ export function PhotoSessionAdminLotteryEntry({
           </div>
         ) : userEntry ? (
           <div className="text-center border rounded-lg p-6">
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div className="flex items-center justify-center gap-2">
                 {getEntryStatusBadge()}
               </div>

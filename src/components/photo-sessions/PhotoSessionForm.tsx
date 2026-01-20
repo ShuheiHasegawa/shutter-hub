@@ -85,6 +85,9 @@ export function PhotoSessionForm({
     description: initialData?.description || '',
     location: initialData?.location || '',
     address: initialData?.address || '',
+    event_date: initialData?.start_time
+      ? new Date(initialData.start_time).toISOString().split('T')[0]
+      : '',
     start_time: initialData?.start_time
       ? new Date(initialData.start_time).toISOString().slice(0, 16)
       : '',
@@ -97,7 +100,11 @@ export function PhotoSessionForm({
       initialData?.block_users_with_bad_ratings || false,
     payment_timing:
       (initialData?.payment_timing as 'prepaid' | 'cash_on_site') || 'prepaid',
-    is_published: isDuplicating ? false : initialData?.is_published || false,
+    is_published: isDuplicating
+      ? false
+      : initialData?.is_published !== undefined
+        ? initialData.is_published
+        : true,
     image_urls: isDuplicating ? [] : initialData?.image_urls || [],
   });
 
@@ -440,6 +447,25 @@ export function PhotoSessionForm({
           })),
         };
 
+        // 検証ログ: 一括作成パラメータ
+        logger.info('[検証] 撮影会作成パラメータ:', {
+          phase: 'form-submit',
+          type: 'bulk-create',
+          isOrganizer,
+          isEditing,
+          slotsCount: bulkData.slots.length,
+          slots: bulkData.slots.map(slot => ({
+            slot_number: slot.slot_number,
+            max_participants: slot.max_participants,
+            price_per_person: slot.price_per_person,
+          })),
+          calculatedMaxParticipants: bulkData.slots.reduce(
+            (sum, slot) => sum + slot.max_participants,
+            0
+          ),
+          fullData: bulkData,
+        });
+
         const result = await createBulkPhotoSessionsAction(bulkData);
 
         if (!result.success) {
@@ -498,6 +524,25 @@ export function PhotoSessionForm({
         })),
         session_type: 'individual', // 個別撮影会として設定
       };
+
+      // 検証ログ: 通常作成パラメータ
+      logger.info('[検証] 撮影会作成パラメータ:', {
+        phase: 'form-submit',
+        type: 'single-create',
+        isOrganizer,
+        isEditing,
+        slotsCount: sessionWithSlotsData.slots.length,
+        slots: sessionWithSlotsData.slots.map(slot => ({
+          slot_number: slot.slot_number,
+          max_participants: slot.max_participants,
+          price_per_person: slot.price_per_person,
+        })),
+        calculatedMaxParticipants: sessionWithSlotsData.slots.reduce(
+          (sum, slot) => sum + slot.max_participants,
+          0
+        ),
+        fullData: sessionWithSlotsData,
+      });
 
       let result;
 
@@ -717,89 +762,71 @@ export function PhotoSessionForm({
             <div className="space-y-4">
               <h3 className="text-lg font-medium">{t('form.dateTimeInfo')}</h3>
 
-              {hasSlots ? (
-                // 撮影枠がある場合は自動計算された日時を表示
-                <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                  <div className="flex items-start space-x-2">
-                    <div className="text-blue-600 dark:text-blue-400 mt-0.5">
-                      <Check className="h-5 w-5 text-success" />
-                    </div>
-                    <div className="text-sm text-blue-700 dark:text-blue-300">
-                      <p className="font-medium mb-2">
-                        撮影枠から自動計算されます
-                      </p>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <p className="text-xs font-medium mb-1">開始日時</p>
-                          <p className="text-sm font-mono bg-blue-100 dark:bg-blue-800 px-2 py-1 rounded">
-                            {formData.start_time ? (
-                              <FormattedDateTime
-                                value={formData.start_time}
-                                format="datetime-long"
-                              />
-                            ) : (
-                              '撮影枠を設定してください'
-                            )}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-xs font-medium mb-1">終了日時</p>
-                          <p className="text-sm font-mono bg-blue-100 dark:bg-blue-800 px-2 py-1 rounded">
-                            {formData.end_time ? (
-                              <FormattedDateTime
-                                value={formData.end_time}
-                                format="datetime-long"
-                              />
-                            ) : (
-                              '撮影枠を設定してください'
-                            )}
-                          </p>
-                        </div>
-                      </div>
-                      <p className="text-xs mt-2 opacity-75">
-                        開始日時は最初の撮影枠の開始時刻、終了日時は最後の撮影枠の終了時刻が自動設定されます
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                // 撮影枠がない場合は手動入力
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label
-                      htmlFor="start_time"
-                      className="block text-sm font-medium mb-2"
-                    >
-                      {t('form.startTimeLabel')} {t('form.required')}
-                    </label>
-                    <Input
-                      id="start_time"
-                      name="start_time"
-                      type="datetime-local"
-                      value={formData.start_time}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
+              {/* 開催日入力 */}
+              <div>
+                <label
+                  htmlFor="event_date"
+                  className="block text-sm font-medium mb-2"
+                >
+                  開催日 {t('form.required')}
+                </label>
+                <Input
+                  id="event_date"
+                  name="event_date"
+                  type="date"
+                  value={formData.event_date || ''}
+                  onChange={handleInputChange}
+                  required
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  撮影枠の日付計算に使用されます
+                </p>
+              </div>
 
-                  <div>
-                    <label
-                      htmlFor="end_time"
-                      className="block text-sm font-medium mb-2"
-                    >
-                      {t('form.endTimeLabel')} {t('form.required')}
-                    </label>
-                    <Input
-                      id="end_time"
-                      name="end_time"
-                      type="datetime-local"
-                      value={formData.end_time}
-                      onChange={handleInputChange}
-                      required
-                    />
+              {/* 撮影枠から自動計算される日時を常に読み取り専用表示 */}
+              <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                <div className="flex items-start space-x-2">
+                  <div className="text-blue-600 dark:text-blue-400 mt-0.5">
+                    <Check className="h-5 w-5 text-success" />
+                  </div>
+                  <div className="text-sm text-blue-700 dark:text-blue-300">
+                    <p className="font-medium mb-2">
+                      撮影枠から自動計算されます
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-xs font-medium mb-1">開始日時 *</p>
+                        <p className="text-sm font-mono bg-blue-100 dark:bg-blue-800 px-2 py-1 rounded">
+                          {formData.start_time ? (
+                            <FormattedDateTime
+                              value={formData.start_time}
+                              format="datetime-long"
+                            />
+                          ) : (
+                            '撮影枠を設定してください'
+                          )}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium mb-1">終了日時 *</p>
+                        <p className="text-sm font-mono bg-blue-100 dark:bg-blue-800 px-2 py-1 rounded">
+                          {formData.end_time ? (
+                            <FormattedDateTime
+                              value={formData.end_time}
+                              format="datetime-long"
+                            />
+                          ) : (
+                            '撮影枠を設定してください'
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                    <p className="text-xs mt-2 opacity-75">
+                      開始日時は最初の撮影枠の開始時刻、終了日時は最後の撮影枠の終了時刻が自動設定されます
+                    </p>
                   </div>
                 </div>
-              )}
+              </div>
             </div>
 
             {/* 参加者・料金情報は撮影枠で設定するため削除 */}
@@ -926,9 +953,7 @@ export function PhotoSessionForm({
                 slots={isEditing ? photoSessionSlots : undefined}
                 onSlotsChange={setPhotoSessionSlots}
                 baseDate={
-                  formData.start_time
-                    ? formData.start_time.split('T')[0]
-                    : new Date().toISOString().split('T')[0]
+                  formData.event_date || new Date().toISOString().split('T')[0]
                 }
                 allowMultipleBookings={formData.allow_multiple_bookings}
               />
@@ -1101,7 +1126,7 @@ export function PhotoSessionForm({
                         <CardHeader className="pb-3">
                           <div className="flex items-start justify-between">
                             <div className="flex items-center gap-3">
-                              <div className="p-2 rounded-lg bg-green-100 text-green-800 border-green-200">
+                              <div className="p-2 rounded-lg bg-success/10 text-success border-success/30">
                                 <Wallet className="h-5 w-5" />
                               </div>
                               <div>

@@ -47,7 +47,7 @@ export const BookingSettingsForm = memo(function BookingSettingsForm({
         <h4 className="font-medium">{t('bookingSettings.firstCome.title')}</h4>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-4">
         <div>
           <Label className="text-sm">
             {t('bookingSettings.firstCome.bookingStartTime')}
@@ -112,7 +112,7 @@ export const BookingSettingsForm = memo(function BookingSettingsForm({
         <h4 className="font-medium">{t('bookingSettings.lottery.title')}</h4>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
             <Label className="text-sm">
@@ -185,7 +185,7 @@ export const BookingSettingsForm = memo(function BookingSettingsForm({
         </h4>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
             <Label className="text-sm">
@@ -258,7 +258,7 @@ export const BookingSettingsForm = memo(function BookingSettingsForm({
         <h4 className="font-medium">{t('bookingSettings.priority.title')}</h4>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-4">
         <div>
           <Label className="text-sm">
             {t('bookingSettings.priority.bookingStartTime')}

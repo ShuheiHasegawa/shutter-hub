@@ -60,7 +60,7 @@ export function LoadingState({
     return (
       <div className={cn('space-y-4', className)}>
         {Array.from({ length: count }).map((_, i) => (
-          <div key={i} className="space-y-3">
+          <div key={i} className="space-y-4">
             <Skeleton className="h-4 w-full" />
             <Skeleton className="h-4 w-5/6" />
             <Skeleton className="h-4 w-4/6" />

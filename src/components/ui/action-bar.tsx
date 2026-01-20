@@ -35,6 +35,7 @@ export interface ActionBarButton {
   loading?: boolean;
   icon?: ReactNode;
   className?: string;
+  'data-testid'?: string; // E2Eテスト用
 }
 
 interface ActionBarProps {
@@ -175,6 +176,7 @@ export function ActionBar({
                   'text-base font-medium w-full transition-colors',
                   action.className
                 )}
+                data-testid={action['data-testid'] || `action-bar-${action.id}`}
               >
                 {action.loading ? (
                   <div className="flex items-center gap-2">

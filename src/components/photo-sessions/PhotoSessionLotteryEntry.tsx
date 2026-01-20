@@ -350,7 +350,7 @@ export function PhotoSessionLotteryEntry({
         <CardHeader>
           <CardTitle className="text-lg">{t('schedule.title')}</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-4">
           <div>
             <div className="text-sm font-medium">
               {t('schedule.entryPeriod')}

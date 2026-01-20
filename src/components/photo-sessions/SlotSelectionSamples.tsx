@@ -221,7 +221,7 @@ export function StepBookingFlow() {
               <h3 className="text-lg font-semibold">
                 時間枠を選択してください
               </h3>
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {sampleSlots.map(slot => {
                   const isSlotFull =
                     slot.current_participants >= slot.max_participants;
@@ -475,7 +475,7 @@ export function ActionSheetBookingFlow() {
           <ActionSheet
             trigger={
               <Button className="w-full" size="lg">
-                <CalendarIcon className="h-4 w-4 mr-2" />
+                <CalendarIcon className="h-4 w-4" />
                 時間枠を選択して予約
               </Button>
             }
@@ -525,7 +525,7 @@ export function ActionSheetBookingFlow() {
               </AlertDialogHeader>
 
               {selectedSlot && (
-                <div className="space-y-3">
+                <div className="space-y-4">
                   <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">

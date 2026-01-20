@@ -24,7 +24,7 @@ import { useTranslations } from 'next-intl';
 import { useUserProfile } from '@/hooks/useAuth';
 import { logger } from '@/lib/utils/logger';
 import type { BookingType } from '@/types/database';
-import { MobileFilterSheet } from '@/components/ui/mobile-filter-sheet';
+import { MobileFloatButtons } from '@/components/ui/mobile-float-buttons';
 import { PhotoSessionFilterContent } from '@/components/photo-sessions/PhotoSessionFilterContent';
 
 interface FilterState {
@@ -226,8 +226,9 @@ export default function PhotoSessionsPage() {
         <PageTitleHeader
           title="撮影会一覧"
           icon={<CameraIcon className="h-6 w-6" />}
+          backButton={{ variant: 'ghost' }}
           actions={
-            <Button asChild size="sm" variant="cta">
+            <Button asChild size="sm" variant="cta" title={t('createSession')}>
               <Link
                 href={
                   profile?.user_type === 'organizer'
@@ -235,15 +236,18 @@ export default function PhotoSessionsPage() {
                     : '/photo-sessions/create'
                 }
               >
-                <Plus className="h-4 w-4 mr-2" />
-                撮影会を作成
+                <Plus className="h-4 w-4" />
+                <span className="hidden md:inline ml-1">
+                  {t('createSession')}
+                </span>
+                <span className="sr-only md:hidden">{t('createSession')}</span>
               </Link>
             </Button>
           }
         />
 
         {/* フィルターとコントロール（StickyHeaderで固定） */}
-        <StickyHeader className="px-4 py-3 space-y-3">
+        <StickyHeader className="space-y-4">
           {/* 1行目: CompactFilterBar（検索バーとフィルターボタン） - デスクトップ表示 */}
           <div className="hidden md:block">
             <CompactFilterBar
@@ -457,20 +461,22 @@ export default function PhotoSessionsPage() {
 
         {/* モバイル用フィルターボタンとシート */}
         <div className="md:hidden">
-          <MobileFilterSheet
-            title={t('sidebar.filters')}
-            subtitle={t('mobileFilter.subtitle')}
-            floatButtonLabel={t('mobileFilter.floatButton')}
-            onReset={handleMobileReset}
-            onApply={handleMobileApply}
-            resetLabel={t('mobileFilter.clear')}
-            applyLabel={t('mobileFilter.search')}
-          >
-            <PhotoSessionFilterContent
-              filters={pendingFilters}
-              onFiltersChange={handleMobileFilterChange}
-            />
-          </MobileFilterSheet>
+          <MobileFloatButtons
+            filterTitle={t('sidebar.filters')}
+            filterSubtitle={t('mobileFilter.subtitle')}
+            filterFloatButtonLabel={t('mobileFilter.floatButton')}
+            onFilterReset={handleMobileReset}
+            onFilterApply={handleMobileApply}
+            filterResetLabel={t('mobileFilter.clear')}
+            filterApplyLabel={t('mobileFilter.search')}
+            scrollToTopLabel={tCommon('scrollToTop')}
+            filterChildren={
+              <PhotoSessionFilterContent
+                filters={pendingFilters}
+                onFiltersChange={handleMobileFilterChange}
+              />
+            }
+          />
         </div>
       </div>
     </AuthenticatedLayout>

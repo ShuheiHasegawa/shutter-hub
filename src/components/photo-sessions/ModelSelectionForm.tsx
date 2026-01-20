@@ -150,7 +150,7 @@ export function ModelSelectionForm({
           <CardTitle className="text-lg">モデル選択</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
+          <div className="space-y-4">
             <MultiSelect
               options={modelOptions}
               onValueChange={handleMultiSelectChange}
@@ -203,7 +203,7 @@ export function ModelSelectionForm({
             <CardTitle className="text-lg">選択済みモデル</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
+            <div className="space-y-4">
               {selectedModels.map((model, index) => (
                 <SelectedModelCard
                   key={model.model_id}

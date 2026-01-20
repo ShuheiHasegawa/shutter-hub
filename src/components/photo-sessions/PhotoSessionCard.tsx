@@ -448,10 +448,10 @@ export function PhotoSessionCard({
             </div>
 
             {/* 場所 */}
-            <div className="bg-green-50 p-2.5 rounded-lg min-h-[70px] flex flex-col">
+            <div className="bg-success/5 p-2.5 rounded-lg min-h-[70px] flex flex-col">
               <div className="flex items-center gap-1.5 mb-1">
                 <MapPinIcon className="h-3.5 w-3.5 text-success flex-shrink-0" />
-                <span className="text-xs font-semibold text-green-800 truncate">
+                <span className="text-xs font-semibold text-success truncate">
                   {t('card.labels.location')}
                 </span>
               </div>
@@ -668,10 +668,10 @@ export function PhotoSessionCard({
               </div>
 
               {/* 場所 */}
-              <div className="bg-green-50 p-3 rounded-lg min-h-[80px] flex flex-col">
+              <div className="bg-success/5 p-3 rounded-lg min-h-[80px] flex flex-col">
                 <div className="flex items-center gap-2 mb-2">
                   <MapPinIcon className="h-4 w-4 text-success flex-shrink-0" />
-                  <span className="text-sm font-semibold text-green-800">
+                  <span className="text-sm font-semibold text-success">
                     {t('card.labels.location')}
                   </span>
                 </div>

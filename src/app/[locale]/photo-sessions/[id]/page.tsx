@@ -21,7 +21,7 @@ export default async function PhotoSessionPage({
   // 並列でデータを取得
   const [sessionResult, slotsResult, userBookingResult, studioResult] =
     await Promise.all([
-      // 撮影会情報を取得
+      // 撮影会情報を取得（is_publishedフィルタなしで取得）
       supabase
         .from('photo_sessions')
         .select(
@@ -36,7 +36,6 @@ export default async function PhotoSessionPage({
       `
         )
         .eq('id', id)
-        .eq('is_published', true)
         .single(),
 
       // 撮影枠情報を取得
@@ -92,6 +91,13 @@ export default async function PhotoSessionPage({
   }
 
   const session = sessionResult.data;
+
+  // アクセス権限チェック: 公開済み OR 開催者自身のみアクセス可能
+  const isOrganizer = user?.id === session.organizer_id;
+  if (!session.is_published && !isOrganizer) {
+    // 未公開かつ開催者でない場合は404を返す
+    notFound();
+  }
   const slots = slotsResult.data || [];
   const userBookings = userBookingResult.data || [];
   const studioData = studioResult.data;
@@ -115,6 +121,36 @@ export default async function PhotoSessionPage({
         }
     : null;
 
+  // スロットごとの予約数を取得（スロットがある場合のみ）
+  const slotBookingCounts: { [slotId: string]: number } = {};
+  if (slots.length > 0) {
+    const slotIds = slots.map(slot => slot.id);
+    const { data: bookings, error: bookingsError } = await supabase
+      .from('bookings')
+      .select('slot_id')
+      .eq('photo_session_id', id)
+      .eq('status', 'confirmed')
+      .in('slot_id', slotIds);
+
+    if (bookingsError) {
+      logger.error(
+        '[PhotoSessionPage] スロット予約数取得エラー:',
+        bookingsError
+      );
+    } else {
+      // スロットIDごとに予約数を集計
+      slotIds.forEach(slotId => {
+        slotBookingCounts[slotId] = 0;
+      });
+      bookings?.forEach(booking => {
+        if (booking.slot_id) {
+          slotBookingCounts[booking.slot_id] =
+            (slotBookingCounts[booking.slot_id] || 0) + 1;
+        }
+      });
+    }
+  }
+
   // データ検証ログ（開発環境のみ）
   if (process.env.NODE_ENV === 'development' && slots) {
     logger.debug('[PhotoSessionPage] スロットデータ検証:', {
@@ -135,7 +171,7 @@ export default async function PhotoSessionPage({
   }
 
   return (
-    <AuthenticatedLayout>
+    <AuthenticatedLayout allowPublic={true}>
       <div>
         <Suspense fallback={<LoadingCard />}>
           <PhotoSessionDetail
@@ -143,6 +179,7 @@ export default async function PhotoSessionPage({
             slots={slots}
             userBooking={userBooking}
             studio={studio}
+            slotBookingCounts={slotBookingCounts}
           />
         </Suspense>
       </div>

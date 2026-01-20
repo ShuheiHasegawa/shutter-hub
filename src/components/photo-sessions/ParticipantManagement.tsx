@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { logger } from '@/lib/utils/logger';
 // import { useTranslations } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
@@ -66,15 +66,7 @@ export function ParticipantManagement({
   // 権限チェック
   const isOrganizer = currentUserId === organizerId;
 
-  useEffect(() => {
-    fetchParticipants();
-  }, [sessionId]);
-
-  useEffect(() => {
-    filterParticipants();
-  }, [participants, searchTerm, selectedStatus]);
-
-  const fetchParticipants = async () => {
+  const fetchParticipants = useCallback(async () => {
     try {
       const supabase = createClient();
       const { data, error } = await supabase
@@ -127,9 +119,9 @@ export function ParticipantManagement({
     } finally {
       setLoading(false);
     }
-  };
+  }, [sessionId]);
 
-  const filterParticipants = () => {
+  const filterParticipants = useCallback(() => {
     let filtered = participants;
 
     // ステータスフィルター
@@ -149,7 +141,15 @@ export function ParticipantManagement({
     }
 
     setFilteredParticipants(filtered);
-  };
+  }, [participants, searchTerm, selectedStatus]);
+
+  useEffect(() => {
+    fetchParticipants();
+  }, [fetchParticipants]);
+
+  useEffect(() => {
+    filterParticipants();
+  }, [filterParticipants]);
 
   const updateParticipantStatus = async (
     participantId: string,
@@ -465,7 +465,7 @@ export function ParticipantManagement({
                 </>
               ) : (
                 <>
-                  <Mail className="h-4 w-4 mr-2" />
+                  <Mail className="h-4 w-4" />
                   {selectedParticipants.length}名にメッセージを送信
                 </>
               )}

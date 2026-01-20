@@ -44,13 +44,15 @@ import { useToast } from '@/hooks/use-toast';
 import { useTranslations, useLocale } from 'next-intl';
 
 import { SlotBookingFlow } from './SlotBookingFlow';
-import { BackButton } from '../ui/back-button';
 import { ReviewList } from '@/components/reviews/ReviewList';
 import { createClient } from '@/lib/supabase/client';
 import Image from 'next/image';
 import { getLotterySession } from '@/app/actions/photo-session-lottery';
 import { getPhotoSessionStudioAction } from '@/app/actions/photo-session-studio';
 import { BookingCheckInStatus } from '@/components/bookings/BookingCheckInStatus';
+import { ImageLightbox } from '@/components/ui/image-lightbox';
+import { StatItem } from '@/components/ui/stat-item';
+import { PageTitleHeaderScrollAware } from '@/components/ui/page-title-header-scroll-aware';
 
 interface PhotoSessionDetailProps {
   session: PhotoSessionWithOrganizer;
@@ -95,6 +97,7 @@ interface PhotoSessionDetailProps {
     id: string;
     name: string;
   } | null;
+  slotBookingCounts?: { [slotId: string]: number };
 }
 
 // Googleカレンダーイベント作成関数
@@ -127,45 +130,12 @@ export function PhotoSessionDetail({
   userBooking: initialUserBooking,
   userBookings: initialUserBookings = [],
   studio: initialStudio,
+  slotBookingCounts: initialSlotBookingCounts = {},
 }: PhotoSessionDetailProps) {
-  // #region agent log
   useEffect(() => {
     // セッションIDが変わったらデータ取得フラグをリセット
     hasLoadedDataRef.current = false;
-
-    fetch('http://127.0.0.1:7243/ingest/0b62af13-0d04-4c38-8e09-5e16a4cac0dd', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        location: 'PhotoSessionDetail.tsx:97',
-        message: 'コンポーネントマウント',
-        data: { sessionId: session.id },
-        timestamp: Date.now(),
-        sessionId: 'debug-session',
-        runId: 'run3',
-        hypothesisId: 'N',
-      }),
-    }).catch(() => {});
-    return () => {
-      fetch(
-        'http://127.0.0.1:7243/ingest/0b62af13-0d04-4c38-8e09-5e16a4cac0dd',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            location: 'PhotoSessionDetail.tsx:97',
-            message: 'コンポーネントアンマウント',
-            data: { sessionId: session.id },
-            timestamp: Date.now(),
-            sessionId: 'debug-session',
-            runId: 'run3',
-            hypothesisId: 'N',
-          }),
-        }
-      ).catch(() => {});
-    };
   }, [session.id]);
-  // #endregion
 
   const { user, loading: authLoading } = useAuth();
   const searchParams = useSearchParams();
@@ -198,6 +168,10 @@ export function PhotoSessionDetail({
     id: string;
     name: string;
   } | null>(initialStudio || null);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+  // slotBookingCountsはpropsから受け取る（Server Componentで取得済み）
+  const slotBookingCounts = initialSlotBookingCounts;
 
   // データ取得済みフラグ（重複実行を防ぐ）
   const hasLoadedDataRef = useRef(false);
@@ -242,119 +216,22 @@ export function PhotoSessionDetail({
 
   // 参加者データとその他の条件付きデータを並列取得
   useEffect(() => {
-    // #region agent log
-    fetch('http://127.0.0.1:7243/ingest/0b62af13-0d04-4c38-8e09-5e16a4cac0dd', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        location: 'PhotoSessionDetail.tsx:198',
-        message: 'useEffect実行開始',
-        data: {
-          sessionId: session.id,
-          userId: user?.id,
-          authLoading,
-          isLoadingData,
-          userBooking: !!stableUserBooking,
-          isPast,
-          hasLoadedData: hasLoadedDataRef.current,
-        },
-        timestamp: Date.now(),
-        sessionId: 'debug-session',
-        runId: 'run3',
-        hypothesisId: 'K',
-      }),
-    }).catch(() => {});
-    // #endregion
-
     // 認証状態の読み込み中は待機
     if (authLoading) {
-      // #region agent log
-      fetch(
-        'http://127.0.0.1:7243/ingest/0b62af13-0d04-4c38-8e09-5e16a4cac0dd',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            location: 'PhotoSessionDetail.tsx:223',
-            message: '認証読み込み中 - 待機',
-            data: { authLoading },
-            timestamp: Date.now(),
-            sessionId: 'debug-session',
-            runId: 'run3',
-            hypothesisId: 'K',
-          }),
-        }
-      ).catch(() => {});
-      // #endregion
       return;
     }
 
     // 既にデータを取得済みの場合はスキップ（認証状態が変わっただけの場合）
     if (hasLoadedDataRef.current && user?.id) {
-      // #region agent log
-      fetch(
-        'http://127.0.0.1:7243/ingest/0b62af13-0d04-4c38-8e09-5e16a4cac0dd',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            location: 'PhotoSessionDetail.tsx:245',
-            message: '既にデータ取得済み - スキップ',
-            data: { userId: user.id },
-            timestamp: Date.now(),
-            sessionId: 'debug-session',
-            runId: 'run3',
-            hypothesisId: 'K',
-          }),
-        }
-      ).catch(() => {});
-      // #endregion
       return;
     }
 
     const loadAllData = async () => {
       // 既に実行中の場合は重複実行を防ぐ
       if (isLoadingData) {
-        // #region agent log
-        fetch(
-          'http://127.0.0.1:7243/ingest/0b62af13-0d04-4c38-8e09-5e16a4cac0dd',
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              location: 'PhotoSessionDetail.tsx:171',
-              message: '重複実行をスキップ',
-              data: { isLoadingData },
-              timestamp: Date.now(),
-              sessionId: 'debug-session',
-              runId: 'run2',
-              hypothesisId: 'G',
-            }),
-          }
-        ).catch(() => {});
-        // #endregion
         logger.debug('[PhotoSessionDetail] 既に実行中 - 重複実行をスキップ');
         return;
       }
-
-      // #region agent log
-      fetch(
-        'http://127.0.0.1:7243/ingest/0b62af13-0d04-4c38-8e09-5e16a4cac0dd',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            location: 'PhotoSessionDetail.tsx:176',
-            message: 'loadAllData開始',
-            data: { sessionId: session.id, userId: user?.id },
-            timestamp: Date.now(),
-            sessionId: 'debug-session',
-            runId: 'run2',
-            hypothesisId: 'H',
-          }),
-        }
-      ).catch(() => {});
-      // #endregion
 
       logger.debug('[PhotoSessionDetail] loadAllData開始', {
         sessionId: session.id,
@@ -363,24 +240,6 @@ export function PhotoSessionDetail({
 
       // ユーザーが未ログインの場合は早期リターン（認証読み込み完了後）
       if (!user) {
-        // #region agent log
-        fetch(
-          'http://127.0.0.1:7243/ingest/0b62af13-0d04-4c38-8e09-5e16a4cac0dd',
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              location: 'PhotoSessionDetail.tsx:185',
-              message: 'ユーザー未ログイン - 処理スキップ',
-              data: {},
-              timestamp: Date.now(),
-              sessionId: 'debug-session',
-              runId: 'run2',
-              hypothesisId: 'I',
-            }),
-          }
-        ).catch(() => {});
-        // #endregion
         logger.debug('[PhotoSessionDetail] ユーザー未ログイン - 処理スキップ');
         setLoading(false);
         return;
@@ -393,24 +252,6 @@ export function PhotoSessionDetail({
         const canReviewNow = !!stableUserBooking && isPast;
 
         // 条件付き並列実行のためのpromises配列
-        // #region agent log
-        fetch(
-          'http://127.0.0.1:7243/ingest/0b62af13-0d04-4c38-8e09-5e16a4cac0dd',
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              location: 'PhotoSessionDetail.tsx:181',
-              message: 'getPhotoSessionParticipants呼び出し前',
-              data: { sessionId: session.id },
-              timestamp: Date.now(),
-              sessionId: 'debug-session',
-              runId: 'run1',
-              hypothesisId: 'D',
-            }),
-          }
-        ).catch(() => {});
-        // #endregion
         const promises: Promise<unknown>[] = [
           // 参加者データは常に取得
           getPhotoSessionParticipants(session.id),
@@ -440,25 +281,10 @@ export function PhotoSessionDetail({
 
         // 参加者データの処理
         const participantsData = results[0] as PhotoSessionParticipant[];
-        // #region agent log
-        fetch(
-          'http://127.0.0.1:7243/ingest/0b62af13-0d04-4c38-8e09-5e16a4cac0dd',
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              location: 'PhotoSessionDetail.tsx:250',
-              message: '参加者データ取得完了',
-              data: { participantsCount: participantsData.length },
-              timestamp: Date.now(),
-              sessionId: 'debug-session',
-              runId: 'run3',
-              hypothesisId: 'L',
-            }),
-          }
-        ).catch(() => {});
-        // #endregion
         setParticipants(participantsData);
+
+        // スロット予約数はServer Componentからpropsで受け取るため、ここでは処理しない
+        let resultIndex = 1;
 
         // データ取得完了フラグを設定
         hasLoadedDataRef.current = true;
@@ -470,8 +296,8 @@ export function PhotoSessionDetail({
         setIsParticipant(userParticipation);
 
         // 抽選セッション情報の処理
-        if (session.booking_type === 'lottery' && results[1]) {
-          const lotterySessionResult = results[1] as Awaited<
+        if (session.booking_type === 'lottery' && results[resultIndex]) {
+          const lotterySessionResult = results[resultIndex] as Awaited<
             ReturnType<typeof getLotterySession>
           >;
           if (lotterySessionResult.data?.id) {
@@ -502,12 +328,13 @@ export function PhotoSessionDetail({
                 setLotteryEntryCount(result.data);
               }
             }
+            resultIndex++;
           }
         }
 
         // 既存レビューの処理
-        if (canReviewNow && results[results.length - 1]) {
-          const reviewResult = results[results.length - 1] as {
+        if (canReviewNow && results[resultIndex]) {
+          const reviewResult = results[resultIndex] as {
             data: { id: string } | null;
             error: unknown;
           };
@@ -516,24 +343,6 @@ export function PhotoSessionDetail({
       } catch (error) {
         logger.error('[PhotoSessionDetail] データ読み込みエラー:', error);
       } finally {
-        // #region agent log
-        fetch(
-          'http://127.0.0.1:7243/ingest/0b62af13-0d04-4c38-8e09-5e16a4cac0dd',
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              location: 'PhotoSessionDetail.tsx:333',
-              message: 'loadAllData完了',
-              data: {},
-              timestamp: Date.now(),
-              sessionId: 'debug-session',
-              runId: 'run3',
-              hypothesisId: 'M',
-            }),
-          }
-        ).catch(() => {});
-        // #endregion
         setLoading(false);
         setIsLoadingData(false);
       }
@@ -604,7 +413,12 @@ export function PhotoSessionDetail({
 
   // 予約可能状態の判定（hookの結果を使用）
   const canBook = !isOrganizer && canBookFromHook;
-  const available = session.max_participants - session.current_participants;
+  // スロットがある場合はslotBookingCountsの合計を使用、ない場合はsession.current_participantsを使用
+  const totalBookings =
+    slots.length > 0 && Object.keys(slotBookingCounts).length > 0
+      ? Object.values(slotBookingCounts).reduce((sum, count) => sum + count, 0)
+      : session.current_participants;
+  const available = session.max_participants - totalBookings;
   const isFull = available === 0;
 
   // Googleカレンダー追加ハンドラー
@@ -655,6 +469,12 @@ export function PhotoSessionDetail({
         `撮影会${isOrganizer ? 'の開催' : isParticipant ? 'への参加' : 'の予定'}\n\n場所: ${session.location}\n${session.address ? `住所: ${session.address}\n` : ''}主催者: ${session.organizer.display_name || session.organizer.email}\n\n${session.description || ''}`
       );
     }
+  };
+
+  // 画像クリックハンドラー
+  const handleImageClick = (imageUrl: string) => {
+    setLightboxImage(imageUrl);
+    setLightboxOpen(true);
   };
 
   // 評価チェック処理
@@ -791,7 +611,7 @@ export function PhotoSessionDetail({
               : allSlotsEntryFull
                 ? 'エントリー上限'
                 : '時間枠を選択',
-            variant: 'accent',
+            variant: 'cta',
             onClick: async () => {
               const canProceed = await handleRatingCheck();
               if (canProceed) {
@@ -800,6 +620,7 @@ export function PhotoSessionDetail({
             },
             disabled: bookingLoading || allSlotsEntryFull,
             icon: <Calendar className="h-4 w-4" />,
+            'data-testid': 'photo-session-select-slot-button',
           });
         } else {
           buttons.push({
@@ -809,7 +630,7 @@ export function PhotoSessionDetail({
               : isFull
                 ? 'キャンセル待ち'
                 : '予約する',
-            variant: isFull ? 'accent' : 'primary',
+            variant: isFull ? 'accent' : 'cta',
             onClick: async () => {
               const canProceed = await handleRatingCheck();
               if (canProceed) {
@@ -818,6 +639,7 @@ export function PhotoSessionDetail({
             },
             disabled: bookingLoading,
             icon: <CreditCard className="h-4 w-4" />,
+            'data-testid': 'photo-session-booking-button',
           });
         }
       } else if (!canBook) {
@@ -829,6 +651,7 @@ export function PhotoSessionDetail({
           onClick: () => {}, // 何もしない
           disabled: true,
           icon: <Calendar className="h-4 w-4" />,
+          'data-testid': 'photo-session-cannot-book-button',
         });
       }
     }
@@ -856,7 +679,14 @@ export function PhotoSessionDetail({
   }
 
   return (
-    <div className="w-full max-w-6xl mx-auto space-y-6">
+    <div className="space-y-4">
+      {/* ページヘッダー（スクロール対応） */}
+      <PageTitleHeaderScrollAware
+        defaultTitle="撮影会詳細"
+        scrolledTitle={session.title}
+        backButton={{ href: '/photo-sessions', variant: 'ghost' }}
+      />
+
       {/* 開催者ヘッダー（主催者の場合、最上部に表示） */}
       {isOrganizer && (
         <Card className="border-blue-200 bg-blue-50/50 mt-4 print:hidden">
@@ -889,13 +719,7 @@ export function PhotoSessionDetail({
           <CardHeader>
             {/* スマホ表示: 縦並びレイアウト */}
             <div className="flex flex-col space-y-4 md:hidden">
-              <div className="flex items-center gap-2">
-                <BackButton />
-                <CardTitle className="text-lg leading-tight">
-                  {session.title}
-                </CardTitle>
-              </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-end">
                 {/* Googleカレンダー追加ボタン */}
                 <Button
                   variant="navigation"
@@ -910,11 +734,7 @@ export function PhotoSessionDetail({
             </div>
 
             {/* デスクトップ表示: 横並びレイアウト */}
-            <div className="hidden md:flex justify-between items-start">
-              <div className="flex items-center gap-2">
-                <BackButton />
-                <CardTitle className="text-2xl">{session.title}</CardTitle>
-              </div>
+            <div className="hidden md:flex justify-end items-end">
               <div className="flex items-center gap-2 flex-nowrap">
                 {/* Googleカレンダー追加ボタン */}
                 <Button
@@ -932,7 +752,7 @@ export function PhotoSessionDetail({
           <CardContent className="p-4">
             {session.description && (
               <div>
-                <h3 className="font-semibold mb-2">撮影会について</h3>
+                <h3 className="font-semibold text-lg mb-2">撮影会について</h3>
                 <p className="leading-relaxed whitespace-pre-wrap">
                   {session.description}
                 </p>
@@ -942,7 +762,7 @@ export function PhotoSessionDetail({
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-4">
               <div className="space-y-4">
                 <h3 className="font-semibold">開催詳細</h3>
-                <div className="space-y-3">
+                <div className="space-y-4">
                   <div className="flex items-center gap-3">
                     <CalendarIcon className="h-5 w-5 text-muted-foreground" />
                     <div>
@@ -1029,7 +849,8 @@ export function PhotoSessionDetail({
                   {session.image_urls.map((image: string, index: number) => (
                     <div
                       key={index}
-                      className="aspect-video rounded-lg overflow-hidden bg-gray-100 relative"
+                      className="aspect-video rounded-lg overflow-hidden bg-gray-100 relative cursor-pointer hover:opacity-90 transition-opacity"
+                      onClick={() => handleImageClick(image)}
                     >
                       <Image
                         src={image}
@@ -1055,6 +876,7 @@ export function PhotoSessionDetail({
             slots={slots}
             lotteryEntryCount={lotteryEntryCount}
             lotterySession={lotterySession || undefined}
+            slotBookingCounts={slotBookingCounts}
           />
         )) as any
       }
@@ -1098,13 +920,7 @@ export function PhotoSessionDetail({
           <CardHeader>
             {/* スマホ表示: 縦並びレイアウト */}
             <div className="flex flex-col space-y-4 md:hidden">
-              <div className="flex items-center gap-2">
-                <BackButton />
-                <CardTitle className="text-lg leading-tight">
-                  {session.title}
-                </CardTitle>
-              </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-end">
                 {/* Googleカレンダー追加ボタン */}
                 <Button
                   variant="navigation"
@@ -1119,11 +935,7 @@ export function PhotoSessionDetail({
             </div>
 
             {/* デスクトップ表示: 横並びレイアウト */}
-            <div className="hidden md:flex justify-between items-start">
-              <div className="flex items-center gap-2">
-                <BackButton />
-                <CardTitle className="text-2xl">{session.title}</CardTitle>
-              </div>
+            <div className="hidden md:flex justify-end items-end">
               <div className="flex items-center gap-2 flex-nowrap">
                 {/* Googleカレンダー追加ボタン */}
                 <Button
@@ -1141,7 +953,7 @@ export function PhotoSessionDetail({
           <CardContent className="p-4">
             {session.description && (
               <div>
-                <h3 className="font-semibold mb-2">撮影会について</h3>
+                <h3 className="font-semibold text-lg mb-2">撮影会について</h3>
                 <p className="leading-relaxed whitespace-pre-wrap">
                   {session.description}
                 </p>
@@ -1151,7 +963,7 @@ export function PhotoSessionDetail({
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-4">
               <div className="space-y-4">
                 <h3 className="font-semibold">開催詳細</h3>
-                <div className="space-y-3">
+                <div className="space-y-4">
                   <div className="flex items-center gap-3">
                     <CalendarIcon className="h-5 w-5 text-muted-foreground" />
                     <div>
@@ -1249,7 +1061,8 @@ export function PhotoSessionDetail({
                   {session.image_urls.map((image: string, index: number) => (
                     <div
                       key={index}
-                      className="aspect-video rounded-lg overflow-hidden bg-gray-100 relative"
+                      className="aspect-video rounded-lg overflow-hidden bg-gray-100 relative cursor-pointer hover:opacity-90 transition-opacity"
+                      onClick={() => handleImageClick(image)}
                     >
                       <Image
                         src={image}
@@ -1270,20 +1083,21 @@ export function PhotoSessionDetail({
       {hasSlots && !isOrganizer && (
         <Card className="print:hidden">
           <CardHeader>
-            <CardTitle>撮影時間枠</CardTitle>
-            <p className="text-sm text-muted-foreground">
+            <CardTitle className="text-lg">撮影時間枠</CardTitle>
+            <p className="text-sm text-muted-foreground mt-2">
               この撮影会は時間枠制です。下部の予約ボタンから時間枠を選択してください
             </p>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               {slots.map((slot, index) => {
-                const isSlotFull =
-                  slot.current_participants >= slot.max_participants;
+                const currentParticipants =
+                  slotBookingCounts[slot.id] ?? slot.current_participants;
+                const isSlotFull = currentParticipants >= slot.max_participants;
                 const slotStartTime = new Date(slot.start_time);
                 const slotEndTime = new Date(slot.end_time);
                 const participationRate =
-                  (slot.current_participants / slot.max_participants) * 100;
+                  (currentParticipants / slot.max_participants) * 100;
 
                 // このスロットがユーザーによって予約済みかチェック
                 const isUserBooked = stableUserBookings.some(
@@ -1293,139 +1107,163 @@ export function PhotoSessionDetail({
                 return (
                   <div
                     key={slot.id}
-                    className={`w-full p-4 sm:p-6 rounded-lg border-2 transition-all duration-200 ${
+                    className={`w-full bg-white dark:bg-gray-900 border-2 transition-all duration-300 overflow-hidden ${
                       isUserBooked
-                        ? 'border-success/30 bg-success/10'
+                        ? 'border-success/50 bg-success/5 dark:border-success/70 dark:bg-success/10'
                         : isSlotFull
-                          ? 'border-error/20 bg-error/5 dark:border-error/80 dark:bg-error/20'
+                          ? 'border-error/30 bg-error/5 dark:border-error/50 dark:bg-error/10'
                           : participationRate >= 70
-                            ? 'border-warning/30 text-warning bg-warning/10 dark:border-warning/70 dark:text-warning dark:bg-warning/30'
-                            : 'border-green-200 bg-green-50/50 dark:border-green-800 dark:bg-green-900/20'
-                    }`}
+                            ? 'border-warning/40 bg-warning/5 dark:border-warning/60 dark:bg-warning/10'
+                            : 'border-gray-200 dark:border-gray-700'
+                    } hover:border-gray-900 dark:hover:border-gray-400`}
                   >
-                    {/* ヘッダー部分 */}
-                    <div className="flex items-center justify-between mb-4">
-                      <Badge variant="outline" className="font-medium">
-                        枠 {index + 1}
-                      </Badge>
-                      <div className="flex items-center gap-2">
-                        {isUserBooked && (
-                          <Badge
-                            variant="outline"
-                            className="text-success border-success bg-success/10 font-medium"
-                          >
-                            {tBooking('bookedSlot')}
-                          </Badge>
-                        )}
-                        <Badge
-                          variant={isSlotFull ? 'destructive' : 'default'}
-                          className="text-sm font-medium"
-                        >
-                          {isSlotFull ? '満席' : '空きあり'}
-                        </Badge>
-                      </div>
-                    </div>
-
-                    {/* 抽選エントリー数表示（抽選方式の場合） */}
-                    {session.booking_type === 'lottery' && (
-                      <div className="mb-4 p-3 bg-muted/50 rounded-lg">
-                        <div className="flex items-center gap-2 mb-2">
-                          <UsersIcon className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm font-medium">
-                            エントリー数
-                          </span>
-                        </div>
-                        <div className="space-y-1">
-                          {(() => {
-                            if (!lotteryEntryCount) {
-                              return (
-                                <div className="text-sm text-muted-foreground">
-                                  エントリー数: 取得中...
-                                </div>
-                              );
+                    <div className="flex flex-col md:flex-row">
+                      {/* 左側: 衣装画像エリア */}
+                      <div className="md:w-64 h-64 md:h-auto relative overflow-hidden bg-gray-50 dark:bg-gray-800">
+                        {slot.costume_image_url ? (
+                          <Image
+                            src={slot.costume_image_url}
+                            alt={`枠${index + 1}の衣装`}
+                            fill
+                            className="object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                            onClick={() =>
+                              handleImageClick(slot.costume_image_url!)
                             }
-
-                            const slotEntry =
-                              lotteryEntryCount.entries_by_slot?.find(
-                                e => e.slot_id === slot.id
-                              );
-
-                            if (slotEntry) {
-                              return (
-                                <div className="flex items-center gap-2 text-sm">
-                                  <span>
-                                    エントリー数: {slotEntry.entry_count} 件
-                                    {lotterySession?.max_entries &&
-                                      ` / ${lotterySession.max_entries} 件上限`}
-                                  </span>
-                                  {lotterySession?.max_entries &&
-                                    slotEntry.entry_count >=
-                                      lotterySession.max_entries && (
-                                      <Badge
-                                        variant="destructive"
-                                        className="text-xs"
-                                      >
-                                        上限到達
-                                      </Badge>
-                                    )}
-                                </div>
-                              );
-                            }
-                            return (
-                              <div className="text-sm text-muted-foreground">
-                                エントリー数: 0 件
-                              </div>
-                            );
-                          })()}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* 詳細情報グリッド */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-                      {/* 参加者数 */}
-                      <div className="text-center">
-                        <div className="flex items-center justify-center gap-2 text-gray-600 dark:text-gray-400 mb-1">
-                          <UsersIcon className="h-4 w-4" />
-                          <span className="text-sm font-medium">参加者</span>
-                        </div>
-                        <div className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-                          {slot.current_participants}
-                          <span className="text-lg text-gray-500 dark:text-gray-400">
-                            /{slot.max_participants}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* 時間 */}
-                      <div className="text-center">
-                        <div className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-                          時間
-                        </div>
-                        <div className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white break-words">
-                          <FormattedDateTime
-                            value={slotStartTime}
-                            format="time-range"
-                            endValue={slotEndTime}
                           />
-                        </div>
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <div className="text-gray-400 dark:text-gray-600 text-sm">
+                              衣装画像なし
+                            </div>
+                          </div>
+                        )}
                       </div>
 
-                      {/* 料金 */}
-                      <div className="text-center">
-                        <div className="flex items-center justify-center gap-2 text-gray-600 dark:text-gray-400 mb-1">
-                          <CircleDollarSignIcon className="h-4 w-4" />
-                          <span className="text-sm font-medium">料金</span>
+                      {/* 右側: 情報エリア */}
+                      <div className="flex-1 p-6 md:p-8">
+                        {/* 上部: 衣装テーマ + 時間 + ステータスバッジ */}
+                        <div className="flex items-start justify-between mb-6">
+                          <div>
+                            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+                              <span className="text-gray-500 dark:text-gray-400">
+                                第{index + 1}枠
+                              </span>
+                              {slot.costume_description && (
+                                <>
+                                  <span className="text-gray-400 dark:text-gray-500">
+                                    ・
+                                  </span>
+                                  <span>{slot.costume_description}</span>
+                                </>
+                              )}
+                            </h3>
+                            <p className="text-lg text-gray-600 dark:text-gray-400">
+                              <FormattedDateTime
+                                value={slotStartTime}
+                                format="time-range"
+                                endValue={slotEndTime}
+                              />
+                            </p>
+                          </div>
+                          <div className="flex flex-col items-end gap-2">
+                            {isUserBooked && (
+                              <Badge
+                                variant="outline"
+                                className="text-success border-success bg-success/10 font-medium whitespace-nowrap"
+                              >
+                                {tBooking('bookedSlot')}
+                              </Badge>
+                            )}
+                            <Badge
+                              variant={isSlotFull ? 'destructive' : 'default'}
+                              className="text-sm font-semibold whitespace-nowrap"
+                            >
+                              {isSlotFull ? '満席' : '空きあり'}
+                            </Badge>
+                          </div>
                         </div>
-                        <div className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-                          {slot.price_per_person === 0 ? (
-                            '無料'
-                          ) : (
-                            <FormattedPrice
-                              value={slot.price_per_person}
-                              format="simple"
-                            />
-                          )}
+
+                        {/* 抽選エントリー数表示（抽選方式の場合） */}
+                        {session.booking_type === 'lottery' && (
+                          <div className="mb-6 p-3 bg-muted/50 rounded-lg">
+                            <div className="flex items-center gap-2 mb-2">
+                              <UsersIcon className="h-4 w-4 text-muted-foreground" />
+                              <span className="text-sm font-medium">
+                                エントリー数
+                              </span>
+                            </div>
+                            <div className="space-y-1">
+                              {(() => {
+                                if (!lotteryEntryCount) {
+                                  return (
+                                    <div className="text-sm text-muted-foreground">
+                                      エントリー数: 取得中...
+                                    </div>
+                                  );
+                                }
+
+                                const slotEntry =
+                                  lotteryEntryCount.entries_by_slot?.find(
+                                    e => e.slot_id === slot.id
+                                  );
+
+                                if (slotEntry) {
+                                  return (
+                                    <div className="flex items-center gap-2 text-sm">
+                                      <span>
+                                        エントリー数: {slotEntry.entry_count} 件
+                                        {lotterySession?.max_entries &&
+                                          ` / ${lotterySession.max_entries} 件上限`}
+                                      </span>
+                                      {lotterySession?.max_entries &&
+                                        slotEntry.entry_count >=
+                                          lotterySession.max_entries && (
+                                          <Badge
+                                            variant="destructive"
+                                            className="text-xs"
+                                          >
+                                            上限到達
+                                          </Badge>
+                                        )}
+                                    </div>
+                                  );
+                                }
+                                return (
+                                  <div className="text-sm text-muted-foreground">
+                                    エントリー数: 0 件
+                                  </div>
+                                );
+                              })()}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* 下部: 参加者数 + 料金（2列グリッド、左ボーダー付き） */}
+                        <div className="grid grid-cols-2 gap-6">
+                          <StatItem
+                            label="参加人数"
+                            value={
+                              <>
+                                {currentParticipants}
+                                <span className="text-lg text-gray-500 dark:text-gray-400">
+                                  /{slot.max_participants}
+                                </span>
+                              </>
+                            }
+                          />
+                          <StatItem
+                            label="料金"
+                            value={
+                              slot.price_per_person === 0 ? (
+                                '無料'
+                              ) : (
+                                <FormattedPrice
+                                  value={slot.price_per_person}
+                                  format="simple"
+                                />
+                              )
+                            }
+                          />
                         </div>
                       </div>
                     </div>
@@ -1505,7 +1343,7 @@ export function PhotoSessionDetail({
                   );
                 }}
               >
-                <Star className="h-4 w-4 mr-2" />
+                <Star className="h-4 w-4" />
                 {hasExistingReview ? 'レビュー修正' : 'レビューを書く'}
               </Button>
             )}
@@ -1523,7 +1361,7 @@ export function PhotoSessionDetail({
             <CardHeader>
               <CardTitle className="text-lg">ご注意事項</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3 text-sm text-muted-foreground">
+            <CardContent className="space-y-4 text-sm text-muted-foreground">
               <ul className="space-y-2 list-disc list-inside">
                 <li>キャンセルは撮影会開始の24時間前まで可能です</li>
                 <li>遅刻される場合は必ず主催者にご連絡ください</li>
@@ -1549,7 +1387,7 @@ export function PhotoSessionDetail({
             <CardHeader>
               <CardTitle className="text-lg">開催者向け注意事項</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3 text-sm text-muted-foreground">
+            <CardContent className="space-y-4 text-sm text-muted-foreground">
               <ul className="space-y-2 list-disc list-inside">
                 <li>参加者への適切な連絡・指示を心がけてください</li>
                 <li>撮影時は参加者の安全と快適性を最優先してください</li>
@@ -1578,6 +1416,14 @@ export function PhotoSessionDetail({
           autoHide={false}
         />
       )}
+
+      {/* 画像ライトボックス */}
+      <ImageLightbox
+        imageUrl={lightboxImage}
+        isOpen={lightboxOpen}
+        onClose={() => setLightboxOpen(false)}
+        alt="撮影会画像"
+      />
     </div>
   );
 }

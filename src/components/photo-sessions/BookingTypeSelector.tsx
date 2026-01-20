@@ -52,7 +52,7 @@ export const BookingTypeSelector = memo(function BookingTypeSelector({
       title: t('bookingType.lottery.title'),
       description: t('bookingType.lottery.description'),
       icon: Shuffle,
-      color: 'bg-green-100 text-green-800 border-green-200',
+      color: 'bg-success/10 text-success border-success/30',
       features: [
         t('bookingType.lottery.feature1'),
         t('bookingType.lottery.feature2'),
@@ -93,7 +93,7 @@ export const BookingTypeSelector = memo(function BookingTypeSelector({
         value={value}
         onValueChange={handleValueChange}
         disabled={disabled}
-        className="space-y-4"
+        className="grid grid-cols-1 md:grid-cols-2 gap-4"
       >
         {bookingTypes.map(type => {
           const Icon = type.icon;
@@ -135,7 +135,10 @@ export const BookingTypeSelector = memo(function BookingTypeSelector({
                         </div>
                       </div>
                       {isSelected && (
-                        <Badge variant="default" className="ml-2">
+                        <Badge
+                          variant="default"
+                          className="ml-2 flex-shrink-0 whitespace-nowrap"
+                        >
                           {t('bookingType.selected')}
                         </Badge>
                       )}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { logger } from '@/lib/utils/logger';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
@@ -110,7 +110,7 @@ export function AdminLotteryManagement({
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
 
   // エントリー一覧を取得
-  const fetchEntries = async () => {
+  const fetchEntries = useCallback(async () => {
     try {
       setIsLoading(true);
       const result = await getAdminLotteryEntries(session.id);
@@ -135,11 +135,11 @@ export function AdminLotteryManagement({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [session.id, toast, tErrors]);
 
   useEffect(() => {
     fetchEntries();
-  }, [session.id]);
+  }, [fetchEntries]);
 
   // フィルタリングとソート
   useEffect(() => {
@@ -603,7 +603,7 @@ export function AdminLotteryManagement({
           ) : (
             <div className="space-y-4">
               {filteredEntries.map(entry => (
-                <div key={entry.id} className="border rounded-lg p-4 space-y-3">
+                <div key={entry.id} className="border rounded-lg p-4 space-y-4">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
                       {entry.status === 'applied' &&

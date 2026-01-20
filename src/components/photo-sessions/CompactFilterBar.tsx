@@ -236,7 +236,7 @@ export function CompactFilterBar({
             : filters.location,
         fullLabel: `場所: ${filters.location}`,
         icon: MapPin,
-        color: 'bg-green-100 text-green-800 border-green-200',
+        color: 'bg-success/10 text-success border-success/30',
       });
     }
 
@@ -323,7 +323,7 @@ export function CompactFilterBar({
   const hasActiveFilters = activeFilters.length > 0;
 
   return (
-    <div className={`space-y-3 ${className}`}>
+    <div className={`space-y-4 ${className}`}>
       {/* メインフィルターバー - モバイル最適化 */}
       <Card className="border-b transition-all duration-200 shadow-sm">
         <CardContent className="p-3 sm:p-4">
@@ -601,7 +601,7 @@ export function CompactFilterBar({
                       </>
                     ) : (
                       <>
-                        <Search className="h-4 w-4 mr-2" />
+                        <Search className="h-4 w-4" />
                         検索
                       </>
                     )}

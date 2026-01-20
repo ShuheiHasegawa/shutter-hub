@@ -165,9 +165,8 @@ export function PhotoSessionList({
   useEffect(() => {
     // SWRがローディング中の場合
     if (swrLoading) {
-      // リセット中または既存データがない場合のみloading=trueに設定
-      // 既存データがある場合は、データが消えるまでloadingをfalseに保つ
-      if (pendingResetRef.current || sessions.length === 0) {
+      // リセット中の場合のみローディング表示（既存データは保持）
+      if (pendingResetRef.current) {
         setLoading(true);
       }
       return;
@@ -454,7 +453,8 @@ export function PhotoSessionList({
 
   // handleLoadMore関数は無限スクロールにより不要
 
-  if (loading) {
+  // 初回ロード時のみローディング画面を表示
+  if (loading && sessions.length === 0) {
     return (
       <div className="space-y-4">
         {title && (
@@ -469,6 +469,15 @@ export function PhotoSessionList({
 
   return (
     <div className="flex flex-col flex-1 min-h-0">
+      {/* リフレッシュ中のインジケーター */}
+      {loading && sessions.length > 0 && (
+        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50">
+          <div className="bg-surface-primary text-surface-primary-text px-4 py-2 rounded-full shadow-lg flex items-center gap-2">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span className="text-sm">更新中...</span>
+          </div>
+        </div>
+      )}
       {/* スクロール可能なコンテンツエリア */}
       <div className="flex-1 overflow-y-auto min-h-0 flex flex-col">
         {/* 撮影会一覧 */}
@@ -511,7 +520,7 @@ export function PhotoSessionList({
               {layout === 'card' && (
                 <>
                   {/* PC版: 横長カード */}
-                  <div className="hidden md:block space-y-3 md:space-y-4 px-4 md:px-0">
+                  <div className="hidden md:block space-y-4 md:space-y-4 px-4 md:px-0">
                     {sessions.map(session => {
                       const favoriteState =
                         favoriteStatesReady && favoriteIsAuthenticated !== false
@@ -740,7 +749,7 @@ export function PhotoSessionList({
           )}
 
           {/* 無限スクロール用のトリガー要素 */}
-          <div className="flex justify-center pt-4 pb-24 md:pb-28 lg:pb-32 flex-shrink-0">
+          <div className="flex justify-center pt-4 pb-12 md:pb-16 lg:pb-20 flex-shrink-0">
             {loadingMore && (
               <div className="flex items-center text-muted-foreground">
                 <Loader2 className="mr-2 h-4 w-4 animate-spin-slow" />

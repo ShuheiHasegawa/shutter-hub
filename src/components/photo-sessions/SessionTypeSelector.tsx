@@ -43,7 +43,7 @@ export function SessionTypeSelector({ onSelect }: SessionTypeSelectorProps) {
   return (
     <div className="w-full max-w-5xl mx-auto space-y-8 px-4 py-8">
       {/* ヘッダーセクション */}
-      <div className="text-center space-y-3">
+      <div className="text-center space-y-4">
         <h1 className="text-3xl font-bold tracking-tight">撮影会を作成</h1>
         <p className="text-lg text-muted-foreground">
           撮影会のタイプを選択してください
@@ -103,7 +103,7 @@ export function SessionTypeSelector({ onSelect }: SessionTypeSelectorProps) {
           </CardHeader>
 
           <CardContent className="pt-0">
-            <div className="space-y-3 pl-9">
+            <div className="space-y-4 pl-9">
               <div className="space-y-2.5">
                 <div className="flex items-start gap-2.5">
                   <div className="mt-1.5 h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
@@ -182,7 +182,7 @@ export function SessionTypeSelector({ onSelect }: SessionTypeSelectorProps) {
           </CardHeader>
 
           <CardContent className="pt-0">
-            <div className="space-y-3 pl-9">
+            <div className="space-y-4 pl-9">
               <div className="space-y-2.5">
                 <div className="flex items-start gap-2.5">
                   <div className="mt-1.5 h-1.5 w-1.5 rounded-full bg-primary shrink-0" />

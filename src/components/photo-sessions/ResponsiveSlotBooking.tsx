@@ -276,7 +276,7 @@ export const ResponsiveSlotBooking = memo(function ResponsiveSlotBooking({
                 <div className="space-y-4 pb-4">
                   {/* ステップ1: 時間枠選択 */}
                   {currentStep === 'select' && hasSlots && (
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       {slots.map((slot, index) => (
                         <SlotCard
                           key={slot.id}
@@ -303,7 +303,7 @@ export const ResponsiveSlotBooking = memo(function ResponsiveSlotBooking({
                             予約内容
                           </CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-3">
+                        <CardContent className="space-y-4">
                           <div>
                             <div className="font-medium text-theme-text-primary">
                               撮影会
@@ -418,7 +418,7 @@ export const ResponsiveSlotBooking = memo(function ResponsiveSlotBooking({
                       onClick={() => transitionToStep('select')}
                       className="border-border text-theme-text-secondary"
                     >
-                      <ArrowLeft className="h-4 w-4 mr-2" />
+                      <ArrowLeft className="h-4 w-4" />
                       戻る
                     </Button>
                     <Button
@@ -546,7 +546,7 @@ export const ResponsiveSlotBooking = memo(function ResponsiveSlotBooking({
               </AlertDialogDescription>
             </AlertDialogHeader>
 
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div>
                 <div className="font-medium text-theme-text-primary">
                   撮影会
@@ -800,7 +800,7 @@ function SessionInfoDisplay({
   return (
     <div className="space-y-4">
       <Card className="surface-neutral-1">
-        <CardContent className="pt-6 space-y-3">
+        <CardContent className="pt-6 space-y-4">
           <div>
             <div className="font-medium text-theme-text-primary">撮影会</div>
             <div className="text-theme-text-secondary">{session.title}</div>

@@ -35,6 +35,7 @@ import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import { CreditCard, Wallet } from 'lucide-react';
 import { MultiSlotLotteryEntryForm } from '@/components/lottery/MultiSlotLotteryEntryForm';
 import { LotteryEntryConfirmation } from '@/components/lottery/LotteryEntryConfirmation';
@@ -693,7 +694,7 @@ export function SlotBookingFlow({
         </div>
 
         {hasSlots ? (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {allowMultiple && (
               <Alert>
                 💡&nbsp;この撮影会では複数の時間枠を選択できます。お好みの枠を複数選んでください。
@@ -865,7 +866,7 @@ export function SlotBookingFlow({
               icon={Clock}
               variant="primary"
             >
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {[...selectedSlots]
                   .sort((a, b) => a.slot_number - b.slot_number)
                   .map(slot => (
@@ -976,11 +977,12 @@ export function SlotBookingFlow({
             </InfoCard>
           )}
 
-          {/* 支払い方法選択（現地払いが有効な場合のみ） */}
-          {session.payment_timing === 'cash_on_site' && (
+          {/* 支払い方法選択 */}
+          {(session.payment_timing === 'cash_on_site' ||
+            session.payment_timing === 'prepaid') && (
             <Card>
               <CardContent className="pt-6">
-                <div className="font-medium text-theme-text-primary mb-2">
+                <div className="font-medium text-theme-text-primary mb-4">
                   {t('booking.selectPaymentMethod')}
                 </div>
                 <RadioGroup
@@ -988,31 +990,82 @@ export function SlotBookingFlow({
                   onValueChange={(value: 'prepaid' | 'cash_on_site') => {
                     setSelectedPaymentMethod(value);
                   }}
-                  className="space-y-3"
+                  className="grid grid-cols-1 gap-4"
                 >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="prepaid" id="payment_prepaid" />
-                    <Label
-                      htmlFor="payment_prepaid"
-                      className="flex items-center gap-2 cursor-pointer flex-1"
-                    >
-                      <CreditCard className="h-4 w-4" />
-                      <span>{t('booking.paymentMethodStripe')}</span>
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem
-                      value="cash_on_site"
-                      id="payment_cash_on_site"
-                    />
-                    <Label
-                      htmlFor="payment_cash_on_site"
-                      className="flex items-center gap-2 cursor-pointer flex-1"
-                    >
-                      <Wallet className="h-4 w-4" />
-                      <span>{t('booking.paymentMethodCashOnSite')}</span>
-                    </Label>
-                  </div>
+                  {[
+                    {
+                      value: 'prepaid' as const,
+                      title: t('booking.paymentMethodStripe'),
+                      description: t('booking.paymentMethodStripeDescription'),
+                      icon: CreditCard,
+                      color:
+                        'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+                    },
+                    ...(session.payment_timing === 'cash_on_site'
+                      ? [
+                          {
+                            value: 'cash_on_site' as const,
+                            title: t('booking.paymentMethodCashOnSite'),
+                            description: t(
+                              'booking.paymentMethodCashOnSiteDescription'
+                            ),
+                            icon: Wallet,
+                            color: 'bg-success/10 text-success',
+                          },
+                        ]
+                      : []),
+                  ].map(method => {
+                    const Icon = method.icon;
+                    const isSelected = selectedPaymentMethod === method.value;
+
+                    return (
+                      <div key={method.value} className="relative">
+                        <RadioGroupItem
+                          value={method.value}
+                          id={`payment_${method.value}`}
+                          className="sr-only"
+                        />
+                        <Label
+                          htmlFor={`payment_${method.value}`}
+                          className="block cursor-pointer transition-all duration-200"
+                        >
+                          <Card
+                            className={`transition-all duration-200 hover:shadow-md ${
+                              isSelected
+                                ? 'ring-2 ring-primary shadow-md'
+                                : 'hover:border-muted-foreground/20'
+                            }`}
+                          >
+                            <CardContent className="p-4">
+                              <div className="flex items-center gap-4">
+                                <div
+                                  className={`p-2 rounded-lg ${method.color}`}
+                                >
+                                  <Icon className="h-5 w-5" />
+                                </div>
+                                <div className="flex-1">
+                                  <div className="font-medium">
+                                    {method.title}
+                                  </div>
+                                  <p className="text-sm text-muted-foreground mt-1">
+                                    {method.description}
+                                  </p>
+                                </div>
+                                {isSelected && (
+                                  <Badge
+                                    variant="default"
+                                    className="ml-2 flex-shrink-0 whitespace-nowrap"
+                                  >
+                                    {t('booking.paymentSelected')}
+                                  </Badge>
+                                )}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </Label>
+                      </div>
+                    );
+                  })}
                 </RadioGroup>
               </CardContent>
             </Card>
@@ -1023,36 +1076,38 @@ export function SlotBookingFlow({
             <CardContent className="p-6">
               <div className="text-center">
                 <div className="text-sm opacity-90 mb-2">合計料金</div>
-                <div className="text-5xl font-bold mb-2">
-                  {allowMultiple && selectedSlots.length > 0 ? (
-                    selectedSlots.reduce(
-                      (sum, slot) => sum + slot.price_per_person,
-                      0
-                    ) === 0 ? (
+                <div className="flex items-baseline justify-center gap-2">
+                  <div className="text-5xl font-bold">
+                    {allowMultiple && selectedSlots.length > 0 ? (
+                      selectedSlots.reduce(
+                        (sum, slot) => sum + slot.price_per_person,
+                        0
+                      ) === 0 ? (
+                        '無料'
+                      ) : (
+                        <FormattedPrice
+                          value={selectedSlots.reduce(
+                            (sum, slot) => sum + slot.price_per_person,
+                            0
+                          )}
+                          format="simple"
+                        />
+                      )
+                    ) : (selectedSlot?.price_per_person ||
+                        session.price_per_person) === 0 ? (
                       '無料'
                     ) : (
                       <FormattedPrice
-                        value={selectedSlots.reduce(
-                          (sum, slot) => sum + slot.price_per_person,
-                          0
-                        )}
+                        value={
+                          selectedSlot?.price_per_person ||
+                          session.price_per_person
+                        }
                         format="simple"
                       />
-                    )
-                  ) : (selectedSlot?.price_per_person ||
-                      session.price_per_person) === 0 ? (
-                    '無料'
-                  ) : (
-                    <FormattedPrice
-                      value={
-                        selectedSlot?.price_per_person ||
-                        session.price_per_person
-                      }
-                      format="simple"
-                    />
-                  )}
+                    )}
+                  </div>
+                  <span className="text-sm opacity-75">税込</span>
                 </div>
-                <div className="text-sm opacity-75">税込</div>
               </div>
             </CardContent>
           </Card>
@@ -1065,18 +1120,15 @@ export function SlotBookingFlow({
                   <AlertCircle className="h-5 w-5 text-warning" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-bold mb-3 text-warning">ご注意事項</h3>
+                  <h3 className="font-bold mb-3 text-warning">
+                    {t('booking.noticeTitle')}
+                  </h3>
                   <ul className="space-y-2 text-sm text-warning/70">
-                    <li>
-                      • 予約のキャンセルは撮影会開始の24時間前まで可能です
-                    </li>
-                    <li>• 遅刻される場合は主催者にご連絡ください</li>
-                    <li>• 体調不良の場合は無理をせず参加をお控えください</li>
+                    <li>• {t('booking.noticeCancellation')}</li>
+                    <li>• {t('booking.noticeLate')}</li>
+                    <li>• {t('booking.noticeHealth')}</li>
                     {hasSlots && (
-                      <li>
-                        •
-                        撮影枠制撮影会では、予約した時間枠以外の参加はできません
-                      </li>
+                      <li>• {t('booking.noticeSlotRestriction')}</li>
                     )}
                   </ul>
                 </div>
@@ -1322,7 +1374,7 @@ function SessionInfoDisplay({
   return (
     <div className="space-y-4">
       <Card className="surface-neutral-1">
-        <CardContent className="pt-6 space-y-3">
+        <CardContent className="pt-6 space-y-4">
           <div>
             <div className="font-medium text-theme-text-primary">撮影会</div>
             <div className="text-theme-text-secondary">{session.title}</div>

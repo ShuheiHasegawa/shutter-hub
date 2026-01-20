@@ -151,7 +151,7 @@ export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
           backButton={{ href: '/photo-sessions', variant: 'outline' }}
           actions={
             <Button variant="action">
-              <BarChart3Icon className="h-4 w-4 mr-2" />
+              <BarChart3Icon className="h-4 w-4" />
               詳細レポートをダウンロード
             </Button>
           }
@@ -427,7 +427,7 @@ export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
             <CardTitle>予約トレンド</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
+            <div className="space-y-4">
               {Object.entries(bookingTrend).length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   まだ予約がありません
@@ -469,13 +469,13 @@ export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
           <CardContent>
             <div className="flex flex-wrap gap-4">
               <Button variant="outline">
-                <BarChart3Icon className="h-4 w-4 mr-2" />
+                <BarChart3Icon className="h-4 w-4" />
                 詳細レポートをダウンロード
               </Button>
               <Button variant="outline">参加者リストをエクスポート</Button>
               <Button variant="outline">収益レポートを生成</Button>
               <Button variant="outline">
-                <StarIcon className="h-4 w-4 mr-2" />
+                <StarIcon className="h-4 w-4" />
                 満足度調査を送信
               </Button>
             </div>
