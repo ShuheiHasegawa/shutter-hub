@@ -149,6 +149,7 @@ export default function EditPhotoSessionPage() {
     };
 
     loadSessionData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, sessionId, authLoading]);
 
   if (authLoading || loading) {
@@ -187,7 +188,7 @@ export default function EditPhotoSessionPage() {
             variant="ghost"
             onClick={() => router.push('/dashboard/my-sessions')}
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="h-4 w-4" />
             {tCommon('back')}
           </Button>
 

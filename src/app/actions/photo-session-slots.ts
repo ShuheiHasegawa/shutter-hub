@@ -54,6 +54,19 @@ export async function createPhotoSessionWithSlotsAction(
     }
     const { user, supabase } = authResult.data;
 
+    // 検証ログ: サーバーアクション受信パラメータ
+    logger.info('[検証] サーバーアクション受信パラメータ:', {
+      phase: 'server-action',
+      function: 'createPhotoSessionWithSlotsAction',
+      slotsCount: data.slots?.length || 0,
+      slots:
+        data.slots?.map(slot => ({
+          slot_number: slot.slot_number,
+          max_participants: slot.max_participants,
+          price_per_person: slot.price_per_person,
+        })) || [],
+    });
+
     // スロット必須のため、常にスロットから参加者数と料金を計算
     const maxParticipants = data.slots.reduce(
       (sum, slot) => sum + slot.max_participants,
@@ -66,6 +79,27 @@ export async function createPhotoSessionWithSlotsAction(
               data.slots.length
           )
         : 0;
+
+    // 検証ログ: 計算結果
+    logger.info('[検証] サーバーアクション計算結果:', {
+      phase: 'server-action',
+      function: 'createPhotoSessionWithSlotsAction',
+      calculatedMaxParticipants: maxParticipants,
+      calculatedAvgPrice: avgPricePerPerson,
+      slotsCount: data.slots.length,
+    });
+
+    // 検証ログ: データベース挿入直前の値
+    logger.info('[検証] データベース挿入直前:', {
+      phase: 'server-action',
+      function: 'createPhotoSessionWithSlotsAction',
+      insertData: {
+        max_participants: maxParticipants,
+        price_per_person: avgPricePerPerson,
+        title: data.title,
+        slotsCount: data.slots.length,
+      },
+    });
 
     // 撮影会を作成
     const { data: session, error: sessionError } = await supabase
@@ -95,6 +129,21 @@ export async function createPhotoSessionWithSlotsAction(
       .select()
       .single();
 
+    // 検証ログ: データベース挿入後の値
+    logger.info('[検証] データベース挿入後:', {
+      phase: 'server-action',
+      function: 'createPhotoSessionWithSlotsAction',
+      insertedSession: session
+        ? {
+            id: session.id,
+            max_participants: session.max_participants,
+            price_per_person: session.price_per_person,
+            title: session.title,
+          }
+        : null,
+      expectedMaxParticipants: maxParticipants,
+    });
+
     if (sessionError) {
       logger.error('撮影会作成エラー:', sessionError);
       return { success: false, error: '撮影会の作成に失敗しました' };
@@ -116,6 +165,51 @@ export async function createPhotoSessionWithSlotsAction(
         // 撮影会は作成されているので削除
         await supabase.from('photo_sessions').delete().eq('id', session.id);
         return { success: false, error: 'スロットの作成に失敗しました' };
+      }
+
+      // 検証ログ: スロット作成後の撮影会状態
+      if (session) {
+        const { data: sessionAfterSlots } = await supabase
+          .from('photo_sessions')
+          .select('id, max_participants, current_participants')
+          .eq('id', session.id)
+          .single();
+
+        logger.info('[検証] スロット作成後の撮影会状態:', {
+          phase: 'server-action',
+          function: 'createPhotoSessionWithSlotsAction',
+          sessionAfterSlots: sessionAfterSlots
+            ? {
+                id: sessionAfterSlots.id,
+                max_participants: sessionAfterSlots.max_participants,
+                current_participants: sessionAfterSlots.current_participants,
+              }
+            : null,
+          expectedMaxParticipants: maxParticipants,
+        });
+
+        // スロット作成後に max_participants を再計算して更新
+        const { error: updateError } = await supabase
+          .from('photo_sessions')
+          .update({
+            max_participants: maxParticipants,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', session.id);
+
+        if (updateError) {
+          logger.warn(
+            'max_participants再更新に失敗しましたが、スロット作成は完了しています:',
+            updateError
+          );
+        }
+
+        logger.info('[検証] max_participants再更新後:', {
+          phase: 'server-action',
+          function: 'createPhotoSessionWithSlotsAction',
+          sessionId: session.id,
+          updatedMaxParticipants: maxParticipants,
+        });
       }
     }
 

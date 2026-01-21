@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { logger } from '@/lib/utils/logger';
 import { useTranslations } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
@@ -79,30 +79,7 @@ export function PhotoSessionDocuments({
   const [loading, setLoading] = useState(true);
   const [signingDocument, setSigningDocument] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadDocuments();
-
-    // フォールバック: 10秒後にローディングを強制終了
-    const timeout = setTimeout(() => {
-      if (loading) {
-        logger.warn('Document loading timeout - forcing completion');
-        setLoading(false);
-      }
-    }, 10000);
-
-    return () => clearTimeout(timeout);
-  }, [sessionId]);
-
-  useEffect(() => {
-    if (documents.length > 0) {
-      loadSignatures();
-    } else if (documents.length === 0 && !loading) {
-      // documentsが空でローディングが終了している場合
-      setLoading(false);
-    }
-  }, [documents, loading]);
-
-  const loadDocuments = async () => {
+  const loadDocuments = useCallback(async () => {
     try {
       const supabase = createClient();
       const { data, error } = await supabase
@@ -133,9 +110,9 @@ export function PhotoSessionDocuments({
       setLoading(false);
       toast.error(t('errorLoadingDocuments'));
     }
-  };
+  }, [sessionId, t]);
 
-  const loadSignatures = async () => {
+  const loadSignatures = useCallback(async () => {
     try {
       const supabase = createClient();
       const documentIds = documents.map(d => d.id);
@@ -172,7 +149,32 @@ export function PhotoSessionDocuments({
     } finally {
       setLoading(false);
     }
-  };
+  }, [documents]);
+
+  useEffect(() => {
+    loadDocuments();
+  }, [loadDocuments]);
+
+  // フォールバック: 10秒後にローディングを強制終了
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (loading) {
+        logger.warn('Document loading timeout - forcing completion');
+        setLoading(false);
+      }
+    }, 10000);
+
+    return () => clearTimeout(timeout);
+  }, [loading]);
+
+  useEffect(() => {
+    if (documents.length > 0) {
+      loadSignatures();
+    } else if (documents.length === 0 && !loading) {
+      // documentsが空でローディングが終了している場合
+      setLoading(false);
+    }
+  }, [documents, loading, loadSignatures]);
 
   const signDocument = async (documentId: string) => {
     setSigningDocument(documentId);
@@ -357,7 +359,7 @@ export function PhotoSessionDocuments({
                     <Dialog>
                       <DialogTrigger asChild>
                         <Button variant="outline" size="sm">
-                          <Eye className="h-4 w-4 mr-2" />
+                          <Eye className="h-4 w-4" />
                           {t('viewDocument')}
                         </Button>
                       </DialogTrigger>
@@ -408,7 +410,7 @@ export function PhotoSessionDocuments({
                           </>
                         ) : (
                           <>
-                            <Signature className="h-4 w-4 mr-2" />
+                            <Signature className="h-4 w-4" />
                             {t('signDocument')}
                           </>
                         )}

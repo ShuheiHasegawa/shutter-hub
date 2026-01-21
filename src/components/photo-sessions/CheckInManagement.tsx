@@ -78,7 +78,7 @@ export function CheckInManagement({
         return `
         <div class="qr-item">
           <div class="qr-card">
-            <div class="qr-title">スロット QRコード #${slot.slot_number}</div>
+            <div class="qr-title">撮影枠QRコード #${slot.slot_number}</div>
             <div class="qr-code">
               ${qrElement?.outerHTML || ''}
             </div>
@@ -231,8 +231,8 @@ export function CheckInManagement({
           </p>
         </div>
         <div className="flex gap-2">
-          <Button onClick={handlePrintAll} variant="outline" size="sm">
-            <Printer className="h-4 w-4 mr-2" />
+          <Button onClick={handlePrintAll} variant="navigation" size="sm">
+            <Printer className="h-4 w-4" />
             {t('printAll')}
           </Button>
         </div>
@@ -269,7 +269,7 @@ export function CheckInManagement({
         </div>
       </div>
 
-      {/* スロットごとのQRコードと統計（横スクロール対応） */}
+      {/* 撮影枠ごとのQRコードと統計（横スクロール対応） */}
       <div className="overflow-x-auto -mx-4 px-4 pb-4 scrollbar-thin print:!overflow-visible print:!overflow-x-visible print:!mx-0 print:!px-0 print:!pb-0 print:!w-full print:!block">
         <div
           className={`flex gap-6 min-w-max print:!grid print:!flex-none ${getPrintGridCols()} print:!gap-3 print:!min-w-0 print:!w-full print:!max-w-full`}
@@ -293,7 +293,7 @@ export function CheckInManagement({
                         {t('checkInStatistics')} #{slot.slot_number}
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-3">
+                    <CardContent className="space-y-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <Users className="h-4 w-4 text-muted-foreground" />
@@ -371,7 +371,7 @@ export function CheckInManagement({
         </div>
       )}
 
-      {/* スロットがない場合 */}
+      {/* 撮影枠がない場合 */}
       {!loading && slots.length === 0 && (
         <Card className="print:hidden">
           <CardContent className="py-8 text-center text-muted-foreground">

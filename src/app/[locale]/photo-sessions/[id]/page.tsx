@@ -6,6 +6,12 @@ import { LoadingCard } from '@/components/ui/loading-card';
 import { AuthenticatedLayout } from '@/components/layout/authenticated-layout';
 import { logger } from '@/lib/utils/logger';
 import { getCurrentUser } from '@/lib/auth/server';
+import {
+  formatStudioData,
+  fetchSlotBookingCounts,
+  getUserBookingFromList,
+  logSlotsDebugInfo,
+} from '@/lib/photo-sessions';
 
 export default async function PhotoSessionPage({
   params,
@@ -21,7 +27,7 @@ export default async function PhotoSessionPage({
   // 並列でデータを取得
   const [sessionResult, slotsResult, userBookingResult, studioResult] =
     await Promise.all([
-      // 撮影会情報を取得
+      // 撮影会情報を取得（is_publishedフィルタなしで取得）
       supabase
         .from('photo_sessions')
         .select(
@@ -36,7 +42,6 @@ export default async function PhotoSessionPage({
       `
         )
         .eq('id', id)
-        .eq('is_published', true)
         .single(),
 
       // 撮影枠情報を取得
@@ -92,50 +97,33 @@ export default async function PhotoSessionPage({
   }
 
   const session = sessionResult.data;
+
+  // アクセス権限チェック: 公開済み OR 開催者自身のみアクセス可能
+  const isOrganizer = user?.id === session.organizer_id;
+  if (!session.is_published && !isOrganizer) {
+    // 未公開かつ開催者でない場合は404を返す
+    notFound();
+  }
   const slots = slotsResult.data || [];
   const userBookings = userBookingResult.data || [];
   const studioData = studioResult.data;
 
-  // 後方互換性のため、最初の予約をuserBookingとして保持
-  const userBooking =
-    Array.isArray(userBookings) && userBookings.length > 0
-      ? userBookings[0]
-      : null;
+  // データ整形（ヘルパー関数を使用）
+  const userBooking = getUserBookingFromList(userBookings);
+  const studio = formatStudioData(studioData);
 
-  // スタジオ情報を整形
-  const studio = studioData?.studios
-    ? Array.isArray(studioData.studios)
-      ? {
-          id: (studioData.studios[0] as { id: string; name: string })?.id,
-          name: (studioData.studios[0] as { id: string; name: string })?.name,
-        }
-      : {
-          id: (studioData.studios as { id: string; name: string }).id,
-          name: (studioData.studios as { id: string; name: string }).name,
-        }
-    : null;
+  // スロット予約数取得（ヘルパー関数を使用）
+  const slotBookingCounts = await fetchSlotBookingCounts(supabase, id, slots);
 
-  // データ検証ログ（開発環境のみ）
-  if (process.env.NODE_ENV === 'development' && slots) {
-    logger.debug('[PhotoSessionPage] スロットデータ検証:', {
-      sessionId: id,
-      slotsCount: slots.length,
-      slots: slots.map(slot => ({
-        id: slot.id,
-        slot_number: slot.slot_number,
-        current_participants: slot.current_participants,
-        max_participants: slot.max_participants,
-        isFull: slot.current_participants >= slot.max_participants,
-      })),
-    });
-  }
+  // 開発環境ログ（ヘルパー関数を使用）
+  logSlotsDebugInfo(id, slots);
 
   if (slotsResult.error) {
     logger.error('[PhotoSessionPage] スロット取得エラー:', slotsResult.error);
   }
 
   return (
-    <AuthenticatedLayout>
+    <AuthenticatedLayout allowPublic={true}>
       <div>
         <Suspense fallback={<LoadingCard />}>
           <PhotoSessionDetail
@@ -143,6 +131,7 @@ export default async function PhotoSessionPage({
             slots={slots}
             userBooking={userBooking}
             studio={studio}
+            slotBookingCounts={slotBookingCounts}
           />
         </Suspense>
       </div>

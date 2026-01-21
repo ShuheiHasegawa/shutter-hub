@@ -149,7 +149,7 @@ export function ParticipantInfoPanel({
             <CardHeader>
               <CardTitle className="text-lg">参加者向け注意事項</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3 text-sm text-muted-foreground">
+            <CardContent className="space-y-4 text-sm text-muted-foreground">
               <ul className="space-y-2 list-disc list-inside">
                 <li>撮影会開始の15分前には会場にお越しください</li>
                 <li>遅刻される場合は必ず主催者にご連絡ください</li>

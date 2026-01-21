@@ -162,6 +162,14 @@ export async function canJoinPhotoSessionAction(
       return { canJoin: false, reason: '撮影会が見つかりません' };
     }
 
+    // 自己予約制限チェック
+    if (session.organizer_id === userId) {
+      return {
+        canJoin: false,
+        reason: 'errors.cannotBookOwnSession',
+      };
+    }
+
     // 既に予約済みかチェック
     const { data: existingBooking } = await supabase
       .from('bookings')

@@ -177,7 +177,7 @@ export default async function ParticipantsPage({
           </CardHeader>
           <CardContent className="px-2 sm:px-6">
             <Suspense fallback={<LoadingCard />}>
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {participants.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     まだ参加者がいません

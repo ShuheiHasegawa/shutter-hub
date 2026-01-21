@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 
 import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { SlotNumberBadge } from '@/components/ui/slot-number-badge';
 import { Trash2, Plus, ArrowDown, Copy, Image } from 'lucide-react';
 import { PhotoSessionSlot, DiscountType } from '@/types/photo-session';
 import { uploadPhotoSessionImage } from '@/lib/storage/photo-session-images';
@@ -87,18 +87,18 @@ export default function PhotoSessionSlotForm({
   );
 
   // 終了時刻を計算
-  const calculateEndTime = (
-    startTime: string,
-    durationMinutes: number
-  ): string => {
-    try {
-      const start = parse(startTime, 'HH:mm', new Date());
-      const end = addMinutes(start, durationMinutes);
-      return format(end, 'HH:mm');
-    } catch {
-      return '';
-    }
-  };
+  const calculateEndTime = useCallback(
+    (startTime: string, durationMinutes: number): string => {
+      try {
+        const start = parse(startTime, 'HH:mm', new Date());
+        const end = addMinutes(start, durationMinutes);
+        return format(end, 'HH:mm');
+      } catch {
+        return '';
+      }
+    },
+    []
+  );
 
   const [slotForms, setSlotForms] = useState<SlotFormData[]>(() => {
     // 編集時にスロット情報が渡されている場合はそれを使用
@@ -322,8 +322,8 @@ export default function PhotoSessionSlotForm({
             <div className="space-y-4">
               {/* 撮影枠ヘッダー */}
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline">#{slot.slot_number}</Badge>
+                <div className="flex items-center gap-3">
+                  <SlotNumberBadge slotNumber={slot.slot_number} size="small" />
                   <span className="font-medium">
                     {t('slotNumber')} {slot.slot_number}
                   </span>

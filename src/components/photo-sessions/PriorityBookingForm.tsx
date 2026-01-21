@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { logger } from '@/lib/utils/logger';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
@@ -57,11 +57,7 @@ export function PriorityBookingForm({
   const [isLoading, setIsLoading] = useState(true);
   const [isBooking, setIsBooking] = useState(false);
 
-  useEffect(() => {
-    loadEligibilityAndRank();
-  }, [photoSessionId]);
-
-  const loadEligibilityAndRank = async () => {
+  const loadEligibilityAndRank = useCallback(async () => {
     setIsLoading(true);
     try {
       const [eligibilityResult, rankResult] = await Promise.all([
@@ -82,7 +78,11 @@ export function PriorityBookingForm({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [photoSessionId, t]);
+
+  useEffect(() => {
+    loadEligibilityAndRank();
+  }, [loadEligibilityAndRank]);
 
   const handleBooking = async () => {
     if (!eligibility) return;
@@ -146,7 +146,7 @@ export function PriorityBookingForm({
       <CardContent className="space-y-6">
         {/* ユーザーランク表示 */}
         {userRank && (
-          <div className="space-y-3">
+          <div className="space-y-4">
             <h4 className="font-medium flex items-center gap-2">
               <Crown className="h-4 w-4" />
               {t('user_rank.title')}
@@ -185,7 +185,7 @@ export function PriorityBookingForm({
         <Separator />
 
         {/* 予約可能性表示 */}
-        <div className="space-y-3">
+        <div className="space-y-4">
           <h4 className="font-medium flex items-center gap-2">
             <Clock className="h-4 w-4" />
             {t('booking_status.title')}
@@ -244,7 +244,7 @@ export function PriorityBookingForm({
         <Separator />
 
         {/* 予約ボタン */}
-        <div className="space-y-3">
+        <div className="space-y-4">
           <Button
             onClick={handleBooking}
             disabled={!eligibility.can_book || isBooking}

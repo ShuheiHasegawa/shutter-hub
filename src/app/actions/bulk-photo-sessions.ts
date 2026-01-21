@@ -86,6 +86,19 @@ export async function createBulkPhotoSessionsAction(
     const bulkGroupId = nanoid();
     const createdSessions: string[] = [];
 
+    // 検証ログ: 一括作成受信パラメータ
+    logger.info('[検証] 一括作成受信パラメータ:', {
+      phase: 'server-action',
+      function: 'createBulkPhotoSessionsAction',
+      slotsCount: data.slots?.length || 0,
+      slots:
+        data.slots?.map(slot => ({
+          slot_number: slot.slot_number,
+          max_participants: slot.max_participants,
+          price_per_person: slot.price_per_person,
+        })) || [],
+    });
+
     // モデルごとに個別撮影会を作成
     const maxParticipants = data.slots.reduce(
       (total, slot) => total + slot.max_participants,
@@ -98,6 +111,15 @@ export async function createBulkPhotoSessionsAction(
               data.slots.length
           )
         : 0;
+
+    // 検証ログ: 一括作成計算結果
+    logger.info('[検証] 一括作成計算結果:', {
+      phase: 'server-action',
+      function: 'createBulkPhotoSessionsAction',
+      calculatedMaxParticipants: maxParticipants,
+      calculatedAvgPrice: avgPricePerPerson,
+      slotsCount: data.slots.length,
+    });
 
     // モデル名を取得（タイトルに追加するため）
     const { data: modelProfiles } = await supabase
@@ -116,6 +138,19 @@ export async function createBulkPhotoSessionsAction(
     for (const model of data.selected_models) {
       const modelName = modelNameMap.get(model.model_id) || 'Unknown';
       const sessionTitle = `${data.title} - ${modelName}`;
+
+      // 検証ログ: データベース挿入直前の値（各モデルごと）
+      logger.info('[検証] 一括作成データベース挿入直前:', {
+        phase: 'server-action',
+        function: 'createBulkPhotoSessionsAction',
+        modelId: model.model_id,
+        insertData: {
+          max_participants: maxParticipants,
+          price_per_person: avgPricePerPerson,
+          title: sessionTitle,
+          slotsCount: data.slots.length,
+        },
+      });
 
       // 撮影会を作成
       const { data: session, error: sessionError } = await supabase
@@ -146,6 +181,22 @@ export async function createBulkPhotoSessionsAction(
         })
         .select()
         .single();
+
+      // 検証ログ: データベース挿入後の値（各モデルごと）
+      logger.info('[検証] 一括作成データベース挿入後:', {
+        phase: 'server-action',
+        function: 'createBulkPhotoSessionsAction',
+        modelId: model.model_id,
+        insertedSession: session
+          ? {
+              id: session.id,
+              max_participants: session.max_participants,
+              price_per_person: session.price_per_person,
+              title: session.title,
+            }
+          : null,
+        expectedMaxParticipants: maxParticipants,
+      });
 
       if (sessionError) {
         logger.error(
@@ -183,6 +234,51 @@ export async function createBulkPhotoSessionsAction(
 
         if (slotsError) {
           logger.error(`セッション${sessionId}の撮影枠作成エラー:`, slotsError);
+        } else {
+          // 検証ログ: スロット作成後の撮影会状態（各セッションごと）
+          const { data: sessionAfterSlots } = await supabase
+            .from('photo_sessions')
+            .select('id, max_participants, current_participants')
+            .eq('id', sessionId)
+            .single();
+
+          logger.info('[検証] 一括作成スロット作成後の撮影会状態:', {
+            phase: 'server-action',
+            function: 'createBulkPhotoSessionsAction',
+            sessionId,
+            sessionAfterSlots: sessionAfterSlots
+              ? {
+                  id: sessionAfterSlots.id,
+                  max_participants: sessionAfterSlots.max_participants,
+                  current_participants: sessionAfterSlots.current_participants,
+                }
+              : null,
+            expectedMaxParticipants: maxParticipants,
+          });
+
+          // スロット作成後に max_participants を再計算して更新
+          const { error: updateError } = await supabase
+            .from('photo_sessions')
+            .update({
+              max_participants: maxParticipants,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', sessionId);
+
+          if (updateError) {
+            logger.error(
+              '一括作成: max_participants再更新エラー:',
+              updateError
+            );
+            // 一括作成の場合はエラーをログに記録して続行
+          }
+
+          logger.info('[検証] 一括作成: max_participants再更新後:', {
+            phase: 'server-action',
+            function: 'createBulkPhotoSessionsAction',
+            sessionId,
+            updatedMaxParticipants: maxParticipants,
+          });
         }
       }
     }

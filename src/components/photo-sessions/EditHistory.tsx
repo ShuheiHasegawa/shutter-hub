@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { logger } from '@/lib/utils/logger';
 // import { useTranslations } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
@@ -64,11 +64,7 @@ export function EditHistory({
   // 権限チェック
   const isOrganizer = currentUserId === organizerId;
 
-  useEffect(() => {
-    fetchEditHistory();
-  }, [sessionId]);
-
-  const fetchEditHistory = async () => {
+  const fetchEditHistory = useCallback(async () => {
     try {
       const supabase = createClient();
       const { data, error } = await supabase
@@ -106,7 +102,11 @@ export function EditHistory({
     } finally {
       setLoading(false);
     }
-  };
+  }, [sessionId]);
+
+  useEffect(() => {
+    fetchEditHistory();
+  }, [fetchEditHistory]);
 
   const restoreToVersion = async (historyId: string) => {
     if (!isOrganizer) return;
@@ -348,7 +348,7 @@ export function EditHistory({
                   {isExpanded && hasChanges && (
                     <>
                       <Separator className="my-4" />
-                      <div className="space-y-3">
+                      <div className="space-y-4">
                         <h4 className="font-medium">変更内容</h4>
                         {renderChanges(entry.changes)}
                       </div>

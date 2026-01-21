@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { logger } from '@/lib/utils/logger';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -116,6 +116,7 @@ export function ImageUploadCommon({
 }: ImageUploadCommonProps) {
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const mergedLabels = { ...defaultLabels, ...labels };
 
@@ -266,77 +267,79 @@ export function ImageUploadCommon({
   return (
     <div className={`space-y-4 ${className}`}>
       {/* アップロードエリア */}
-      <Card
-        className={`transition-all duration-200 ${
-          dragOver ? 'border-primary bg-primary/5' : 'border-dashed'
-        } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-      >
-        <CardContent className="p-6">
-          <div className="text-center">
-            <div className="mx-auto w-12 h-12 bg-muted rounded-lg flex items-center justify-center mb-4">
-              {uploading ? (
-                <Loader2 className="h-6 w-6 animate-spin" />
-              ) : (
-                <Upload className="h-6 w-6" />
-              )}
-            </div>
-
-            {title && <h3 className="text-lg font-medium mb-2">{title}</h3>}
-
-            {description && (
-              <p className="text-sm text-muted-foreground mb-4">
-                {description}
-              </p>
-            )}
-
-            <div className="flex flex-col sm:flex-row gap-2 items-center justify-center">
-              <Button
-                type="button"
-                variant="outline"
-                disabled={disabled || uploading || !canUpload}
-                onClick={() =>
-                  document.getElementById('image-upload-input')?.click()
-                }
-              >
-                <Upload className="h-4 w-4 mr-2" />
-                {uploading ? mergedLabels.uploading : mergedLabels.selectFiles}
-              </Button>
-
-              <span className="text-xs text-muted-foreground">
-                {mergedLabels.dragAndDrop}
-              </span>
-            </div>
-
-            <input
-              id="image-upload-input"
-              type="file"
-              multiple={multiple}
-              accept={acceptedTypes.join(',')}
-              className="hidden"
-              onChange={handleInputChange}
-              disabled={disabled || uploading}
-            />
-
-            {/* 注意書き */}
-            {(showSizeInfo || showFormatInfo || showMaxImagesInfo) && (
-              <div className="mt-4 text-xs text-muted-foreground space-y-1">
-                {showSizeInfo && <p>最大ファイルサイズ: {maxFileSize}MB</p>}
-                {showFormatInfo && <p>対応形式: JPEG, PNG, WebP, GIF</p>}
-                {showMaxImagesInfo && multiple && (
-                  <p>最大枚数: {maxImages}枚</p>
+      {canUpload && (
+        <Card
+          className={`transition-all duration-200 ${
+            dragOver ? 'border-primary bg-primary/5' : 'border-dashed'
+          } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+        >
+          <CardContent className="p-6">
+            <div className="text-center">
+              <div className="mx-auto w-12 h-12 bg-muted rounded-lg flex items-center justify-center mb-4">
+                {uploading ? (
+                  <Loader2 className="h-6 w-6 animate-spin" />
+                ) : (
+                  <Upload className="h-6 w-6" />
                 )}
               </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+
+              {title && <h3 className="text-lg font-medium mb-2">{title}</h3>}
+
+              {description && (
+                <p className="text-sm text-muted-foreground mb-4">
+                  {description}
+                </p>
+              )}
+
+              <div className="flex flex-col sm:flex-row gap-2 items-center justify-center">
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={disabled || uploading || !canUpload}
+                  onClick={() => inputRef.current?.click()}
+                >
+                  <Upload className="h-4 w-4" />
+                  {uploading
+                    ? mergedLabels.uploading
+                    : mergedLabels.selectFiles}
+                </Button>
+
+                <span className="text-xs text-muted-foreground">
+                  {mergedLabels.dragAndDrop}
+                </span>
+              </div>
+
+              <input
+                ref={inputRef}
+                type="file"
+                multiple={multiple}
+                accept={acceptedTypes.join(',')}
+                className="hidden"
+                onChange={handleInputChange}
+                disabled={disabled || uploading}
+              />
+
+              {/* 注意書き */}
+              {(showSizeInfo || showFormatInfo || showMaxImagesInfo) && (
+                <div className="mt-4 text-xs text-muted-foreground space-y-1">
+                  {showSizeInfo && <p>最大ファイルサイズ: {maxFileSize}MB</p>}
+                  {showFormatInfo && <p>対応形式: JPEG, PNG, WebP, GIF</p>}
+                  {showMaxImagesInfo && multiple && (
+                    <p>最大枚数: {maxImages}枚</p>
+                  )}
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* 画像プレビュー */}
       {currentImages.length > 0 && (
-        <div className="space-y-3">
+        <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h4 className="font-medium">
               {mergedLabels.preview}{' '}

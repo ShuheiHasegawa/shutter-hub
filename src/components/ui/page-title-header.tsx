@@ -47,27 +47,31 @@ export function PageTitleHeader({
   className,
 }: PageTitleHeaderProps) {
   return (
-    <div className={cn(className)}>
-      {/* メインヘッダー行 */}
-      <div className="flex items-center gap-2 min-w-0">
-        {/* 戻るボタン */}
-        {backButton && <BackButton {...backButton} />}
+    <div className={cn('min-h-[60px] flex items-center', className)}>
+      {/* グリッドレイアウト: 3列で中央にタイトルを配置 */}
+      <div className="grid grid-cols-[auto,minmax(0,1fr),auto] items-center gap-2 min-w-0 w-full">
+        {/* 左側: 戻るボタン */}
+        <div className="flex items-center justify-start">
+          {backButton && <BackButton {...backButton} />}
+        </div>
 
-        {/* タイトル部分 */}
-        <div className="flex-1 min-w-0">
+        {/* 中央: タイトル */}
+        <div className="flex flex-col items-center justify-center min-w-0">
           <h1 className="text-lg font-bold flex items-center gap-2">
             {icon}
             <span className="truncate">{title}</span>
           </h1>
           {description && (
-            <p className="text-muted-foreground mt-1">{description}</p>
+            <p className="text-muted-foreground mt-1 text-center">
+              {description}
+            </p>
           )}
         </div>
 
-        {/* アクションボタン（常に同じ行に表示） */}
-        {actions && (
-          <div className="flex items-center gap-2 flex-shrink-0">{actions}</div>
-        )}
+        {/* 右側: アクションボタン */}
+        <div className="flex items-center justify-end flex-shrink-0">
+          {actions && <div className="flex items-center gap-2">{actions}</div>}
+        </div>
       </div>
     </div>
   );

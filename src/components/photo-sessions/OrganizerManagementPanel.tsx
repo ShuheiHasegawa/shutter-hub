@@ -56,6 +56,7 @@ interface OrganizerManagementPanelProps {
   lotterySession?: {
     max_entries: number | null;
   } | null;
+  slotBookingCounts?: { [slotId: string]: number };
 }
 
 export function OrganizerManagementPanel({
@@ -63,6 +64,7 @@ export function OrganizerManagementPanel({
   slots,
   lotteryEntryCount,
   lotterySession: lotterySessionProp,
+  slotBookingCounts,
 }: OrganizerManagementPanelProps) {
   const router = useRouter();
   const { toast } = useToast();
@@ -110,7 +112,11 @@ export function OrganizerManagementPanel({
     return bookingTypes[bookingType] || bookingType;
   };
   const totalBookings = hasSlots
-    ? slots.reduce((sum, slot) => sum + slot.current_participants, 0)
+    ? slots.reduce((sum, slot) => {
+        // slotBookingCountsが渡されている場合はそれを使用、なければcurrent_participantsを使用
+        const count = slotBookingCounts?.[slot.id] ?? slot.current_participants;
+        return sum + count;
+      }, 0)
     : session.current_participants;
   const totalCapacity = hasSlots
     ? slots.reduce((sum, slot) => sum + slot.max_participants, 0)
@@ -375,7 +381,7 @@ export function OrganizerManagementPanel({
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Shuffle className="h-5 w-5" />
-              複数スロット抽選管理
+              複数撮影枠抽選管理
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -456,7 +462,7 @@ export function OrganizerManagementPanel({
         </Card>
       )}
 
-      {/* タイムライン型レイアウト（スロット制の場合） */}
+      {/* タイムライン型レイアウト（撮影枠制の場合） */}
       {hasSlots && (
         <Card className="print:hidden">
           <CardHeader>
@@ -470,17 +476,19 @@ export function OrganizerManagementPanel({
               <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-gray-200"></div>
 
               {slots.map((slot, index) => {
+                // slotBookingCountsが渡されている場合はそれを使用、なければcurrent_participantsを使用
+                const currentParticipants =
+                  slotBookingCounts?.[slot.id] ?? slot.current_participants;
                 const isFullyBooked =
-                  slot.current_participants >= slot.max_participants;
+                  currentParticipants >= slot.max_participants;
                 const bookingRate =
                   slot.max_participants > 0
                     ? Math.round(
-                        (slot.current_participants / slot.max_participants) *
-                          100
+                        (currentParticipants / slot.max_participants) * 100
                       )
                     : 0;
                 const revenue =
-                  slot.current_participants *
+                  currentParticipants *
                   (slot.price_per_person || session.price_per_person);
                 const showProgress = slot.max_participants > 1; // 予約可能人数が1人の場合は進捗非表示
 
@@ -488,7 +496,7 @@ export function OrganizerManagementPanel({
                   <div key={slot.id} className="relative mb-8">
                     <div
                       className={`absolute left-8 top-0 bottom-0 w-0.5 ${
-                        isFullyBooked ? 'bg-booked' : 'bg-available'
+                        isFullyBooked ? 'bg-error' : 'bg-success'
                       }`}
                       style={{
                         top: '-1rem',
@@ -498,7 +506,7 @@ export function OrganizerManagementPanel({
 
                     <div
                       className={`absolute left-6 top-0 h-4 w-4 rounded-full border-2 border-white ${
-                        isFullyBooked ? 'bg-booked' : 'bg-available'
+                        isFullyBooked ? 'bg-error' : 'bg-success'
                       }`}
                     ></div>
 
@@ -511,8 +519,8 @@ export function OrganizerManagementPanel({
                                 variant="outline"
                                 className={`mr-2 font-semibold ${
                                   isFullyBooked
-                                    ? 'bg-booked/10 text-booked border-booked/30'
-                                    : 'bg-available/10 text-available border-available/30'
+                                    ? 'bg-error/10 text-error border-error/30'
+                                    : 'bg-success/10 text-success border-success/30'
                                 }`}
                               >
                                 枠 {slot.slot_number}
@@ -526,8 +534,8 @@ export function OrganizerManagementPanel({
                             <Badge
                               className={`${
                                 isFullyBooked
-                                  ? 'bg-booked hover:bg-booked/90'
-                                  : 'bg-available hover:bg-available/90'
+                                  ? 'bg-error hover:bg-error/90'
+                                  : 'bg-success hover:bg-success/90'
                               }`}
                             >
                               {isFullyBooked ? '満席' : '空きあり'}
@@ -591,8 +599,7 @@ export function OrganizerManagementPanel({
                                 参加者
                               </div>
                               <div className="font-semibold">
-                                {slot.current_participants}/
-                                {slot.max_participants}人
+                                {currentParticipants}/{slot.max_participants}人
                               </div>
                             </div>
 
@@ -638,7 +645,7 @@ export function OrganizerManagementPanel({
                               </div>
                               <Progress
                                 value={bookingRate}
-                                className={`h-1.5 ${isFullyBooked ? 'bg-rose-200' : 'bg-emerald-200'}`}
+                                className={`h-1.5 ${isFullyBooked ? 'bg-rose-200' : 'bg-success/20'}`}
                               />
                             </div>
                           )}
@@ -653,7 +660,7 @@ export function OrganizerManagementPanel({
         </Card>
       )}
 
-      {/* チェックイン管理（スロットがある場合のみ） */}
+      {/* チェックイン管理（撮影枠がある場合のみ） */}
       {hasSlots && (
         <div className="mt-6">
           <CheckInManagement
@@ -691,7 +698,7 @@ export function OrganizerManagementPanel({
             <Card>
               <CardContent className="p-6">
                 <div className="text-center text-muted-foreground">
-                  スロットが設定されていません
+                  撮影枠が設定されていません
                 </div>
               </CardContent>
             </Card>

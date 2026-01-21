@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import { logger } from '@/lib/utils/logger';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -48,6 +49,9 @@ export function PhotoSessionBookingForm({
 }: PhotoSessionBookingFormProps) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const router = useRouter();
+  const params = useParams();
+  const locale = (params.locale as string) || 'ja';
   const t = useTranslations('booking');
   const tErrors = useTranslations('errors');
   const tSuccess = useTranslations('success');
@@ -269,7 +273,18 @@ export function PhotoSessionBookingForm({
               <p className="text-muted-foreground mb-4">
                 {t('loginRequiredDescription')}
               </p>
-              <Button variant="outline" disabled>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  const currentPath = window.location.pathname;
+                  const currentSearch = window.location.search;
+                  const currentHash = window.location.hash;
+                  const fullUrl = currentPath + currentSearch + currentHash;
+                  const signinUrl = `/${locale}/auth/signin?returnUrl=${encodeURIComponent(fullUrl)}`;
+                  router.push(signinUrl);
+                }}
+                data-testid="photo-session-login-prompt-button"
+              >
                 {t('pleaseLogin')}
               </Button>
             </div>
@@ -306,7 +321,7 @@ export function PhotoSessionBookingForm({
 
                   <div className="space-y-4">
                     {/* 撮影会情報 */}
-                    <div className="space-y-3 text-sm">
+                    <div className="space-y-4 text-sm">
                       <div>
                         <div className="font-medium text-foreground">
                           {t('confirmation.sessionTitle')}
@@ -402,8 +417,21 @@ export function PhotoSessionBookingForm({
             </div>
           ) : (
             <div className="text-center">
-              <p className="text-muted-foreground mb-4">{canJoin.reason}</p>
-              <Button variant="outline" disabled>
+              <p
+                className="text-muted-foreground mb-4"
+                data-testid="cannot-book-reason"
+              >
+                {canJoin.reason
+                  ? canJoin.reason.startsWith('errors.')
+                    ? tErrors(canJoin.reason.replace('errors.', ''))
+                    : canJoin.reason
+                  : t('cannotBookDefault')}
+              </p>
+              <Button
+                variant="outline"
+                disabled
+                data-testid="photo-session-cannot-book-form-button"
+              >
                 {t('cannotBook')}
               </Button>
             </div>

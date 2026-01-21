@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { logger } from '@/lib/utils/logger';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
@@ -44,11 +44,7 @@ export function PriorityBookingSettingsComponent({
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
-  useEffect(() => {
-    loadSettings();
-  }, [photoSessionId]);
-
-  const loadSettings = async () => {
+  const loadSettings = useCallback(async () => {
     setIsLoading(true);
     try {
       const result = await getPriorityBookingSettings(photoSessionId);
@@ -61,7 +57,11 @@ export function PriorityBookingSettingsComponent({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [photoSessionId, t]);
+
+  useEffect(() => {
+    loadSettings();
+  }, [loadSettings]);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -107,7 +107,7 @@ export function PriorityBookingSettingsComponent({
       </CardHeader>
       <CardContent className="space-y-6">
         {/* 一般予約開始時間 */}
-        <div className="space-y-3">
+        <div className="space-y-4">
           <Label
             htmlFor="general_booking_start"
             className="flex items-center gap-2"
@@ -189,7 +189,7 @@ export function PriorityBookingSettingsComponent({
                 onClick={() => router.push(`/${locale}/priority-tickets`)}
                 className="w-full mt-2"
               >
-                <Ticket className="h-4 w-4 mr-2" />
+                <Ticket className="h-4 w-4" />
                 チケット管理ページへ
                 <ExternalLink className="h-3 w-3 ml-2" />
               </Button>
@@ -221,7 +221,7 @@ export function PriorityBookingSettingsComponent({
           {settings.rank_priority_enabled && (
             <div className="space-y-6 pl-6 border-l-2 border-muted">
               {/* VIPランク */}
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <h4 className="font-medium text-red-600">
                   {t('rank_priority.vip')}
                 </h4>
@@ -256,7 +256,7 @@ export function PriorityBookingSettingsComponent({
               </div>
 
               {/* Platinumランク */}
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <h4 className="font-medium text-purple-600">
                   {t('rank_priority.platinum')}
                 </h4>
@@ -295,7 +295,7 @@ export function PriorityBookingSettingsComponent({
               </div>
 
               {/* Goldランク */}
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <h4 className="font-medium text-yellow-600">
                   {t('rank_priority.gold')}
                 </h4>
@@ -330,7 +330,7 @@ export function PriorityBookingSettingsComponent({
               </div>
 
               {/* Silverランク */}
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <h4 className="font-medium text-gray-600">
                   {t('rank_priority.silver')}
                 </h4>

@@ -13,7 +13,192 @@ import {
   Image as ImageIcon,
   Loader2,
   AlertCircle,
+  GripVertical,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
+import {
+  uploadPhotoSessionImage,
+  validateImageFile,
+} from '@/lib/storage/photo-session-images';
+import { EmptyImage } from '@/components/ui/empty-image';
+import {
+  DndContext,
+  DragEndEvent,
+  DragStartEvent,
+  PointerSensor,
+  TouchSensor,
+  KeyboardSensor,
+  useSensor,
+  useSensors,
+  closestCenter,
+  DragOverlay,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  rectSortingStrategy,
+  arrayMove,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { cn } from '@/lib/utils';
+
+/**
+ * ドラッグ可能な画像カードコンポーネント
+ */
+interface SortableImageCardProps {
+  url: string;
+  index: number;
+  totalImages: number;
+  onRemove: (index: number) => void;
+  onMoveLeft: () => void;
+  onMoveRight: () => void;
+  disabled?: boolean;
+  isMain?: boolean;
+  t: (key: string) => string;
+}
+
+function SortableImageCard({
+  url,
+  index,
+  totalImages,
+  onRemove,
+  onMoveLeft,
+  onMoveRight,
+  disabled = false,
+  isMain = false,
+  t,
+}: SortableImageCardProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: `image-${index}` });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition: isDragging ? 'none' : transition || 'transform 200ms ease',
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div
+      className={cn(
+        'group relative transition-all duration-200 select-none',
+        isDragging && 'opacity-50 scale-105 z-10'
+      )}
+      style={{
+        WebkitUserSelect: 'none',
+        WebkitTouchCallout: 'none',
+        userSelect: 'none',
+      }}
+    >
+      <Card
+        ref={setNodeRef}
+        style={style}
+        className="overflow-hidden shadow-md hover:shadow-lg transition-shadow select-none"
+      >
+        <CardContent className="p-2">
+          <div className="aspect-square relative rounded-lg overflow-hidden bg-muted">
+            <EmptyImage
+              src={url}
+              alt={`撮影会画像 ${index + 1}`}
+              fallbackIcon={ImageIcon}
+              fallbackIconSize="lg"
+              fill
+              className="object-cover"
+            />
+
+            {/* メイン画像バッジ */}
+            {isMain && (
+              <Badge
+                variant="default"
+                className="absolute top-2 left-2 text-xs"
+              >
+                {t('imageUpload.main')}
+              </Badge>
+            )}
+
+            {/* 削除ボタン */}
+            <Button
+              type="button"
+              variant="destructive"
+              size="sm"
+              className="absolute top-2 right-2 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+              onClick={e => {
+                e.stopPropagation();
+                onRemove(index);
+              }}
+              disabled={disabled}
+            >
+              <X className="h-3 w-3" />
+            </Button>
+
+            {/* 左移動ボタン */}
+            {index > 0 && (
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                className="absolute left-1 top-1/2 -translate-y-1/2 h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 hover:bg-white"
+                onClick={e => {
+                  e.stopPropagation();
+                  onMoveLeft();
+                }}
+                disabled={disabled}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+            )}
+
+            {/* 右移動ボタン */}
+            {index < totalImages - 1 && (
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 hover:bg-white"
+                onClick={e => {
+                  e.stopPropagation();
+                  onMoveRight();
+                }}
+                disabled={disabled}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+
+          {/* ドラッグハンドル */}
+          <div
+            {...attributes}
+            {...listeners}
+            className={cn(
+              'cursor-grab active:cursor-grabbing hover:bg-gray-50 transition-colors flex items-center justify-center mt-2 p-2 rounded',
+              'touch-none select-none'
+            )}
+            style={{
+              touchAction: 'none',
+              WebkitUserSelect: 'none',
+              WebkitTouchCallout: 'none',
+            }}
+            title="ドラッグして並び替え"
+          >
+            <GripVertical className="h-4 w-4 text-gray-400" />
+          </div>
+
+          <p className="text-xs text-center mt-1 text-muted-foreground">
+            {index + 1}
+          </p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
 
 interface ImageUploadProps {
   photoSessionId: string;
@@ -37,6 +222,25 @@ export function ImageUpload({
   const [images, setImages] = useState<string[]>(initialImages);
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const [draggedItemId, setDraggedItemId] = useState<string | null>(null);
+
+  // PC/スマホ両対応のセンサー設定
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // 8px移動でドラッグ開始（スマホ対応）
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 150, // 150ms長押しでドラッグ開始（テキスト選択との競合を防止）
+        tolerance: 5, // 5px以内の移動は許容
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   const updateImages = useCallback(
     (newImages: string[]) => {
@@ -64,52 +268,51 @@ export function ImageUpload({
 
       const filesToUpload = Array.from(files).slice(0, remainingSlots);
 
-      // ファイルサイズとタイプの検証
-      const maxSize = 10 * 1024 * 1024; // 10MB
-      const allowedTypes = [
-        'image/jpeg',
-        'image/jpg',
-        'image/png',
-        'image/webp',
-        'image/gif',
-      ];
-
-      for (const file of filesToUpload) {
-        if (file.size > maxSize) {
-          toast({
-            title: t('imageUpload.error.fileTooLarge'),
-            description: t('imageUpload.error.fileTooLargeDescription'),
-            variant: 'destructive',
-          });
-          return;
-        }
-
-        if (!allowedTypes.includes(file.type)) {
-          toast({
-            title: t('imageUpload.error.invalidFileType'),
-            description: t('imageUpload.error.invalidFileTypeDescription'),
-            variant: 'destructive',
-          });
-          return;
-        }
-      }
-
       setUploading(true);
 
       try {
-        // 実際のアップロード処理はここで実装
-        // 今回はダミーURLを生成
-        const newImageUrls = filesToUpload.map((file, index) => {
-          return `https://example.com/images/${photoSessionId}/${Date.now()}_${index}.jpg`;
+        const uploadPromises = filesToUpload.map(async file => {
+          // ファイルバリデーション
+          const validation = validateImageFile(file);
+          if (!validation.valid) {
+            toast({
+              title: t('imageUpload.error.invalidFileType'),
+              description: validation.error,
+              variant: 'destructive',
+            });
+            return null;
+          }
+
+          // アップロード実行
+          const result = await uploadPhotoSessionImage(file, photoSessionId);
+          if (!result.success || !result.url) {
+            toast({
+              title: t('imageUpload.error.uploadFailed'),
+              description: result.error || 'アップロードに失敗しました',
+              variant: 'destructive',
+            });
+            return null;
+          }
+
+          return result.url;
         });
 
-        const updatedImages = [...images, ...newImageUrls];
-        updateImages(updatedImages);
+        const uploadedUrls = await Promise.all(uploadPromises);
+        const successfulUrls = uploadedUrls.filter(
+          (url): url is string => url !== null
+        );
 
-        toast({
-          title: tCommon('success'),
-          description: t('imageUpload.success.uploaded'),
-        });
+        if (successfulUrls.length > 0) {
+          const updatedImages = [...images, ...successfulUrls];
+          updateImages(updatedImages);
+
+          toast({
+            title: tCommon('success'),
+            description: t('imageUpload.success.uploaded', {
+              count: successfulUrls.length,
+            }),
+          });
+        }
       } catch (error) {
         logger.error('画像アップロードエラー:', error);
         toast({
@@ -128,13 +331,8 @@ export function ImageUpload({
     (index: number) => {
       const newImages = images.filter((_, i) => i !== index);
       updateImages(newImages);
-
-      toast({
-        title: tCommon('success'),
-        description: t('imageUpload.success.removed'),
-      });
     },
-    [images, t, tCommon, toast, updateImages]
+    [images, updateImages]
   );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -167,12 +365,40 @@ export function ImageUpload({
     [handleFileSelect]
   );
 
+  // 画像の並び替え関数
   const moveImage = useCallback(
     (fromIndex: number, toIndex: number) => {
+      if (toIndex < 0 || toIndex >= images.length) return;
       const newImages = [...images];
       const [movedImage] = newImages.splice(fromIndex, 1);
       newImages.splice(toIndex, 0, movedImage);
       updateImages(newImages);
+    },
+    [images, updateImages]
+  );
+
+  // ドラッグ開始時の処理
+  const handleDragStart = useCallback((event: DragStartEvent) => {
+    const { active } = event;
+    setDraggedItemId(String(active.id));
+  }, []);
+
+  // ドラッグ終了時の処理
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+      setDraggedItemId(null);
+
+      if (active.id !== over?.id && over?.id) {
+        // IDからインデックスを抽出
+        const oldIndex = parseInt(String(active.id).replace('image-', ''), 10);
+        const newIndex = parseInt(String(over.id).replace('image-', ''), 10);
+
+        if (!isNaN(oldIndex) && !isNaN(newIndex)) {
+          const reordered = arrayMove(images, oldIndex, newIndex);
+          updateImages(reordered);
+        }
+      }
     },
     [images, updateImages]
   );
@@ -213,7 +439,7 @@ export function ImageUpload({
                 disabled={disabled || uploading || images.length >= maxImages}
                 onClick={() => document.getElementById('image-upload')?.click()}
               >
-                <Upload className="h-4 w-4 mr-2" />
+                <Upload className="h-4 w-4" />
                 {uploading
                   ? t('imageUpload.uploading')
                   : t('imageUpload.selectFiles')}
@@ -247,7 +473,7 @@ export function ImageUpload({
 
       {/* 画像プレビュー */}
       {images.length > 0 && (
-        <div className="space-y-3">
+        <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h4 className="font-medium">
               {t('imageUpload.preview')} ({images.length}/{maxImages})
@@ -260,74 +486,77 @@ export function ImageUpload({
             )}
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {images.map((url, index) => (
-              <Card key={index} className="relative group">
-                <CardContent className="p-2">
-                  <div className="aspect-square relative rounded-lg overflow-hidden bg-muted">
-                    {/* 実際の実装では画像を表示 */}
-                    <div className="w-full h-full flex items-center justify-center">
-                      <ImageIcon className="h-8 w-8 text-muted-foreground" />
-                    </div>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={images.map((_, i) => `image-${i}`)}
+              strategy={rectSortingStrategy}
+            >
+              <div
+                className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+                style={{
+                  WebkitUserSelect: 'none',
+                  WebkitTouchCallout: 'none',
+                  userSelect: 'none',
+                }}
+              >
+                {images.map((url, index) => (
+                  <SortableImageCard
+                    key={`image-${index}`}
+                    url={url}
+                    index={index}
+                    totalImages={images.length}
+                    onRemove={handleRemoveImage}
+                    onMoveLeft={() => moveImage(index, index - 1)}
+                    onMoveRight={() => moveImage(index, index + 1)}
+                    disabled={disabled}
+                    isMain={index === 0}
+                    t={t}
+                  />
+                ))}
+              </div>
+            </SortableContext>
 
-                    {/* メイン画像バッジ */}
-                    {index === 0 && (
-                      <Badge
-                        variant="default"
-                        className="absolute top-2 left-2 text-xs"
-                      >
-                        {t('imageUpload.main')}
-                      </Badge>
-                    )}
-
-                    {/* 削除ボタン */}
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="sm"
-                      className="absolute top-2 right-2 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={() => handleRemoveImage(index)}
-                      disabled={disabled}
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-
-                    {/* 順序変更ボタン */}
-                    <div className="absolute bottom-2 left-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      {index > 0 && (
-                        <Button
-                          type="button"
-                          variant="secondary"
-                          size="sm"
-                          className="h-6 w-6 p-0 text-xs"
-                          onClick={() => moveImage(index, index - 1)}
-                          disabled={disabled}
-                        >
-                          ←
-                        </Button>
-                      )}
-                      {index < images.length - 1 && (
-                        <Button
-                          type="button"
-                          variant="secondary"
-                          size="sm"
-                          className="h-6 w-6 p-0 text-xs"
-                          onClick={() => moveImage(index, index + 1)}
-                          disabled={disabled}
-                        >
-                          →
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-
-                  <p className="text-xs text-center mt-2 text-muted-foreground">
-                    {index + 1}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+            {/* ドラッグ中のプレビュー */}
+            <DragOverlay>
+              {draggedItemId
+                ? (() => {
+                    const draggedIndex = parseInt(
+                      draggedItemId.replace('image-', ''),
+                      10
+                    );
+                    const draggedUrl = !isNaN(draggedIndex)
+                      ? images[draggedIndex]
+                      : null;
+                    return draggedUrl ? (
+                      <div className="opacity-90 shadow-2xl bg-white rounded-lg border-2 border-primary">
+                        <Card className="overflow-hidden">
+                          <CardContent className="p-2">
+                            <div className="aspect-square relative rounded-lg overflow-hidden bg-muted w-48">
+                              <EmptyImage
+                                src={draggedUrl}
+                                alt="ドラッグ中の画像"
+                                fallbackIcon={ImageIcon}
+                                fallbackIconSize="lg"
+                                fill
+                                className="object-cover"
+                              />
+                            </div>
+                            <div className="flex items-center justify-center mt-2 p-2">
+                              <GripVertical className="h-4 w-4 text-gray-400" />
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </div>
+                    ) : null;
+                  })()
+                : null}
+            </DragOverlay>
+          </DndContext>
 
           <div className="flex items-start gap-2 p-3 bg-muted/50 rounded-lg">
             <AlertCircle className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />

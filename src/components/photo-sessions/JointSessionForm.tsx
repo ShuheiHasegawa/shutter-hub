@@ -100,7 +100,8 @@ export function JointSessionForm({
       initialData?.block_users_with_bad_ratings || false,
     payment_timing:
       (initialData?.payment_timing as 'prepaid' | 'cash_on_site') || 'prepaid',
-    is_published: initialData?.is_published || false,
+    is_published:
+      initialData?.is_published !== undefined ? initialData.is_published : true,
     image_urls: initialData?.image_urls || [],
   });
 
@@ -834,11 +835,11 @@ export function JointSessionForm({
                       </div>
 
                       {/* 実際の当選確率シミュレーション */}
-                      <div className="p-4 bg-green-50 dark:bg-green-950 rounded-lg space-y-2">
-                        <p className="text-sm font-medium text-green-900 dark:text-green-100">
+                      <div className="p-4 bg-success/5 dark:bg-success/20 rounded-lg space-y-2">
+                        <p className="text-sm font-medium text-success">
                           📈 当選確率シミュレーション
                         </p>
-                        <div className="text-xs text-green-800 dark:text-green-200 space-y-1">
+                        <div className="text-xs text-success/90 space-y-1">
                           <p className="font-medium">
                             例：10枠募集、3名応募の場合
                           </p>
@@ -848,7 +849,7 @@ export function JointSessionForm({
                             <p>• Cさん（5枠）：重み = 5</p>
                             <p className="pt-1">合計重み = 1 + 4 + 5 = 10</p>
                           </div>
-                          <div className="pl-2 space-y-0.5 pt-2 border-t border-green-200 dark:border-green-800">
+                          <div className="pl-2 space-y-0.5 pt-2 border-t border-success/30">
                             <p className="font-medium">当選確率：</p>
                             <p>• Aさん：1/10 = 10%</p>
                             <p>• Bさん：4/10 = 40%</p>
@@ -1110,7 +1111,7 @@ export function JointSessionForm({
                         <CardHeader className="pb-3">
                           <div className="flex items-start justify-between">
                             <div className="flex items-center gap-3">
-                              <div className="p-2 rounded-lg bg-green-100 text-green-800 border-green-200">
+                              <div className="p-2 rounded-lg bg-success/10 text-success border-success/30">
                                 <Wallet className="h-5 w-5" />
                               </div>
                               <div>
