@@ -189,14 +189,8 @@ function UnifiedCalendarGrid({
                               organizerLabelsByDay[day] &&
                               showOrganizerSchedule && (
                                 <div className="flex-shrink-0">
-                                  <div
-                                    className="relative text-xs px-0.5 py-0.5 rounded truncate"
-                                    style={{ backgroundColor: '#16a34a20' }}
-                                  >
-                                    <div
-                                      className="absolute left-0 top-0 bottom-0 w-0.5 rounded-full"
-                                      style={{ backgroundColor: '#16a34a' }}
-                                    />
+                                  <div className="relative text-xs px-0.5 py-0.5 rounded truncate bg-success/10">
+                                    <div className="absolute left-0 top-0 bottom-0 w-0.5 rounded-full bg-success" />
                                     <span className="ml-1 hidden lg:inline text-xs truncate">
                                       {organizerLabelsByDay[day]}
                                     </span>

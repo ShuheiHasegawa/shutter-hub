@@ -42,7 +42,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ja } from 'date-fns/locale';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { PhotobookGallery } from '@/components/profile/PhotobookGallery';
 import { UserScheduleManager } from '@/components/profile/UserScheduleManager';
 import {
@@ -61,6 +61,7 @@ export default function UserProfilePage() {
   const { user } = useAuth();
   const router = useRouter();
   const locale = useLocale();
+  const t = useTranslations('profile');
 
   // シンプルなパフォーマンス監視
   const [organizerModels, setOrganizerModels] = useState<
@@ -325,7 +326,7 @@ export default function UserProfilePage() {
         <div>
           {/* ヘッダー */}
           <PageTitleHeader
-            title="プロフィール"
+            title={t('title')}
             icon={<UserIcon className="h-6 w-6" />}
             backButton={{ variant: 'ghost' }}
           />
