@@ -37,7 +37,7 @@ export default async function AuthCodeErrorPage({
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
           <div className="space-y-4">
             {isEmailError ? (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
                   <p className="text-sm font-medium text-yellow-800">
                     X（Twitter）からのメールアドレス取得に失敗しました

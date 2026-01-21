@@ -120,7 +120,7 @@ export function StudioEvaluations({
           <CardHeader>
             <CardTitle className="text-lg">評価分布</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-4">
             {ratingDistribution.map(({ rating, count, percentage }) => (
               <div key={rating} className="flex items-center gap-2">
                 <span className="w-6 text-sm">{rating}★</span>
@@ -137,7 +137,7 @@ export function StudioEvaluations({
             <CardTitle className="text-lg">役割別評価</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <User className="w-4 h-4 text-pink-500" />
@@ -318,7 +318,7 @@ function EvaluationCard({ evaluation }: { evaluation: StudioEvaluationType }) {
   return (
     <Card className="border-l-4 border-l-blue-200">
       <CardContent className="pt-4">
-        <div className="space-y-3">
+        <div className="space-y-4">
           {/* ヘッダー */}
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-2">

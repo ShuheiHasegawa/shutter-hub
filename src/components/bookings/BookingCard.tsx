@@ -76,7 +76,7 @@ export function BookingCard({ booking }: BookingCardProps) {
 
       <CardContent className="space-y-4">
         {/* 撮影会詳細情報 */}
-        <div className="space-y-3">
+        <div className="space-y-4">
           <div className="flex items-center gap-2 text-sm">
             <CalendarIcon className="h-4 w-4 text-muted-foreground" />
             <span>
@@ -134,7 +134,7 @@ export function BookingCard({ booking }: BookingCardProps) {
         <div className="flex gap-2 pt-2">
           <Button asChild variant="outline" className="w-full">
             <a href={`/photo-sessions/${session.id}`}>
-              <EyeIcon className="h-4 w-4 mr-2" />
+              <EyeIcon className="h-4 w-4" />
               {t('viewDetails')}
             </a>
           </Button>

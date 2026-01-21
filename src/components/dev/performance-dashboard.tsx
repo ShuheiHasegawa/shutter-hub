@@ -110,7 +110,7 @@ export function PerformanceDashboard() {
         size="sm"
         className="mb-2 shadow-lg"
       >
-        <Activity className="h-4 w-4 mr-2" />
+        <Activity className="h-4 w-4" />
         Performance
         <Badge
           variant={

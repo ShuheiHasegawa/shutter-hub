@@ -231,7 +231,7 @@ export function ConversationList({
 
                         {/* オンライン状態（将来実装） */}
                         {conversation.is_online && (
-                          <div className="absolute bottom-0 right-0 h-3 w-3 bg-green-500 border-2 border-background rounded-full" />
+                          <div className="absolute bottom-0 right-0 h-3 w-3 bg-success border-2 border-background rounded-full" />
                         )}
                       </div>
 

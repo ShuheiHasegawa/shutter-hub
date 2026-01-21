@@ -34,7 +34,7 @@ function EditorSkeleton() {
           <Card>
             <CardContent className="p-6">
               <Skeleton className="h-32 w-full mb-4" />
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {Array.from({ length: 3 }).map((_, i) => (
                   <div key={i} className="flex gap-4">
                     <Skeleton className="h-20 w-20" />

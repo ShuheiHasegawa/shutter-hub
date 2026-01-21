@@ -286,7 +286,7 @@ export function AdminDisputeManagement({
             <div className="space-y-2">
               <Label>&nbsp;</Label>
               <Button variant="outline" className="w-full">
-                <RefreshCw className="h-4 w-4 mr-2" />
+                <RefreshCw className="h-4 w-4" />
                 更新
               </Button>
             </div>
@@ -483,7 +483,7 @@ export function AdminDisputeManagement({
                     <Separator />
 
                     {/* 争議内容 */}
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       <h4 className="font-medium text-gray-900">争議内容</h4>
 
                       <div className="space-y-2">
@@ -542,7 +542,7 @@ export function AdminDisputeManagement({
 
                     {/* 撮影詳細情報 */}
                     {selectedDispute.booking && (
-                      <div className="space-y-3">
+                      <div className="space-y-4">
                         <h4 className="font-medium">撮影詳細</h4>
                         <div className="bg-gray-50 p-3 rounded-lg space-y-2 text-sm">
                           <div className="flex items-center gap-2">
@@ -712,19 +712,19 @@ export function AdminDisputeManagement({
                         >
                           {isLoading ? (
                             <>
-                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              <Loader2 className="h-4 w-4 animate-spin" />
                               解決処理中...
                             </>
                           ) : (
                             <>
-                              <CheckCircle className="h-4 w-4 mr-2" />
+                              <CheckCircle className="h-4 w-4" />
                               争議を解決
                             </>
                           )}
                         </Button>
 
                         <Button variant="outline" className="flex-1">
-                          <MessageSquare className="h-4 w-4 mr-2" />
+                          <MessageSquare className="h-4 w-4" />
                           両者に連絡
                         </Button>
                       </div>

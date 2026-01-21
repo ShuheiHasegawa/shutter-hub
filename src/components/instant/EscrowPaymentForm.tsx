@@ -152,7 +152,7 @@ function EscrowPaymentFormInternal({
         </div>
 
         {/* 料金詳細 */}
-        <div className="space-y-3">
+        <div className="space-y-4">
           <h4 className="font-medium">決済詳細</h4>
           <div className="bg-gray-50 rounded-lg p-4 space-y-2">
             <div className="flex justify-between text-sm">
@@ -230,12 +230,12 @@ function EscrowPaymentFormInternal({
             >
               {isProcessing ? (
                 <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin" />
                   決済処理中...
                 </>
               ) : (
                 <>
-                  <CreditCard className="h-4 w-4 mr-2" />
+                  <CreditCard className="h-4 w-4" />
                   <FormattedPrice
                     value={booking.total_amount}
                     format="simple"

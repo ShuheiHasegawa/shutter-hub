@@ -576,7 +576,7 @@ export function MultiSlotLotteryEntryForm({
                                     lotterySession.cheki_selection_scope ===
                                       'per_slot' && (
                                       <div
-                                        className="space-y-3"
+                                        className="space-y-4"
                                         onClick={e => e.stopPropagation()}
                                       >
                                         <Label className="text-sm">
@@ -764,7 +764,7 @@ export function MultiSlotLotteryEntryForm({
             {lotterySession.enable_cheki_selection &&
               lotterySession.cheki_selection_scope === 'total_only' &&
               selectedSlotIds.size > 0 && (
-                <div className="space-y-3 p-4 border rounded-lg">
+                <div className="space-y-4 p-4 border rounded-lg">
                   <Label className="text-base font-medium">
                     チェキ枚数（合計）
                   </Label>
@@ -893,11 +893,11 @@ export function MultiSlotLotteryEntryForm({
               )}
 
             {/* キャンセルポリシー選択 */}
-            <div className="space-y-3 p-4 border rounded-lg">
+            <div className="space-y-4 p-4 border rounded-lg">
               <Label className="text-base font-medium">
                 部分落選時のキャンセルポリシー
               </Label>
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div className="flex items-start space-x-3">
                   <input
                     type="radio"

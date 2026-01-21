@@ -132,11 +132,11 @@ export function LotteryEntryConfirmation({
           {/* スロット詳細 */}
           <div className="space-y-4">
             <h3 className="text-base font-semibold">応募枠詳細</h3>
-            <div className="space-y-3">
+            <div className="space-y-4">
               {slot_entries.map(entry => (
                 <Card key={entry.id} className="border-l-4 border-l-primary">
                   <CardContent className="p-4">
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       {/* スロット情報 */}
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">

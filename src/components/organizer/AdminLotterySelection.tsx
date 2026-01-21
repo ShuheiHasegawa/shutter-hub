@@ -616,7 +616,7 @@ export function AdminLotterySelection({
                 </div>
 
                 {/* モバイル・タブレット表示用の詳細カード（xl未満の画面） */}
-                <div className="xl:hidden space-y-3">
+                <div className="xl:hidden space-y-4">
                   {/* モバイル用全選択チェックボックス */}
                   {appliedEntries.length > 0 && (
                     <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">

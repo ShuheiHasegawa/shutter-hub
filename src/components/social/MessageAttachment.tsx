@@ -141,11 +141,11 @@ export function MessageAttachment({
               variant="outline"
               onClick={() => window.open(attachment.url, '_blank')}
             >
-              <ExternalLink className="h-4 w-4 mr-2" />
+              <ExternalLink className="h-4 w-4" />
               {t('attachment.openInNewTab')}
             </Button>
             <Button onClick={handleDownload}>
-              <Download className="h-4 w-4 mr-2" />
+              <Download className="h-4 w-4" />
               {t('attachment.download')}
             </Button>
           </div>
@@ -269,7 +269,7 @@ export function MessageAttachment({
             onClick={() => window.open(attachment.url, '_blank')}
             className="flex-1"
           >
-            <ExternalLink className="h-4 w-4 mr-2" />
+            <ExternalLink className="h-4 w-4" />
             {t('attachment.preview')}
           </Button>
           <Button variant="outline" size="sm" onClick={handleDownload}>

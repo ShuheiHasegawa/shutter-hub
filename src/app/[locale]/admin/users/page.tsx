@@ -67,7 +67,7 @@ export default async function AdminUsersPage() {
             </Link>
             {profile.role === 'super_admin' && (
               <Button>
-                <UserPlus className="h-4 w-4 mr-2" />
+                <UserPlus className="h-4 w-4" />
                 管理者を招待
               </Button>
             )}

@@ -80,8 +80,8 @@ export function DashboardStatsCards({
           value: stats.userTypeStats.monthlyEarnings || 0,
           isPrice: true,
           icon: TrendingUp,
-          color: 'text-emerald-600',
-          bgColor: 'bg-emerald-100',
+          color: 'text-success',
+          bgColor: 'bg-success/10',
         }
       );
     } else if (userType === 'organizer') {

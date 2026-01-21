@@ -493,7 +493,7 @@ export default function TestLoginPage() {
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
                         <>
-                          <LogOut className="h-4 w-4 mr-2" />
+                          <LogOut className="h-4 w-4" />
                           ログアウト
                         </>
                       )}
@@ -540,7 +540,7 @@ export default function TestLoginPage() {
                               {account.userType}
                             </Badge>
                           </CardHeader>
-                          <CardContent className="space-y-3">
+                          <CardContent className="space-y-4">
                             <div className="text-xs text-muted-foreground space-y-1">
                               <p>
                                 <strong>Email:</strong> {account.email}
@@ -615,7 +615,7 @@ export default function TestLoginPage() {
                               {account.userType}
                             </Badge>
                           </CardHeader>
-                          <CardContent className="space-y-3">
+                          <CardContent className="space-y-4">
                             <div className="text-xs text-muted-foreground space-y-1">
                               <p>
                                 <strong>Email:</strong> {account.email}
@@ -690,7 +690,7 @@ export default function TestLoginPage() {
                               {account.userType}
                             </Badge>
                           </CardHeader>
-                          <CardContent className="space-y-3">
+                          <CardContent className="space-y-4">
                             <div className="text-xs text-muted-foreground space-y-1">
                               <p>
                                 <strong>Email:</strong> {account.email}
@@ -1322,7 +1322,7 @@ export default function TestLoginPage() {
                             {account.userType}
                           </Badge>
                         </CardHeader>
-                        <CardContent className="space-y-3">
+                        <CardContent className="space-y-4">
                           <div className="text-xs text-muted-foreground space-y-1">
                             <p>
                               <strong>Email:</strong> {account.email}
@@ -1368,7 +1368,7 @@ export default function TestLoginPage() {
               <CardHeader>
                 <CardTitle>使用方法</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3 text-sm text-muted-foreground">
+              <CardContent className="space-y-4 text-sm text-muted-foreground">
                 <p>
                   1.
                   上記のテストアカウントから任意のアカウントを選択してログインボタンをクリック

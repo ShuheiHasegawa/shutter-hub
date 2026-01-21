@@ -563,15 +563,15 @@ export default function ScheduleDesignPage() {
                     </div>
 
                     {/* アクションボタン */}
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       <div className="flex gap-2">
                         <Button onClick={() => setIsCreating(true)}>
-                          <Plus className="h-4 w-4 mr-2" />
+                          <Plus className="h-4 w-4" />
                           空き時間を追加
                         </Button>
                         {getSelectedDateSlots().length > 0 && (
                           <Button variant="outline">
-                            <Copy className="h-4 w-4 mr-2" />
+                            <Copy className="h-4 w-4" />
                             他の日に複製
                           </Button>
                         )}

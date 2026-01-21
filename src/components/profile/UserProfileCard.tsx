@@ -49,7 +49,7 @@ export function UserProfileCard({ profile }: UserProfileCardProps) {
           </span>
           <Button variant="cta" size="sm" asChild>
             <Link href="/profile/edit">
-              <Edit className="h-4 w-4 mr-2" />
+              <Edit className="h-4 w-4" />
               編集
             </Link>
           </Button>

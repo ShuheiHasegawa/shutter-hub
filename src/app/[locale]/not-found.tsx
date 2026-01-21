@@ -220,14 +220,14 @@ export default function NotFound() {
               <div className="space-y-4">
                 <Button asChild variant="primary" className="w-full">
                   <Link href={user ? '/dashboard' : '/'}>
-                    <Home className="h-4 w-4 mr-2" />
+                    <Home className="h-4 w-4" />
                     {user ? 'ダッシュボードに戻る' : 'ホームに戻る'}
                   </Link>
                 </Button>
 
                 <Button asChild variant="primary" className="w-full">
                   <Link href="/photo-sessions">
-                    <Camera className="h-4 w-4 mr-2" />
+                    <Camera className="h-4 w-4" />
                     撮影会を探す
                   </Link>
                 </Button>

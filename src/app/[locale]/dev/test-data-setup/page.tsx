@@ -20,7 +20,7 @@ export default function TestDataSetupPage() {
             <section className="py-16 surface-primary">
               <div className="container">
                 <div className="max-w-4xl mx-auto space-y-6">
-                  <div className="text-center space-y-3">
+                  <div className="text-center space-y-4">
                     <div className="flex items-center justify-center gap-3 mb-2">
                       <TestTube className="h-7 w-7" />
                       <h1 className="text-3xl md:text-4xl font-bold">
@@ -164,7 +164,7 @@ export default function TestDataSetupPage() {
                           即座撮影リクエスト
                         </CardTitle>
                       </CardHeader>
-                      <CardContent className="space-y-3 text-xs md:text-sm">
+                      <CardContent className="space-y-4 text-xs md:text-sm">
                         <p className="text-muted-foreground">
                           長谷川秀平（カメラマン）を対象に、位置情報付きの即座撮影リクエストを
                           ワンクリックで作成できます。
@@ -185,7 +185,7 @@ export default function TestDataSetupPage() {
                           撮影会テストフロー
                         </CardTitle>
                       </CardHeader>
-                      <CardContent className="space-y-3 text-xs md:text-sm">
+                      <CardContent className="space-y-4 text-xs md:text-sm">
                         <p className="text-muted-foreground">
                           運営アカウントを使って、
                           「撮影会作成→予約→レビュー可能な状態」までの一連のテストデータを
@@ -207,7 +207,7 @@ export default function TestDataSetupPage() {
                           ログイン・権限確認
                         </CardTitle>
                       </CardHeader>
-                      <CardContent className="space-y-3 text-xs md:text-sm">
+                      <CardContent className="space-y-4 text-xs md:text-sm">
                         <p className="text-muted-foreground">
                           上記のテストアカウントでログイン挙動やロール別の表示内容を確認する場合は、
                           ログインテストツールを利用します。

@@ -787,7 +787,7 @@ export function UserScheduleManager({
                       }
                     />
                     <div className="flex items-center gap-2">
-                      <div className="h-3 w-3 rounded-full bg-green-500 flex-shrink-0" />
+                      <div className="h-3 w-3 rounded-full bg-success flex-shrink-0" />
                       <span className="text-sm font-medium">
                         所属運営の対応可能時間
                       </span>
@@ -1115,7 +1115,7 @@ export function UserScheduleManager({
               )}
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-3">
+          <div className="space-y-4">
             {getSelectedDateSlots().length === 0 ? (
               <p className="text-sm text-muted-foreground">
                 この日は空き時間が設定されていません

@@ -203,7 +203,7 @@ export const ConsentPhotoPreview: React.FC<ConsentPhotoPreviewProps> = ({
               </div>
 
               {/* アクションボタン */}
-              <div className="p-4 border-t border-gray-200 space-y-3">
+              <div className="p-4 border-t border-gray-200 space-y-4">
                 <button
                   onClick={() => handleAction('approved')}
                   disabled={isUpdating}

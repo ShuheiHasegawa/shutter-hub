@@ -285,14 +285,14 @@ export function PhotoDeliveryForm({ booking }: PhotoDeliveryFormProps) {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* 配信方法選択 */}
-          <div className="space-y-3">
+          <div className="space-y-4">
             <Label className="text-base font-medium">配信方法</Label>
             <RadioGroup
               value={deliveryMethod}
               onValueChange={value =>
                 setDeliveryMethod(value as DeliveryMethod)
               }
-              className="space-y-3"
+              className="space-y-4"
             >
               <div className="flex items-start space-x-3 p-3 border rounded-lg">
                 <RadioGroupItem
@@ -531,7 +531,7 @@ export function PhotoDeliveryForm({ booking }: PhotoDeliveryFormProps) {
           <Separator />
 
           {/* 配信確認と送信 */}
-          <div className="p-4 rounded-lg space-y-3">
+          <div className="p-4 rounded-lg space-y-4">
             <h5 className="font-medium">配信内容確認</h5>
             <div className="text-sm">
               {deliveryMethod === 'external_url' && detectedService && (
@@ -558,12 +558,12 @@ export function PhotoDeliveryForm({ booking }: PhotoDeliveryFormProps) {
           >
             {isSubmitting ? (
               <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin" />
                 配信中...
               </>
             ) : (
               <>
-                <Send className="h-4 w-4 mr-2" />
+                <Send className="h-4 w-4" />
                 写真を配信する
               </>
             )}

@@ -143,7 +143,7 @@ export function LotteryStatistics({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
+          <div className="space-y-4">
             {statistics.entries_by_slot.map(slot => (
               <div
                 key={slot.slot_id}
@@ -183,7 +183,7 @@ export function LotteryStatistics({
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
+            <div className="space-y-4">
               {statistics.model_popularity
                 .sort((a, b) => b.selection_count - a.selection_count)
                 .map(model => (

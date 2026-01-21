@@ -7,7 +7,7 @@ export function OAuthButtons() {
   const t = useTranslations('auth.oauth');
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {/* Google認証 */}
       <OAuthButton provider="google">
         <svg className="w-5 h-5" viewBox="0 0 24 24">

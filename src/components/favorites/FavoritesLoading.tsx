@@ -46,7 +46,7 @@ export function FavoritesLoading() {
         </div>
 
         {/* コンテンツ（StudioCardの構造に合わせる） */}
-        <div className="space-y-3 md:space-y-4 pb-8">
+        <div className="space-y-4 md:space-y-4 pb-8">
           {[...Array(6)].map((_, i) => (
             <Card key={i} className="overflow-hidden">
               <CardHeader className="p-0">

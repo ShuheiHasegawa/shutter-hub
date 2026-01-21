@@ -339,7 +339,7 @@ export function MessageModeration({
                     {/* ボタン */}
                     <div className="flex gap-2">
                       <Button onClick={handleReport} className="flex-1">
-                        <Flag className="h-4 w-4 mr-2" />
+                        <Flag className="h-4 w-4" />
                         {t('report.submit')}
                       </Button>
                       <Button

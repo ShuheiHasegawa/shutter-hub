@@ -364,8 +364,8 @@ export default function AnalyticsPage() {
                 <p className="text-xs md:text-sm font-medium text-muted-foreground leading-tight">
                   総収益
                 </p>
-                <div className="p-1.5 md:p-2 rounded-lg bg-emerald-100 flex-shrink-0">
-                  <DollarSign className="h-3.5 w-3.5 md:h-4 md:w-4 text-emerald-600" />
+                <div className="p-1.5 md:p-2 rounded-lg bg-success/10 flex-shrink-0">
+                  <DollarSign className="h-3.5 w-3.5 md:h-4 md:w-4 text-success" />
                 </div>
               </div>
               <div className="flex flex-col space-y-0.5">
@@ -484,7 +484,7 @@ export default function AnalyticsPage() {
             <CardTitle>人気エリア</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
+            <div className="space-y-4">
               {stats.popularLocations.map((location, index) => (
                 <div
                   key={location.location}
@@ -538,8 +538,8 @@ export default function AnalyticsPage() {
                 <p className="text-xs md:text-sm font-medium text-muted-foreground leading-tight">
                   総収入
                 </p>
-                <div className="p-1.5 md:p-2 rounded-lg bg-emerald-100 flex-shrink-0">
-                  <DollarSign className="h-3.5 w-3.5 md:h-4 md:w-4 text-emerald-600" />
+                <div className="p-1.5 md:p-2 rounded-lg bg-success/10 flex-shrink-0">
+                  <DollarSign className="h-3.5 w-3.5 md:h-4 md:w-4 text-success" />
                 </div>
               </div>
               <div className="flex flex-col space-y-0.5">
@@ -677,7 +677,7 @@ export default function AnalyticsPage() {
             <CardTitle>活動エリア</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
+            <div className="space-y-4">
               {stats.popularLocations.map(location => (
                 <div
                   key={location.location}
@@ -872,7 +872,7 @@ export default function AnalyticsPage() {
             <CardTitle>活動エリア</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
+            <div className="space-y-4">
               {stats.popularLocations.map(location => (
                 <div
                   key={location.location}

@@ -96,7 +96,7 @@ function EditorHeader({
             onClick={onPreview}
             className="hidden md:flex"
           >
-            <Eye className="h-4 w-4 mr-2" />
+            <Eye className="h-4 w-4" />
             プレビュー
           </Button>
         </div>

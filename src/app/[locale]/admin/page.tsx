@@ -240,7 +240,7 @@ export default async function AdminDashboardPage() {
             </CardHeader>
             <CardContent>
               {disputes.slice(0, 5).length > 0 ? (
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {disputes.slice(0, 5).map(dispute => (
                     <div
                       key={dispute.id}

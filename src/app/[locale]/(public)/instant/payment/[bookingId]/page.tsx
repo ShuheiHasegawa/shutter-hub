@@ -325,7 +325,7 @@ export default async function PaymentPage({ params }: PageProps) {
                 <CardTitle className="text-lg">料金内訳</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-3">
+                <div className="space-y-4">
                   <div className="flex justify-between text-sm">
                     <span>基本料金</span>
                     <span>¥{booking.total_amount.toLocaleString()}</span>
@@ -345,7 +345,7 @@ export default async function PaymentPage({ params }: PageProps) {
 
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm">
-                    <Shield className="h-4 w-4 text-emerald-500" />
+                    <Shield className="h-4 w-4 text-success" />
                     <span>エスクロー保護</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">

@@ -115,7 +115,7 @@ export default async function AdminInvitePage({
               </p>
             </div>
 
-            <div className="border rounded-lg p-4 space-y-3">
+            <div className="border rounded-lg p-4 space-y-4">
               <div className="flex justify-between">
                 <span className="text-sm font-medium">権限レベル</span>
                 <span className="text-sm text-primary font-semibold">

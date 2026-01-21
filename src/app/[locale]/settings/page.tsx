@@ -594,7 +594,7 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-4 pl-4">
-              <div className="space-y-3 py-2">
+              <div className="space-y-4 py-2">
                 <Label className="font-normal">プロフィール表示</Label>
                 <Select
                   value={settings.profileVisibility}
@@ -677,7 +677,7 @@ export default function SettingsPage() {
                       />
                     </div>
 
-                    <div className="space-y-3 py-2">
+                    <div className="space-y-4 py-2">
                       <Label className="font-normal">最大移動距離（km）</Label>
                       <Select
                         value={settings.maxTravelDistance.toString()}
@@ -740,7 +740,7 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-4 pl-4">
-              <div className="space-y-3 py-2">
+              <div className="space-y-4 py-2">
                 <Label className="font-normal">テーマ</Label>
                 <Select value={theme} onValueChange={setTheme}>
                   <SelectTrigger className="max-w-xs">
@@ -764,7 +764,7 @@ export default function SettingsPage() {
                 </Select>
               </div>
 
-              <div className="space-y-3 py-2">
+              <div className="space-y-4 py-2">
                 <Label className="font-normal">言語</Label>
                 <Select
                   value={settings.language}
@@ -782,7 +782,7 @@ export default function SettingsPage() {
                 </Select>
               </div>
 
-              <div className="space-y-3 py-2">
+              <div className="space-y-4 py-2">
                 <Label className="font-normal">タイムゾーン</Label>
                 <Select
                   value={settings.timezone}
@@ -803,7 +803,7 @@ export default function SettingsPage() {
                 </Select>
               </div>
 
-              <div className="space-y-3 py-2">
+              <div className="space-y-4 py-2">
                 <Label className="font-normal">通貨</Label>
                 <Select
                   value={settings.currency}
@@ -875,7 +875,7 @@ export default function SettingsPage() {
             >
               <AlertDialogTrigger asChild>
                 <Button variant="destructive" className="w-full">
-                  <Trash2 className="h-4 w-4 mr-2" />
+                  <Trash2 className="h-4 w-4" />
                   アカウント削除
                 </Button>
               </AlertDialogTrigger>

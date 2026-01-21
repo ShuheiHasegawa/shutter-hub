@@ -139,7 +139,7 @@ export function OrganizerModelManagement({
               onClick={() => setIsInviteModalOpen(true)}
               disabled={!!(limitCheck && !limitCheck.canInvite)}
             >
-              <UserPlus className="h-4 w-4 mr-2" />
+              <UserPlus className="h-4 w-4" />
               新規招待
             </Button>
           </div>

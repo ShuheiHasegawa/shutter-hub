@@ -200,7 +200,7 @@ export default function DevToolsPage() {
                   <p className="text-xl opacity-80 max-w-2xl mx-auto">
                     ShutterHub の開発・テスト・デバッグ用ツール集
                   </p>
-                  <div className="mt-6 max-w-3xl mx-auto text-left text-sm bg-background/70 border border-border rounded-lg p-4 space-y-3">
+                  <div className="mt-6 max-w-3xl mx-auto text-left text-sm bg-background/70 border border-border rounded-lg p-4 space-y-4">
                     <h2 className="font-semibold text-base">
                       テスト用アカウント
                     </h2>

@@ -394,7 +394,7 @@ export function GroupManagement({
                           <DropdownMenuContent align="end">
                             {isAdmin && member.role === 'member' && (
                               <DropdownMenuItem>
-                                <Shield className="h-4 w-4 mr-2" />
+                                <Shield className="h-4 w-4" />
                                 {t('makeModeratorAction')}
                               </DropdownMenuItem>
                             )}
@@ -403,7 +403,7 @@ export function GroupManagement({
                               className="text-red-600"
                               onClick={() => handleRemoveMember(member.user_id)}
                             >
-                              <UserMinus className="h-4 w-4 mr-2" />
+                              <UserMinus className="h-4 w-4" />
                               {t('removeMember')}
                             </DropdownMenuItem>
                           </DropdownMenuContent>

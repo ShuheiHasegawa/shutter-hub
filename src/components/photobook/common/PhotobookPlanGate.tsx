@@ -94,13 +94,13 @@ export function PhotobookPlanGate({
           <div className="flex gap-2 justify-center">
             <Button variant="outline" size="sm" asChild>
               <Link href="/subscription">
-                <ArrowUp className="h-4 w-4 mr-2" />
+                <ArrowUp className="h-4 w-4" />
                 プラン詳細
               </Link>
             </Button>
             <Button size="sm" asChild>
               <Link href="/subscription">
-                <Star className="h-4 w-4 mr-2" />
+                <Star className="h-4 w-4" />
                 アップグレード
               </Link>
             </Button>

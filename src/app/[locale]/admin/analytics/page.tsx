@@ -158,7 +158,7 @@ export default async function AdminAnalyticsPage() {
             <Button variant="outline">← ダッシュボードに戻る</Button>
           </Link>
           <Button>
-            <Calendar className="h-4 w-4 mr-2" />
+            <Calendar className="h-4 w-4" />
             期間を変更
           </Button>
         </div>

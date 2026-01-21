@@ -327,6 +327,7 @@ export default function UserProfilePage() {
           <PageTitleHeader
             title="プロフィール"
             icon={<UserIcon className="h-6 w-6" />}
+            backButton={{ variant: 'ghost' }}
           />
 
           <div className="space-y-4 lg:space-y-6">

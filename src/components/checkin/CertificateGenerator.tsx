@@ -230,7 +230,7 @@ export function CertificateGenerator({
           variant="default"
           className="flex-1"
         >
-          <Download className="h-4 w-4 mr-2" />
+          <Download className="h-4 w-4" />
           {isGenerating ? t('generating') : t('downloadCertificate')}
         </Button>
         {typeof navigator.share === 'function' && (
@@ -240,7 +240,7 @@ export function CertificateGenerator({
             variant="outline"
             className="flex-1"
           >
-            <Share2 className="h-4 w-4 mr-2" />
+            <Share2 className="h-4 w-4" />
             {t('share')}
           </Button>
         )}

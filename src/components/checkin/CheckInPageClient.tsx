@@ -55,7 +55,7 @@ export function CheckInPageClient({
           </CardHeader>
           <CardContent className="space-y-6">
             {/* スロット情報 */}
-            <div className="space-y-3">
+            <div className="space-y-4">
               <h3 className="font-semibold text-lg">
                 {slot.photo_session.title}
               </h3>

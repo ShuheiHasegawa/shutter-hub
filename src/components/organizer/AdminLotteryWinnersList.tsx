@@ -335,7 +335,7 @@ export function AdminLotteryWinnersList({
               </div>
 
               {/* モバイル・タブレット表示用の詳細カード（xl未満の画面） */}
-              <div className="xl:hidden space-y-3">
+              <div className="xl:hidden space-y-4">
                 {slot.winners.map((winner, index) => (
                   <Card key={winner.user_id} className="p-4">
                     <div className="flex items-start justify-between">

@@ -494,7 +494,7 @@ export function StudioEditForm({
               </div>
 
               {/* 設備チェックボックス */}
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <h4 className="font-medium">設備・サービス</h4>
                 <div className="grid grid-cols-2 gap-3">
                   <FormField

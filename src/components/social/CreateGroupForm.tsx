@@ -122,7 +122,7 @@ export function CreateGroupForm({
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" className={cn('w-full', className)}>
-          <Users className="h-4 w-4 mr-2" />
+          <Users className="h-4 w-4" />
           {t('createGroup')}
         </Button>
       </DialogTrigger>
@@ -226,7 +226,7 @@ export function CreateGroupForm({
           {/* メンバー検索・選択 */}
           <div className="flex-1 min-h-0">
             <Label>{t('selectMembers')}</Label>
-            <div className="space-y-3 mt-2">
+            <div className="space-y-4 mt-2">
               {/* 検索 */}
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />

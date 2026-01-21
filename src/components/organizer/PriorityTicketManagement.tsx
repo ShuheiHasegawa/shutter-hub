@@ -435,7 +435,7 @@ export function PriorityTicketManagement() {
             className="w-full"
             variant="cta"
           >
-            <UserPlus className="h-4 w-4 mr-2" />
+            <UserPlus className="h-4 w-4" />
             {isCreating ? '配布中...' : 'チケットを配布'}
           </Button>
         </CardContent>
