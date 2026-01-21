@@ -5,8 +5,14 @@ import type {
   CreatePhotoSessionData,
   UpdatePhotoSessionData,
 } from '@/types/database';
+import { logger } from '@/lib/utils/logger';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 // クライアントサイド用の関数
+
+/**
+ * 撮影会を作成する
+ */
 export async function createPhotoSession(data: CreatePhotoSessionData) {
   const supabase = createClient();
 
@@ -22,6 +28,9 @@ export async function createPhotoSession(data: CreatePhotoSessionData) {
   return { data: session, error };
 }
 
+/**
+ * 撮影会を更新する
+ */
 export async function updatePhotoSession(
   id: string,
   data: UpdatePhotoSessionData
@@ -38,6 +47,9 @@ export async function updatePhotoSession(
   return { data: session, error };
 }
 
+/**
+ * 撮影会を削除する
+ */
 export async function deletePhotoSession(id: string) {
   const supabase = createClient();
 
@@ -46,6 +58,9 @@ export async function deletePhotoSession(id: string) {
   return { error };
 }
 
+/**
+ * 撮影会情報を取得する
+ */
 export async function getPhotoSession(id: string) {
   const supabase = createClient();
 
@@ -63,6 +78,9 @@ export async function getPhotoSession(id: string) {
   return { data: data as PhotoSessionWithOrganizer | null, error };
 }
 
+/**
+ * 撮影会一覧を取得する
+ */
 export async function getPhotoSessions(options?: {
   published?: boolean;
   organizerId?: string;
@@ -105,6 +123,9 @@ export async function getPhotoSessions(options?: {
   return { data: data as PhotoSessionWithOrganizer[] | null, error };
 }
 
+/**
+ * 撮影会を検索する
+ */
 export async function searchPhotoSessions(searchParams: {
   keyword?: string;
   location?: string;
@@ -214,6 +235,10 @@ export async function searchPhotoSessions(searchParams: {
 }
 
 // サーバーサイド用の関数
+
+/**
+ * サーバーサイドで撮影会情報を取得する
+ */
 export async function getPhotoSessionServer(id: string) {
   const supabase = await createServerClient();
 
@@ -231,6 +256,9 @@ export async function getPhotoSessionServer(id: string) {
   return { data: data as PhotoSessionWithOrganizer | null, error };
 }
 
+/**
+ * サーバーサイドで撮影会一覧を取得する
+ */
 export async function getPhotoSessionsServer(options?: {
   published?: boolean;
   organizerId?: string;
@@ -273,7 +301,9 @@ export async function getPhotoSessionsServer(options?: {
   return { data: data as PhotoSessionWithOrganizer[] | null, error };
 }
 
-// 撮影会の参加可能性チェック
+/**
+ * 撮影会への参加可能性をチェックする
+ */
 export async function canJoinPhotoSession(sessionId: string, userId: string) {
   const supabase = createClient();
 
@@ -321,7 +351,9 @@ export async function canJoinPhotoSession(sessionId: string, userId: string) {
   return { canJoin: true, reason: null };
 }
 
-// 撮影会の統計情報を取得
+/**
+ * 撮影会の統計情報を取得する
+ */
 export async function getPhotoSessionStats(sessionId: string) {
   const supabase = createClient();
 
@@ -342,4 +374,99 @@ export async function getPhotoSessionStats(sessionId: string) {
   };
 
   return { stats, error: null };
+}
+
+/**
+ * スタジオ情報を整形する
+ */
+export function formatStudioData(
+  studioData: {
+    studios?: { id: string; name: string } | { id: string; name: string }[];
+  } | null
+) {
+  if (!studioData?.studios) return null;
+
+  const studio = Array.isArray(studioData.studios)
+    ? studioData.studios[0]
+    : studioData.studios;
+
+  return {
+    id: studio?.id,
+    name: studio?.name,
+  };
+}
+
+/**
+ * スロットごとの予約数を取得する
+ */
+export async function fetchSlotBookingCounts(
+  supabase: SupabaseClient,
+  sessionId: string,
+  slots: { id: string }[]
+): Promise<{ [slotId: string]: number }> {
+  if (slots.length === 0) return {};
+
+  const slotIds = slots.map(slot => slot.id);
+  const { data: bookings, error } = await supabase
+    .from('bookings')
+    .select('slot_id')
+    .eq('photo_session_id', sessionId)
+    .eq('status', 'confirmed')
+    .in('slot_id', slotIds);
+
+  if (error) {
+    logger.error('[fetchSlotBookingCounts] エラー:', error);
+    return {};
+  }
+
+  // 初期化
+  const counts: { [slotId: string]: number } = {};
+  slotIds.forEach(slotId => {
+    counts[slotId] = 0;
+  });
+
+  // 集計
+  bookings?.forEach(booking => {
+    if (booking.slot_id) {
+      counts[booking.slot_id] = (counts[booking.slot_id] || 0) + 1;
+    }
+  });
+
+  return counts;
+}
+
+/**
+ * ユーザーの予約情報を取得する
+ */
+export function getUserBookingFromList<T>(
+  bookings: T[] | null | undefined
+): T | null {
+  return Array.isArray(bookings) && bookings.length > 0 ? bookings[0] : null;
+}
+
+/**
+ * 開発環境でスロット情報をログ出力する
+ */
+export function logSlotsDebugInfo(
+  sessionId: string,
+  slots: Array<{
+    id: string;
+    slot_number: number;
+    current_participants: number;
+    max_participants: number;
+  }>
+) {
+  if (process.env.NODE_ENV !== 'development' || !slots) return;
+
+  logger.debug('[PhotoSessionPage] スロットデータ検証:', {
+    sessionId,
+    slotsCount: slots.length,
+    slots: slots.map(slot => ({
+      id: slot.id,
+      slot_number: slot.slot_number,
+      current_participants: slot.current_participants,
+      max_participants: slot.max_participants,
+      isFull: slot.current_participants >= slot.max_participants,
+    })),
+  });
 }

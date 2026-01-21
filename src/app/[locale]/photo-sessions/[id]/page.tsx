@@ -6,6 +6,12 @@ import { LoadingCard } from '@/components/ui/loading-card';
 import { AuthenticatedLayout } from '@/components/layout/authenticated-layout';
 import { logger } from '@/lib/utils/logger';
 import { getCurrentUser } from '@/lib/auth/server';
+import {
+  formatStudioData,
+  fetchSlotBookingCounts,
+  getUserBookingFromList,
+  logSlotsDebugInfo,
+} from '@/lib/photo-sessions';
 
 export default async function PhotoSessionPage({
   params,
@@ -102,69 +108,15 @@ export default async function PhotoSessionPage({
   const userBookings = userBookingResult.data || [];
   const studioData = studioResult.data;
 
-  // 後方互換性のため、最初の予約をuserBookingとして保持
-  const userBooking =
-    Array.isArray(userBookings) && userBookings.length > 0
-      ? userBookings[0]
-      : null;
+  // データ整形（ヘルパー関数を使用）
+  const userBooking = getUserBookingFromList(userBookings);
+  const studio = formatStudioData(studioData);
 
-  // スタジオ情報を整形
-  const studio = studioData?.studios
-    ? Array.isArray(studioData.studios)
-      ? {
-          id: (studioData.studios[0] as { id: string; name: string })?.id,
-          name: (studioData.studios[0] as { id: string; name: string })?.name,
-        }
-      : {
-          id: (studioData.studios as { id: string; name: string }).id,
-          name: (studioData.studios as { id: string; name: string }).name,
-        }
-    : null;
+  // スロット予約数取得（ヘルパー関数を使用）
+  const slotBookingCounts = await fetchSlotBookingCounts(supabase, id, slots);
 
-  // スロットごとの予約数を取得（スロットがある場合のみ）
-  const slotBookingCounts: { [slotId: string]: number } = {};
-  if (slots.length > 0) {
-    const slotIds = slots.map(slot => slot.id);
-    const { data: bookings, error: bookingsError } = await supabase
-      .from('bookings')
-      .select('slot_id')
-      .eq('photo_session_id', id)
-      .eq('status', 'confirmed')
-      .in('slot_id', slotIds);
-
-    if (bookingsError) {
-      logger.error(
-        '[PhotoSessionPage] スロット予約数取得エラー:',
-        bookingsError
-      );
-    } else {
-      // スロットIDごとに予約数を集計
-      slotIds.forEach(slotId => {
-        slotBookingCounts[slotId] = 0;
-      });
-      bookings?.forEach(booking => {
-        if (booking.slot_id) {
-          slotBookingCounts[booking.slot_id] =
-            (slotBookingCounts[booking.slot_id] || 0) + 1;
-        }
-      });
-    }
-  }
-
-  // データ検証ログ（開発環境のみ）
-  if (process.env.NODE_ENV === 'development' && slots) {
-    logger.debug('[PhotoSessionPage] スロットデータ検証:', {
-      sessionId: id,
-      slotsCount: slots.length,
-      slots: slots.map(slot => ({
-        id: slot.id,
-        slot_number: slot.slot_number,
-        current_participants: slot.current_participants,
-        max_participants: slot.max_participants,
-        isFull: slot.current_participants >= slot.max_participants,
-      })),
-    });
-  }
+  // 開発環境ログ（ヘルパー関数を使用）
+  logSlotsDebugInfo(id, slots);
 
   if (slotsResult.error) {
     logger.error('[PhotoSessionPage] スロット取得エラー:', slotsResult.error);
