@@ -49,7 +49,7 @@ export function PageTitleHeader({
   return (
     <div className={cn('min-h-[60px] flex items-center', className)}>
       {/* グリッドレイアウト: 3列で中央にタイトルを配置 */}
-      <div className="grid grid-cols-3 items-center gap-2 min-w-0 w-full">
+      <div className="grid grid-cols-[auto,minmax(0,1fr),auto] items-center gap-2 min-w-0 w-full">
         {/* 左側: 戻るボタン */}
         <div className="flex items-center justify-start">
           {backButton && <BackButton {...backButton} />}

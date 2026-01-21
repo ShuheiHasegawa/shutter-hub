@@ -198,9 +198,9 @@ export async function createPhotoSessionWithSlotsAction(
           .eq('id', session.id);
 
         if (updateError) {
-          logger.error('max_participants再更新エラー:', updateError);
-          throw new Error(
-            `max_participants更新に失敗しました: ${updateError.message}`
+          logger.warn(
+            'max_participants再更新に失敗しましたが、スロット作成は完了しています:',
+            updateError
           );
         }
 

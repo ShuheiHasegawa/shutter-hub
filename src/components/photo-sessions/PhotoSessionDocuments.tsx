@@ -153,8 +153,10 @@ export function PhotoSessionDocuments({
 
   useEffect(() => {
     loadDocuments();
+  }, [loadDocuments]);
 
-    // フォールバック: 10秒後にローディングを強制終了
+  // フォールバック: 10秒後にローディングを強制終了
+  useEffect(() => {
     const timeout = setTimeout(() => {
       if (loading) {
         logger.warn('Document loading timeout - forcing completion');
@@ -163,7 +165,7 @@ export function PhotoSessionDocuments({
     }, 10000);
 
     return () => clearTimeout(timeout);
-  }, [loadDocuments, loading]);
+  }, [loading]);
 
   useEffect(() => {
     if (documents.length > 0) {

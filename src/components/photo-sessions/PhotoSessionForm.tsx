@@ -47,6 +47,8 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useSubscription } from '@/hooks/useSubscription';
 import { checkCanEnableCashOnSite } from '@/app/actions/photo-session-slots';
 import { CreditCard, Wallet } from 'lucide-react';
+import { formatDateToLocalString } from '@/lib/utils/time-utils';
+
 interface PhotoSessionFormProps {
   initialData?: PhotoSessionWithOrganizer;
   initialModels?: SelectedModel[];
@@ -86,7 +88,7 @@ export function PhotoSessionForm({
     location: initialData?.location || '',
     address: initialData?.address || '',
     event_date: initialData?.start_time
-      ? new Date(initialData.start_time).toISOString().split('T')[0]
+      ? formatDateToLocalString(new Date(initialData.start_time))
       : '',
     start_time: initialData?.start_time
       ? new Date(initialData.start_time).toISOString().slice(0, 16)
@@ -953,7 +955,7 @@ export function PhotoSessionForm({
                 slots={isEditing ? photoSessionSlots : undefined}
                 onSlotsChange={setPhotoSessionSlots}
                 baseDate={
-                  formData.event_date || new Date().toISOString().split('T')[0]
+                  formData.event_date || formatDateToLocalString(new Date())
                 }
                 allowMultipleBookings={formData.allow_multiple_bookings}
               />

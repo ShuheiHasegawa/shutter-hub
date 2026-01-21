@@ -418,7 +418,11 @@ export function PhotoSessionBookingForm({
                 className="text-muted-foreground mb-4"
                 data-testid="cannot-book-reason"
               >
-                {canJoin.reason}
+                {canJoin.reason
+                  ? canJoin.reason.startsWith('errors.')
+                    ? tErrors(canJoin.reason.replace('errors.', ''))
+                    : canJoin.reason
+                  : t('cannotBookDefault')}
               </p>
               <Button
                 variant="outline"

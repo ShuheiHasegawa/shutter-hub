@@ -851,6 +851,14 @@ export function PhotoSessionDetail({
                       key={index}
                       className="aspect-video rounded-lg overflow-hidden bg-gray-100 relative cursor-pointer hover:opacity-90 transition-opacity"
                       onClick={() => handleImageClick(image)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          handleImageClick(image);
+                        }
+                      }}
+                      role="button"
+                      tabIndex={0}
                     >
                       <Image
                         src={image}
@@ -1063,6 +1071,14 @@ export function PhotoSessionDetail({
                       key={index}
                       className="aspect-video rounded-lg overflow-hidden bg-gray-100 relative cursor-pointer hover:opacity-90 transition-opacity"
                       onClick={() => handleImageClick(image)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          handleImageClick(image);
+                        }
+                      }}
+                      role="button"
+                      tabIndex={0}
                     >
                       <Image
                         src={image}

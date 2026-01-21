@@ -390,9 +390,11 @@ export function formatStudioData(
     ? studioData.studios[0]
     : studioData.studios;
 
+  if (!studio) return null;
+
   return {
-    id: studio?.id,
-    name: studio?.name,
+    id: studio.id,
+    name: studio.name,
   };
 }
 

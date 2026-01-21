@@ -31,30 +31,6 @@ export function useAuth() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
-      // #region agent log
-      if (typeof window !== 'undefined' && event === 'SIGNED_IN') {
-        fetch(
-          'http://127.0.0.1:7243/ingest/0b62af13-0d04-4c38-8e09-5e16a4cac0dd',
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              location: 'useAuth.ts:33',
-              message: 'onAuthStateChange SIGNED_IN',
-              data: {
-                event,
-                hasUser: !!session?.user,
-                currentUrl: window.location.href,
-              },
-              timestamp: Date.now(),
-              sessionId: 'debug-session',
-              runId: 'run1',
-              hypothesisId: 'E',
-            }),
-          }
-        ).catch(() => {});
-      }
-      // #endregion
       // キャッシュを更新（クライアント側でのみ）
       if (typeof window !== 'undefined') {
         cachedUser = session?.user || null;

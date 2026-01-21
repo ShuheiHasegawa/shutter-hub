@@ -27,6 +27,13 @@ export function ImageLightbox({
     <div
       className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
       onClick={onClose}
+      onKeyDown={e => {
+        if (e.key === 'Escape') {
+          onClose();
+        }
+      }}
+      role="button"
+      tabIndex={0}
     >
       <div className="relative max-w-7xl max-h-screen w-full h-full flex items-center justify-center">
         <div className="relative w-full h-full">
@@ -42,7 +49,10 @@ export function ImageLightbox({
           variant="ghost"
           size="sm"
           className="absolute top-4 right-4 bg-white/10 hover:bg-white/20 text-white"
-          onClick={onClose}
+          onClick={e => {
+            e.stopPropagation();
+            onClose();
+          }}
         >
           <X className="h-6 w-6" />
         </Button>

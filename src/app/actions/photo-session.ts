@@ -166,7 +166,7 @@ export async function canJoinPhotoSessionAction(
     if (session.organizer_id === userId) {
       return {
         canJoin: false,
-        reason: '自分が主催した撮影会には予約できません',
+        reason: 'errors.cannotBookOwnSession',
       };
     }
 
