@@ -28,7 +28,9 @@ export function ImageLightbox({
       className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
       onClick={onClose}
       onKeyDown={e => {
-        if (e.key === 'Escape') {
+        if (e.key === 'Escape') onClose();
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
           onClose();
         }
       }}

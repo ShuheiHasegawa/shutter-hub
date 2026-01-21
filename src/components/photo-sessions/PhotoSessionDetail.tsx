@@ -684,7 +684,7 @@ export function PhotoSessionDetail({
       <PageTitleHeaderScrollAware
         defaultTitle="撮影会詳細"
         scrolledTitle={session.title}
-        backButton={{ href: '/photo-sessions', variant: 'ghost' }}
+        backButton={{ href: `/${locale}/photo-sessions`, variant: 'ghost' }}
       />
 
       {/* 開催者ヘッダー（主催者の場合、最上部に表示） */}
@@ -1135,16 +1135,31 @@ export function PhotoSessionDetail({
                   >
                     <div className="flex flex-col md:flex-row">
                       {/* 左側: 衣装画像エリア */}
-                      <div className="md:w-64 h-64 md:h-auto relative overflow-hidden bg-gray-50 dark:bg-gray-800">
+                      <div
+                        className={`md:w-64 h-64 md:h-auto relative overflow-hidden bg-gray-50 dark:bg-gray-800 ${
+                          slot.costume_image_url
+                            ? 'cursor-pointer hover:opacity-90 transition-opacity'
+                            : ''
+                        }`}
+                        {...(slot.costume_image_url && {
+                          onClick: () =>
+                            handleImageClick(slot.costume_image_url!),
+                          onKeyDown: (e: React.KeyboardEvent) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              handleImageClick(slot.costume_image_url!);
+                            }
+                          },
+                          role: 'button',
+                          tabIndex: 0,
+                        })}
+                      >
                         {slot.costume_image_url ? (
                           <Image
                             src={slot.costume_image_url}
                             alt={`枠${index + 1}の衣装`}
                             fill
-                            className="object-cover cursor-pointer hover:opacity-90 transition-opacity"
-                            onClick={() =>
-                              handleImageClick(slot.costume_image_url!)
-                            }
+                            className="object-cover"
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">

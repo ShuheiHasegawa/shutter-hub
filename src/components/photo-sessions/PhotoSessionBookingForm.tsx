@@ -277,7 +277,10 @@ export function PhotoSessionBookingForm({
                 variant="outline"
                 onClick={() => {
                   const currentPath = window.location.pathname;
-                  const signinUrl = `/${locale}/auth/signin?returnUrl=${encodeURIComponent(currentPath)}`;
+                  const currentSearch = window.location.search;
+                  const currentHash = window.location.hash;
+                  const fullUrl = currentPath + currentSearch + currentHash;
+                  const signinUrl = `/${locale}/auth/signin?returnUrl=${encodeURIComponent(fullUrl)}`;
                   router.push(signinUrl);
                 }}
                 data-testid="photo-session-login-prompt-button"
