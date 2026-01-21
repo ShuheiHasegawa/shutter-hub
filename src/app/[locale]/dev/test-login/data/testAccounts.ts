@@ -1,3 +1,16 @@
+/**
+ * テストアカウント定義（開発環境専用）
+ *
+ * このファイルは開発環境でのみ使用されるテストアカウント定義です。
+ * - 本番環境では使用されません（page.tsxでprocess.env.NODE_ENV === 'development'チェック済み）
+ * - ドメイン @testdomain.com と @malymoon.test は実在しません
+ * - パスワードは開発・テスト目的でのみ使用されます
+ *
+ * SonarQube S2068: ハードコードされたパスワードの警告は、開発環境専用のため例外として承認済み
+ * SonarQube コード重複: テストデータの構造的類似性は、可読性と保守性を優先するため許容
+ */
+// NOSONAR - 開発環境専用のテストデータ。セキュリティリスクなし。
+
 import { Camera, User, Users, type LucideIcon } from 'lucide-react';
 
 export interface TestAccount {
