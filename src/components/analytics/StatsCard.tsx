@@ -9,6 +9,7 @@ interface StatsCardProps {
   label: string;
   value: string | number;
   subValue?: string | number;
+  subValueLabel?: string;
   icon: LucideIcon;
   iconBgColor: string;
   iconColor: string;
@@ -21,6 +22,7 @@ export function StatsCard({
   label,
   value,
   subValue,
+  subValueLabel,
   icon: Icon,
   iconBgColor,
   iconColor,
@@ -79,7 +81,8 @@ export function StatsCard({
               <p className="text-xs text-muted-foreground">
                 {showPrice && typeof subValue === 'number' ? (
                   <>
-                    今月: <FormattedPrice value={subValue} format="simple" />
+                    {subValueLabel && `${subValueLabel}: `}
+                    <FormattedPrice value={subValue} format="simple" />
                   </>
                 ) : (
                   subValue

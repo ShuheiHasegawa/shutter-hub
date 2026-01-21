@@ -14,6 +14,8 @@ import {
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Trophy, Clock } from 'lucide-react';
+import { formatShortDateTime, formatDateTimeLocalized } from '@/lib/utils/date';
+import { useLocale } from 'next-intl';
 
 export interface WinnerData {
   user_id: string;
@@ -47,11 +49,17 @@ export function LotteryWinnersListBase({
   showBookingStatus = false,
   dateField = 'selected_at',
 }: LotteryWinnersListBaseProps) {
+  const locale = useLocale();
   const [activeTab, setActiveTab] = useState<string>('');
 
   // 最初のタブを自動選択
   useEffect(() => {
-    if (winners.length > 0 && !activeTab) {
+    if (winners.length === 0) {
+      setActiveTab('');
+      return;
+    }
+    const hasActive = winners.some(slot => slot.slot_id === activeTab);
+    if (!hasActive) {
       setActiveTab(winners[0].slot_id);
     }
   }, [winners, activeTab]);
@@ -247,12 +255,10 @@ export function LotteryWinnersListBase({
                               {dateValue ? (
                                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
                                   <Clock className="h-3 w-3" />
-                                  {new Date(dateValue).toLocaleString('ja-JP', {
-                                    month: 'short',
-                                    day: 'numeric',
-                                    hour: '2-digit',
-                                    minute: '2-digit',
-                                  })}
+                                  {formatShortDateTime(
+                                    new Date(dateValue),
+                                    locale
+                                  )}
                                 </div>
                               ) : (
                                 <span className="text-sm text-muted-foreground">
@@ -330,7 +336,10 @@ export function LotteryWinnersListBase({
                               {dateValue && (
                                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
                                   <Clock className="h-3 w-3" />
-                                  {new Date(dateValue).toLocaleString('ja-JP')}
+                                  {formatDateTimeLocalized(
+                                    new Date(dateValue),
+                                    locale
+                                  )}
                                 </div>
                               )}
                             </div>

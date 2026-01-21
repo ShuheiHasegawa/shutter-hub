@@ -114,6 +114,24 @@ export function formatTimeLocalized(
   }).format(date);
 }
 
+/**
+ * 短い日時フォーマット（月日 + 時分）
+ * 例: 1/21 14:30, Jan 21 02:30 PM
+ */
+export function formatShortDateTime(
+  date: Date,
+  locale: string = 'ja-JP',
+  timeZone?: string
+): string {
+  return new Intl.DateTimeFormat(locale, {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: timeZone || 'Asia/Tokyo',
+  }).format(date);
+}
+
 export function formatDateRange(startDate: Date, endDate: Date): string {
   const start = formatDate(startDate, 'long');
   const startTime = formatTime(startDate);

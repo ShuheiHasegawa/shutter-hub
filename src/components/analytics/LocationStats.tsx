@@ -31,7 +31,7 @@ export function LocationStats({
         <div className="space-y-4">
           {locations.map((location, index) => (
             <div
-              key={location.location}
+              key={`${location.location}-${index}`}
               className="flex items-center justify-between"
             >
               <div className="flex items-center gap-2">

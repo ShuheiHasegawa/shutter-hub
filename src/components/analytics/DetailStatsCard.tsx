@@ -32,28 +32,33 @@ export function DetailStatsCard({ title, items }: DetailStatsCardProps) {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {items.map((item, index) => (
-            <div key={index} className="flex items-center justify-between">
-              <span>{item.label}</span>
-              <div className="flex items-center gap-2">
-                <span
-                  className={`font-bold ${
-                    item.color ? colorClasses[item.color] : ''
-                  }`}
-                >
-                  {item.showPrice ? (
-                    <FormattedPrice value={item.value} format="simple" />
-                  ) : (
-                    item.value
-                  )}
-                </span>
-                <Progress
-                  value={(item.value / item.total) * 100}
-                  className="w-20"
-                />
+          {items.map((item, index) => {
+            const progressValue =
+              item.total > 0 ? (item.value / item.total) * 100 : 0;
+
+            return (
+              <div key={index} className="flex items-center justify-between">
+                <span>{item.label}</span>
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`font-bold ${
+                      item.color ? colorClasses[item.color] : ''
+                    }`}
+                  >
+                    {item.showPrice ? (
+                      <FormattedPrice value={item.value} format="simple" />
+                    ) : (
+                      item.value
+                    )}
+                  </span>
+                  <Progress
+                    value={Math.min(progressValue, 100)}
+                    className="w-20"
+                  />
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </CardContent>
     </Card>

@@ -29,6 +29,7 @@ import { FormattedPrice } from '@/components/ui/formatted-display';
 import { StatsCard } from '@/components/analytics/StatsCard';
 import { DetailStatsCard } from '@/components/analytics/DetailStatsCard';
 import { LocationStats } from '@/components/analytics/LocationStats';
+import { useTranslations } from 'next-intl';
 
 interface Profile {
   id: string;
@@ -61,6 +62,7 @@ export default function AnalyticsPage() {
   const router = useRouter();
   const params = useParams();
   const locale = params.locale || 'ja';
+  const t = useTranslations('analytics');
   const [profile, setProfile] = useState<Profile | null>(null);
   const [stats, setStats] = useState<UserStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
@@ -339,7 +341,7 @@ export default function AnalyticsPage() {
         <StatsCard
           label="総撮影会数"
           value={stats.totalSessions}
-          subValue={`今月: ${stats.thisMonthSessions}件`}
+          subValue={`${t('thisMonth')}: ${stats.thisMonthSessions}件`}
           icon={Camera}
           iconBgColor="bg-blue-100"
           iconColor="text-blue-600"
@@ -348,6 +350,7 @@ export default function AnalyticsPage() {
           label="総収益"
           value={stats.totalEarnings}
           subValue={stats.thisMonthEarnings}
+          subValueLabel={t('thisMonth')}
           icon={DollarSign}
           iconBgColor="bg-success/10"
           iconColor="text-success"
@@ -365,7 +368,7 @@ export default function AnalyticsPage() {
         <StatsCard
           label="予定撮影会"
           value={stats.upcomingSessions}
-          subValue={`完了: ${stats.completedSessions}件`}
+          subValue={`${t('completed')}: ${stats.completedSessions}件`}
           icon={Calendar}
           iconBgColor="bg-green-100"
           iconColor="text-green-600"
@@ -405,7 +408,7 @@ export default function AnalyticsPage() {
         <StatsCard
           label="撮影回数"
           value={stats.totalSessions}
-          subValue={`今月: ${stats.thisMonthSessions}回`}
+          subValue={`${t('thisMonth')}: ${stats.thisMonthSessions}回`}
           icon={Camera}
           iconBgColor="bg-blue-100"
           iconColor="text-blue-600"
@@ -414,6 +417,7 @@ export default function AnalyticsPage() {
           label="総収入"
           value={stats.totalEarnings}
           subValue={stats.thisMonthEarnings}
+          subValueLabel={t('thisMonth')}
           icon={DollarSign}
           iconBgColor="bg-success/10"
           iconColor="text-success"
@@ -422,7 +426,7 @@ export default function AnalyticsPage() {
         <StatsCard
           label="顧客評価"
           value={stats.averageRating}
-          subValue={`${stats.totalReviews}件のレビュー`}
+          subValue={`${stats.totalReviews}${t('reviews')}`}
           icon={Star}
           iconBgColor="bg-yellow-100"
           iconColor="text-yellow-600"
@@ -438,7 +442,7 @@ export default function AnalyticsPage() {
                 )
               : 0
           }
-          subValue={`完了: ${stats.completedSessions}件`}
+          subValue={`${t('completed')}: ${stats.completedSessions}件`}
           icon={Activity}
           iconBgColor="bg-purple-100"
           iconColor="text-purple-600"
@@ -490,7 +494,7 @@ export default function AnalyticsPage() {
         <StatsCard
           label="参加撮影会"
           value={stats.totalSessions}
-          subValue={`今月: ${stats.thisMonthSessions}回`}
+          subValue={`${t('thisMonth')}: ${stats.thisMonthSessions}回`}
           icon={Camera}
           iconBgColor="bg-blue-100"
           iconColor="text-blue-600"
@@ -521,7 +525,7 @@ export default function AnalyticsPage() {
                 )
               : 0
           }
-          subValue={`完了: ${stats.completedSessions}回`}
+          subValue={`${t('completed')}: ${stats.completedSessions}回`}
           icon={Award}
           iconBgColor="bg-purple-100"
           iconColor="text-purple-600"
