@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { logger } from '@/lib/utils/logger';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
@@ -29,6 +30,7 @@ import { createOrGetConversation } from '@/app/actions/message';
 import { UserWithFollowInfo } from '@/types/social';
 
 export default function UserSearchPage() {
+  const t = useTranslations('userSearch');
   const router = useRouter();
   const { user } = useAuth();
 
@@ -143,8 +145,8 @@ export default function UserSearchPage() {
     <AuthenticatedLayout>
       <div className="space-y-6">
         <PageTitleHeader
-          title="ユーザー検索"
-          description="フォロワーやフォロー中のユーザーと新しい会話を開始します"
+          title={t('title')}
+          description={t('description')}
           icon={<Users className="h-5 w-5" />}
           backButton={{ href: '/messages', variant: 'outline' }}
         />

@@ -372,7 +372,7 @@ export function StudiosList({
         <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50">
           <div className="bg-surface-primary text-surface-primary-text px-4 py-2 rounded-full shadow-lg flex items-center gap-2">
             <Loader2 className="h-4 w-4 animate-spin" />
-            <span className="text-sm">更新中...</span>
+            <span className="text-sm">{t('refreshing')}</span>
           </div>
         </div>
       )}

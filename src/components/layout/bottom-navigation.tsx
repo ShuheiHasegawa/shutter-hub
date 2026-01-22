@@ -325,7 +325,7 @@ export function BottomNavigation() {
             >
               {/* アクティブ時の下部下線 */}
               {isActive && (
-                <div className="absolute bottom-0 left-1/4 -translate-x-1/4 w-1/2 h-0.5 surface-accent" />
+                <div className="absolute bottom-0 left-1/4 -translate-x-1/4 w-1/2 h-0.5 bg-surface-accent" />
               )}
               <Icon
                 className={cn(

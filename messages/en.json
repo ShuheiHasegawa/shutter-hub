@@ -1847,6 +1847,7 @@
       "loadMore": "Load More",
       "loading": "Loading...",
       "loadingMore": "Loading more...",
+      "refreshing": "Refreshing...",
       "allLoaded": "All studios displayed",
       "scrollToLoad": "Scroll to load more"
     },
@@ -1929,6 +1930,10 @@
         "highQuality": "We recommend uploading high-quality images"
       }
     }
+  },
+  "userSearch": {
+    "title": "User Search",
+    "description": "Start a new conversation with followers or users you follow"
   },
   "notificationMessages": {
     "photoSession": {

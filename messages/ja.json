@@ -1859,6 +1859,7 @@
       "loadMore": "もっと見る",
       "loading": "読み込み中...",
       "loadingMore": "さらに読み込み中...",
+      "refreshing": "更新中...",
       "allLoaded": "すべてのスタジオを表示しました",
       "scrollToLoad": "スクロールして続きを読み込む"
     },
@@ -1941,6 +1942,10 @@
         "highQuality": "高画質の画像をアップロードすることを推奨します"
       }
     }
+  },
+  "userSearch": {
+    "title": "ユーザー検索",
+    "description": "フォロワーやフォロー中のユーザーと新しい会話を開始します"
   },
   "notificationMessages": {
     "photoSession": {
