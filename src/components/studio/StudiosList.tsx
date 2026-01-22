@@ -127,13 +127,15 @@ export function StudiosList({
         };
 
         const result = await getStudiosAction(searchFilters);
-        const processed = processStudiosResult(result, append, studios);
 
-        setStudios(processed.studios);
-        setHasMore(processed.hasMore);
-        if (processed.error) {
-          setError(processed.error);
-        }
+        setStudios(prevStudios => {
+          const processed = processStudiosResult(result, append, prevStudios);
+          setHasMore(processed.hasMore);
+          if (processed.error) {
+            setError(processed.error);
+          }
+          return processed.studios;
+        });
       } catch {
         setError(t('fetchErrorUnexpected'));
       } finally {
@@ -142,7 +144,7 @@ export function StudiosList({
         isLoadingRef.current = false;
       }
     },
-    [filters, limit, studios, processStudiosResult, t]
+    [filters, limit, processStudiosResult, t]
   );
 
   // 検索実行フラグがtrueの時のみ取得
