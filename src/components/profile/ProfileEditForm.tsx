@@ -372,7 +372,7 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
         <Form {...form}>
           <form className="space-y-6">
             {/* ユーザー名設定セクション */}
-            <div className="space-y-3">
+            <div className="space-y-4">
               <FormLabel>ユーザー名</FormLabel>
               <div className="flex items-center gap-3">
                 <div className="flex-1">

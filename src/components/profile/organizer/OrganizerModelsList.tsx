@@ -154,7 +154,7 @@ export function OrganizerModelsList({
             }}
             className="min-w-[120px]"
           >
-            <TrendingUp className="h-4 w-4 mr-2" />
+            <TrendingUp className="h-4 w-4" />
             {sortOrder === 'asc' ? '昇順' : '降順'}
           </Button>
 
@@ -173,7 +173,7 @@ export function OrganizerModelsList({
             }}
             className="min-w-[140px]"
           >
-            <Filter className="h-4 w-4 mr-2" />
+            <Filter className="h-4 w-4" />
             {sortField === 'joined_at' && '登録日時順'}
             {sortField === 'display_name' && '名前順'}
             {sortField === 'total_sessions_participated' && '参加数順'}
@@ -235,11 +235,11 @@ export function OrganizerModelsList({
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="start">
                     <DropdownMenuItem>
-                      <User className="h-4 w-4 mr-2" />
+                      <User className="h-4 w-4" />
                       プロフィール表示
                     </DropdownMenuItem>
                     <DropdownMenuItem>
-                      <Mail className="h-4 w-4 mr-2" />
+                      <Mail className="h-4 w-4" />
                       メッセージ送信
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -249,7 +249,7 @@ export function OrganizerModelsList({
 
             <CardContent className="p-6 space-y-4">
               {/* モデル基本情報 */}
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div className="text-center">
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                     {model.model_profile?.display_name || '未設定'}
@@ -305,7 +305,7 @@ export function OrganizerModelsList({
               {(model.contract_start_date ||
                 model.contract_end_date ||
                 model.notes) && (
-                <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-3">
+                <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-4">
                   <h4 className="text-sm font-medium text-gray-900 dark:text-white">
                     契約情報
                   </h4>

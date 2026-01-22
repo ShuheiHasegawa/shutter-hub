@@ -138,7 +138,7 @@ function PaymentForm({ clientSecret, planInfo }: PaymentFormProps) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <span>プラン</span>
                 <Badge variant="default">{planInfo.name}</Badge>

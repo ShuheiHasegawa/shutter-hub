@@ -195,7 +195,7 @@ export default function PerformanceTestPage() {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="space-y-3">
+                <div className="space-y-4">
                   <h3 className="font-semibold">プロフィール画像</h3>
                   <div className="relative w-full aspect-square">
                     <Image
@@ -207,7 +207,7 @@ export default function PerformanceTestPage() {
                   </div>
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-4">
                   <h3 className="font-semibold">撮影会画像</h3>
                   <div className="relative w-full aspect-[3/4]">
                     <Image
@@ -219,7 +219,7 @@ export default function PerformanceTestPage() {
                   </div>
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-4">
                   <h3 className="font-semibold">フォトブック用</h3>
                   <Image
                     src="/images/sample.png"
@@ -230,7 +230,7 @@ export default function PerformanceTestPage() {
                   />
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-4">
                   <h3 className="font-semibold">SNS投稿用</h3>
                   <div className="relative w-full aspect-square">
                     <Image

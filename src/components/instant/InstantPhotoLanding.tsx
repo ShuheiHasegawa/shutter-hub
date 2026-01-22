@@ -66,7 +66,7 @@ export function InstantPhotoLanding() {
                 variant="secondary"
                 className="text-sm font-medium px-3 py-1"
               >
-                <Camera className="h-4 w-4 mr-2" />
+                <Camera className="h-4 w-4" />
                 撮影業界のUber
               </Badge>
             </div>
@@ -154,13 +154,13 @@ export function InstantPhotoLanding() {
                             placeholder="例：渋谷駅周辺、東京タワー近く"
                             className="w-full"
                           />
-                          <div className="space-y-3">
+                          <div className="space-y-4">
                             <Button className="w-full">カメラマンを検索</Button>
                             <Button
                               onClick={handleLocationRequest}
                               className="w-full"
                             >
-                              <MapPin className="h-4 w-4 mr-2" />
+                              <MapPin className="h-4 w-4" />
                               位置情報を使用
                             </Button>
                           </div>
@@ -182,12 +182,12 @@ export function InstantPhotoLanding() {
                           </p>
                         </div>
 
-                        <div className="space-y-3">
+                        <div className="space-y-4">
                           <Button
                             onClick={handleLocationRequest}
                             className="w-full"
                           >
-                            <MapPin className="h-4 w-4 mr-2" />
+                            <MapPin className="h-4 w-4" />
                             位置情報を有効にする
                           </Button>
                           <Button

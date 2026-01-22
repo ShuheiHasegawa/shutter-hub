@@ -127,13 +127,13 @@ export function LocationPermissionCheck({
             <span className="text-sm">位置情報を取得中...</span>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-4">
             <Button
               onClick={onRequestLocation}
               className="w-full"
               variant="cta"
             >
-              <MapPin className="h-4 w-4 mr-2" />
+              <MapPin className="h-4 w-4" />
               位置情報を許可
             </Button>
             <Button onClick={onSkip} variant="neutral" className="w-full">

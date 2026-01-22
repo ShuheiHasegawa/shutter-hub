@@ -35,8 +35,8 @@ export default function PaymentSuccessPage() {
       <div className="container mx-auto px-4 max-w-2xl py-8">
         {/* 成功アイコン */}
         <div className="text-center mb-8">
-          <div className="w-24 h-24 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle className="h-12 w-12 text-emerald-600 dark:text-emerald-400" />
+          <div className="w-24 h-24 bg-success/10 dark:bg-success/20 rounded-full flex items-center justify-center mx-auto mb-6">
+            <CheckCircle className="h-12 w-12 text-success" />
           </div>
           <h1 className="text-3xl font-bold mb-2">決済が完了しました！</h1>
           <p className="text-muted-foreground">
@@ -48,14 +48,14 @@ export default function PaymentSuccessPage() {
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5 text-emerald-600" />
+              <Shield className="h-5 w-5 text-success" />
               エスクロー保護が有効です
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Alert className="border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-900/20">
-              <CheckCircle className="h-4 w-4 text-emerald-600" />
-              <AlertDescription className="text-emerald-800 dark:text-emerald-300">
+            <Alert className="border-success/30 bg-success/5 dark:border-success/30 dark:bg-success/20">
+              <CheckCircle className="h-4 w-4 text-success" />
+              <AlertDescription className="text-success">
                 お支払いは安全に預託されています。写真を受け取り次第、決済が確定します。
               </AlertDescription>
             </Alert>
@@ -166,7 +166,7 @@ export default function PaymentSuccessPage() {
         <div className="flex flex-col sm:flex-row gap-4">
           <Button asChild className="flex-1">
             <Link href="/">
-              <Home className="h-4 w-4 mr-2" />
+              <Home className="h-4 w-4" />
               トップページへ
             </Link>
           </Button>

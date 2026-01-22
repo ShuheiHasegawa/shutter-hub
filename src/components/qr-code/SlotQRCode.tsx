@@ -47,7 +47,7 @@ export function SlotQRCode({
       <!DOCTYPE html>
       <html>
         <head>
-          <title>QRコード - スロット #${slot.slot_number}</title>
+          <title>QRコード - 撮影枠 #${slot.slot_number}</title>
           <style>
             @page {
               margin: 1cm;
@@ -125,7 +125,7 @@ export function SlotQRCode({
           </div>
           
           <div class="qr-container">
-            <div class="qr-title">スロット QRコード #${slot.slot_number}</div>
+            <div class="qr-title">撮影枠QRコード #${slot.slot_number}</div>
             <div class="qr-code">
               ${qrRef.current?.querySelector('svg')?.outerHTML || ''}
             </div>
@@ -195,7 +195,7 @@ export function SlotQRCode({
           />
         </div>
 
-        {/* スロット情報 */}
+        {/* 撮影枠情報 */}
         <div className="space-y-2 text-sm print:space-y-1 print:text-xs">
           <div>
             <span className="font-semibold print:font-medium">
@@ -224,15 +224,12 @@ export function SlotQRCode({
             {formatTimeLocalized(new Date(slot.start_time), locale)} -{' '}
             {formatTimeLocalized(new Date(slot.end_time), locale)}
           </div>
-          <div className="text-xs text-muted-foreground break-all print:hidden">
-            {checkInUrl}
-          </div>
         </div>
 
         {/* アクションボタン（印刷時は非表示） */}
         <div className="flex gap-2 print:hidden">
           <Button onClick={handlePrint} variant="outline" className="flex-1">
-            <Printer className="h-4 w-4 mr-2" />
+            <Printer className="h-4 w-4" />
             {t('print')}
           </Button>
           <Button
@@ -240,7 +237,7 @@ export function SlotQRCode({
             variant="outline"
             className="flex-1"
           >
-            <Download className="h-4 w-4 mr-2" />
+            <Download className="h-4 w-4" />
             {t('downloadQR')}
           </Button>
         </div>

@@ -442,7 +442,7 @@ export default function UserProfilePage() {
             {isOwnProfile ? (
               <Button variant="outline" asChild>
                 <Link href="/profile/edit">
-                  <User className="h-4 w-4 mr-2" />
+                  <User className="h-4 w-4" />
                   プロフィール編集
                 </Link>
               </Button>

@@ -307,7 +307,7 @@ export function FavoritesContent({
               }
             >
               <SelectTrigger className="w-full sm:w-[180px]">
-                <Filter className="h-4 w-4 mr-2" />
+                <Filter className="h-4 w-4" />
                 <SelectValue placeholder={t('sort.placeholder')} />
               </SelectTrigger>
               <SelectContent>
@@ -367,7 +367,7 @@ function FavoritesTabContent({
   }
 
   return (
-    <div className="space-y-3 md:space-y-4 pb-8">
+    <div className="space-y-4 md:space-y-4 pb-8">
       {items.map(item => {
         if (
           item.favorite_type === 'studio' &&

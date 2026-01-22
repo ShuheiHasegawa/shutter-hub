@@ -196,7 +196,7 @@ export function PaymentForm({
 
       <CardContent className="space-y-6">
         {/* 料金内訳 */}
-        <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+        <div className="bg-gray-50 rounded-lg p-4 space-y-4">
           <h4 className="font-medium text-sm">料金内訳</h4>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
@@ -314,12 +314,12 @@ export function PaymentForm({
           >
             {isLoading ? (
               <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin" />
                 決済処理中...
               </>
             ) : (
               <>
-                <CheckCircle className="h-4 w-4 mr-2" />
+                <CheckCircle className="h-4 w-4" />
                 <FormattedPrice value={amount} format="simple" />
                 を支払う
               </>

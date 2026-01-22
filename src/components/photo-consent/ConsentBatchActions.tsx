@@ -166,10 +166,10 @@ export const ConsentBatchActions: React.FC<ConsentBatchActionsProps> = ({
       </div>
 
       {/* アクションエリア */}
-      <div className="p-4 border-t border-gray-200 space-y-3">
+      <div className="p-4 border-t border-gray-200 space-y-4">
         {showMessageInput ? (
           // メッセージ入力モード
-          <div className="space-y-3">
+          <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 {batchAction === 'approve' ? '承認' : '拒否'}メッセージ（任意）

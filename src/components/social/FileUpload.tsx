@@ -238,7 +238,7 @@ export function FileUpload({
                 fileInputRef.current?.click();
               }}
             >
-              <Upload className="h-4 w-4 mr-2" />
+              <Upload className="h-4 w-4" />
               {t('fileUpload.selectFiles')}
             </Button>
             <p className="text-xs text-muted-foreground mt-2">
@@ -274,7 +274,7 @@ export function FileUpload({
 
       {/* 選択されたファイル一覧 */}
       {selectedFiles.length > 0 && (
-        <div className="space-y-3">
+        <div className="space-y-4">
           <h4 className="font-medium">
             {t('fileUpload.selectedFiles')} ({selectedFiles.length})
           </h4>
@@ -292,7 +292,7 @@ export function FileUpload({
 
       {/* アップロード中のファイル */}
       {uploadingFiles.length > 0 && (
-        <div className="space-y-3">
+        <div className="space-y-4">
           <h4 className="font-medium">
             {t('fileUpload.uploading')} ({uploadingFiles.length})
           </h4>

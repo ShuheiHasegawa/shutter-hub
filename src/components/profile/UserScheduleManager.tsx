@@ -189,14 +189,8 @@ function UnifiedCalendarGrid({
                               organizerLabelsByDay[day] &&
                               showOrganizerSchedule && (
                                 <div className="flex-shrink-0">
-                                  <div
-                                    className="relative text-xs px-0.5 py-0.5 rounded truncate"
-                                    style={{ backgroundColor: '#16a34a20' }}
-                                  >
-                                    <div
-                                      className="absolute left-0 top-0 bottom-0 w-0.5 rounded-full"
-                                      style={{ backgroundColor: '#16a34a' }}
-                                    />
+                                  <div className="relative text-xs px-0.5 py-0.5 rounded truncate bg-success/10">
+                                    <div className="absolute left-0 top-0 bottom-0 w-0.5 rounded-full bg-success" />
                                     <span className="ml-1 hidden lg:inline text-xs truncate">
                                       {organizerLabelsByDay[day]}
                                     </span>
@@ -787,7 +781,7 @@ export function UserScheduleManager({
                       }
                     />
                     <div className="flex items-center gap-2">
-                      <div className="h-3 w-3 rounded-full bg-green-500 flex-shrink-0" />
+                      <div className="h-3 w-3 rounded-full bg-success flex-shrink-0" />
                       <span className="text-sm font-medium">
                         所属運営の対応可能時間
                       </span>
@@ -1115,7 +1109,7 @@ export function UserScheduleManager({
               )}
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-3">
+          <div className="space-y-4">
             {getSelectedDateSlots().length === 0 ? (
               <p className="text-sm text-muted-foreground">
                 この日は空き時間が設定されていません

@@ -264,7 +264,7 @@ export function OrganizerModelsCommon({
                       className="text-error focus:text-error cursor-pointer"
                       onClick={() => setRemovingModelId(model.id)}
                     >
-                      <UserMinus className="h-4 w-4 mr-2" />
+                      <UserMinus className="h-4 w-4" />
                       所属解除
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -290,7 +290,7 @@ export function OrganizerModelsCommon({
               </div>
             </Link>
 
-            <CardContent className="p-4 space-y-3">
+            <CardContent className="p-4 space-y-4">
               {/* モデル基本情報 */}
               <div className="text-center">
                 <Link href={`/profile/${model.model_id}`}>

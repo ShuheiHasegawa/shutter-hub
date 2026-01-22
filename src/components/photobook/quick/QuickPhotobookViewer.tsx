@@ -330,7 +330,7 @@ export function QuickPhotobookViewer({
         {photobook.photobook_type === 'quick' && (
           <Card>
             <CardContent className="pt-6">
-              <div className="text-center space-y-3">
+              <div className="text-center space-y-4">
                 <h3 className="font-medium">🎨 より高度な編集機能</h3>
                 <p className="text-sm">
                   アドバンスドフォトブックなら複雑なレイアウトやテキスト追加が可能

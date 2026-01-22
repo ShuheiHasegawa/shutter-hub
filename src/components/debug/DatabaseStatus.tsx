@@ -114,7 +114,7 @@ export function DatabaseStatus() {
             disabled={isLoading}
           >
             <RefreshCw
-              className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`}
+              className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`}
             />
             再チェック
           </Button>

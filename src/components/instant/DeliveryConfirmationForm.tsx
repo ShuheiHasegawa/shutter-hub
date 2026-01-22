@@ -222,7 +222,7 @@ export function DeliveryConfirmationForm({
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* 配信情報サマリー */}
-          <div className="bg-gray-50 p-4 rounded-lg space-y-3">
+          <div className="bg-gray-50 p-4 rounded-lg space-y-4">
             <h4 className="font-medium text-gray-900">配信された写真</h4>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
@@ -363,7 +363,7 @@ export function DeliveryConfirmationForm({
             )}
 
             {/* カメラマン評価 */}
-            <div className="space-y-3">
+            <div className="space-y-4">
               <StarRating
                 label="カメラマンの対応"
                 value={formData.photographer_rating}
@@ -389,7 +389,7 @@ export function DeliveryConfirmationForm({
             </div>
 
             {/* 写真品質評価 */}
-            <div className="space-y-3">
+            <div className="space-y-4">
               <StarRating
                 label="写真の品質"
                 value={formData.photo_quality_rating}
@@ -415,7 +415,7 @@ export function DeliveryConfirmationForm({
             </div>
 
             {/* サービス評価 */}
-            <div className="space-y-3">
+            <div className="space-y-4">
               <StarRating
                 label="サービス全体"
                 value={formData.service_rating}
@@ -439,7 +439,7 @@ export function DeliveryConfirmationForm({
           </div>
 
           {/* 推奨度 */}
-          <div className="space-y-3 p-4 bg-orange-50 border border-orange-200 rounded-lg">
+          <div className="space-y-4 p-4 bg-orange-50 border border-orange-200 rounded-lg">
             <div className="flex items-center space-x-3">
               <Checkbox
                 id="recommend"
@@ -469,7 +469,7 @@ export function DeliveryConfirmationForm({
 
           {/* 問題報告 */}
           {!formData.is_satisfied && (
-            <div className="space-y-3 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="space-y-4 p-4 bg-red-50 border border-red-200 rounded-lg">
               <Label className="font-medium text-red-900">
                 どのような問題がありましたか？（複数選択可）
               </Label>
@@ -522,7 +522,7 @@ export function DeliveryConfirmationForm({
           <Separator />
 
           {/* 評価サマリー */}
-          <div className="bg-gray-50 p-4 rounded-lg space-y-3">
+          <div className="bg-gray-50 p-4 rounded-lg space-y-4">
             <h5 className="font-medium text-gray-900">評価サマリー</h5>
             <div className="grid grid-cols-3 gap-4 text-sm">
               <div className="text-center">
@@ -573,12 +573,12 @@ export function DeliveryConfirmationForm({
           >
             {isSubmitting ? (
               <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin" />
                 処理中...
               </>
             ) : (
               <>
-                <CheckCircle className="h-4 w-4 mr-2" />
+                <CheckCircle className="h-4 w-4" />
                 受取確認とレビューを送信
               </>
             )}

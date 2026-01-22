@@ -121,7 +121,7 @@ export default function ColorThemePage() {
                     <h3 className="text-xl font-semibold">
                       ブランド色の使用例
                     </h3>
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       <div className="flex items-center gap-4">
                         <span className="brand-primary text-2xl font-bold">
                           ShutterHub
@@ -221,7 +221,7 @@ export default function ColorThemePage() {
                       <h3 className="text-lg font-semibold mb-4">
                         撮影会カード例
                       </h3>
-                      <div className="space-y-3">
+                      <div className="space-y-4">
                         <h4 className="font-medium">ポートレート撮影会</h4>
                         <p className="opacity-80 text-sm">
                           プロカメラマンによる個人撮影
@@ -241,7 +241,7 @@ export default function ColorThemePage() {
                       <h3 className="text-lg font-semibold mb-4">
                         重要なお知らせ
                       </h3>
-                      <div className="space-y-3">
+                      <div className="space-y-4">
                         <p className="opacity-90 text-sm">
                           システムメンテナンスのお知らせ
                         </p>

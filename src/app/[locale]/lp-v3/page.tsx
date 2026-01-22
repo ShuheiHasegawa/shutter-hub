@@ -487,7 +487,7 @@ export default function LPVariant3() {
                                 {t(feature.descKey)}
                               </p>
 
-                              <ul className="space-y-3">
+                              <ul className="space-y-4">
                                 {[0, 1, 2].map(i => (
                                   <li
                                     key={i}

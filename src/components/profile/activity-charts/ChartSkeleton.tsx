@@ -78,7 +78,7 @@ export function PieChartSkeleton() {
               </div>
             </div>
             {/* 凡例 */}
-            <div className="space-y-3">
+            <div className="space-y-4">
               {Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} className="flex items-center gap-2">
                   <Skeleton className="h-3 w-3 rounded" />

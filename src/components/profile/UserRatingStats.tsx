@@ -125,7 +125,7 @@ export function UserRatingStats({ stats }: UserRatingStatsProps) {
               </Badge>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">総合評価</span>
                 <div className="flex items-center gap-3">
@@ -199,7 +199,7 @@ export function UserRatingStats({ stats }: UserRatingStatsProps) {
               </Badge>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">総合評価</span>
                 <div className="flex items-center gap-3">

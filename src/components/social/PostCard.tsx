@@ -346,7 +346,7 @@ export function PostCard({
                 {isOwner ? (
                   <>
                     <DropdownMenuItem>
-                      <Edit className="h-4 w-4 mr-2" />
+                      <Edit className="h-4 w-4" />
                       編集
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
@@ -355,13 +355,13 @@ export function PostCard({
                       disabled={isDeleting}
                       className="text-red-600"
                     >
-                      <Trash2 className="h-4 w-4 mr-2" />
+                      <Trash2 className="h-4 w-4" />
                       削除
                     </DropdownMenuItem>
                   </>
                 ) : (
                   <DropdownMenuItem className="text-red-600">
-                    <Flag className="h-4 w-4 mr-2" />
+                    <Flag className="h-4 w-4" />
                     報告
                   </DropdownMenuItem>
                 )}
@@ -620,13 +620,13 @@ export function PostCard({
                       onClick={handleRepost}
                       disabled={isReposting}
                     >
-                      <Repeat2 className="h-4 w-4 mr-2" />
+                      <Repeat2 className="h-4 w-4" />
                       リポスト
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => setIsQuoteDialogOpen(true)}
                     >
-                      <Edit className="h-4 w-4 mr-2" />
+                      <Edit className="h-4 w-4" />
                       引用リポスト
                     </DropdownMenuItem>
                   </DropdownMenuContent>

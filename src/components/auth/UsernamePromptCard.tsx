@@ -134,7 +134,7 @@ export function UsernamePromptCard({
         {/* アクションボタン */}
         <div className="flex gap-2">
           <Button onClick={() => setShowDialog(true)} className="flex-1">
-            <AtSign className="h-4 w-4 mr-2" />
+            <AtSign className="h-4 w-4" />
             ユーザー名を設定
           </Button>
           <Button

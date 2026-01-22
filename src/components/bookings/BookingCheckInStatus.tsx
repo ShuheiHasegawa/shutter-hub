@@ -55,7 +55,7 @@ export function BookingCheckInStatus({
           {t('checkInStatus')}
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-4">
         <div className="flex items-center justify-between">
           <span className="text-sm text-muted-foreground">{t('status')}</span>
           <Badge variant={status.variant}>{status.label}</Badge>

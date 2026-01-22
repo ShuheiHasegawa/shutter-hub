@@ -329,7 +329,7 @@ export function ReviewCard({
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={() => setIsReportDialogOpen(true)}>
-                    <Flag className="h-4 w-4 mr-2" />
+                    <Flag className="h-4 w-4" />
                     {t('actions.report')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -409,7 +409,7 @@ export function ReviewCard({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {review.pros && (
                 <div className="space-y-2">
-                  <h4 className="text-sm font-medium text-green-700 dark:text-green-400">
+                  <h4 className="text-sm font-medium text-success">
                     {t('form.pros')}
                   </h4>
                   <p className="text-sm text-muted-foreground whitespace-pre-wrap">

@@ -338,7 +338,7 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
                     onClick={handleProceedToPayment}
                     className="bg-shutter-info hover:bg-shutter-info/90 text-white"
                   >
-                    <CreditCard className="h-4 w-4 mr-2" />
+                    <CreditCard className="h-4 w-4" />
                     決済に進む
                     <ArrowRight className="h-4 w-4 ml-2" />
                   </Button>
@@ -401,7 +401,7 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
               </div>
 
               {/* 撮影時間 */}
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <Label htmlFor="duration">撮影時間</Label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   {[15, 30, 45, 60].map(duration => (
@@ -427,7 +427,7 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
               </div>
 
               {/* 参加人数 */}
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <Label htmlFor="partySize">参加人数</Label>
                 <div className="grid grid-cols-5 gap-2">
                   {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
@@ -453,7 +453,7 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
               </div>
 
               {/* 希望料金 */}
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <Label htmlFor="budget">希望料金</Label>
                 <div className="space-y-2">
                   <Input
@@ -606,12 +606,12 @@ export function QuickRequestForm({ location }: QuickRequestFormProps) {
               >
                 {isSubmitting ? (
                   <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    <Loader2 className="h-4 w-4 animate-spin" />
                     送信中...
                   </>
                 ) : (
                   <>
-                    <Camera className="h-4 w-4 mr-2" />
+                    <Camera className="h-4 w-4" />
                     撮影リクエストを送信
                   </>
                 )}

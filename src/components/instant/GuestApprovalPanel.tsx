@@ -308,7 +308,7 @@ export function GuestApprovalPanel({
               </>
             ) : (
               <>
-                <XCircle className="h-4 w-4 mr-2" />
+                <XCircle className="h-4 w-4" />
                 拒否する
               </>
             )}
@@ -326,7 +326,7 @@ export function GuestApprovalPanel({
               </>
             ) : (
               <>
-                <CheckCircle className="h-4 w-4 mr-2" />
+                <CheckCircle className="h-4 w-4" />
                 承認する
               </>
             )}

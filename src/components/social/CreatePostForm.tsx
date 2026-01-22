@@ -365,7 +365,7 @@ export function CreatePostForm({
                   onClick={() => fileInputRef.current?.click()}
                   disabled={selectedFiles.length >= 10}
                 >
-                  <Plus className="h-4 w-4 mr-2" />
+                  <Plus className="h-4 w-4" />
                   画像を追加
                 </Button>
               </div>
@@ -512,7 +512,7 @@ export function CreatePostForm({
           >
             {isSubmitting ? (
               <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin" />
                 投稿中...
               </>
             ) : (

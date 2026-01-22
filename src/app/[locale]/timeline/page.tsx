@@ -273,7 +273,7 @@ export default function TimelinePage() {
                     >
                       <DialogTrigger asChild>
                         <Button variant="cta">
-                          <Plus className="h-4 w-4 mr-2" />
+                          <Plus className="h-4 w-4" />
                           投稿作成
                         </Button>
                       </DialogTrigger>
@@ -363,7 +363,7 @@ export default function TimelinePage() {
                     >
                       {isLoading ? (
                         <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          <Loader2 className="h-4 w-4 animate-spin" />
                           読み込み中...
                         </>
                       ) : (
@@ -584,7 +584,7 @@ export default function TimelinePage() {
               </CardHeader>
               <CardContent>
                 <ScrollArea className="h-64">
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     {trendingHashtags.length === 0 ? (
                       <p className="text-sm text-muted-foreground text-center">
                         トレンドデータがありません

@@ -527,7 +527,7 @@ export function QuickPhotobookImageManager({
               onClick={() => window.location.reload()}
               className="hidden md:flex"
             >
-              <RotateCcw className="h-4 w-4 mr-2" />
+              <RotateCcw className="h-4 w-4" />
               更新
             </Button>
           </div>
@@ -541,7 +541,7 @@ export function QuickPhotobookImageManager({
               items={images.map(img => img.id)}
               strategy={verticalListSortingStrategy}
             >
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {images.map((image, index) => (
                   <SortableImageCard
                     key={image.id}

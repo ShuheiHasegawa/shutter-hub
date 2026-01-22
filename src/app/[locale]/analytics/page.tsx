@@ -9,7 +9,6 @@ import { AuthenticatedLayout } from '@/components/layout/authenticated-layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Progress } from '@/components/ui/progress';
 import {
   TrendingUp,
   DollarSign,
@@ -27,6 +26,10 @@ import { createClient } from '@/lib/supabase/client';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { PageTitleHeader } from '@/components/ui/page-title-header';
 import { FormattedPrice } from '@/components/ui/formatted-display';
+import { StatsCard } from '@/components/analytics/StatsCard';
+import { DetailStatsCard } from '@/components/analytics/DetailStatsCard';
+import { LocationStats } from '@/components/analytics/LocationStats';
+import { useTranslations } from 'next-intl';
 
 interface Profile {
   id: string;
@@ -59,6 +62,7 @@ export default function AnalyticsPage() {
   const router = useRouter();
   const params = useParams();
   const locale = params.locale || 'ja';
+  const t = useTranslations('analytics');
   const [profile, setProfile] = useState<Profile | null>(null);
   const [stats, setStats] = useState<UserStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
@@ -334,172 +338,65 @@ export default function AnalyticsPage() {
     <>
       {/* 運営者向け統計 */}
       <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 mb-8">
-        <Card className="hover:shadow-lg transition-all duration-200 border-border/50 bg-card/50 backdrop-blur-sm">
-          <CardContent className="p-3 md:p-4 lg:p-6">
-            <div className="flex flex-col space-y-2">
-              <div className="flex items-center justify-between">
-                <p className="text-xs md:text-sm font-medium text-muted-foreground leading-tight">
-                  総撮影会数
-                </p>
-                <div className="p-1.5 md:p-2 rounded-lg bg-blue-100 flex-shrink-0">
-                  <Camera className="h-3.5 w-3.5 md:h-4 md:w-4 text-blue-600" />
-                </div>
-              </div>
-              <div className="flex flex-col space-y-0.5">
-                <p className="text-lg md:text-xl lg:text-2xl font-bold text-foreground">
-                  {stats.totalSessions}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  今月: {stats.thisMonthSessions}件
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="hover:shadow-lg transition-all duration-200 border-border/50 bg-card/50 backdrop-blur-sm">
-          <CardContent className="p-3 md:p-4 lg:p-6">
-            <div className="flex flex-col space-y-2">
-              <div className="flex items-center justify-between">
-                <p className="text-xs md:text-sm font-medium text-muted-foreground leading-tight">
-                  総収益
-                </p>
-                <div className="p-1.5 md:p-2 rounded-lg bg-emerald-100 flex-shrink-0">
-                  <DollarSign className="h-3.5 w-3.5 md:h-4 md:w-4 text-emerald-600" />
-                </div>
-              </div>
-              <div className="flex flex-col space-y-0.5">
-                <p className="text-lg md:text-xl lg:text-2xl font-bold text-foreground">
-                  <FormattedPrice value={stats.totalEarnings} format="simple" />
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  今月:{' '}
-                  <FormattedPrice
-                    value={stats.thisMonthEarnings}
-                    format="simple"
-                  />
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="hover:shadow-lg transition-all duration-200 border-border/50 bg-card/50 backdrop-blur-sm">
-          <CardContent className="p-3 md:p-4 lg:p-6">
-            <div className="flex flex-col space-y-2">
-              <div className="flex items-center justify-between">
-                <p className="text-xs md:text-sm font-medium text-muted-foreground leading-tight">
-                  平均評価
-                </p>
-                <div className="p-1.5 md:p-2 rounded-lg bg-yellow-100 flex-shrink-0">
-                  <Star className="h-3.5 w-3.5 md:h-4 md:w-4 text-yellow-600" />
-                </div>
-              </div>
-              <div className="flex flex-col space-y-0.5">
-                <div className="flex items-baseline space-x-0.5">
-                  <p className="text-lg md:text-xl lg:text-2xl font-bold text-foreground">
-                    {stats.averageRating.toFixed(1)}
-                  </p>
-                  <span className="text-xs md:text-sm text-muted-foreground">
-                    /5.0
-                  </span>
-                </div>
-                <div className="flex items-center gap-0.5">
-                  {[1, 2, 3, 4, 5].map(star => (
-                    <Star
-                      key={star}
-                      className={`h-2.5 w-2.5 ${
-                        star <= stats.averageRating
-                          ? 'text-yellow-400 fill-current'
-                          : 'text-gray-300'
-                      }`}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="hover:shadow-lg transition-all duration-200 border-border/50 bg-card/50 backdrop-blur-sm">
-          <CardContent className="p-3 md:p-4 lg:p-6">
-            <div className="flex flex-col space-y-2">
-              <div className="flex items-center justify-between">
-                <p className="text-xs md:text-sm font-medium text-muted-foreground leading-tight">
-                  予定撮影会
-                </p>
-                <div className="p-1.5 md:p-2 rounded-lg bg-green-100 flex-shrink-0">
-                  <Calendar className="h-3.5 w-3.5 md:h-4 md:w-4 text-green-600" />
-                </div>
-              </div>
-              <div className="flex flex-col space-y-0.5">
-                <p className="text-lg md:text-xl lg:text-2xl font-bold text-foreground">
-                  {stats.upcomingSessions}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  完了: {stats.completedSessions}件
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <StatsCard
+          label="総撮影会数"
+          value={stats.totalSessions}
+          subValue={`${t('thisMonth')}: ${stats.thisMonthSessions}件`}
+          icon={Camera}
+          iconBgColor="bg-blue-100"
+          iconColor="text-blue-600"
+        />
+        <StatsCard
+          label="総収益"
+          value={stats.totalEarnings}
+          subValue={stats.thisMonthEarnings}
+          subValueLabel={t('thisMonth')}
+          icon={DollarSign}
+          iconBgColor="bg-success/10"
+          iconColor="text-success"
+          showPrice={true}
+        />
+        <StatsCard
+          label="平均評価"
+          value={stats.averageRating}
+          icon={Star}
+          iconBgColor="bg-yellow-100"
+          iconColor="text-yellow-600"
+          showStars={true}
+          rating={stats.averageRating}
+        />
+        <StatsCard
+          label="予定撮影会"
+          value={stats.upcomingSessions}
+          subValue={`${t('completed')}: ${stats.completedSessions}件`}
+          icon={Calendar}
+          iconBgColor="bg-green-100"
+          iconColor="text-green-600"
+        />
       </div>
 
       {/* 運営者向け詳細統計 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>撮影会ステータス</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span>予定</span>
-                <div className="flex items-center gap-2">
-                  <span className="font-bold">{stats.upcomingSessions}</span>
-                  <Progress
-                    value={(stats.upcomingSessions / stats.totalSessions) * 100}
-                    className="w-20"
-                  />
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span>完了</span>
-                <div className="flex items-center gap-2">
-                  <span className="font-bold">{stats.completedSessions}</span>
-                  <Progress
-                    value={
-                      (stats.completedSessions / stats.totalSessions) * 100
-                    }
-                    className="w-20"
-                  />
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>人気エリア</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {stats.popularLocations.map((location, index) => (
-                <div
-                  key={location.location}
-                  className="flex items-center justify-between"
-                >
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline">{index + 1}</Badge>
-                    <span>{location.location}</span>
-                  </div>
-                  <span className="font-bold">{location.count}件</span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <DetailStatsCard
+          title="撮影会ステータス"
+          items={[
+            {
+              label: '予定',
+              value: stats.upcomingSessions,
+              total: stats.totalSessions,
+            },
+            {
+              label: '完了',
+              value: stats.completedSessions,
+              total: stats.totalSessions,
+            },
+          ]}
+        />
+        <LocationStats
+          title="人気エリア"
+          locations={stats.popularLocations}
+          unit="件"
+        />
       </div>
     </>
   );
@@ -508,191 +405,84 @@ export default function AnalyticsPage() {
     <>
       {/* カメラマン向け統計 */}
       <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 mb-8">
-        <Card className="hover:shadow-lg transition-all duration-200 border-border/50 bg-card/50 backdrop-blur-sm">
-          <CardContent className="p-3 md:p-4 lg:p-6">
-            <div className="flex flex-col space-y-2">
-              <div className="flex items-center justify-between">
-                <p className="text-xs md:text-sm font-medium text-muted-foreground leading-tight">
-                  撮影回数
-                </p>
-                <div className="p-1.5 md:p-2 rounded-lg bg-blue-100 flex-shrink-0">
-                  <Camera className="h-3.5 w-3.5 md:h-4 md:w-4 text-blue-600" />
-                </div>
-              </div>
-              <div className="flex flex-col space-y-0.5">
-                <p className="text-lg md:text-xl lg:text-2xl font-bold text-foreground">
-                  {stats.totalSessions}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  今月: {stats.thisMonthSessions}回
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="hover:shadow-lg transition-all duration-200 border-border/50 bg-card/50 backdrop-blur-sm">
-          <CardContent className="p-3 md:p-4 lg:p-6">
-            <div className="flex flex-col space-y-2">
-              <div className="flex items-center justify-between">
-                <p className="text-xs md:text-sm font-medium text-muted-foreground leading-tight">
-                  総収入
-                </p>
-                <div className="p-1.5 md:p-2 rounded-lg bg-emerald-100 flex-shrink-0">
-                  <DollarSign className="h-3.5 w-3.5 md:h-4 md:w-4 text-emerald-600" />
-                </div>
-              </div>
-              <div className="flex flex-col space-y-0.5">
-                <p className="text-lg md:text-xl lg:text-2xl font-bold text-foreground">
-                  <FormattedPrice value={stats.totalEarnings} format="simple" />
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  今月:{' '}
-                  <FormattedPrice
-                    value={stats.thisMonthEarnings}
-                    format="simple"
-                  />
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="hover:shadow-lg transition-all duration-200 border-border/50 bg-card/50 backdrop-blur-sm">
-          <CardContent className="p-3 md:p-4 lg:p-6">
-            <div className="flex flex-col space-y-2">
-              <div className="flex items-center justify-between">
-                <p className="text-xs md:text-sm font-medium text-muted-foreground leading-tight">
-                  顧客評価
-                </p>
-                <div className="p-1.5 md:p-2 rounded-lg bg-yellow-100 flex-shrink-0">
-                  <Star className="h-3.5 w-3.5 md:h-4 md:w-4 text-yellow-600" />
-                </div>
-              </div>
-              <div className="flex flex-col space-y-0.5">
-                <div className="flex items-baseline space-x-0.5">
-                  <p className="text-lg md:text-xl lg:text-2xl font-bold text-foreground">
-                    {stats.averageRating.toFixed(1)}
-                  </p>
-                  <span className="text-xs md:text-sm text-muted-foreground">
-                    /5.0
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {stats.totalReviews}件のレビュー
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="hover:shadow-lg transition-all duration-200 border-border/50 bg-card/50 backdrop-blur-sm">
-          <CardContent className="p-3 md:p-4 lg:p-6">
-            <div className="flex flex-col space-y-2">
-              <div className="flex items-center justify-between">
-                <p className="text-xs md:text-sm font-medium text-muted-foreground leading-tight">
-                  完了率
-                </p>
-                <div className="p-1.5 md:p-2 rounded-lg bg-purple-100 flex-shrink-0">
-                  <Activity className="h-3.5 w-3.5 md:h-4 md:w-4 text-purple-600" />
-                </div>
-              </div>
-              <div className="flex flex-col space-y-0.5">
-                <div className="flex items-baseline space-x-0.5">
-                  <p className="text-lg md:text-xl lg:text-2xl font-bold text-foreground">
-                    {stats.totalSessions > 0
-                      ? Math.round(
-                          (stats.completedSessions / stats.totalSessions) * 100
-                        )
-                      : 0}
-                  </p>
-                  <span className="text-xs md:text-sm text-muted-foreground">
-                    %
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  完了: {stats.completedSessions}件
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <StatsCard
+          label="撮影回数"
+          value={stats.totalSessions}
+          subValue={`${t('thisMonth')}: ${stats.thisMonthSessions}回`}
+          icon={Camera}
+          iconBgColor="bg-blue-100"
+          iconColor="text-blue-600"
+        />
+        <StatsCard
+          label="総収入"
+          value={stats.totalEarnings}
+          subValue={stats.thisMonthEarnings}
+          subValueLabel={t('thisMonth')}
+          icon={DollarSign}
+          iconBgColor="bg-success/10"
+          iconColor="text-success"
+          showPrice={true}
+        />
+        <StatsCard
+          label="顧客評価"
+          value={stats.averageRating}
+          subValue={`${stats.totalReviews}${t('reviews')}`}
+          icon={Star}
+          iconBgColor="bg-yellow-100"
+          iconColor="text-yellow-600"
+          showStars={true}
+          rating={stats.averageRating}
+        />
+        <StatsCard
+          label="完了率"
+          value={
+            stats.totalSessions > 0
+              ? Math.round(
+                  (stats.completedSessions / stats.totalSessions) * 100
+                )
+              : 0
+          }
+          subValue={`${t('completed')}: ${stats.completedSessions}件`}
+          icon={Activity}
+          iconBgColor="bg-purple-100"
+          iconColor="text-purple-600"
+        />
       </div>
 
       {/* カメラマン向け詳細統計 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>撮影パフォーマンス</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span>完了した撮影</span>
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-success">
-                    {stats.completedSessions}
-                  </span>
-                  <Progress
-                    value={
-                      (stats.completedSessions / stats.totalSessions) * 100
-                    }
-                    className="w-20"
-                  />
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span>キャンセル</span>
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-error">
-                    {stats.cancelledSessions}
-                  </span>
-                  <Progress
-                    value={
-                      (stats.cancelledSessions / stats.totalSessions) * 100
-                    }
-                    className="w-20"
-                  />
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span>平均収入/回</span>
-                <span className="font-bold">
-                  <FormattedPrice
-                    value={
-                      stats.totalSessions > 0
-                        ? Math.round(stats.totalEarnings / stats.totalSessions)
-                        : 0
-                    }
-                    format="simple"
-                  />
-                </span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>活動エリア</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {stats.popularLocations.map(location => (
-                <div
-                  key={location.location}
-                  className="flex items-center justify-between"
-                >
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-muted-foreground" />
-                    <span>{location.location}</span>
-                  </div>
-                  <span className="font-bold">{location.count}回</span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <DetailStatsCard
+          title="撮影パフォーマンス"
+          items={[
+            {
+              label: '完了した撮影',
+              value: stats.completedSessions,
+              total: stats.totalSessions,
+              color: 'success',
+            },
+            {
+              label: 'キャンセル',
+              value: stats.cancelledSessions,
+              total: stats.totalSessions,
+              color: 'error',
+            },
+            {
+              label: '平均収入/回',
+              value:
+                stats.totalSessions > 0
+                  ? Math.round(stats.totalEarnings / stats.totalSessions)
+                  : 0,
+              total: stats.totalSessions,
+              showPrice: true,
+            },
+          ]}
+        />
+        <LocationStats
+          title="活動エリア"
+          locations={stats.popularLocations}
+          icon={MapPin}
+          unit="回"
+        />
       </div>
     </>
   );
@@ -701,193 +491,78 @@ export default function AnalyticsPage() {
     <>
       {/* モデル向け統計 */}
       <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 mb-8">
-        <Card className="hover:shadow-lg transition-all duration-200 border-border/50 bg-card/50 backdrop-blur-sm">
-          <CardContent className="p-3 md:p-4 lg:p-6">
-            <div className="flex flex-col space-y-2">
-              <div className="flex items-center justify-between">
-                <p className="text-xs md:text-sm font-medium text-muted-foreground leading-tight">
-                  参加撮影会
-                </p>
-                <div className="p-1.5 md:p-2 rounded-lg bg-blue-100 flex-shrink-0">
-                  <Camera className="h-3.5 w-3.5 md:h-4 md:w-4 text-blue-600" />
-                </div>
-              </div>
-              <div className="flex flex-col space-y-0.5">
-                <p className="text-lg md:text-xl lg:text-2xl font-bold text-foreground">
-                  {stats.totalSessions}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  今月: {stats.thisMonthSessions}回
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="hover:shadow-lg transition-all duration-200 border-border/50 bg-card/50 backdrop-blur-sm">
-          <CardContent className="p-3 md:p-4 lg:p-6">
-            <div className="flex flex-col space-y-2">
-              <div className="flex items-center justify-between">
-                <p className="text-xs md:text-sm font-medium text-muted-foreground leading-tight">
-                  評価
-                </p>
-                <div className="p-1.5 md:p-2 rounded-lg bg-yellow-100 flex-shrink-0">
-                  <Star className="h-3.5 w-3.5 md:h-4 md:w-4 text-yellow-600" />
-                </div>
-              </div>
-              <div className="flex flex-col space-y-0.5">
-                <div className="flex items-baseline space-x-0.5">
-                  <p className="text-lg md:text-xl lg:text-2xl font-bold text-foreground">
-                    {stats.averageRating.toFixed(1)}
-                  </p>
-                  <span className="text-xs md:text-sm text-muted-foreground">
-                    /5.0
-                  </span>
-                </div>
-                <div className="flex items-center gap-0.5">
-                  {[1, 2, 3, 4, 5].map(star => (
-                    <Star
-                      key={star}
-                      className={`h-2.5 w-2.5 ${
-                        star <= stats.averageRating
-                          ? 'text-yellow-400 fill-current'
-                          : 'text-gray-300'
-                      }`}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="hover:shadow-lg transition-all duration-200 border-border/50 bg-card/50 backdrop-blur-sm">
-          <CardContent className="p-3 md:p-4 lg:p-6">
-            <div className="flex flex-col space-y-2">
-              <div className="flex items-center justify-between">
-                <p className="text-xs md:text-sm font-medium text-muted-foreground leading-tight">
-                  予定撮影会
-                </p>
-                <div className="p-1.5 md:p-2 rounded-lg bg-green-100 flex-shrink-0">
-                  <Calendar className="h-3.5 w-3.5 md:h-4 md:w-4 text-green-600" />
-                </div>
-              </div>
-              <div className="flex flex-col space-y-0.5">
-                <p className="text-lg md:text-xl lg:text-2xl font-bold text-foreground">
-                  {stats.upcomingSessions}
-                </p>
-                <p className="text-xs text-muted-foreground">今後の参加予定</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="hover:shadow-lg transition-all duration-200 border-border/50 bg-card/50 backdrop-blur-sm">
-          <CardContent className="p-3 md:p-4 lg:p-6">
-            <div className="flex flex-col space-y-2">
-              <div className="flex items-center justify-between">
-                <p className="text-xs md:text-sm font-medium text-muted-foreground leading-tight">
-                  完了率
-                </p>
-                <div className="p-1.5 md:p-2 rounded-lg bg-purple-100 flex-shrink-0">
-                  <Award className="h-3.5 w-3.5 md:h-4 md:w-4 text-purple-600" />
-                </div>
-              </div>
-              <div className="flex flex-col space-y-0.5">
-                <div className="flex items-baseline space-x-0.5">
-                  <p className="text-lg md:text-xl lg:text-2xl font-bold text-foreground">
-                    {stats.totalSessions > 0
-                      ? Math.round(
-                          (stats.completedSessions / stats.totalSessions) * 100
-                        )
-                      : 0}
-                  </p>
-                  <span className="text-xs md:text-sm text-muted-foreground">
-                    %
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  完了: {stats.completedSessions}回
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <StatsCard
+          label="参加撮影会"
+          value={stats.totalSessions}
+          subValue={`${t('thisMonth')}: ${stats.thisMonthSessions}回`}
+          icon={Camera}
+          iconBgColor="bg-blue-100"
+          iconColor="text-blue-600"
+        />
+        <StatsCard
+          label="評価"
+          value={stats.averageRating}
+          icon={Star}
+          iconBgColor="bg-yellow-100"
+          iconColor="text-yellow-600"
+          showStars={true}
+          rating={stats.averageRating}
+        />
+        <StatsCard
+          label="予定撮影会"
+          value={stats.upcomingSessions}
+          subValue="今後の参加予定"
+          icon={Calendar}
+          iconBgColor="bg-green-100"
+          iconColor="text-green-600"
+        />
+        <StatsCard
+          label="完了率"
+          value={
+            stats.totalSessions > 0
+              ? Math.round(
+                  (stats.completedSessions / stats.totalSessions) * 100
+                )
+              : 0
+          }
+          subValue={`${t('completed')}: ${stats.completedSessions}回`}
+          icon={Award}
+          iconBgColor="bg-purple-100"
+          iconColor="text-purple-600"
+        />
       </div>
 
       {/* モデル向け詳細統計 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>撮影会参加状況</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span>予定</span>
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-info">
-                    {stats.upcomingSessions}
-                  </span>
-                  <Progress
-                    value={(stats.upcomingSessions / stats.totalSessions) * 100}
-                    className="w-20"
-                  />
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span>完了</span>
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-success">
-                    {stats.completedSessions}
-                  </span>
-                  <Progress
-                    value={
-                      (stats.completedSessions / stats.totalSessions) * 100
-                    }
-                    className="w-20"
-                  />
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span>キャンセル</span>
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-error">
-                    {stats.cancelledSessions}
-                  </span>
-                  <Progress
-                    value={
-                      (stats.cancelledSessions / stats.totalSessions) * 100
-                    }
-                    className="w-20"
-                  />
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>活動エリア</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {stats.popularLocations.map(location => (
-                <div
-                  key={location.location}
-                  className="flex items-center justify-between"
-                >
-                  <div className="flex items-center gap-2">
-                    <Heart className="h-4 w-4 text-pink-500" />
-                    <span>{location.location}</span>
-                  </div>
-                  <span className="font-bold">{location.count}回</span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <DetailStatsCard
+          title="撮影会参加状況"
+          items={[
+            {
+              label: '予定',
+              value: stats.upcomingSessions,
+              total: stats.totalSessions,
+              color: 'info',
+            },
+            {
+              label: '完了',
+              value: stats.completedSessions,
+              total: stats.totalSessions,
+              color: 'success',
+            },
+            {
+              label: 'キャンセル',
+              value: stats.cancelledSessions,
+              total: stats.totalSessions,
+              color: 'error',
+            },
+          ]}
+        />
+        <LocationStats
+          title="活動エリア"
+          locations={stats.popularLocations}
+          icon={Heart}
+          unit="回"
+        />
       </div>
     </>
   );

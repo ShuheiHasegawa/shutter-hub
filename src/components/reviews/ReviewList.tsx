@@ -242,7 +242,7 @@ export function ReviewList({
     if (detailedRatings.length === 0) return null;
 
     return (
-      <div className="space-y-3">
+      <div className="space-y-4">
         <h4 className="text-sm font-medium">{t('display.detailedRatings')}</h4>
         <div className="space-y-2">
           {detailedRatings.map(({ label, value }) => {

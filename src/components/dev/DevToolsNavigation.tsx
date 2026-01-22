@@ -26,7 +26,7 @@ export function DevToolsNavigation({ className }: DevToolsNavigationProps) {
           <div className="flex items-center gap-4">
             <Link href="/ja">
               <Button variant="ghost" size="sm">
-                <Home className="h-4 w-4 mr-2" />
+                <Home className="h-4 w-4" />
                 ホーム
               </Button>
             </Link>
@@ -34,7 +34,7 @@ export function DevToolsNavigation({ className }: DevToolsNavigationProps) {
             {!isDevToolsRoot && (
               <Link href="/ja/dev">
                 <Button variant="ghost" size="sm">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  <ArrowLeft className="h-4 w-4" />
                   開発ツール一覧
                 </Button>
               </Link>

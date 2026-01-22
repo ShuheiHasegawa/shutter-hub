@@ -522,7 +522,7 @@ export function PhotographerInstantDashboard({
                             }
                             className="flex-1"
                           >
-                            <XCircle className="h-4 w-4 mr-2" />
+                            <XCircle className="h-4 w-4" />
                             辞退する
                           </Button>
                           <Button
@@ -532,7 +532,7 @@ export function PhotographerInstantDashboard({
                             className="flex-1"
                             variant="cta"
                           >
-                            <CheckCircle className="h-4 w-4 mr-2" />
+                            <CheckCircle className="h-4 w-4" />
                             受諾する
                           </Button>
                         </div>
@@ -554,7 +554,7 @@ export function PhotographerInstantDashboard({
                             className="w-full"
                             variant="cta"
                           >
-                            <Camera className="h-4 w-4 mr-2" />
+                            <Camera className="h-4 w-4" />
                             撮影開始
                           </Button>
                         )}
@@ -565,7 +565,7 @@ export function PhotographerInstantDashboard({
                             onClick={() => handleMarkCompleted(request.id)}
                             className="w-full bg-green-600 hover:bg-green-700"
                           >
-                            <CheckCircle className="h-4 w-4 mr-2" />
+                            <CheckCircle className="h-4 w-4" />
                             撮影完了
                           </Button>
                         )}
@@ -591,7 +591,7 @@ export function PhotographerInstantDashboard({
                               }
                               className="w-full"
                             >
-                              <Upload className="h-4 w-4 mr-2" />
+                              <Upload className="h-4 w-4" />
                               写真配信
                               <ArrowRight className="h-4 w-4 ml-2" />
                             </Button>
@@ -636,7 +636,7 @@ export function PhotographerInstantDashboard({
                               variant="outline"
                               className="w-full"
                             >
-                              <Upload className="h-4 w-4 mr-2" />
+                              <Upload className="h-4 w-4" />
                               再配信（上書き）
                             </Button>
                           </div>
