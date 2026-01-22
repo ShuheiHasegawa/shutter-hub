@@ -132,7 +132,7 @@ export function StudioCreateForm({ onSuccess }: StudioCreateFormProps) {
 
   // 一時IDを生成（コンポーネントマウント時に一度だけ生成）
   const tempId = useMemo(
-    () => `temp_${Date.now()}_${Math.random().toString(36).substring(7)}`,
+    () => `temp_${Date.now()}_${crypto.randomUUID().split('-')[0]}`,
     []
   );
 

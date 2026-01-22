@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { StudioGridCard } from './StudioGridCard';
 import { StudioHorizontalCard } from './StudioHorizontalCard';
@@ -64,65 +64,86 @@ export function StudiosList({
     enabled: studios.length > 0,
   });
 
-  const fetchStudios = async (page: number = 1, append: boolean = false) => {
-    if (isLoadingRef.current) return;
-    isLoadingRef.current = true;
+  // 結果を処理するヘルパー関数
+  const processStudiosResult = useCallback(
+    (
+      result: {
+        success: boolean;
+        studios?: StudioWithStats[];
+        totalCount?: number;
+        error?: string;
+      },
+      append: boolean,
+      currentStudios: StudioWithStats[]
+    ) => {
+      if (!result.success || !result.studios) {
+        return {
+          studios: currentStudios,
+          hasMore: false,
+          error: result.error || t('fetchError'),
+        };
+      }
 
-    try {
+      const newStudios = result.studios;
+      let updatedStudios: StudioWithStats[];
+
       if (append) {
-        setLoadingMore(true);
+        const existingIds = new Set(currentStudios.map(s => s.id));
+        const uniqueNewStudios = newStudios.filter(s => !existingIds.has(s.id));
+        updatedStudios = [...currentStudios, ...uniqueNewStudios];
       } else {
-        setLoading(true);
+        updatedStudios = newStudios;
       }
-      setError(null);
 
-      const searchFilters = {
-        ...filters,
-        page,
-        limit,
-      };
+      const totalItems = result.totalCount || result.studios.length;
+      const currentItems = updatedStudios.length;
+      const hasMore =
+        append && result.studios.length === 0
+          ? false
+          : currentItems < totalItems;
 
-      const result = await getStudiosAction(searchFilters);
+      return { studios: updatedStudios, hasMore, error: null };
+    },
+    [t]
+  );
 
-      if (result.success && result.studios) {
-        const newStudios = result.studios;
+  const fetchStudios = useCallback(
+    async (page: number = 1, append: boolean = false) => {
+      if (isLoadingRef.current) return;
+      isLoadingRef.current = true;
 
+      try {
         if (append) {
-          setStudios(prev => {
-            const existingIds = new Set(prev.map(s => s.id));
-            const uniqueNewStudios = newStudios.filter(
-              s => !existingIds.has(s.id)
-            );
-            return [...prev, ...uniqueNewStudios];
-          });
+          setLoadingMore(true);
         } else {
-          setStudios(newStudios);
+          setLoading(true);
         }
+        setError(null);
 
-        // お気に入り状態はuseFavoriteStatesフックで自動取得されるため、ここでは削除
+        const searchFilters = {
+          ...filters,
+          page,
+          limit,
+        };
 
-        const totalItems = result.totalCount || result.studios.length;
-        const currentItems = append
-          ? studios.length + result.studios.length
-          : result.studios.length;
+        const result = await getStudiosAction(searchFilters);
+        const processed = processStudiosResult(result, append, studios);
 
-        // 空配列が返された場合は強制的にhasMore = false
-        if (append && result.studios.length === 0) {
-          setHasMore(false);
-        } else {
-          setHasMore(currentItems < totalItems);
+        setStudios(processed.studios);
+        setHasMore(processed.hasMore);
+        if (processed.error) {
+          setError(processed.error);
         }
-      } else {
-        setError(result.error || t('fetchError'));
+      } catch {
+        setError(t('fetchErrorUnexpected'));
+      } finally {
+        setLoading(false);
+        setLoadingMore(false);
+        isLoadingRef.current = false;
       }
-    } catch {
-      setError(t('fetchErrorUnexpected'));
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
-      isLoadingRef.current = false;
-    }
-  };
+    },
+    [filters, limit, studios, processStudiosResult, t]
+  );
 
   // 検索実行フラグがtrueの時のみ取得
   useEffect(() => {
@@ -130,8 +151,7 @@ export function StudiosList({
       setCurrentPage(1);
       fetchStudios(1, false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [triggerSearch, filters]);
+  }, [triggerSearch, filters, fetchStudios]);
 
   // 無限スクロール用のIntersection Observer設定
   useEffect(() => {
@@ -178,7 +198,7 @@ export function StudiosList({
         observerRef.current.disconnect();
       }
     };
-  }, [hasMore, loadingMore, studios.length, currentPage]);
+  }, [hasMore, loadingMore, studios.length, currentPage, fetchStudios]);
 
   const isSelected = (studioId: string) => {
     return selectedStudioIds.includes(studioId);

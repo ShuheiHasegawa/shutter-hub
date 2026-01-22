@@ -21,6 +21,56 @@ import { normalizePrefecture } from '@/lib/utils/prefecture';
 // =============================================================================
 
 /**
+ * フィルタリングを適用するヘルパー関数
+ */
+function applyStudioFilters(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  query: any,
+  filters: StudioSearchFilters
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): any {
+  if (filters.query) {
+    query = query.or(
+      `name.ilike.%${filters.query}%,address.ilike.%${filters.query}%`
+    );
+  }
+
+  if (filters.prefecture && filters.prefecture !== 'all') {
+    query = query.eq('prefecture', filters.prefecture);
+  }
+
+  if (filters.city) {
+    query = query.eq('city', filters.city);
+  }
+
+  if (filters.min_capacity) {
+    query = query.gte('max_capacity', filters.min_capacity);
+  }
+
+  if (filters.max_capacity) {
+    query = query.lte('max_capacity', filters.max_capacity);
+  }
+
+  if (filters.min_hourly_rate) {
+    query = query.gte('hourly_rate_min', filters.min_hourly_rate);
+  }
+
+  if (filters.max_hourly_rate) {
+    query = query.lte('hourly_rate_max', filters.max_hourly_rate);
+  }
+
+  if (filters.parking_available !== undefined) {
+    query = query.eq('parking_available', filters.parking_available);
+  }
+
+  if (filters.wifi_available !== undefined) {
+    query = query.eq('wifi_available', filters.wifi_available);
+  }
+
+  return query;
+}
+
+/**
  * スタジオ一覧を取得する
  */
 export async function getStudiosAction(
@@ -55,43 +105,7 @@ export async function getStudiosAction(
       .in('verification_status', ['verified', 'pending']);
 
     // フィルタリング
-    if (filters.query) {
-      query = query.or(
-        `name.ilike.%${filters.query}%,address.ilike.%${filters.query}%`
-      );
-    }
-
-    if (filters.prefecture && filters.prefecture !== 'all') {
-      query = query.eq('prefecture', filters.prefecture);
-    }
-
-    if (filters.city) {
-      query = query.eq('city', filters.city);
-    }
-
-    if (filters.min_capacity) {
-      query = query.gte('max_capacity', filters.min_capacity);
-    }
-
-    if (filters.max_capacity) {
-      query = query.lte('max_capacity', filters.max_capacity);
-    }
-
-    if (filters.min_hourly_rate) {
-      query = query.gte('hourly_rate_min', filters.min_hourly_rate);
-    }
-
-    if (filters.max_hourly_rate) {
-      query = query.lte('hourly_rate_max', filters.max_hourly_rate);
-    }
-
-    if (filters.parking_available !== undefined) {
-      query = query.eq('parking_available', filters.parking_available);
-    }
-
-    if (filters.wifi_available !== undefined) {
-      query = query.eq('wifi_available', filters.wifi_available);
-    }
+    query = applyStudioFilters(query, filters);
 
     // ソート（デフォルトはcreated_at desc）
     if (filters.sort_by) {
@@ -103,49 +117,13 @@ export async function getStudiosAction(
 
     // ページネーション適用前に総件数を取得
     // リレーションを含むクエリではcountが取得できないため、シンプルなクエリで総件数を取得
-    const countQuery = supabase
+    let countQuery = supabase
       .from('studios')
       .select('*', { count: 'exact', head: true })
       .in('verification_status', ['verified', 'pending']);
 
     // フィルタリング（総件数取得用）
-    if (filters.query) {
-      countQuery.or(
-        `name.ilike.%${filters.query}%,address.ilike.%${filters.query}%`
-      );
-    }
-
-    if (filters.prefecture && filters.prefecture !== 'all') {
-      countQuery.eq('prefecture', filters.prefecture);
-    }
-
-    if (filters.city) {
-      countQuery.eq('city', filters.city);
-    }
-
-    if (filters.min_capacity) {
-      countQuery.gte('max_capacity', filters.min_capacity);
-    }
-
-    if (filters.max_capacity) {
-      countQuery.lte('max_capacity', filters.max_capacity);
-    }
-
-    if (filters.min_hourly_rate) {
-      countQuery.gte('hourly_rate_min', filters.min_hourly_rate);
-    }
-
-    if (filters.max_hourly_rate) {
-      countQuery.lte('hourly_rate_max', filters.max_hourly_rate);
-    }
-
-    if (filters.parking_available !== undefined) {
-      countQuery.eq('parking_available', filters.parking_available);
-    }
-
-    if (filters.wifi_available !== undefined) {
-      countQuery.eq('wifi_available', filters.wifi_available);
-    }
+    countQuery = applyStudioFilters(countQuery, filters);
 
     const { count: totalCount } = await countQuery;
 
