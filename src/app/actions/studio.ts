@@ -22,6 +22,15 @@ import { normalizePrefecture } from '@/lib/utils/prefecture';
 
 /**
  * フィルタリングを適用するヘルパー関数
+ *
+ * 注意: Supabaseクエリビルダーの型（PostgrestFilterBuilder）は非常に複雑で、
+ * 簡略化した型定義では対応できないため、any型を使用しています。
+ * この関数は以下のメソッドをサポートします:
+ * - eq, gte, lte: フィルタリング
+ * - or: OR条件
+ * - in: IN条件
+ * - order: ソート（呼び出し側で使用）
+ * - range: ページネーション（呼び出し側で使用）
  */
 function applyStudioFilters(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

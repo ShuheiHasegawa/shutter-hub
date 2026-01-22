@@ -1,23 +1,77 @@
+Skip to content
+ShuheiHasegawa
+shutter-hub
+Repository navigation
+Code
+Issues
+1
+ (1)
+Pull requests
+1
+ (1)
+Zenhub
+Actions
+Projects
+Wiki
+Security
+53
+ (53)
+Insights
+Settings
+refactor: StudioImageUploadコンポーネントの統一実装 #28
+ Open
+ShuheiHasegawa wants to merge 3 commits into main from refactor/27-studio-image-upload-unification  
++5,962 −715 
+ Conversation 20
+ Commits 3
+ Checks 2
+ Files changed 32
+Conversation
+@ShuheiHasegawa
+Owner
+ShuheiHasegawa
+commented
+1 hour ago
+• 
+Closes #27
+
+作成モードと編集モードの両方に対応する単一コンポーネントにリファクタリング
+コード重複を排除し保守性を向上
+Summary by CodeRabbit
+New Features
+
+Sign-in can return you to the original page after authentication
+Redesigned studio detail page with larger gallery, equipment badges, contact links, and refined tabs
+Infinite scrolling on studio lists
+Drag-and-drop image upload with live preview, reorder and main-image handling
+Richer booking slot cards and clearer booking error messages
+Scroll-to-top navigation label/button
+UI Improvements
+
+Bottom navigation active state refined with underline indicator
+Documentation
+
+Extensive new guides for E2E testing, test strategy, site pages, UI components, and image management
+✏️ Tip: You can customize this high-level summary in your review settings.
+
+@ShuheiHasegawa
+refactor: StudioImageUploadコンポーネントの統一実装 
+a9e2f00
+@ShuheiHasegawa ShuheiHasegawa self-assigned this 1 hour ago
+@vercel
+vercel bot
+commented
+1 hour ago
+• 
+The latest updates on your projects. Learn more about Vercel for GitHub.
+
+Project	Deployment	Review	Updated (UTC)
+shutter-hub	Ready Ready	Preview, Comment	Jan 22, 2026 0:52am
+@coderabbitai
 coderabbitai bot
 commented
-44 minutes ago
+1 hour ago
 • 
-Note
-
-Currently processing new changes in this PR. This may take a few minutes, please wait...
-
- _______________________________________________
-< Finding your faults 10 times faster than Mom. >
- -----------------------------------------------
-  \
-   \   (\__/)
-       (•ㅅ•)
-       / 　 づ
-✏️ Tip: You can disable in-progress messages and the fortune message in your review settings.
-
-Tip
-
-You can customize the tone of the review comments and chat replies.
 Warning
 
 .coderabbit.yaml has a parsing error
@@ -33,20 +87,9 @@ Thanks for using CodeRabbit! It's free for OSS, and your support helps us grow. 
 ❤️ Share
 Comment @coderabbitai help to get the list of available commands and usage tips.
 
-@sonarqubecloud
-sonarqubecloud bot
-commented
-43 minutes ago
-Quality Gate Failed Quality Gate failed
-Failed conditions
- 1 Security Hotspot
- 16.2% Duplication on New Code (required ≤ 3%)
-
-See analysis details on SonarQube Cloud
-
-@vercel vercel bot deployed to Preview 42 minutes ago
+@vercel vercel bot deployed to Preview 1 hour ago
 coderabbitai[bot]
-coderabbitai bot reviewed 38 minutes ago
+coderabbitai bot reviewed 1 hour ago
 coderabbitai bot
 left a comment
 Actionable comments posted: 14
@@ -64,7 +107,7 @@ Comment on lines +44 to +45
 
 @coderabbitai
 coderabbitai bot
-38 minutes ago
+1 hour ago
 ⚠️ Potential issue | 🟡 Minor
 
 Bare URL should be formatted as a markdown link.
@@ -188,7 +231,7 @@ async function seedStudios() {
 }
 @coderabbitai
 coderabbitai bot
-38 minutes ago
+1 hour ago
 🛠️ Refactor suggestion | 🟠 Major
 
 Significant code duplication with seed.ts.
@@ -208,7 +251,7 @@ Comment on lines +99 to +102
       const lngOffset = (index % 1000) * 0.0001;
 @coderabbitai
 coderabbitai bot
-38 minutes ago
+1 hour ago
 ⚠️ Potential issue | 🟠 Major
 
 Same location offset bug as in seed.ts.
@@ -229,7 +272,7 @@ Comment on lines +816 to +821
         website_url: `https://${studioName.toLowerCase().replace(/\s+/g, '')}.com`,
 @coderabbitai
 coderabbitai bot
-38 minutes ago
+1 hour ago
 ⚠️ Potential issue | 🟡 Minor
 
 Generated email addresses may be invalid.
@@ -256,7 +299,7 @@ function escapeSqlString(str: string | undefined | null): string {
 }
 @coderabbitai
 coderabbitai bot
-38 minutes ago
+1 hour ago
 ⚠️ Potential issue | 🟡 Minor
 
 Hardcoded user ID may cause foreign key constraint failures.
@@ -273,52 +316,7 @@ Using a placeholder that can be replaced at execution time
 4 hidden conversations
 Load more…
 src/app/[locale]/users/search/page.tsx
-Comment on lines +145 to +150
-        <PageTitleHeader
-          title="ユーザー検索"
-          description="フォロワーやフォロー中のユーザーと新しい会話を開始します"
-          icon={<Users className="h-5 w-5" />}
-          backButton={{ href: '/messages', variant: 'outline' }}
-        />
-@coderabbitai
-coderabbitai bot
-38 minutes ago
-⚠️ Potential issue | 🟠 Major
-
-PageTitleHeader の文言は next-intl の翻訳キーに置き換えてください。
-
-Line 146-147 の日本語ハードコードは src/app/**/* の多言語化ルールに抵触します。
-
-♻️ 修正案
-As per coding guidelines, all user-facing text in `src/app/**/*` must use next-intl translation keys.
-🤖 Prompt for AI Agents
-@ShuheiHasegawa	Reply...
 src/components/layout/bottom-navigation.tsx
-Comment on lines +320 to +329
-                'flex flex-col items-center justify-center gap-0.5 transition-colors min-w-0 relative',
-                isActive
-                  ? 'text-shutter-primary'
-                  ? 'text-surface-accent'
-                  : 'text-muted-foreground hover:text-foreground'
-              )}
-            >
-              {/* アクティブ時の下部下線 */}
-              {isActive && (
-                <div className="absolute bottom-0 left-1/4 -translate-x-1/4 w-1/2 h-0.5 surface-accent" />
-              )}
-@coderabbitai
-coderabbitai bot
-38 minutes ago
-⚠️ Potential issue | 🟡 Minor
-
-Fix underline color class so the active indicator actually renders.
-
-Line 328 uses surface-accent without a Tailwind prefix, so the underline may be invisible if your token expects bg-surface-accent.
-
-🔧 Proposed fix
-📝 Committable suggestion
-🤖 Prompt for AI Agents
-@ShuheiHasegawa	Reply...
 src/components/studio/StudiosList.tsx
 Outdated
 Comment on lines 68 to 76
@@ -334,7 +332,7 @@ Comment on lines 68 to 76
       }
 @coderabbitai
 coderabbitai bot
-38 minutes ago
+1 hour ago
 ⚠️ Potential issue | 🟠 Major
 
 Guard can drop user‑initiated searches.
@@ -344,27 +342,6 @@ If a user triggers a new search while a load-more is in flight, isLoadingRef cau
 🤖 Prompt for AI Agents
 @ShuheiHasegawa	Reply...
 src/components/studio/StudiosList.tsx
-Comment on lines +350 to +358
-      {/* リフレッシュ中のインジケーター */}
-      {loading && studios.length > 0 && (
-        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50">
-          <div className="bg-surface-primary text-surface-primary-text px-4 py-2 rounded-full shadow-lg flex items-center gap-2">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            <span className="text-sm">更新中...</span>
-          </div>
-        </div>
-      )}
-@coderabbitai
-coderabbitai bot
-38 minutes ago
-⚠️ Potential issue | 🟡 Minor
-
-Localize the refresh label.
-The “更新中...” string bypasses next-intl. Please route it through t(...) to keep i18n consistent.
-
-🌐 Suggested i18n adjustment
-🤖 Prompt for AI Agents
-@ShuheiHasegawa	Reply...
 src/lib/storage/studio-images.ts
 Comment on lines +174 to +184
     // URLからパスを抽出
@@ -380,7 +357,7 @@ Comment on lines +174 to +184
       .download(tempPath);
 @coderabbitai
 coderabbitai bot
-38 minutes ago
+1 hour ago
 ⚠️ Potential issue | 🟠 Major
 
 Path extraction logic may be fragile and incorrect.
@@ -391,3 +368,175 @@ Proposed fix
 📝 Committable suggestion
 🤖 Prompt for AI Agents
 @ShuheiHasegawa	Reply...
+@ShuheiHasegawa
+fix: SonarQube指摘事項の修正
+2fc3d10
+@vercel vercel bot deployed to Preview 42 minutes ago
+coderabbitai[bot]
+coderabbitai bot reviewed 34 minutes ago
+coderabbitai bot
+left a comment
+Actionable comments posted: 1
+
+🤖 Fix all issues with AI agents
+♻️ Duplicate comments (2)
+src/app/actions/studio.ts
+Comment on lines +23 to +71
+/**
+ * フィルタリングを適用するヘルパー関数
+ */
+function applyStudioFilters(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  query: any,
+  filters: StudioSearchFilters
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): any {
+  if (filters.query) {
+    query = query.or(
+      `name.ilike.%${filters.query}%,address.ilike.%${filters.query}%`
+    );
+  }
+
+  if (filters.prefecture && filters.prefecture !== 'all') {
+    query = query.eq('prefecture', filters.prefecture);
+  }
+
+  if (filters.city) {
+    query = query.eq('city', filters.city);
+  }
+
+  if (filters.min_capacity) {
+    query = query.gte('max_capacity', filters.min_capacity);
+  }
+
+  if (filters.max_capacity) {
+    query = query.lte('max_capacity', filters.max_capacity);
+  }
+
+  if (filters.min_hourly_rate) {
+    query = query.gte('hourly_rate_min', filters.min_hourly_rate);
+  }
+
+  if (filters.max_hourly_rate) {
+    query = query.lte('hourly_rate_max', filters.max_hourly_rate);
+  }
+
+  if (filters.parking_available !== undefined) {
+    query = query.eq('parking_available', filters.parking_available);
+  }
+
+  if (filters.wifi_available !== undefined) {
+    query = query.eq('wifi_available', filters.wifi_available);
+  }
+
+  return query;
+}
+@coderabbitai
+coderabbitai bot
+34 minutes ago
+⚠️ Potential issue | 🟠 Major
+
+🧩 Analysis chain
+Expand the FilterableQuery interface to include all chained methods.
+
+The proposed generic approach is correct, but FilterableQuery must include .in() and .order() which are used in getStudiosAction (lines 30, 38, 51). Without these, the refactored function will fail type checking.
+
+🔧 Complete type-safe helper
+📝 Committable suggestion
+🤖 Prompt for AI Agents
+@ShuheiHasegawa	Reply...
+@ShuheiHasegawa
+fix: CodeRabbitレビュー指摘事項の修正 
+9caa783
+@sonarqubecloud
+sonarqubecloud bot
+commented
+11 minutes ago
+Quality Gate Failed Quality Gate failed
+Failed conditions
+ 15.8% Duplication on New Code (required ≤ 3%)
+
+See analysis details on SonarQube Cloud
+
+@vercel vercel bot deployed to Preview 9 minutes ago
+coderabbitai[bot]
+coderabbitai bot reviewed 3 minutes ago
+coderabbitai bot
+left a comment
+Actionable comments posted: 0
+
+Caution
+
+Some comments are outside the diff and can’t be posted inline due to platform limitations.
+
+⚠️ Outside diff range comments (7)
+♻️ Duplicate comments (1)
+🧹 Nitpick comments (2)
+This branch was successfully deployed
+1 active deployment
+Merge info
+Some checks were not successful
+1 failing, 3 successful checks
+
+
+failing checks
+SonarCloud Code Analysis
+SonarCloud Code AnalysisFailing after 1m — Quality Gate failed
+successful checks
+CodeRabbit
+CodeRabbit — Review completed
+Vercel
+Vercel — Deployment has completed
+Vercel Preview Comments
+Vercel Preview Comments — ✅ No unresolved feedback
+No conflicts with base branch
+Merging can be performed automatically.
+
+You can also merge this with the command line. 
+Still in progress?
+@ShuheiHasegawa
+
+
+Add a comment
+Comment
+ 
+Add your comment here...
+ 
+Remember, contributions to this repository should follow our GitHub Community Guidelines.
+ ProTip! Add .patch or .diff to the end of URLs for Git’s plaintext views.
+Reviewers
+@coderabbitai
+coderabbitai[bot]
+Still in progress?
+Assignees
+@ShuheiHasegawa
+ShuheiHasegawa
+Labels
+None yet
+Projects
+None yet
+Milestone
+No milestone
+Development
+Successfully merging this pull request may close these issues.
+
+ [Refactor] StudioImageUploadコンポーネントの統一実装
+
+Notifications
+Customize
+You’re receiving notifications because you authored the thread.
+1 participant
+@ShuheiHasegawa
+Footer
+© 2026 GitHub, Inc.
+Footer navigation
+Terms
+Privacy
+Security
+Status
+Community
+Docs
+Contact
+Manage cookies
+Do not share my personal information
+Sign in now to use Zenhub
