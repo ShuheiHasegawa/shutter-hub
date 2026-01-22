@@ -108,7 +108,8 @@ export function StudioSelectCombobox({
               {studios.map(studio => (
                 <CommandItem
                   key={studio.id}
-                  value={studio.name}
+                  value={studio.id}
+                  keywords={[studio.name]}
                   onSelect={() => {
                     onSelect(studio.id === value ? null : studio.id);
                     setOpen(false);

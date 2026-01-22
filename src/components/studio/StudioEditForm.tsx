@@ -223,11 +223,12 @@ export function StudioEditForm({
             </CardHeader>
             <CardContent>
               <StudioImageUpload
+                mode="edit"
                 studioId={studio.id}
                 initialPhotos={photos}
+                onPhotosChange={setPhotos}
                 maxImages={10}
                 disabled={isSubmitting}
-                onPhotosChange={setPhotos}
               />
             </CardContent>
           </Card>

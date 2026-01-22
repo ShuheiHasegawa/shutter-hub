@@ -52,8 +52,7 @@ export async function getStudiosAction(
         )
       `
       )
-      .in('verification_status', ['verified', 'pending'])
-      .order('created_at', { ascending: false });
+      .in('verification_status', ['verified', 'pending']);
 
     // フィルタリング
     if (filters.query) {
@@ -94,11 +93,61 @@ export async function getStudiosAction(
       query = query.eq('wifi_available', filters.wifi_available);
     }
 
-    // ソート
+    // ソート（デフォルトはcreated_at desc）
     if (filters.sort_by) {
       const ascending = filters.sort_order === 'asc';
       query = query.order(filters.sort_by, { ascending });
+    } else {
+      query = query.order('created_at', { ascending: false });
     }
+
+    // ページネーション適用前に総件数を取得
+    // リレーションを含むクエリではcountが取得できないため、シンプルなクエリで総件数を取得
+    const countQuery = supabase
+      .from('studios')
+      .select('*', { count: 'exact', head: true })
+      .in('verification_status', ['verified', 'pending']);
+
+    // フィルタリング（総件数取得用）
+    if (filters.query) {
+      countQuery.or(
+        `name.ilike.%${filters.query}%,address.ilike.%${filters.query}%`
+      );
+    }
+
+    if (filters.prefecture && filters.prefecture !== 'all') {
+      countQuery.eq('prefecture', filters.prefecture);
+    }
+
+    if (filters.city) {
+      countQuery.eq('city', filters.city);
+    }
+
+    if (filters.min_capacity) {
+      countQuery.gte('max_capacity', filters.min_capacity);
+    }
+
+    if (filters.max_capacity) {
+      countQuery.lte('max_capacity', filters.max_capacity);
+    }
+
+    if (filters.min_hourly_rate) {
+      countQuery.gte('hourly_rate_min', filters.min_hourly_rate);
+    }
+
+    if (filters.max_hourly_rate) {
+      countQuery.lte('hourly_rate_max', filters.max_hourly_rate);
+    }
+
+    if (filters.parking_available !== undefined) {
+      countQuery.eq('parking_available', filters.parking_available);
+    }
+
+    if (filters.wifi_available !== undefined) {
+      countQuery.eq('wifi_available', filters.wifi_available);
+    }
+
+    const { count: totalCount } = await countQuery;
 
     // ページネーション
     const limit = filters.limit || DEFAULT_STUDIO_SEARCH.limit;
@@ -107,11 +156,11 @@ export async function getStudiosAction(
       query = query.range(offset, offset + limit - 1);
     }
 
-    const { data, error, count } = await query;
+    const { data, error } = await query;
 
     Logger.info('Database query result', {
       dataCount: data?.length || 0,
-      totalCount: count,
+      totalCount: totalCount,
       error: error?.message,
     });
 
@@ -150,13 +199,13 @@ export async function getStudiosAction(
 
     Logger.info('getStudiosAction success', {
       studiosCount: studios.length,
-      totalCount: count || studios.length,
+      totalCount: totalCount || 0,
     });
 
     return {
       success: true,
       studios,
-      totalCount: count || studios.length,
+      totalCount: totalCount || 0,
     };
   } catch (error) {
     Logger.error('スタジオ一覧取得失敗:', error);
@@ -445,7 +494,9 @@ export async function getStudioDetailAction(studioId: string): Promise<{
 /**
  * スタジオを作成する
  */
-export async function createStudioAction(formData: Partial<Studio>): Promise<{
+export async function createStudioAction(
+  formData: Partial<Studio> & { image_urls?: string[] }
+): Promise<{
   success: boolean;
   studio?: Studio;
   error?: string;
@@ -470,8 +521,11 @@ export async function createStudioAction(formData: Partial<Studio>): Promise<{
       '_'
     );
 
+    // image_urlsを分離（studioDataには含めない）
+    const { image_urls, ...studioFormData } = formData;
+
     const studioData = {
-      ...formData,
+      ...studioFormData,
       normalized_name: normalizedName,
       normalized_address: normalizedAddress,
       location_hash: locationHash,
@@ -488,6 +542,37 @@ export async function createStudioAction(formData: Partial<Studio>): Promise<{
     if (error) {
       Logger.error('スタジオ作成エラー:', error);
       return { success: false, error: 'スタジオの作成に失敗しました' };
+    }
+
+    // 画像URLが提供されている場合、studio_photosレコードを作成
+    if (image_urls && image_urls.length > 0) {
+      try {
+        const photoPromises = image_urls.map((imageUrl, index) =>
+          createStudioPhotoAction(studio.id, imageUrl, {
+            display_order: index + 1,
+          })
+        );
+
+        const photoResults = await Promise.all(photoPromises);
+        const failedPhotos = photoResults.filter(result => !result.success);
+
+        if (failedPhotos.length > 0) {
+          Logger.warning('一部の画像の保存に失敗:', {
+            studioId: studio.id,
+            failedCount: failedPhotos.length,
+            errors: failedPhotos.map(r => r.error),
+          });
+          // 画像の保存失敗は警告として記録するが、スタジオ作成は成功として扱う
+        } else {
+          Logger.info('スタジオ画像の保存成功:', {
+            studioId: studio.id,
+            imageCount: image_urls.length,
+          });
+        }
+      } catch (photoError) {
+        Logger.error('スタジオ画像保存エラー:', photoError);
+        // 画像の保存失敗は警告として記録するが、スタジオ作成は成功として扱う
+      }
     }
 
     revalidatePath('/studios');

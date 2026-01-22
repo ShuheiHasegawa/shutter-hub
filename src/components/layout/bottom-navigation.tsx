@@ -317,16 +317,20 @@ export function BottomNavigation() {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               href={item.href as any}
               className={cn(
-                'flex flex-col items-center justify-center gap-0.5 transition-colors min-w-0',
+                'flex flex-col items-center justify-center gap-0.5 transition-colors min-w-0 relative',
                 isActive
-                  ? 'text-shutter-primary'
+                  ? 'text-surface-accent'
                   : 'text-muted-foreground hover:text-foreground'
               )}
             >
+              {/* アクティブ時の下部下線 */}
+              {isActive && (
+                <div className="absolute bottom-0 left-1/4 -translate-x-1/4 w-1/2 h-0.5 surface-accent" />
+              )}
               <Icon
                 className={cn(
                   'h-5 w-5 flex-shrink-0',
-                  isActive && 'text-shutter-primary'
+                  isActive && 'text-surface-accent'
                 )}
               />
               <span className="text-[10px] font-medium leading-tight whitespace-nowrap overflow-hidden text-ellipsis max-w-full px-0.5">

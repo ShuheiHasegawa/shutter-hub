@@ -8,7 +8,7 @@ import { AuthenticatedLayout } from '@/components/layout/authenticated-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-
+import { PageTitleHeader } from '@/components/ui/page-title-header';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -142,12 +142,12 @@ export default function UserSearchPage() {
   return (
     <AuthenticatedLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">ユーザー検索</h1>
-          <p className="text-muted-foreground">
-            フォロワーやフォロー中のユーザーと新しい会話を開始します
-          </p>
-        </div>
+        <PageTitleHeader
+          title="ユーザー検索"
+          description="フォロワーやフォロー中のユーザーと新しい会話を開始します"
+          icon={<Users className="h-5 w-5" />}
+          backButton={{ href: '/messages', variant: 'outline' }}
+        />
 
         <div className="max-w-4xl">
           <Card>

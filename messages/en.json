@@ -23,6 +23,7 @@
     "more": "More",
     "reset": "Reset",
     "apply": "Apply",
+    "scrollToTop": "Scroll to top",
     "priceInputPlaceholder": "Enter price",
     "empty": {
       "default": {
@@ -249,6 +250,11 @@
       "dragAndDrop": "Drag & drop images or click to select"
     }
   },
+  "analytics": {
+    "thisMonth": "This Month",
+    "completed": "Completed",
+    "reviews": "reviews"
+  },
   "profile": {
     "title": "Profile",
     "placeholder": "Profile functionality will be implemented in a later phase.",
@@ -315,11 +321,13 @@
     "sessionEnded": "This photo session has already started or ended",
     "notPublished": "This photo session is not published",
     "cannotBook": "Cannot book",
+    "cannotBookDefault": "No reason specified for why booking is not available",
     "cannotBookReasons": {
       "alreadyBooked": "Already booked",
       "sessionFull": "Session full",
       "sessionEnded": "Session ended",
       "notPublished": "Not published",
+      "selfBooking": "You cannot book a photo session you organized",
       "unknown": "Cannot book"
     },
     "participateQuestion": "Would you like to participate in this photo session?",
@@ -514,6 +522,32 @@
       "available": "Available",
       "fewLeft": "Few left",
       "full": "Full"
+    },
+    "slotCard": {
+      "slotNumber": "Slot",
+      "time": "Time",
+      "participants": "Participants",
+      "price": "Price",
+      "costume": "Costume",
+      "book": "Book Now",
+      "booking": "Booking...",
+      "full": "Full",
+      "available": "Available",
+      "fewLeft": "Few Left",
+      "discount": "Discount",
+      "originalPrice": "Original Price",
+      "discountedPrice": "Discounted Price",
+      "costumePreview": "Costume Preview",
+      "close": "Close",
+      "breakTime": "Break Time",
+      "minutes": "minutes",
+      "notes": "Notes",
+      "location": "Location",
+      "date": "Date",
+      "loginRequired": "Please log in to book",
+      "slotFull": "This slot is full",
+      "bookingFailed": "Booking failed",
+      "loginToBook": "Login to book"
     },
     "layout": {
       "card": "Card View",
@@ -772,12 +806,13 @@
       "tips": {
         "title": "Tips",
         "firstImageMain": "The first image will be displayed as the main image",
-        "dragToReorder": "Drag to reorder images",
+        "dragToReorder": "Drag or use left/right buttons to reorder images",
         "highQuality": "We recommend using high-quality images"
       },
       "success": {
         "uploaded": "Images uploaded successfully",
-        "removed": "Image removed successfully"
+        "removed": "Image removed successfully",
+        "reordered": "Image order changed successfully"
       },
       "error": {
         "maxImagesReached": "Maximum images reached",
@@ -932,7 +967,18 @@
         "multipleBookings": "You have booked {count} slots",
         "viewDetails": "View Booking Details",
         "bookedSlot": "Booked"
-      }
+      },
+      "selectPaymentMethod": "Select Payment Method",
+      "paymentMethodStripe": "Stripe Payment",
+      "paymentMethodStripeDescription": "Pay in advance with credit card",
+      "paymentMethodCashOnSite": "Cash on Site",
+      "paymentMethodCashOnSiteDescription": "Pay on site on the day",
+      "paymentSelected": "Selected",
+      "noticeTitle": "Important Notes",
+      "noticeCancellation": "Cancellations are allowed up to 24 hours before the session starts",
+      "noticeLate": "Please contact the organizer if you will be late",
+      "noticeHealth": "Please do not attend if you are feeling unwell",
+      "noticeSlotRestriction": "For slot-based sessions, participation is limited to your reserved time slot"
     }
   },
   "lottery": {
@@ -1064,7 +1110,8 @@
     "unauthorized": "Unauthorized",
     "entryFailed": "Failed to enter lottery",
     "lotteryFailed": "Failed to conduct lottery",
-    "selectionFailed": "Failed to complete selection"
+    "selectionFailed": "Failed to complete selection",
+    "cannotBookOwnSession": "You cannot book your own photo session"
   },
   "success": {
     "title": "Success",
@@ -1798,7 +1845,10 @@
       "emptyDescription": "Try changing your search criteria",
       "emptyDescriptionInitial": "Search studios by keyword or prefecture",
       "loadMore": "Load More",
-      "loading": "Loading..."
+      "loading": "Loading...",
+      "loadingMore": "Loading more...",
+      "allLoaded": "All studios displayed",
+      "scrollToLoad": "Scroll to load more"
     },
     "layout": {
       "card": "Card",
@@ -1847,6 +1897,37 @@
     "hiddenNotice": {
       "title": "This studio is temporarily hidden",
       "description": "This studio has been temporarily hidden due to multiple reports."
+    },
+    "imageUpload": {
+      "title": "Upload Images",
+      "description": "JPEG, PNG, WebP format (max 10MB)",
+      "selectFiles": "Select Files",
+      "uploading": "Uploading...",
+      "preview": "Preview",
+      "mainImage": "Main Image",
+      "firstIsMain": "First image is main",
+      "main": "Main",
+      "empty": "No images uploaded",
+      "success": {
+        "uploaded": "Uploaded {count} images",
+        "removed": "Image removed"
+      },
+      "error": {
+        "maxImagesReached": "Maximum images reached",
+        "maxImagesReachedDescription": "You can upload up to {max} images",
+        "fileTooLarge": "File size is too large",
+        "fileTooLargeDescription": "File size must be 10MB or less",
+        "invalidFileType": "Unsupported file format",
+        "invalidFileTypeDescription": "Only JPEG, PNG, WebP, GIF are supported",
+        "uploadFailed": "Upload failed",
+        "uploadFailedDescription": "An error occurred while uploading images"
+      },
+      "tips": {
+        "title": "Tips",
+        "firstImageMain": "The first image will be displayed as the main image",
+        "dragToReorder": "You can change the order of images using arrow buttons",
+        "highQuality": "We recommend uploading high-quality images"
+      }
     }
   },
   "notificationMessages": {
