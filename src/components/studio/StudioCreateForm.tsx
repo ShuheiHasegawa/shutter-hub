@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -21,6 +21,7 @@ import {
   ActionBarButton,
   ActionBarSentinel,
 } from '@/components/ui/action-bar';
+import { StudioImageUpload } from './StudioImageUpload';
 
 // SSRエラー回避のため動的インポート
 const MapPicker = dynamic(
@@ -124,9 +125,16 @@ interface StudioCreateFormProps {
 
 export function StudioCreateForm({ onSuccess }: StudioCreateFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
   const { toast } = useToast();
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
+
+  // 一時IDを生成（コンポーネントマウント時に一度だけ生成）
+  const tempId = useMemo(
+    () => `temp_${Date.now()}_${crypto.randomUUID().split('-')[0]}`,
+    []
+  );
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -169,7 +177,10 @@ export function StudioCreateForm({ onSuccess }: StudioCreateFormProps) {
         return;
       }
 
-      const result = await createStudioAction(data);
+      const result = await createStudioAction({
+        ...data,
+        image_urls: imageUrls,
+      });
 
       if (result.success && result.studio) {
         toast({
@@ -218,6 +229,23 @@ export function StudioCreateForm({ onSuccess }: StudioCreateFormProps) {
         onSubmit={form.handleSubmit(onSubmit)}
         className="space-y-6"
       >
+        {/* 画像アップロード */}
+        <Card>
+          <CardHeader>
+            <CardTitle>スタジオ画像</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <StudioImageUpload
+              mode="create"
+              tempId={tempId}
+              initialImageUrls={imageUrls}
+              onImageUrlsChange={setImageUrls}
+              maxImages={10}
+              disabled={isSubmitting}
+            />
+          </CardContent>
+        </Card>
+
         {/* 基本情報 */}
         <Card>
           <CardHeader>

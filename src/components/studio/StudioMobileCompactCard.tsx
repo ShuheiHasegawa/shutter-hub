@@ -48,7 +48,7 @@ export function StudioMobileCompactCard({
 
   return (
     <div
-      className={`flex gap-3 bg-white dark:bg-gray-900 rounded-xl shadow-sm hover:shadow-md transition-all p-3 border border-gray-200 dark:border-gray-800 cursor-pointer ${
+      className={`flex py-2 gap-4 rounded-xl shadow-sm hover:shadow-md transition-all border border-gray-200 dark:border-gray-800 cursor-pointer ${
         isSelected ? 'ring-2 ring-theme-primary' : ''
       }`}
       onClick={handleClick}

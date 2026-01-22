@@ -30,11 +30,13 @@ interface FormData {
 interface EmailPasswordFormProps {
   value?: 'signin' | 'signup';
   onValueChange?: (value: 'signin' | 'signup') => void;
+  returnUrl?: string | null;
 }
 
 export function EmailPasswordForm({
   value,
   onValueChange,
+  returnUrl,
 }: EmailPasswordFormProps = {}) {
   const handleValueChange = (newValue: string) => {
     if (newValue === 'signin' || newValue === 'signup') {
@@ -91,7 +93,16 @@ export function EmailPasswordForm({
       }
 
       toast.success('ログインしました');
-      router.push(`/${locale}/dashboard`);
+
+      // returnUrlの検証とリダイレクト先の決定
+      let redirectTo = `/${locale}/dashboard`;
+      if (returnUrl) {
+        // セキュリティ: 同一オリジンのパスのみ許可（/で始まることを確認）
+        if (returnUrl.startsWith('/') && !returnUrl.startsWith('//')) {
+          redirectTo = returnUrl;
+        }
+      }
+      router.push(redirectTo);
     } catch (error) {
       logger.error('Sign in error:', error);
       setError('ログイン中にエラーが発生しました');

@@ -1,6 +1,7 @@
 ---
 description: テストコード生成ルール
-globs: ["**/*test*", "**/tests/**", "**/*spec*", "**/*.test.ts", "**/*.test.tsx"]
+globs:
+  ['**/*test*', '**/tests/**', '**/*spec*', '**/*.test.ts', '**/*.test.tsx']
 alwaysApply: false
 ---
 
@@ -12,6 +13,9 @@ alwaysApply: false
 
 ShutterHub v2のテストコード生成における統一ルールを定義します。
 このルールに従うことで、高品質で網羅的なテストコードを効率的に生成できます。
+
+**重要**: E2Eテストは必ず**Page Object Model（POM）パターン**で実装してください。
+Page Object Modelにより、UI変更に対する堅牢性と保守性が向上し、テストコードの重複を削減できます。
 
 ## 🔧 **環境情報**
 
@@ -134,6 +138,122 @@ npm run test:coverage
 
 ````
 
+## ⏱️ **待機処理のルール**
+
+### **必須原則: 任意の待機（sleep/wait）を禁止**
+
+Flaky test（不安定なテスト）の主な原因は、不適切な待機処理です。以下のルールを厳守してください：
+
+- ❌ **NEVER use arbitrary waits (sleep, wait)**
+- ✅ **Use URL or title assertions for navigation verification**
+- ✅ **Use explicit conditional waits only when necessary**
+
+### **正しい待機パターン**
+
+```typescript
+// ✅ Good: 明示的な条件待機（自動リトライ）
+await expect(page).toHaveURL(/\/studios\/create/);
+await expect(page.getByRole('heading', { name: 'スタジオ作成' })).toBeVisible();
+
+// ✅ Good: 必要な場合の条件付き待機
+await page.waitForURL(/\/studios\/create/);
+await page.waitForSelector('[data-testid="studio-create-form"]');
+
+// ❌ Bad: 任意の待機（避ける）
+await page.waitForTimeout(1000); // 避ける
+await new Promise(resolve => setTimeout(resolve, 2000)); // 避ける
+```
+
+**重要**: `expect().toHaveURL()` や `expect().toBeVisible()` は、条件が満たされるまで自動的にリトライします。明示的なsleepは不要です。
+
+### **ローディング状態の処理**
+
+非同期処理を多用するSPAのため、ローディング表示の待機パターンを用意してください：
+
+```typescript
+// BasePageに実装する推奨パターン
+public async waitForLoadingToComplete(): Promise<void> {
+  const loadingText = this.page.getByText("読み込み中です…");
+  const isLoadingVisible = await loadingText.isVisible().catch(() => false);
+  if (isLoadingVisible) {
+    await loadingText.waitFor({ state: "hidden", timeout: 30000 });
+  }
+}
+```
+
+## 🎯 **セレクタ優先順位ルール**
+
+### **必須原則: data-testid優先**
+
+Playwright Best Practiceに従い、以下の優先順位でセレクタを選択してください：
+
+1. **data-testid属性（最優先）**
+   - 理由: UI変更・多言語化に強い、意図が明確
+   - 形式: `data-testid="component-action"`
+   - 例: `page.getByTestId('mobile-filter-button')`
+
+2. **role + name（次点）**
+   - 理由: アクセシビリティを考慮、意味的に正確
+   - 例: `page.getByRole('button', { name: 'Submit' })`
+
+3. **label・placeholder（補助）**
+   - 理由: フォーム要素で自然
+   - 例: `page.getByLabel('Email')`
+
+4. **text content（最終手段）**
+   - 理由: 多言語化・文言変更に脆弱
+   - 例: `page.getByText('ログイン')`
+
+5. **CSSセレクタ（非推奨）**
+   - 理由: 実装詳細に依存、壊れやすい
+   - 例: `.btn-primary` ← 避ける
+
+### **data-testid命名規則**
+
+```
+{component}-{element}-{action}
+```
+
+**具体例:**
+
+- `mobile-filter-button` (モバイルフィルターボタン)
+- `studio-search-input` (スタジオ検索入力)
+- `studio-card-123` (スタジオカードID=123)
+- `report-reason-spam` (通報理由=spam)
+- `mobile-filter-apply` (フィルター適用ボタン)
+- `studio-load-more` (もっと見るボタン)
+
+**NG例:**
+
+- `button1` ← 意味不明
+- `studioSearchInput` ← キャメルケース（ケバブケース推奨）
+- `search` ← 具体性不足
+
+### **コンポーネント側の実装**
+
+```tsx
+// ✅ Good
+<button data-testid="mobile-filter-button">
+  絞り込み
+</button>
+
+// ❌ Bad (data-testidなし)
+<button aria-label="絞り込み">
+  絞り込み
+</button>
+```
+
+### **テストコード側の実装**
+
+```typescript
+// ✅ Good
+await page.getByTestId('mobile-filter-button').click();
+
+// ❌ Bad (テキストに依存)
+await page.getByText('絞り込み').click();
+await page.getByRole('button', { name: /filter|フィルター/i }).click();
+```
+
 ## 📝 **実装パターン**
 
 ### **E2Eテスト（Playwright）**
@@ -154,12 +274,12 @@ test.describe('機能名', () => {
     // Given: 前提条件
     await page.goto('/ja/target-page');
 
-    // When: 操作
-    await page.fill('[name="field"]', 'valid-value');
-    await page.click('button[type="submit"]');
+    // When: 操作（data-testid優先でセレクタを選択）
+    await page.getByTestId('field-input').fill('valid-value');
+    await page.getByTestId('submit-button').click();
 
     // Then: 検証
-    await expect(page.getByText('成功メッセージ')).toBeVisible();
+    await expect(page.getByTestId('success-message')).toBeVisible();
   });
 
   test('異常系: バリデーションエラー', async ({ page }) => {
@@ -198,6 +318,128 @@ test.describe('機能名', () => {
 });
 ````
 
+#### **Page Object Model（POM）必須要件**
+
+**重要**: E2Eテストは必ずPage Object Modelパターンで実装してください。
+
+##### **必須要件**
+
+- ✅ **すべてのPageクラスは`BasePage`を継承**
+- ✅ **すべてのComponentクラスは`BaseComponent`を継承**
+- ✅ **静的要素はプロパティとして定義**
+- ✅ **動的要素は関数として定義**
+- ✅ **ページ遷移メソッドは新しいPage Objectを返す**
+
+##### **基本的な実装パターン**
+
+```typescript
+// tests/e2e/pages/BasePage.ts を継承
+import { BasePage } from './BasePage';
+
+export class StudioListPage extends BasePage {
+  // 静的要素はプロパティとして定義
+  readonly searchInput: Locator;
+  readonly searchButton: Locator;
+  readonly createStudioButton: Locator;
+
+  constructor(page: Page, isMobile: boolean = false) {
+    super(page, isMobile);
+    this.searchInput = this.page.getByTestId('studio-search-input');
+    this.searchButton = this.page.getByTestId('studio-search-button');
+    this.createStudioButton = this.page.getByTestId('studio-create-button');
+  }
+
+  // 動的要素は関数として定義
+  studioCard = (cardIndex: number): Locator => {
+    return this.page.locator(`[data-testid^="studio-card-"]`).nth(cardIndex);
+  };
+
+  // ページ遷移メソッドは新しいPage Objectを返す
+  async goToCreateStudio(): Promise<StudioCreatePage> {
+    await this.createStudioButton.click();
+    await this.page.waitForURL(/\/studios\/create/);
+    return new StudioCreatePage(this.page, this.isMobile);
+  }
+
+  // アクションメソッド
+  async searchByKeyword(keyword: string): Promise<void> {
+    if (this.isMobile) {
+      await this.openMobileFilterSheet();
+    }
+    await this.searchInput.fill(keyword);
+    await this.searchButton.click();
+  }
+}
+```
+
+##### **PC/SP分離テスト**
+
+PC版とSP版は必ず分離してテストしてください。
+
+```typescript
+test.describe('スタジオ一覧機能', () => {
+  // PC版テスト
+  test.describe('PC', () => {
+    test('TC-N-01: 正常系 - ページ初期表示', async ({ page }) => {
+      const isMobile = false;
+      const studioListPage = new StudioListPage(page, isMobile);
+
+      // Given: スタジオ一覧ページにアクセスする
+      await studioListPage.open();
+
+      // Then: ページ初期表示要素が全て表示される
+      await studioListPage.assertInitialPageLoaded();
+    });
+  });
+
+  // SP版テスト
+  test.describe('SP', () => {
+    test.use({ viewport: { width: 375, height: 667 } });
+
+    test('TC-N-01: 正常系 - ページ初期表示', async ({ page }) => {
+      const isMobile = true;
+      const studioListPage = new StudioListPage(page, isMobile);
+
+      // Given: スタジオ一覧ページにアクセスする
+      await studioListPage.open();
+
+      // Then: ページ初期表示要素が全て表示される
+      await studioListPage.assertInitialPageLoaded();
+    });
+  });
+});
+```
+
+##### **コンポーネントの切り出し**
+
+Page Objectが肥大化した場合、以下の基準でコンポーネントクラスとして切り出してください：
+
+- **ファイルが大きくなってきた場合**: 要素ブロックの大きいものからコンポーネントクラスに切り出す
+- **モーダルの場合**: モーダルは画面から独立したコンテキストを持つため、`Modal`サフィックスを付ける（例: `StudioReportModal.ts`）
+
+```typescript
+// tests/e2e/pages/components/BaseComponent.ts を継承
+import { BaseComponent } from './BaseComponent';
+
+export class MobileFilterSheet extends BaseComponent {
+  readonly filterButton: Locator;
+  readonly applyButton: Locator;
+  readonly resetButton: Locator;
+
+  constructor(page: Page, isMobile: boolean) {
+    super(page, isMobile);
+    this.filterButton = this.page.getByTestId('mobile-filter-button');
+    this.applyButton = this.page.getByTestId('mobile-filter-apply');
+    this.resetButton = this.page.getByTestId('mobile-filter-reset');
+  }
+
+  async open(): Promise<void> {
+    await this.filterButton.click();
+    await expect(this.searchInput).toBeVisible();
+  }
+}
+```
+
 #### **共通ヘルパーの使用**
 
 ```typescript
@@ -223,6 +465,39 @@ test('ヘルパー関数を使用したテスト', async ({ page }) => {
   // Then: 作成成功の確認
   await expect(page.url()).toMatch(/\/photo-sessions\/\d+/);
 });
+```
+
+#### **コード生成優先ルール**
+
+AIがコードを生成する際の判断優先順位：
+
+1. **Priority 1: Element Selectors & Robustness（最優先）**
+
+   - 既存コードパターンから安定したセレクターを使用
+   - Click before fill パターン（フォーカスを確保）
+   - Loading状態のハンドリング
+   - `.first()` や `.nth()` で複数要素に対応
+
+2. **Priority 2: Flow & Navigation from MCP Behavior**
+
+   - MCPが観測したページフローを信頼
+   - 実際に動作したナビゲーション順序を採用
+   - 必要な中間ステップを省略しない
+
+3. **Priority 3: Values & Test Data**
+   - 既存の定数ファイルを使用
+   - MCPで成功した値を適用
+   - ハードコードではなく定数をimport
+
+**Click before fill パターン例:**
+
+```typescript
+// ✅ Good: クリックしてから入力（フォーカスを確保）
+await page.getByTestId('login-phoneNumber-input').click();
+await page.getByTestId('login-phoneNumber-input').fill('08000000001');
+
+// ❌ Bad: 直接入力（フォーカスが当たっていない場合に失敗する可能性）
+await page.getByTestId('login-phoneNumber-input').fill('08000000001');
 ```
 
 ### **ユニットテスト（将来実装予定）**
@@ -390,7 +665,9 @@ import {
 ## 📖 **参考資料**
 
 - **Playwright公式ドキュメント**: https://playwright.dev/
+- **Playwright Test Agents × Claude Code Skills**: `docs/claude/Playwright Test Agents × Claude Code Skillsで実現するプロダクション品質のE2Eテストコード自動生成.md`
 - **既存テスト例**: `tests/e2e/priority-tickets/priority-ticket-management.spec.ts`
+- **既存Page Object例**: `tests/e2e/pages/StudioListPage.ts`
 - **テストヘルパー**: `tests/e2e/utils/test-helpers.ts`
 - **テストユーザー設定**: `tests/e2e/config/test-users.ts`
 - **テスト構造ガイド**: `tests/e2e/README.md`

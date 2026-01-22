@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { logger } from '@/lib/utils/logger';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
@@ -8,7 +9,7 @@ import { AuthenticatedLayout } from '@/components/layout/authenticated-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-
+import { PageTitleHeader } from '@/components/ui/page-title-header';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -29,6 +30,7 @@ import { createOrGetConversation } from '@/app/actions/message';
 import { UserWithFollowInfo } from '@/types/social';
 
 export default function UserSearchPage() {
+  const t = useTranslations('userSearch');
   const router = useRouter();
   const { user } = useAuth();
 
@@ -142,12 +144,12 @@ export default function UserSearchPage() {
   return (
     <AuthenticatedLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">ユーザー検索</h1>
-          <p className="text-muted-foreground">
-            フォロワーやフォロー中のユーザーと新しい会話を開始します
-          </p>
-        </div>
+        <PageTitleHeader
+          title={t('title')}
+          description={t('description')}
+          icon={<Users className="h-5 w-5" />}
+          backButton={{ href: '/messages', variant: 'outline' }}
+        />
 
         <div className="max-w-4xl">
           <Card>

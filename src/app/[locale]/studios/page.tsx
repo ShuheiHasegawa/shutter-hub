@@ -22,7 +22,7 @@ import Link from 'next/link';
 import { PageTitleHeader } from '@/components/ui/page-title-header';
 import { StickyHeader } from '@/components/ui/sticky-header';
 import { BuildingIcon, MapPin } from 'lucide-react';
-import { MobileFilterSheet } from '@/components/ui/mobile-filter-sheet';
+import { MobileFloatButtons } from '@/components/ui/mobile-float-buttons';
 import { StudioFilterContent } from '@/components/studio/StudioFilterContent';
 import { LayoutToggle } from '@/components/ui/layout-toggle';
 import { useLayoutPreference } from '@/hooks/useLayoutPreference';
@@ -134,16 +134,18 @@ export default function StudiosPage() {
               data-testid="studio-create-button"
               className="flex items-center gap-2 whitespace-nowrap"
               variant="cta"
+              title={t('addNew')}
             >
               <PlusIcon className="w-4 h-4" />
-              {t('addNew')}
+              <span className="hidden md:inline ml-1">{t('addNew')}</span>
+              <span className="sr-only md:hidden">{t('addNew')}</span>
             </Button>
           </Link>
         }
       />
       <div className="flex flex-col flex-1 min-h-0">
         {/* 検索・フィルター（StickyHeaderで固定） */}
-        <StickyHeader className="px-4 py-3 space-y-3">
+        <StickyHeader className="space-y-4">
           {/* 1行目: 検索フィルター（デスクトップのみ表示） */}
           <div className="hidden md:block">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -240,7 +242,7 @@ export default function StudiosPage() {
             </div>
 
             {/* 右側: 並び順とレイアウト切り替え */}
-            <div className="flex items-center gap-2 flex-wrap md:flex-nowrap">
+            <div className="flex items-center gap-2 flex-wrap md:flex-nowrap ml-auto">
               {/* 並び順 */}
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground hidden sm:inline">
@@ -306,17 +308,19 @@ export default function StudiosPage() {
 
         {/* モバイル用フィルターシート */}
         <div className="md:hidden">
-          <MobileFilterSheet
-            title={t('mobileFilter.title')}
-            floatButtonLabel={t('mobileFilter.floatButton')}
-            onReset={handleReset}
-            onApply={handleSearch}
-          >
-            <StudioFilterContent
-              filters={filters}
-              onFiltersChange={setFilters}
-            />
-          </MobileFilterSheet>
+          <MobileFloatButtons
+            filterTitle={t('mobileFilter.title')}
+            filterFloatButtonLabel={t('mobileFilter.floatButton')}
+            onFilterReset={handleReset}
+            onFilterApply={handleSearch}
+            scrollToTopLabel={tCommon('scrollToTop')}
+            filterChildren={
+              <StudioFilterContent
+                filters={filters}
+                onFiltersChange={setFilters}
+              />
+            }
+          />
         </div>
       </div>
     </AuthenticatedLayout>

@@ -23,6 +23,7 @@
     "more": "もっと見る",
     "clear": "クリア",
     "apply": "適用する",
+    "scrollToTop": "ページトップに戻る",
     "priceInputPlaceholder": "料金を入力してください",
     "empty": {
       "default": {
@@ -244,6 +245,11 @@
       "dragAndDrop": "画像をドラッグ&ドロップまたはクリックして選択"
     }
   },
+  "analytics": {
+    "thisMonth": "今月",
+    "completed": "完了",
+    "reviews": "件のレビュー"
+  },
   "profile": {
     "title": "プロフィール",
     "placeholder": "プロフィール機能は後のフェーズで実装予定です。",
@@ -309,11 +315,13 @@
     "sessionEnded": "この撮影会は既に開始または終了しています",
     "notPublished": "この撮影会は公開されていません",
     "cannotBook": "予約できません",
+    "cannotBookDefault": "予約できない理由が指定されていません",
     "cannotBookReasons": {
       "alreadyBooked": "既に予約済みです",
       "sessionFull": "満席です",
       "sessionEnded": "開始・終了済みです",
       "notPublished": "非公開です",
+      "selfBooking": "自分が主催した撮影会には予約できません",
       "unknown": "予約できません"
     },
     "participateQuestion": "この撮影会に参加しますか？",
@@ -379,8 +387,8 @@
   },
   "checkin": {
     "checkInManagement": "チェックイン管理",
-    "checkInManagementDescription": "スロットごとのQRコードを表示・印刷して、参加者の入退場を管理します",
-    "slotQRCode": "スロットQRコード",
+    "checkInManagementDescription": "撮影枠ごとのQRコードを表示・印刷して、参加者の入退場を管理します",
+    "slotQRCode": "撮影枠QRコード",
     "slotNumber": "枠番号",
     "time": "時間",
     "print": "印刷",
@@ -502,6 +510,32 @@
       "available": "空きあり",
       "fewLeft": "残りわずか",
       "full": "満員"
+    },
+    "slotCard": {
+      "slotNumber": "撮影枠",
+      "time": "時間",
+      "participants": "参加者",
+      "price": "料金",
+      "costume": "衣装",
+      "book": "予約する",
+      "booking": "予約中...",
+      "full": "満席",
+      "available": "空きあり",
+      "fewLeft": "残りわずか",
+      "discount": "割引",
+      "originalPrice": "元の料金",
+      "discountedPrice": "割引後料金",
+      "costumePreview": "衣装プレビュー",
+      "close": "閉じる",
+      "breakTime": "休憩時間",
+      "minutes": "分",
+      "notes": "メモ",
+      "location": "場所",
+      "date": "日付",
+      "loginRequired": "ログインが必要です",
+      "slotFull": "この撮影枠は満席です",
+      "bookingFailed": "予約に失敗しました",
+      "loginToBook": "ログインして予約"
     },
     "layout": {
       "card": "カード表示",
@@ -772,12 +806,13 @@
       "tips": {
         "title": "ヒント",
         "firstImageMain": "最初の画像がメイン画像として表示されます",
-        "dragToReorder": "ドラッグで順序を変更できます",
+        "dragToReorder": "ドラッグまたは左右ボタンで順序を変更できます",
         "highQuality": "高品質な画像を使用することをお勧めします"
       },
       "success": {
         "uploaded": "画像をアップロードしました",
-        "removed": "画像を削除しました"
+        "removed": "画像を削除しました",
+        "reordered": "画像の順番を変更しました"
       },
       "error": {
         "maxImagesReached": "最大枚数に達しました",
@@ -892,7 +927,18 @@
         "multipleBookings": "{count}件の枠を予約済みです",
         "viewDetails": "予約詳細を見る",
         "bookedSlot": "予約済み"
-      }
+      },
+      "selectPaymentMethod": "支払い方法を選択",
+      "paymentMethodStripe": "Stripe決済",
+      "paymentMethodStripeDescription": "クレジットカードで事前決済",
+      "paymentMethodCashOnSite": "現地決済",
+      "paymentMethodCashOnSiteDescription": "当日現地でお支払い",
+      "paymentSelected": "選択中",
+      "noticeTitle": "ご注意事項",
+      "noticeCancellation": "予約のキャンセルは撮影会開始の24時間前まで可能です",
+      "noticeLate": "遅刻される場合は主催者にご連絡ください",
+      "noticeHealth": "体調不良の場合は無理をせず参加をお控えください",
+      "noticeSlotRestriction": "撮影枠制撮影会では、予約した時間枠以外の参加はできません"
     }
   },
   "lottery": {
@@ -1158,7 +1204,8 @@
     "unauthorized": "権限がありません",
     "entryFailed": "抽選エントリーに失敗しました",
     "lotteryFailed": "抽選の実行に失敗しました",
-    "selectionFailed": "選出に失敗しました"
+    "selectionFailed": "選出に失敗しました",
+    "cannotBookOwnSession": "自分が主催した撮影会には予約できません"
   },
   "success": {
     "title": "成功",
@@ -1763,7 +1810,7 @@
   "studio": {
     "page": {
       "title": "スタジオ一覧",
-      "addNew": "新しいスタジオを追加",
+      "addNew": "スタジオを追加",
       "keyword": "キーワード",
       "keywordPlaceholder": "スタジオ名、住所で検索",
       "prefecture": "都道府県",
@@ -1810,7 +1857,11 @@
       "emptyDescription": "検索条件を変更してお試しください",
       "emptyDescriptionInitial": "キーワードや都道府県を選択してスタジオを検索できます",
       "loadMore": "もっと見る",
-      "loading": "読み込み中..."
+      "loading": "読み込み中...",
+      "loadingMore": "さらに読み込み中...",
+      "refreshing": "更新中...",
+      "allLoaded": "すべてのスタジオを表示しました",
+      "scrollToLoad": "スクロールして続きを読み込む"
     },
     "layout": {
       "card": "カード",
@@ -1859,7 +1910,42 @@
     "hiddenNotice": {
       "title": "このスタジオは一時的に非表示になっています",
       "description": "複数の報告により一時的に非表示になっています。"
+    },
+    "imageUpload": {
+      "title": "画像をアップロード",
+      "description": "JPEG、PNG、WebP形式（最大10MB）",
+      "selectFiles": "ファイルを選択",
+      "uploading": "アップロード中...",
+      "preview": "プレビュー",
+      "mainImage": "メイン画像",
+      "firstIsMain": "最初の画像がメイン",
+      "main": "メイン",
+      "empty": "画像がアップロードされていません",
+      "success": {
+        "uploaded": "{count}枚の画像をアップロードしました",
+        "removed": "画像を削除しました"
+      },
+      "error": {
+        "maxImagesReached": "最大画像数に達しました",
+        "maxImagesReachedDescription": "最大{max}枚までアップロードできます",
+        "fileTooLarge": "ファイルサイズが大きすぎます",
+        "fileTooLargeDescription": "ファイルサイズは10MB以下にしてください",
+        "invalidFileType": "サポートされていないファイル形式です",
+        "invalidFileTypeDescription": "JPEG、PNG、WebP、GIFのみ対応しています",
+        "uploadFailed": "アップロードに失敗しました",
+        "uploadFailedDescription": "画像のアップロード中にエラーが発生しました"
+      },
+      "tips": {
+        "title": "ヒント",
+        "firstImageMain": "最初の画像がメイン画像として表示されます",
+        "dragToReorder": "矢印ボタンで画像の順序を変更できます",
+        "highQuality": "高画質の画像をアップロードすることを推奨します"
+      }
     }
+  },
+  "userSearch": {
+    "title": "ユーザー検索",
+    "description": "フォロワーやフォロー中のユーザーと新しい会話を開始します"
   },
   "notificationMessages": {
     "photoSession": {

@@ -6,7 +6,7 @@ import { EmailPasswordForm } from '@/components/auth/EmailPasswordForm';
 import Link from 'next/link';
 import { GalleryVerticalEnd } from 'lucide-react';
 import Image from 'next/image';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { logger } from '@/lib/utils/logger';
 import {
@@ -22,7 +22,9 @@ import {
 export default function SignInPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const locale = (params.locale as string) || 'ja';
+  const returnUrl = searchParams.get('returnUrl');
   const [activeTab, setActiveTab] = useState<'signin' | 'signup'>('signin');
   const { user, loading, logout } = useAuth();
   const [showWarning, setShowWarning] = useState(false);
@@ -97,6 +99,7 @@ export default function SignInPage() {
                       <EmailPasswordForm
                         value={activeTab}
                         onValueChange={setActiveTab}
+                        returnUrl={returnUrl}
                       />
 
                       {/* 区切り線とOAuthボタン（サインインタブの時のみ表示） */}

@@ -21,6 +21,65 @@ import { normalizePrefecture } from '@/lib/utils/prefecture';
 // =============================================================================
 
 /**
+ * フィルタリングを適用するヘルパー関数
+ *
+ * 注意: Supabaseクエリビルダーの型（PostgrestFilterBuilder）は非常に複雑で、
+ * 簡略化した型定義では対応できないため、any型を使用しています。
+ * この関数は以下のメソッドをサポートします:
+ * - eq, gte, lte: フィルタリング
+ * - or: OR条件
+ * - in: IN条件
+ * - order: ソート（呼び出し側で使用）
+ * - range: ページネーション（呼び出し側で使用）
+ */
+function applyStudioFilters(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  query: any,
+  filters: StudioSearchFilters
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): any {
+  if (filters.query) {
+    query = query.or(
+      `name.ilike.%${filters.query}%,address.ilike.%${filters.query}%`
+    );
+  }
+
+  if (filters.prefecture && filters.prefecture !== 'all') {
+    query = query.eq('prefecture', filters.prefecture);
+  }
+
+  if (filters.city) {
+    query = query.eq('city', filters.city);
+  }
+
+  if (filters.min_capacity) {
+    query = query.gte('max_capacity', filters.min_capacity);
+  }
+
+  if (filters.max_capacity) {
+    query = query.lte('max_capacity', filters.max_capacity);
+  }
+
+  if (filters.min_hourly_rate) {
+    query = query.gte('hourly_rate_min', filters.min_hourly_rate);
+  }
+
+  if (filters.max_hourly_rate) {
+    query = query.lte('hourly_rate_max', filters.max_hourly_rate);
+  }
+
+  if (filters.parking_available !== undefined) {
+    query = query.eq('parking_available', filters.parking_available);
+  }
+
+  if (filters.wifi_available !== undefined) {
+    query = query.eq('wifi_available', filters.wifi_available);
+  }
+
+  return query;
+}
+
+/**
  * スタジオ一覧を取得する
  */
 export async function getStudiosAction(
@@ -52,53 +111,30 @@ export async function getStudiosAction(
         )
       `
       )
-      .in('verification_status', ['verified', 'pending'])
-      .order('created_at', { ascending: false });
+      .in('verification_status', ['verified', 'pending']);
 
     // フィルタリング
-    if (filters.query) {
-      query = query.or(
-        `name.ilike.%${filters.query}%,address.ilike.%${filters.query}%`
-      );
-    }
+    query = applyStudioFilters(query, filters);
 
-    if (filters.prefecture && filters.prefecture !== 'all') {
-      query = query.eq('prefecture', filters.prefecture);
-    }
-
-    if (filters.city) {
-      query = query.eq('city', filters.city);
-    }
-
-    if (filters.min_capacity) {
-      query = query.gte('max_capacity', filters.min_capacity);
-    }
-
-    if (filters.max_capacity) {
-      query = query.lte('max_capacity', filters.max_capacity);
-    }
-
-    if (filters.min_hourly_rate) {
-      query = query.gte('hourly_rate_min', filters.min_hourly_rate);
-    }
-
-    if (filters.max_hourly_rate) {
-      query = query.lte('hourly_rate_max', filters.max_hourly_rate);
-    }
-
-    if (filters.parking_available !== undefined) {
-      query = query.eq('parking_available', filters.parking_available);
-    }
-
-    if (filters.wifi_available !== undefined) {
-      query = query.eq('wifi_available', filters.wifi_available);
-    }
-
-    // ソート
+    // ソート（デフォルトはcreated_at desc）
     if (filters.sort_by) {
       const ascending = filters.sort_order === 'asc';
       query = query.order(filters.sort_by, { ascending });
+    } else {
+      query = query.order('created_at', { ascending: false });
     }
+
+    // ページネーション適用前に総件数を取得
+    // リレーションを含むクエリではcountが取得できないため、シンプルなクエリで総件数を取得
+    let countQuery = supabase
+      .from('studios')
+      .select('*', { count: 'exact', head: true })
+      .in('verification_status', ['verified', 'pending']);
+
+    // フィルタリング（総件数取得用）
+    countQuery = applyStudioFilters(countQuery, filters);
+
+    const { count: totalCount } = await countQuery;
 
     // ページネーション
     const limit = filters.limit || DEFAULT_STUDIO_SEARCH.limit;
@@ -107,11 +143,11 @@ export async function getStudiosAction(
       query = query.range(offset, offset + limit - 1);
     }
 
-    const { data, error, count } = await query;
+    const { data, error } = await query;
 
     Logger.info('Database query result', {
       dataCount: data?.length || 0,
-      totalCount: count,
+      totalCount: totalCount,
       error: error?.message,
     });
 
@@ -150,13 +186,13 @@ export async function getStudiosAction(
 
     Logger.info('getStudiosAction success', {
       studiosCount: studios.length,
-      totalCount: count || studios.length,
+      totalCount: totalCount || 0,
     });
 
     return {
       success: true,
       studios,
-      totalCount: count || studios.length,
+      totalCount: totalCount || 0,
     };
   } catch (error) {
     Logger.error('スタジオ一覧取得失敗:', error);
@@ -445,7 +481,9 @@ export async function getStudioDetailAction(studioId: string): Promise<{
 /**
  * スタジオを作成する
  */
-export async function createStudioAction(formData: Partial<Studio>): Promise<{
+export async function createStudioAction(
+  formData: Partial<Studio> & { image_urls?: string[] }
+): Promise<{
   success: boolean;
   studio?: Studio;
   error?: string;
@@ -470,8 +508,11 @@ export async function createStudioAction(formData: Partial<Studio>): Promise<{
       '_'
     );
 
+    // image_urlsを分離（studioDataには含めない）
+    const { image_urls, ...studioFormData } = formData;
+
     const studioData = {
-      ...formData,
+      ...studioFormData,
       normalized_name: normalizedName,
       normalized_address: normalizedAddress,
       location_hash: locationHash,
@@ -488,6 +529,37 @@ export async function createStudioAction(formData: Partial<Studio>): Promise<{
     if (error) {
       Logger.error('スタジオ作成エラー:', error);
       return { success: false, error: 'スタジオの作成に失敗しました' };
+    }
+
+    // 画像URLが提供されている場合、studio_photosレコードを作成
+    if (image_urls && image_urls.length > 0) {
+      try {
+        const photoPromises = image_urls.map((imageUrl, index) =>
+          createStudioPhotoAction(studio.id, imageUrl, {
+            display_order: index + 1,
+          })
+        );
+
+        const photoResults = await Promise.all(photoPromises);
+        const failedPhotos = photoResults.filter(result => !result.success);
+
+        if (failedPhotos.length > 0) {
+          Logger.warning('一部の画像の保存に失敗:', {
+            studioId: studio.id,
+            failedCount: failedPhotos.length,
+            errors: failedPhotos.map(r => r.error),
+          });
+          // 画像の保存失敗は警告として記録するが、スタジオ作成は成功として扱う
+        } else {
+          Logger.info('スタジオ画像の保存成功:', {
+            studioId: studio.id,
+            imageCount: image_urls.length,
+          });
+        }
+      } catch (photoError) {
+        Logger.error('スタジオ画像保存エラー:', photoError);
+        // 画像の保存失敗は警告として記録するが、スタジオ作成は成功として扱う
+      }
     }
 
     revalidatePath('/studios');

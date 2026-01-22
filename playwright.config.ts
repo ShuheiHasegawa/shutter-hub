@@ -14,7 +14,7 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
 
   // ワーカー数
-  workers: process.env.CI ? 1 : undefined,
+  workers: process.env.CI ? 1 : 2, // CIは1、ローカルは2
 
   // レポーター
   reporter: 'html',
