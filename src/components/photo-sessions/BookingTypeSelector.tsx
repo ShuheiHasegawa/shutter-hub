@@ -2,11 +2,11 @@
 
 import { useTranslations } from 'next-intl';
 import { useCallback, memo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Clock, Shuffle, UserCheck, Star, Info } from 'lucide-react';
+import {
+  SelectableCardGroup,
+  SelectableCardItem,
+} from '@/components/ui/selectable-card';
+import { Clock, Shuffle, UserCheck, Star } from 'lucide-react';
 import type { BookingType } from '@/types/database';
 
 interface BookingTypeSelectorProps {
@@ -89,79 +89,23 @@ export const BookingTypeSelector = memo(function BookingTypeSelector({
     <div className="space-y-4">
       <h3 className="text-lg font-medium">{t('bookingType.title')}</h3>
 
-      <RadioGroup
+      <SelectableCardGroup
         value={value}
         onValueChange={handleValueChange}
         disabled={disabled}
-        className="grid grid-cols-1 md:grid-cols-2 gap-4"
       >
-        {bookingTypes.map(type => {
-          const Icon = type.icon;
-          const isSelected = value === type.value;
-
-          return (
-            <div key={type.value} className="relative">
-              <RadioGroupItem
-                value={type.value}
-                id={type.value}
-                className="sr-only"
-              />
-              <Label
-                htmlFor={type.value}
-                className={`block cursor-pointer transition-all duration-200 ${
-                  disabled ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
-              >
-                <Card
-                  className={`transition-all duration-200 hover:shadow-md ${
-                    isSelected
-                      ? 'ring-2 ring-primary shadow-md'
-                      : 'hover:border-muted-foreground/20'
-                  }`}
-                >
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-lg ${type.color}`}>
-                          <Icon className="h-5 w-5" />
-                        </div>
-                        <div>
-                          <CardTitle className="text-base">
-                            {type.title}
-                          </CardTitle>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            {type.description}
-                          </p>
-                        </div>
-                      </div>
-                      {isSelected && (
-                        <Badge
-                          variant="default"
-                          className="ml-2 flex-shrink-0 whitespace-nowrap"
-                        >
-                          {t('bookingType.selected')}
-                        </Badge>
-                      )}
-                    </div>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className="space-y-2">
-                      {type.features.map((feature, index) => (
-                        <div key={index} className="flex items-start gap-2">
-                          <Info className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                          <span className="text-sm text-muted-foreground">
-                            {feature}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </Label>
-            </div>
-          );
-        })}
-      </RadioGroup>
+        {bookingTypes.map(type => (
+          <SelectableCardItem
+            key={type.value}
+            value={type.value}
+            icon={type.icon}
+            iconColor={type.color}
+            title={type.title}
+            description={type.description}
+            features={type.features}
+          />
+        ))}
+      </SelectableCardGroup>
     </div>
   );
 });

@@ -9,8 +9,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import {
   Form,
@@ -53,8 +52,11 @@ import {
 } from '@/components/ui/action-bar';
 import { StudioSelectWithClear } from '@/components/studio/StudioSelectCombobox';
 import { getStudioForAutoFillAction } from '@/app/actions/studio';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
+import {
+  SelectableCardGroup,
+  SelectableCardItem,
+} from '@/components/ui/selectable-card';
 import { useSubscription } from '@/hooks/useSubscription';
 import { checkCanEnableCashOnSite } from '@/app/actions/photo-session-slots';
 import { CreditCard, Wallet } from 'lucide-react';
@@ -101,7 +103,12 @@ export function PhotoSessionForm({
           location: z.string().optional(),
           address: z.string().optional(),
           event_date: z.string().optional(),
-          booking_type: z.enum(['first_come', 'lottery', 'priority']),
+          booking_type: z.enum([
+            'first_come',
+            'lottery',
+            'admin_lottery',
+            'priority',
+          ]),
           allow_multiple_bookings: z.boolean(),
           block_users_with_bad_ratings: z.boolean(),
           payment_timing: z.enum(['prepaid', 'cash_on_site']),
@@ -131,10 +138,14 @@ export function PhotoSessionForm({
         ? formatDateToLocalString(new Date(initialData.start_time))
         : '',
       booking_type:
-        (['first_come', 'lottery', 'priority'].includes(
+        (['first_come', 'lottery', 'admin_lottery', 'priority'].includes(
           initialData?.booking_type || ''
         )
-          ? (initialData?.booking_type as 'first_come' | 'lottery' | 'priority')
+          ? (initialData?.booking_type as
+              | 'first_come'
+              | 'lottery'
+              | 'admin_lottery'
+              | 'priority')
           : 'first_come') || 'first_come',
       allow_multiple_bookings: initialData?.allow_multiple_bookings || false,
       block_users_with_bad_ratings:
@@ -257,13 +268,14 @@ export function PhotoSessionForm({
 
   const handleBookingTypeChange = useCallback(
     (bookingType: BookingType) => {
-      // admin_lotteryはフォームでは使用しないため、lotteryに変換
-      const formBookingType =
-        bookingType === 'admin_lottery' ? 'lottery' : bookingType;
-      if (['first_come', 'lottery', 'priority'].includes(formBookingType)) {
+      if (
+        ['first_come', 'lottery', 'admin_lottery', 'priority'].includes(
+          bookingType
+        )
+      ) {
         form.setValue(
           'booking_type',
-          formBookingType as 'first_come' | 'lottery' | 'priority'
+          bookingType as 'first_come' | 'lottery' | 'admin_lottery' | 'priority'
         );
       }
     },
@@ -1099,151 +1111,70 @@ export function PhotoSessionForm({
                 <FormField
                   control={form.control}
                   name="payment_timing"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <RadioGroup
-                          value={field.value}
-                          onValueChange={(
-                            value: 'prepaid' | 'cash_on_site'
-                          ) => {
-                            // 環境変数で現地払いが無効化されている場合は、強制的にprepaidに戻す
-                            if (
-                              value === 'cash_on_site' &&
-                              !ENABLE_CASH_ON_SITE
-                            ) {
-                              field.onChange('prepaid');
-                              toast({
-                                title: '現地払い機能は現在無効化されています',
-                                variant: 'default',
-                              });
-                              return;
-                            }
-                            field.onChange(value);
-                          }}
-                          disabled={isLoading}
-                          className="space-y-4"
-                        >
-                          {/* Stripe決済（事前決済） */}
-                          <div className="relative">
-                            <RadioGroupItem
-                              value="prepaid"
-                              id="payment_prepaid"
-                              className="sr-only"
-                            />
-                            <Label
-                              htmlFor="payment_prepaid"
-                              className="block cursor-pointer transition-all duration-200"
-                            >
-                              <Card
-                                className={`transition-all duration-200 hover:shadow-md ${
-                                  field.value === 'prepaid'
-                                    ? 'ring-2 ring-primary shadow-md'
-                                    : 'hover:border-muted-foreground/20'
-                                }`}
-                              >
-                                <CardHeader className="pb-3">
-                                  <div className="flex items-start justify-between">
-                                    <div className="flex items-center gap-3">
-                                      <div className="p-2 rounded-lg bg-blue-100 text-blue-800 border-blue-200">
-                                        <CreditCard className="h-5 w-5" />
-                                      </div>
-                                      <div>
-                                        <CardTitle className="text-base">
-                                          {t('form.paymentTimingPrepaid')}
-                                        </CardTitle>
-                                        <p className="text-sm text-muted-foreground mt-1">
-                                          予約時にStripe決済を完了していただきます
-                                        </p>
-                                      </div>
-                                    </div>
-                                    {field.value === 'prepaid' && (
-                                      <Badge variant="default" className="ml-2">
-                                        選択中
-                                      </Badge>
-                                    )}
-                                  </div>
-                                </CardHeader>
-                              </Card>
-                            </Label>
-                          </div>
+                  render={({ field }) => {
+                    const handlePaymentChange = (value: string) => {
+                      const paymentValue = value as 'prepaid' | 'cash_on_site';
+                      // 環境変数で現地払いが無効化されている場合は、強制的にprepaidに戻す
+                      if (
+                        paymentValue === 'cash_on_site' &&
+                        !ENABLE_CASH_ON_SITE
+                      ) {
+                        field.onChange('prepaid');
+                        toast({
+                          title: '現地払い機能は現在無効化されています',
+                          variant: 'default',
+                        });
+                        return;
+                      }
+                      field.onChange(paymentValue);
+                    };
 
-                          {/* 現地払い（環境変数で制御） */}
-                          {ENABLE_CASH_ON_SITE && (
-                            <div className="relative">
-                              <RadioGroupItem
+                    return (
+                      <FormItem>
+                        <FormControl>
+                          <SelectableCardGroup
+                            value={field.value}
+                            onValueChange={handlePaymentChange}
+                            disabled={isLoading}
+                            className="grid grid-cols-1 gap-4"
+                          >
+                            <SelectableCardItem
+                              value="prepaid"
+                              icon={CreditCard}
+                              iconColor="bg-blue-100 text-blue-800 border-blue-200"
+                              title={t('form.paymentTimingPrepaid')}
+                              description="予約時にStripe決済を完了していただきます"
+                            />
+
+                            {ENABLE_CASH_ON_SITE && (
+                              <SelectableCardItem
                                 value="cash_on_site"
-                                id="payment_cash_on_site"
-                                className="sr-only"
+                                icon={Wallet}
+                                iconColor="bg-success/10 text-success border-success/30"
+                                title={t('form.paymentTimingCashOnSite')}
+                                description="撮影当日に現地でお支払いいただきます"
                                 disabled={!canEnableCashOnSite}
+                                additionalContent={
+                                  CASH_ON_SITE_REQUIRES_SUBSCRIPTION &&
+                                  !canEnableCashOnSite && (
+                                    <p className="text-xs text-orange-600 dark:text-orange-400 mt-2">
+                                      {t('form.cashOnSiteRequiresSubscription')}
+                                      {currentPlanName && (
+                                        <span className="ml-1">
+                                          （現在のプラン: {currentPlanName}）
+                                        </span>
+                                      )}
+                                    </p>
+                                  )
+                                }
                               />
-                              <Label
-                                htmlFor="payment_cash_on_site"
-                                className={`block transition-all duration-200 ${
-                                  !canEnableCashOnSite
-                                    ? 'opacity-50 cursor-not-allowed'
-                                    : 'cursor-pointer'
-                                }`}
-                              >
-                                <Card
-                                  className={`transition-all duration-200 ${
-                                    !canEnableCashOnSite
-                                      ? 'opacity-50'
-                                      : field.value === 'cash_on_site'
-                                        ? 'ring-2 ring-primary shadow-md'
-                                        : 'hover:border-muted-foreground/20 hover:shadow-md'
-                                  }`}
-                                >
-                                  <CardHeader className="pb-3">
-                                    <div className="flex items-start justify-between">
-                                      <div className="flex items-center gap-3">
-                                        <div className="p-2 rounded-lg bg-success/10 text-success border-success/30">
-                                          <Wallet className="h-5 w-5" />
-                                        </div>
-                                        <div>
-                                          <CardTitle className="text-base">
-                                            {t('form.paymentTimingCashOnSite')}
-                                          </CardTitle>
-                                          <p className="text-sm text-muted-foreground mt-1">
-                                            撮影当日に現地でお支払いいただきます
-                                          </p>
-                                          {/* サブスクリプションチェックが必要な場合のみ警告を表示 */}
-                                          {CASH_ON_SITE_REQUIRES_SUBSCRIPTION &&
-                                            !canEnableCashOnSite && (
-                                              <p className="text-xs text-orange-600 dark:text-orange-400 mt-2">
-                                                {t(
-                                                  'form.cashOnSiteRequiresSubscription'
-                                                )}
-                                                {currentPlanName && (
-                                                  <span className="ml-1">
-                                                    （現在のプラン:{' '}
-                                                    {currentPlanName}）
-                                                  </span>
-                                                )}
-                                              </p>
-                                            )}
-                                        </div>
-                                      </div>
-                                      {field.value === 'cash_on_site' &&
-                                        canEnableCashOnSite && (
-                                          <Badge
-                                            variant="default"
-                                            className="ml-2"
-                                          >
-                                            選択中
-                                          </Badge>
-                                        )}
-                                    </div>
-                                  </CardHeader>
-                                </Card>
-                              </Label>
-                            </div>
-                          )}
-                        </RadioGroup>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                            )}
+                          </SelectableCardGroup>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
                 />
               </div>
 
