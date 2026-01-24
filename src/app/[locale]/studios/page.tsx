@@ -145,7 +145,7 @@ export default function StudiosPage() {
       />
       <div className="flex flex-col flex-1 min-h-0">
         {/* 検索・フィルター（StickyHeaderで固定） */}
-        <StickyHeader className="space-y-4">
+        <StickyHeader>
           {/* 1行目: 検索フィルター（デスクトップのみ表示） */}
           <div className="hidden md:block">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

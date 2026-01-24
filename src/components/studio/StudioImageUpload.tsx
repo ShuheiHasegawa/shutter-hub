@@ -5,11 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
-  X,
   Upload,
   Image as ImageIcon,
   Loader2,
   AlertCircle,
+  GripVertical,
+  ChevronLeft,
+  ChevronRight,
+  X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -28,6 +31,372 @@ import { Building2 } from 'lucide-react';
 import { logger } from '@/lib/utils/logger';
 import { useTranslations } from 'next-intl';
 import { StudioPhoto } from '@/types/database';
+import {
+  DndContext,
+  DragEndEvent,
+  DragStartEvent,
+  PointerSensor,
+  TouchSensor,
+  KeyboardSensor,
+  useSensor,
+  useSensors,
+  closestCenter,
+  DragOverlay,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  rectSortingStrategy,
+  arrayMove,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
+/**
+ * ドラッグ可能な画像カードコンポーネント（作成モード用）
+ */
+interface SortableImageCardProps {
+  url: string;
+  index: number;
+  totalImages: number;
+  onRemove: (index: number) => void;
+  onMoveLeft: () => void;
+  onMoveRight: () => void;
+  disabled?: boolean;
+  isMain?: boolean;
+  t: (key: string) => string;
+}
+
+function SortableImageCard({
+  url,
+  index,
+  totalImages,
+  onRemove,
+  onMoveLeft,
+  onMoveRight,
+  disabled = false,
+  isMain = false,
+  t,
+}: SortableImageCardProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: `image-${index}` });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition: isDragging ? 'none' : transition || 'transform 200ms ease',
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div
+      className={cn(
+        'group relative transition-all duration-200 select-none',
+        isDragging && 'opacity-50 scale-105 z-10'
+      )}
+      style={{
+        WebkitUserSelect: 'none',
+        WebkitTouchCallout: 'none',
+        userSelect: 'none',
+      }}
+    >
+      <div
+        ref={setNodeRef}
+        style={style}
+        className="w-28 sm:w-32 flex-shrink-0 snap-center text-right"
+      >
+        <Card className="relative overflow-visible shadow-md hover:shadow-lg transition-shadow select-none">
+          {/* 削除ボタン - 常時表示（スマホ対応） */}
+          <Button
+            type="button"
+            variant="destructive"
+            size="sm"
+            className="absolute top-6 right-0 left-auto h-6 w-6 p-0 z-20 rounded-full"
+            onClick={e => {
+              e.preventDefault();
+              e.stopPropagation();
+              onRemove(index);
+            }}
+            onPointerDown={e => {
+              e.stopPropagation();
+            }}
+            onMouseDown={e => {
+              e.stopPropagation();
+            }}
+            onTouchStart={e => {
+              e.stopPropagation();
+            }}
+            disabled={disabled}
+          >
+            <X className="h-3 w-3" />
+          </Button>
+
+          <CardContent className="p-2">
+            <div className="aspect-square relative rounded-lg overflow-hidden bg-muted">
+              <EmptyImage
+                src={url}
+                alt={`スタジオ画像 ${index + 1}`}
+                fallbackIcon={Building2}
+                fallbackIconSize="lg"
+                fill
+                className="object-cover"
+              />
+
+              {/* メイン画像バッジ */}
+              {isMain && (
+                <Badge
+                  variant="default"
+                  className="absolute top-1 left-1 text-xs"
+                >
+                  {t('imageUpload.main') || 'メイン'}
+                </Badge>
+              )}
+            </div>
+
+            {/* 画像下部中央のコントロールエリア */}
+            <div className="flex items-center justify-center gap-1 mt-2">
+              {/* 左移動ボタン */}
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                className={cn(
+                  'h-8 w-8 p-0',
+                  index === 0 && 'invisible pointer-events-none'
+                )}
+                onClick={e => {
+                  e.stopPropagation();
+                  onMoveLeft();
+                }}
+                disabled={disabled || index === 0}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+
+              {/* ドラッグハンドル */}
+              <div
+                {...attributes}
+                {...listeners}
+                className={cn(
+                  'cursor-grab active:cursor-grabbing hover:bg-muted transition-colors flex items-center justify-center p-2 rounded touch-none select-none',
+                  disabled && 'cursor-not-allowed opacity-50'
+                )}
+                style={{
+                  touchAction: 'none',
+                  WebkitUserSelect: 'none',
+                  WebkitTouchCallout: 'none',
+                }}
+                title="ドラッグして並び替え"
+              >
+                <GripVertical className="h-4 w-4 text-muted-foreground" />
+              </div>
+
+              {/* 右移動ボタン */}
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                className={cn(
+                  'h-8 w-8 p-0',
+                  index === totalImages - 1 && 'invisible pointer-events-none'
+                )}
+                onClick={e => {
+                  e.stopPropagation();
+                  onMoveRight();
+                }}
+                disabled={disabled || index === totalImages - 1}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <p className="text-xs text-center mt-1 text-muted-foreground">
+              {index + 1}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * ドラッグ可能な画像カードコンポーネント（編集モード用）
+ */
+interface SortablePhotoCardProps {
+  photo: StudioPhoto;
+  index: number;
+  totalPhotos: number;
+  onRemove: (index: number, photoId: string) => void;
+  onMoveLeft: () => void;
+  onMoveRight: () => void;
+  disabled?: boolean;
+  isMain?: boolean;
+  t: (key: string) => string;
+}
+
+function SortablePhotoCard({
+  photo,
+  index,
+  totalPhotos,
+  onRemove,
+  onMoveLeft,
+  onMoveRight,
+  disabled = false,
+  isMain = false,
+  t,
+}: SortablePhotoCardProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: `photo-${photo.id}` });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition: isDragging ? 'none' : transition || 'transform 200ms ease',
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div
+      className={cn(
+        'group relative transition-all duration-200 select-none',
+        isDragging && 'opacity-50 scale-105 z-10'
+      )}
+      style={{
+        WebkitUserSelect: 'none',
+        WebkitTouchCallout: 'none',
+        userSelect: 'none',
+      }}
+    >
+      <div
+        ref={setNodeRef}
+        style={style}
+        className="w-28 sm:w-32 flex-shrink-0 snap-center text-right"
+      >
+        <Card className="relative overflow-visible shadow-md hover:shadow-lg transition-shadow select-none">
+          {/* 削除ボタン - 常時表示（スマホ対応） */}
+          <Button
+            type="button"
+            variant="destructive"
+            size="sm"
+            className="absolute top-6 right-0 left-auto h-6 w-6 p-0 z-20 rounded-full"
+            onClick={e => {
+              e.preventDefault();
+              e.stopPropagation();
+              onRemove(index, photo.id);
+            }}
+            onPointerDown={e => {
+              e.stopPropagation();
+            }}
+            onMouseDown={e => {
+              e.stopPropagation();
+            }}
+            onTouchStart={e => {
+              e.stopPropagation();
+            }}
+            disabled={disabled}
+          >
+            <X className="h-3 w-3" />
+          </Button>
+
+          <CardContent className="p-2">
+            <div className="aspect-square relative rounded-lg overflow-hidden bg-muted">
+              <EmptyImage
+                src={photo.image_url || undefined}
+                alt={photo.alt_text || `スタジオ画像 ${index + 1}`}
+                fallbackIcon={Building2}
+                fallbackIconSize="lg"
+                fill
+                className="object-cover"
+              />
+
+              {/* メイン画像バッジ */}
+              {isMain && (
+                <Badge
+                  variant="default"
+                  className="absolute top-1 left-1 text-xs"
+                >
+                  {t('imageUpload.main') || 'メイン'}
+                </Badge>
+              )}
+            </div>
+
+            {/* 画像下部中央のコントロールエリア */}
+            <div className="flex items-center justify-center gap-1 mt-2">
+              {/* 左移動ボタン */}
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                className={cn(
+                  'h-8 w-8 p-0',
+                  index === 0 && 'invisible pointer-events-none'
+                )}
+                onClick={e => {
+                  e.stopPropagation();
+                  onMoveLeft();
+                }}
+                disabled={disabled || index === 0}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+
+              {/* ドラッグハンドル */}
+              <div
+                {...attributes}
+                {...listeners}
+                className={cn(
+                  'cursor-grab active:cursor-grabbing hover:bg-muted transition-colors flex items-center justify-center p-2 rounded touch-none select-none',
+                  disabled && 'cursor-not-allowed opacity-50'
+                )}
+                style={{
+                  touchAction: 'none',
+                  WebkitUserSelect: 'none',
+                  WebkitTouchCallout: 'none',
+                }}
+                title="ドラッグして並び替え"
+              >
+                <GripVertical className="h-4 w-4 text-muted-foreground" />
+              </div>
+
+              {/* 右移動ボタン */}
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                className={cn(
+                  'h-8 w-8 p-0',
+                  index === totalPhotos - 1 && 'invisible pointer-events-none'
+                )}
+                onClick={e => {
+                  e.stopPropagation();
+                  onMoveRight();
+                }}
+                disabled={disabled || index === totalPhotos - 1}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <p className="text-xs text-center mt-1 text-muted-foreground">
+              {index + 1}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
 
 interface StudioImageUploadProps {
   // モード識別
@@ -71,7 +440,26 @@ export function StudioImageUpload({
 
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const [draggedItemId, setDraggedItemId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // PC/スマホ両対応のセンサー設定
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // 8px移動でドラッグ開始（スマホ対応）
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 150, // 150ms長押しでドラッグ開始（テキスト選択との競合を防止）
+        tolerance: 5, // 5px以内の移動は許容
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   // 初期値の同期
   useEffect(() => {
@@ -295,15 +683,75 @@ export function StudioImageUpload({
     [handleFileSelect]
   );
 
+  // 画像の並び替え関数（作成モード用）
   const moveImage = useCallback(
     (fromIndex: number, toIndex: number) => {
-      if (mode !== 'create') return; // 作成モードのみ
+      if (mode !== 'create') return;
+      if (toIndex < 0 || toIndex >= imageUrls.length) return;
       const newUrls = [...imageUrls];
       const [movedUrl] = newUrls.splice(fromIndex, 1);
       newUrls.splice(toIndex, 0, movedUrl);
       updateImageUrls(newUrls);
     },
     [mode, imageUrls, updateImageUrls]
+  );
+
+  // 画像の並び替え関数（編集モード用）
+  const movePhoto = useCallback(
+    (fromIndex: number, toIndex: number) => {
+      if (mode !== 'edit') return;
+      if (toIndex < 0 || toIndex >= photos.length) return;
+      const newPhotos = [...photos];
+      const [movedPhoto] = newPhotos.splice(fromIndex, 1);
+      newPhotos.splice(toIndex, 0, movedPhoto);
+      setPhotos(newPhotos);
+      onPhotosChange?.(newPhotos);
+    },
+    [mode, photos, onPhotosChange]
+  );
+
+  // ドラッグ開始時の処理
+  const handleDragStart = useCallback((event: DragStartEvent) => {
+    const { active } = event;
+    setDraggedItemId(String(active.id));
+  }, []);
+
+  // ドラッグ終了時の処理
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+      setDraggedItemId(null);
+
+      if (active.id !== over?.id && over?.id) {
+        if (mode === 'create') {
+          // 作成モード: URL配列の並び替え
+          const oldIndex = parseInt(
+            String(active.id).replace('image-', ''),
+            10
+          );
+          const newIndex = parseInt(String(over.id).replace('image-', ''), 10);
+
+          if (!isNaN(oldIndex) && !isNaN(newIndex)) {
+            const reordered = arrayMove(imageUrls, oldIndex, newIndex);
+            updateImageUrls(reordered);
+          }
+        } else {
+          // 編集モード: 写真配列の並び替え
+          const oldIndex = parseInt(
+            String(active.id).replace('photo-', ''),
+            10
+          );
+          const newIndex = parseInt(String(over.id).replace('photo-', ''), 10);
+
+          if (!isNaN(oldIndex) && !isNaN(newIndex)) {
+            const reordered = arrayMove(photos, oldIndex, newIndex);
+            setPhotos(reordered);
+            onPhotosChange?.(reordered);
+          }
+        }
+      }
+    },
+    [mode, imageUrls, photos, updateImageUrls, onPhotosChange]
   );
 
   // 現在の画像数とリストを取得
@@ -389,121 +837,127 @@ export function StudioImageUpload({
             )}
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {mode === 'create'
-              ? imageUrls.map((url, index) => (
-                  <Card key={`${url}-${index}`} className="relative group">
-                    <CardContent className="p-2">
-                      <div className="aspect-square relative rounded-lg overflow-hidden bg-muted">
-                        <EmptyImage
-                          src={url}
-                          alt={`スタジオ画像 ${index + 1}`}
-                          fallbackIcon={Building2}
-                          fallbackIconSize="lg"
-                          fill
-                          className="object-cover"
-                        />
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={
+                mode === 'create'
+                  ? imageUrls.map((_, i) => `image-${i}`)
+                  : photos.map(photo => `photo-${photo.id}`)
+              }
+              strategy={rectSortingStrategy}
+            >
+              <div
+                className="flex gap-3 overflow-x-auto pt-3 pb-2 snap-x snap-mandatory scrollbar-thin scrollbar-thumb-muted"
+                style={{
+                  WebkitUserSelect: 'none',
+                  WebkitTouchCallout: 'none',
+                  userSelect: 'none',
+                }}
+              >
+                {mode === 'create'
+                  ? imageUrls.map((url, index) => (
+                      <SortableImageCard
+                        key={`${url}-${index}`}
+                        url={url}
+                        index={index}
+                        totalImages={imageUrls.length}
+                        onRemove={handleRemoveImage}
+                        onMoveLeft={() => moveImage(index, index - 1)}
+                        onMoveRight={() => moveImage(index, index + 1)}
+                        disabled={disabled}
+                        isMain={index === 0}
+                        t={t}
+                      />
+                    ))
+                  : photos.map((photo, index) => (
+                      <SortablePhotoCard
+                        key={photo.id}
+                        photo={photo}
+                        index={index}
+                        totalPhotos={photos.length}
+                        onRemove={handleRemoveImage}
+                        onMoveLeft={() => movePhoto(index, index - 1)}
+                        onMoveRight={() => movePhoto(index, index + 1)}
+                        disabled={disabled}
+                        isMain={photo.display_order === 1}
+                        t={t}
+                      />
+                    ))}
+              </div>
+            </SortableContext>
 
-                        {/* メイン画像バッジ */}
-                        {index === 0 && (
-                          <Badge
-                            variant="default"
-                            className="absolute top-2 left-2 text-xs"
-                          >
-                            {t('imageUpload.main') || 'メイン'}
-                          </Badge>
-                        )}
-
-                        {/* 削除ボタン */}
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="sm"
-                          className="absolute top-2 right-2 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={() => handleRemoveImage(index)}
-                          disabled={disabled}
-                        >
-                          <X className="h-3 w-3" />
-                        </Button>
-
-                        {/* 順序変更ボタン */}
-                        <div className="absolute bottom-2 left-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          {index > 0 && (
-                            <Button
-                              type="button"
-                              variant="secondary"
-                              size="sm"
-                              className="h-6 w-6 p-0 text-xs"
-                              onClick={() => moveImage(index, index - 1)}
-                              disabled={disabled}
-                            >
-                              ←
-                            </Button>
-                          )}
-                          {index < imageUrls.length - 1 && (
-                            <Button
-                              type="button"
-                              variant="secondary"
-                              size="sm"
-                              className="h-6 w-6 p-0 text-xs"
-                              onClick={() => moveImage(index, index + 1)}
-                              disabled={disabled}
-                            >
-                              →
-                            </Button>
-                          )}
+            {/* ドラッグ中のプレビュー */}
+            <DragOverlay>
+              {draggedItemId
+                ? (() => {
+                    if (mode === 'create') {
+                      const draggedIndex = parseInt(
+                        draggedItemId.replace('image-', ''),
+                        10
+                      );
+                      const draggedUrl = !isNaN(draggedIndex)
+                        ? imageUrls[draggedIndex]
+                        : null;
+                      return draggedUrl ? (
+                        <div className="opacity-90 shadow-2xl bg-white rounded-lg border-2 border-primary">
+                          <Card className="overflow-hidden">
+                            <CardContent className="p-2">
+                              <div className="aspect-square relative rounded-lg overflow-hidden bg-muted w-28 sm:w-32">
+                                <EmptyImage
+                                  src={draggedUrl}
+                                  alt="ドラッグ中の画像"
+                                  fallbackIcon={Building2}
+                                  fallbackIconSize="lg"
+                                  fill
+                                  className="object-cover"
+                                />
+                              </div>
+                              <div className="flex items-center justify-center mt-2 p-2">
+                                <GripVertical className="h-4 w-4 text-gray-400" />
+                              </div>
+                            </CardContent>
+                          </Card>
                         </div>
-                      </div>
-
-                      <p className="text-xs text-center mt-2 text-muted-foreground">
-                        {index + 1}
-                      </p>
-                    </CardContent>
-                  </Card>
-                ))
-              : photos.map((photo, index) => (
-                  <Card key={photo.id} className="relative group">
-                    <CardContent className="p-2">
-                      <div className="aspect-square relative rounded-lg overflow-hidden bg-muted">
-                        <EmptyImage
-                          src={photo.image_url || undefined}
-                          alt={photo.alt_text || `スタジオ画像 ${index + 1}`}
-                          fallbackIcon={Building2}
-                          fallbackIconSize="lg"
-                          fill
-                          className="object-cover"
-                        />
-
-                        {/* メイン画像バッジ */}
-                        {photo.display_order === 1 && (
-                          <Badge
-                            variant="default"
-                            className="absolute top-2 left-2 text-xs"
-                          >
-                            {t('imageUpload.main') || 'メイン'}
-                          </Badge>
-                        )}
-
-                        {/* 削除ボタン */}
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="sm"
-                          className="absolute top-2 right-2 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={() => handleRemoveImage(index, photo.id)}
-                          disabled={disabled}
-                        >
-                          <X className="h-3 w-3" />
-                        </Button>
-                      </div>
-
-                      <p className="text-xs text-center mt-2 text-muted-foreground">
-                        {index + 1}
-                      </p>
-                    </CardContent>
-                  </Card>
-                ))}
-          </div>
+                      ) : null;
+                    } else {
+                      const draggedIndex = parseInt(
+                        draggedItemId.replace('photo-', ''),
+                        10
+                      );
+                      const draggedPhoto = !isNaN(draggedIndex)
+                        ? photos.find((_, i) => i === draggedIndex)
+                        : null;
+                      return draggedPhoto ? (
+                        <div className="opacity-90 shadow-2xl bg-white rounded-lg border-2 border-primary">
+                          <Card className="overflow-hidden">
+                            <CardContent className="p-2">
+                              <div className="aspect-square relative rounded-lg overflow-hidden bg-muted w-28 sm:w-32">
+                                <EmptyImage
+                                  src={draggedPhoto.image_url || undefined}
+                                  alt="ドラッグ中の画像"
+                                  fallbackIcon={Building2}
+                                  fallbackIconSize="lg"
+                                  fill
+                                  className="object-cover"
+                                />
+                              </div>
+                              <div className="flex items-center justify-center mt-2 p-2">
+                                <GripVertical className="h-4 w-4 text-gray-400" />
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </div>
+                      ) : null;
+                    }
+                  })()
+                : null}
+            </DragOverlay>
+          </DndContext>
 
           <div className="flex items-start gap-2 p-3 bg-muted/50 rounded-lg">
             <AlertCircle className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
@@ -520,7 +974,7 @@ export function StudioImageUpload({
                 <li>
                   •{' '}
                   {t('imageUpload.tips.dragToReorder') ||
-                    '矢印ボタンで画像の順序を変更できます'}
+                    'ドラッグまたは矢印ボタンで画像の順序を変更できます'}
                 </li>
                 <li>
                   •{' '}

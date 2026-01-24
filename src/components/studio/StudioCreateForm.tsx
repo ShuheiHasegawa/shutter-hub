@@ -22,6 +22,7 @@ import {
   ActionBarSentinel,
 } from '@/components/ui/action-bar';
 import { StudioImageUpload } from './StudioImageUpload';
+import { useTranslations } from 'next-intl';
 
 // SSRエラー回避のため動的インポート
 const MapPicker = dynamic(
@@ -39,91 +40,12 @@ const MapPicker = dynamic(
   }
 );
 
-const formSchema = z.object({
-  name: z
-    .string()
-    .min(VALIDATION.name.minLength, 'スタジオ名は必須です')
-    .max(
-      VALIDATION.name.maxLength,
-      `スタジオ名は${VALIDATION.name.maxLength}文字以内で入力してください`
-    ),
-  description: z
-    .string()
-    .max(
-      VALIDATION.description.maxLength,
-      `説明は${VALIDATION.description.maxLength}文字以内で入力してください`
-    )
-    .optional(),
-  address: z
-    .string()
-    .min(VALIDATION.address.minLength, '住所は必須です')
-    .max(
-      VALIDATION.address.maxLength,
-      `住所は${VALIDATION.address.maxLength}文字以内で入力してください`
-    ),
-  prefecture: z.string().min(1, '都道府県は必須です'),
-  city: z
-    .string()
-    .min(1, '市区町村は必須です')
-    .max(50, '市区町村は50文字以内で入力してください'),
-  access_info: z
-    .string()
-    .max(300, 'アクセス情報は300文字以内で入力してください')
-    .optional(),
-  phone: z
-    .string()
-    .optional()
-    .refine(
-      value => !value || VALIDATION.phone.pattern.test(value),
-      '有効な電話番号を入力してください'
-    ),
-  email: z
-    .string()
-    .optional()
-    .refine(
-      value => !value || z.string().email().safeParse(value).success,
-      '有効なメールアドレスを入力してください'
-    ),
-  website_url: z
-    .string()
-    .optional()
-    .refine(
-      value => !value || z.string().url().safeParse(value).success,
-      '有効なURLを入力してください'
-    ),
-  total_area: z.coerce
-    .number()
-    .positive('面積は正の数値で入力してください')
-    .optional()
-    .catch(undefined),
-  max_capacity: z.coerce
-    .number()
-    .positive('最大収容人数は正の数値で入力してください')
-    .optional()
-    .catch(undefined),
-  parking_available: z.boolean(),
-  wifi_available: z.boolean(),
-  hourly_rate_min: z.coerce
-    .number()
-    .positive('最低料金は正の数値で入力してください')
-    .optional()
-    .catch(undefined),
-  hourly_rate_max: z.coerce
-    .number()
-    .positive('最高料金は正の数値で入力してください')
-    .optional()
-    .catch(undefined),
-  latitude: z.number().optional(),
-  longitude: z.number().optional(),
-});
-
-// type FormData = z.infer<typeof formSchema>;
-
 interface StudioCreateFormProps {
   onSuccess?: (studioId: string) => void;
 }
 
 export function StudioCreateForm({ onSuccess }: StudioCreateFormProps) {
+  const t = useTranslations('studio.form');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const { toast } = useToast();
@@ -134,6 +56,91 @@ export function StudioCreateForm({ onSuccess }: StudioCreateFormProps) {
   const tempId = useMemo(
     () => `temp_${Date.now()}_${crypto.randomUUID().split('-')[0]}`,
     []
+  );
+
+  // zodスキーマを動的に生成（多言語化対応）
+  const formSchema = useMemo(
+    () =>
+      z.object({
+        name: z
+          .string()
+          .min(VALIDATION.name.minLength, 'スタジオ名は必須です')
+          .max(
+            VALIDATION.name.maxLength,
+            `スタジオ名は${VALIDATION.name.maxLength}文字以内で入力してください`
+          ),
+        description: z
+          .string()
+          .max(
+            VALIDATION.description.maxLength,
+            `説明は${VALIDATION.description.maxLength}文字以内で入力してください`
+          )
+          .optional(),
+        address: z
+          .string()
+          .min(VALIDATION.address.minLength, t('validation.addressRequired'))
+          .max(
+            VALIDATION.address.maxLength,
+            t('validation.addressMaxLength', {
+              max: VALIDATION.address.maxLength,
+            })
+          ),
+        prefecture: z.string().min(1, t('validation.prefectureRequired')),
+        city: z
+          .string()
+          .min(1, t('validation.cityRequired'))
+          .max(50, t('validation.cityMaxLength')),
+        access_info: z
+          .string()
+          .max(300, 'アクセス情報は300文字以内で入力してください')
+          .optional(),
+        phone: z
+          .string()
+          .optional()
+          .refine(
+            value => !value || VALIDATION.phone.pattern.test(value),
+            '有効な電話番号を入力してください'
+          ),
+        email: z
+          .string()
+          .optional()
+          .refine(
+            value => !value || z.string().email().safeParse(value).success,
+            '有効なメールアドレスを入力してください'
+          ),
+        website_url: z
+          .string()
+          .optional()
+          .refine(
+            value => !value || z.string().url().safeParse(value).success,
+            '有効なURLを入力してください'
+          ),
+        total_area: z.coerce
+          .number()
+          .positive('面積は正の数値で入力してください')
+          .optional()
+          .catch(undefined),
+        max_capacity: z.coerce
+          .number()
+          .positive('最大収容人数は正の数値で入力してください')
+          .optional()
+          .catch(undefined),
+        parking_available: z.boolean(),
+        wifi_available: z.boolean(),
+        hourly_rate_min: z.coerce
+          .number()
+          .positive('最低料金は正の数値で入力してください')
+          .optional()
+          .catch(undefined),
+        hourly_rate_max: z.coerce
+          .number()
+          .positive('最高料金は正の数値で入力してください')
+          .optional()
+          .catch(undefined),
+        latitude: z.number().optional(),
+        longitude: z.number().optional(),
+      }),
+    [t]
   );
 
   const form = useForm({
@@ -227,7 +234,7 @@ export function StudioCreateForm({ onSuccess }: StudioCreateFormProps) {
       <form
         ref={formRef}
         onSubmit={form.handleSubmit(onSubmit)}
-        className="space-y-6"
+        className="space-y-4"
       >
         {/* 画像アップロード */}
         <Card>
@@ -291,7 +298,9 @@ export function StudioCreateForm({ onSuccess }: StudioCreateFormProps) {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="prefecture">都道府県 *</Label>
+                <Label htmlFor="prefecture">
+                  {t('labels.prefectureRequired')}
+                </Label>
                 <PrefectureSelect
                   value={form.watch('prefecture')}
                   onValueChange={value => form.setValue('prefecture', value)}
@@ -304,11 +313,11 @@ export function StudioCreateForm({ onSuccess }: StudioCreateFormProps) {
               </div>
 
               <div>
-                <Label htmlFor="city">市区町村 *</Label>
+                <Label htmlFor="city">{t('labels.cityRequired')}</Label>
                 <Input
                   id="city"
                   {...form.register('city')}
-                  placeholder="渋谷区"
+                  placeholder={t('labels.cityPlaceholder')}
                 />
                 {form.formState.errors.city && (
                   <p className="text-red-500 text-sm mt-1">
@@ -319,11 +328,11 @@ export function StudioCreateForm({ onSuccess }: StudioCreateFormProps) {
             </div>
 
             <div>
-              <Label htmlFor="address">住所 *</Label>
+              <Label htmlFor="address">{t('labels.addressRequired')}</Label>
               <Input
                 id="address"
                 {...form.register('address')}
-                placeholder="渋谷1-1-1 渋谷ビル3F"
+                placeholder={t('labels.addressPlaceholder')}
               />
               {form.formState.errors.address && (
                 <p className="text-red-500 text-sm mt-1">
@@ -355,6 +364,14 @@ export function StudioCreateForm({ onSuccess }: StudioCreateFormProps) {
                 city={form.watch('city')}
                 onAddressChange={address => {
                   form.setValue('address', address, { shouldValidate: true });
+                }}
+                onPrefectureChange={prefecture => {
+                  form.setValue('prefecture', prefecture, {
+                    shouldValidate: true,
+                  });
+                }}
+                onCityChange={city => {
+                  form.setValue('city', city, { shouldValidate: true });
                 }}
                 onCoordinatesChange={(lat, lng) => {
                   form.setValue('latitude', lat);

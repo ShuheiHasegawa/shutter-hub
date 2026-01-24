@@ -1929,6 +1929,32 @@
         "dragToReorder": "You can change the order of images using arrow buttons",
         "highQuality": "We recommend uploading high-quality images"
       }
+    },
+    "form": {
+      "labels": {
+        "prefecture": "Prefecture",
+        "prefectureRequired": "Prefecture *",
+        "city": "City/Municipality",
+        "cityRequired": "City/Municipality *",
+        "address": "Address",
+        "addressRequired": "Address *",
+        "addressPlaceholder": "e.g. 1-1-1 Shibuya, Shibuya Building 3F",
+        "cityPlaceholder": "e.g. Shibuya Ward"
+      },
+      "validation": {
+        "prefectureRequired": "Prefecture is required",
+        "cityRequired": "City/Municipality is required",
+        "cityMaxLength": "City/Municipality must be 50 characters or less",
+        "addressRequired": "Address is required",
+        "addressMaxLength": "Address must be {max} characters or less"
+      }
+    },
+    "mapPicker": {
+      "error": {
+        "title": "Failed to retrieve address",
+        "notFound": "Address not found. Please try a different notation.",
+        "fetchFailed": "Failed to search for address."
+      }
     }
   },
   "userSearch": {

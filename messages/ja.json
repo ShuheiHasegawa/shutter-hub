@@ -1941,6 +1941,32 @@
         "dragToReorder": "矢印ボタンで画像の順序を変更できます",
         "highQuality": "高画質の画像をアップロードすることを推奨します"
       }
+    },
+    "form": {
+      "labels": {
+        "prefecture": "都道府県",
+        "prefectureRequired": "都道府県 *",
+        "city": "市区町村",
+        "cityRequired": "市区町村 *",
+        "address": "住所",
+        "addressRequired": "住所 *",
+        "addressPlaceholder": "渋谷1-1-1 渋谷ビル3F",
+        "cityPlaceholder": "渋谷区"
+      },
+      "validation": {
+        "prefectureRequired": "都道府県は必須です",
+        "cityRequired": "市区町村は必須です",
+        "cityMaxLength": "市区町村は50文字以内で入力してください",
+        "addressRequired": "住所は必須です",
+        "addressMaxLength": "住所は{max}文字以内で入力してください"
+      }
+    },
+    "mapPicker": {
+      "error": {
+        "title": "住所の取得に失敗しました",
+        "notFound": "住所が見つかりませんでした。別の表記で試してください。",
+        "fetchFailed": "住所の検索に失敗しました。"
+      }
     }
   },
   "userSearch": {

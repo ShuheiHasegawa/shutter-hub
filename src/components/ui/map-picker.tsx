@@ -14,7 +14,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { MapPin, Search } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { WarningAlert } from '@/components/ui/warning-alert';
+import { useTranslations } from 'next-intl';
+import { PREFECTURE_JA_TO_KEY } from '@/constants/japan';
 
 // デフォルトアイコンの設定（Leafletの問題回避）
 const defaultIcon = new Icon({
@@ -30,6 +32,8 @@ interface MapPickerProps {
   address?: string;
   onAddressChange?: (address: string) => void;
   onCoordinatesChange?: (lat: number, lng: number) => void;
+  onPrefectureChange?: (prefecture: string) => void;
+  onCityChange?: (city: string) => void;
   prefecture?: string;
   city?: string;
   className?: string;
@@ -39,6 +43,13 @@ interface MapPickerProps {
 interface Coordinates {
   lat: number;
   lng: number;
+}
+
+interface ReverseGeocodeResult {
+  fullAddress: string; // 完全な住所（表示用）
+  detailedAddress: string; // 詳細住所のみ（prefecture/city除く）
+  prefecture: string;
+  city: string;
 }
 
 // 地図クリックイベントハンドラー
@@ -88,9 +99,7 @@ async function geocodeAddress(address: string): Promise<Coordinates | null> {
       };
     }
     return null;
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('Geocoding error:', error);
+  } catch {
     return null;
   }
 }
@@ -99,7 +108,7 @@ async function geocodeAddress(address: string): Promise<Coordinates | null> {
 async function reverseGeocode(
   lat: number,
   lng: number
-): Promise<string | null> {
+): Promise<ReverseGeocodeResult | null> {
   try {
     const response = await fetch(
       `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1&accept-language=ja`
@@ -111,11 +120,26 @@ async function reverseGeocode(
       const address = data.address;
       if (address) {
         const parts = [];
-        if (address.prefecture || address.state) {
-          parts.push(address.prefecture || address.state);
+
+        // 都道府県の抽出: address.prefecture/state/province が空の場合、display_name から抽出
+        let prefecture =
+          address.prefecture || address.state || address.province || '';
+        if (!prefecture && data.display_name) {
+          // display_name から都道府県を抽出（例: "..., 東京都, ..."）
+          const prefectureMatch = data.display_name.match(/([^,]+[都道府県])/);
+          if (prefectureMatch) {
+            prefecture = prefectureMatch[1].trim();
+          }
         }
-        if (address.city || address.town || address.village) {
-          parts.push(address.city || address.town || address.village);
+
+        const city = address.city || address.town || address.village || '';
+
+        // 完全な住所（表示用）
+        if (prefecture) {
+          parts.push(prefecture);
+        }
+        if (city) {
+          parts.push(city);
         }
         if (address.suburb || address.neighbourhood) {
           parts.push(address.suburb || address.neighbourhood);
@@ -126,14 +150,33 @@ async function reverseGeocode(
           parts.push(address.road);
         }
 
-        return parts.length > 0 ? parts.join('') : data.display_name;
+        // 詳細住所のみ（prefecture/city除く）
+        const detailParts = [];
+        if (address.suburb || address.neighbourhood) {
+          detailParts.push(address.suburb || address.neighbourhood);
+        }
+        if (address.house_number && address.road) {
+          detailParts.push(`${address.road}${address.house_number}`);
+        } else if (address.road) {
+          detailParts.push(address.road);
+        }
+
+        return {
+          fullAddress: parts.length > 0 ? parts.join('') : data.display_name,
+          detailedAddress: detailParts.length > 0 ? detailParts.join('') : '',
+          prefecture,
+          city,
+        };
       }
-      return data.display_name;
+      return {
+        fullAddress: data.display_name,
+        detailedAddress: '',
+        prefecture: '',
+        city: '',
+      };
     }
     return null;
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('Reverse geocoding error:', error);
+  } catch {
     return null;
   }
 }
@@ -142,11 +185,14 @@ export function MapPicker({
   address = '',
   onAddressChange,
   onCoordinatesChange,
+  onPrefectureChange,
+  onCityChange,
   prefecture = '',
   city = '',
   className = '',
   height = '400px',
 }: MapPickerProps) {
+  const t = useTranslations('studio.mapPicker.error');
   const [position, setPosition] = useState<Coordinates | null>(null);
   const [localAddress, setLocalAddress] = useState(address);
   const [isLoading, setIsLoading] = useState(false);
@@ -184,10 +230,10 @@ export function MapPicker({
         setPosition(coords);
         onCoordinatesChange?.(coords.lat, coords.lng);
       } else {
-        setError('住所が見つかりませんでした。別の表記で試してください。');
+        setError(t('notFound'));
       }
     } catch {
-      setError('住所の検索に失敗しました。');
+      setError(t('fetchFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -203,17 +249,29 @@ export function MapPicker({
       try {
         const addressResult = await reverseGeocode(coords.lat, coords.lng);
         if (addressResult) {
-          setLocalAddress(addressResult);
-          onAddressChange?.(addressResult);
+          // 詳細住所のみを address フィールドに設定
+          const detailedAddress =
+            addressResult.detailedAddress || addressResult.fullAddress;
+          setLocalAddress(detailedAddress);
+          onAddressChange?.(detailedAddress);
+
+          // 都道府県を翻訳キーに変換
+          const prefectureKey = addressResult.prefecture
+            ? PREFECTURE_JA_TO_KEY[addressResult.prefecture] ||
+              addressResult.prefecture
+            : '';
+          onPrefectureChange?.(prefectureKey);
+
+          onCityChange?.(addressResult.city);
         }
         onCoordinatesChange?.(coords.lat, coords.lng);
       } catch {
-        setError('住所の取得に失敗しました。');
+        setError(t('fetchFailed'));
       } finally {
         setIsLoading(false);
       }
     },
-    [onAddressChange, onCoordinatesChange]
+    [onAddressChange, onCoordinatesChange, onPrefectureChange, onCityChange, t]
   );
 
   const handleAddressInputChange = (value: string) => {
@@ -252,11 +310,7 @@ export function MapPicker({
       </div>
 
       {/* エラー表示 */}
-      {error && (
-        <Alert variant="destructive">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
+      {error && <WarningAlert title={t('title')} description={error} />}
 
       {/* 地図 */}
       <div className="relative">
