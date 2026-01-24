@@ -247,7 +247,7 @@ export default function PhotoSessionsPage() {
         />
 
         {/* フィルターとコントロール（StickyHeaderで固定） */}
-        <StickyHeader className="space-y-4">
+        <StickyHeader>
           {/* 1行目: CompactFilterBar（検索バーとフィルターボタン） - デスクトップ表示 */}
           <div className="hidden md:block">
             <CompactFilterBar

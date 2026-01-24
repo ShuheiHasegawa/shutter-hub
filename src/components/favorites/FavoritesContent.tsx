@@ -251,7 +251,7 @@ export function FavoritesContent({
   };
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-6xl mx-auto py-4 space-y-4">
       {/* ヘッダー */}
       <PageTitleHeader
         title={t('title')}
@@ -263,10 +263,10 @@ export function FavoritesContent({
       <Tabs
         value={activeTab}
         onValueChange={handleTabChange}
-        className="space-y-6"
+        className="space-y-4"
       >
         {/* 検索・フィルターとタブを固定 */}
-        <StickyHeader className="space-y-4 mb-6">
+        <StickyHeader>
           {/* タブ */}
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger
