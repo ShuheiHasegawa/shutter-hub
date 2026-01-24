@@ -97,105 +97,122 @@ function SortableImageCard({
         userSelect: 'none',
       }}
     >
-      <Card
+      <div
         ref={setNodeRef}
         style={style}
-        className="overflow-hidden shadow-md hover:shadow-lg transition-shadow select-none"
+        className="w-28 sm:w-32 flex-shrink-0 snap-center text-right"
       >
-        <CardContent className="p-2">
-          <div className="aspect-square relative rounded-lg overflow-hidden bg-muted">
-            <EmptyImage
-              src={url}
-              alt={`撮影会画像 ${index + 1}`}
-              fallbackIcon={ImageIcon}
-              fallbackIconSize="lg"
-              fill
-              className="object-cover"
-            />
+        <Card className="relative overflow-visible shadow-md hover:shadow-lg transition-shadow select-none">
+          {/* 削除ボタン - 常時表示（スマホ対応） */}
+          <Button
+            type="button"
+            variant="destructive"
+            size="sm"
+            className="absolute top-6 right-0 left-auto h-6 w-6 p-0 z-20 rounded-full"
+            onClick={e => {
+              e.preventDefault();
+              e.stopPropagation();
+              onRemove(index);
+            }}
+            onPointerDown={e => {
+              e.stopPropagation();
+            }}
+            onMouseDown={e => {
+              e.stopPropagation();
+            }}
+            onTouchStart={e => {
+              e.stopPropagation();
+            }}
+            disabled={disabled}
+          >
+            <X className="h-3 w-3" />
+          </Button>
 
-            {/* メイン画像バッジ */}
-            {isMain && (
-              <Badge
-                variant="default"
-                className="absolute top-2 left-2 text-xs"
-              >
-                {t('imageUpload.main')}
-              </Badge>
-            )}
+          <CardContent className="p-2">
+            <div className="aspect-square relative rounded-lg overflow-hidden bg-muted">
+              <EmptyImage
+                src={url}
+                alt={`撮影会画像 ${index + 1}`}
+                fallbackIcon={ImageIcon}
+                fallbackIconSize="lg"
+                fill
+                className="object-cover"
+              />
 
-            {/* 削除ボタン */}
-            <Button
-              type="button"
-              variant="destructive"
-              size="sm"
-              className="absolute top-2 right-2 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-              onClick={e => {
-                e.stopPropagation();
-                onRemove(index);
-              }}
-              disabled={disabled}
-            >
-              <X className="h-3 w-3" />
-            </Button>
+              {/* メイン画像バッジ */}
+              {isMain && (
+                <Badge
+                  variant="default"
+                  className="absolute top-1 left-1 text-xs"
+                >
+                  {t('imageUpload.main')}
+                </Badge>
+              )}
+            </div>
 
-            {/* 左移動ボタン */}
-            {index > 0 && (
+            {/* 画像下部中央のコントロールエリア */}
+            <div className="flex items-center justify-center gap-1 mt-2">
+              {/* 左移動ボタン */}
               <Button
                 type="button"
                 variant="secondary"
                 size="sm"
-                className="absolute left-1 top-1/2 -translate-y-1/2 h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 hover:bg-white"
+                className={cn(
+                  'h-8 w-8 p-0',
+                  index === 0 && 'invisible pointer-events-none'
+                )}
                 onClick={e => {
                   e.stopPropagation();
                   onMoveLeft();
                 }}
-                disabled={disabled}
+                disabled={disabled || index === 0}
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-            )}
 
-            {/* 右移動ボタン */}
-            {index < totalImages - 1 && (
+              {/* ドラッグハンドル */}
+              <div
+                {...attributes}
+                {...listeners}
+                className={cn(
+                  'cursor-grab active:cursor-grabbing hover:bg-muted transition-colors flex items-center justify-center p-2 rounded touch-none select-none',
+                  disabled && 'cursor-not-allowed opacity-50'
+                )}
+                style={{
+                  touchAction: 'none',
+                  WebkitUserSelect: 'none',
+                  WebkitTouchCallout: 'none',
+                }}
+                title="ドラッグして並び替え"
+              >
+                <GripVertical className="h-4 w-4 text-muted-foreground" />
+              </div>
+
+              {/* 右移動ボタン */}
               <Button
                 type="button"
                 variant="secondary"
                 size="sm"
-                className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 hover:bg-white"
+                className={cn(
+                  'h-8 w-8 p-0',
+                  index === totalImages - 1 && 'invisible pointer-events-none'
+                )}
                 onClick={e => {
                   e.stopPropagation();
                   onMoveRight();
                 }}
-                disabled={disabled}
+                disabled={disabled || index === totalImages - 1}
               >
                 <ChevronRight className="h-4 w-4" />
               </Button>
-            )}
-          </div>
+            </div>
 
-          {/* ドラッグハンドル */}
-          <div
-            {...attributes}
-            {...listeners}
-            className={cn(
-              'cursor-grab active:cursor-grabbing hover:bg-gray-50 transition-colors flex items-center justify-center mt-2 p-2 rounded',
-              'touch-none select-none'
-            )}
-            style={{
-              touchAction: 'none',
-              WebkitUserSelect: 'none',
-              WebkitTouchCallout: 'none',
-            }}
-            title="ドラッグして並び替え"
-          >
-            <GripVertical className="h-4 w-4 text-gray-400" />
-          </div>
-
-          <p className="text-xs text-center mt-1 text-muted-foreground">
-            {index + 1}
-          </p>
-        </CardContent>
-      </Card>
+            <p className="text-xs text-center mt-1 text-muted-foreground">
+              {index + 1}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
@@ -497,7 +514,7 @@ export function ImageUpload({
               strategy={rectSortingStrategy}
             >
               <div
-                className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+                className="flex gap-3 overflow-x-auto pt-3 pb-2 snap-x snap-mandatory scrollbar-thin scrollbar-thumb-muted"
                 style={{
                   WebkitUserSelect: 'none',
                   WebkitTouchCallout: 'none',
@@ -536,7 +553,7 @@ export function ImageUpload({
                       <div className="opacity-90 shadow-2xl bg-white rounded-lg border-2 border-primary">
                         <Card className="overflow-hidden">
                           <CardContent className="p-2">
-                            <div className="aspect-square relative rounded-lg overflow-hidden bg-muted w-48">
+                            <div className="aspect-square relative rounded-lg overflow-hidden bg-muted w-28 sm:w-32">
                               <EmptyImage
                                 src={draggedUrl}
                                 alt="ドラッグ中の画像"
