@@ -619,9 +619,14 @@
       "validation": {
         "titleRequired": "タイトルは必須です",
         "locationRequired": "場所は必須です",
-        "dateTimeRequired": "開始日時と終了日時は必須です",
+        "locationOrStudioRequired": "スタジオを選択するか、場所情報を入力してください",
+        "dateTimeRequired": "撮影枠を設定してください。日時が自動計算されます。",
         "startTimeInvalid": "開始日時は現在時刻より後である必要があります",
-        "endTimeInvalid": "終了日時は開始日時より後である必要があります"
+        "endTimeInvalid": "終了日時は開始日時より後である必要があります",
+        "modelRequired": "出演モデルを最低1名選択してください",
+        "modelMaxExceeded": "モデルは最大{max}人まで選択可能です",
+        "modelDuplicate": "同じモデルを重複して選択することはできません",
+        "slotRequired": "撮影枠を最低1つ設定してください"
       },
       "errors": {
         "ratingCheckFailed": "評価チェック中にエラーが発生しました",

@@ -631,9 +631,14 @@
       "validation": {
         "titleRequired": "Title is required",
         "locationRequired": "Location is required",
-        "dateTimeRequired": "Start time and end time are required",
+        "locationOrStudioRequired": "Please select a studio or enter location information",
+        "dateTimeRequired": "Please set photo session slots. Date and time will be calculated automatically.",
         "startTimeInvalid": "Start time must be after current time",
-        "endTimeInvalid": "End time must be after start time"
+        "endTimeInvalid": "End time must be after start time",
+        "modelRequired": "Please select at least one model",
+        "modelMaxExceeded": "You can select up to {max} models",
+        "modelDuplicate": "You cannot select the same model multiple times",
+        "slotRequired": "Please set at least one photo session slot"
       },
       "errors": {
         "ratingCheckFailed": "An error occurred while checking ratings",
