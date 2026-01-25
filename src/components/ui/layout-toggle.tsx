@@ -67,6 +67,7 @@ export function LayoutToggle({
         return (
           <Button
             key={layout.type}
+            data-testid={`layout-toggle-${layout.type}`}
             variant={isActive ? 'default' : 'ghost'}
             size="sm"
             onClick={() => onLayoutChange(layout.type)}
