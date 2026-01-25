@@ -214,28 +214,34 @@ export function StudiosList({
             <table className="w-full">
               <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
                 <tr>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th
+                    data-testid="table-header-name"
+                    className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                  >
                     {tTable('studioName')}
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th
+                    data-testid="table-header-address"
+                    className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                  >
                     {tTable('address')}
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    {tTable('maxCapacity')}
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th
+                    data-testid="table-header-price"
+                    className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                  >
                     {tTable('price')}
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th
+                    data-testid="table-header-rating"
+                    className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                  >
                     {tTable('rating')}
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    {tTable('facilities')}
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    {tTable('stats')}
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th
+                    data-testid="table-header-actions"
+                    className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                  >
                     {/* {tTable('actions')} */}
                   </th>
                 </tr>
@@ -250,19 +256,10 @@ export function StudiosList({
                       <Skeleton className="h-4 w-32" />
                     </td>
                     <td className="px-6 py-4">
-                      <Skeleton className="h-4 w-16" />
-                    </td>
-                    <td className="px-6 py-4">
                       <Skeleton className="h-4 w-24" />
                     </td>
                     <td className="px-6 py-4">
                       <Skeleton className="h-4 w-20" />
-                    </td>
-                    <td className="px-6 py-4">
-                      <Skeleton className="h-4 w-16" />
-                    </td>
-                    <td className="px-6 py-4">
-                      <Skeleton className="h-4 w-24" />
                     </td>
                     <td className="px-6 py-4">
                       <Skeleton className="h-6 w-6 mx-auto" />
@@ -387,28 +384,34 @@ export function StudiosList({
               <table className="w-full">
                 <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
                   <tr>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th
+                      data-testid="table-header-name"
+                      className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                    >
                       {tTable('studioName')}
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th
+                      data-testid="table-header-address"
+                      className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                    >
                       {tTable('address')}
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      {tTable('maxCapacity')}
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th
+                      data-testid="table-header-price"
+                      className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                    >
                       {tTable('price')}
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th
+                      data-testid="table-header-rating"
+                      className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                    >
                       {tTable('rating')}
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      {tTable('facilities')}
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      {tTable('stats')}
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th
+                      data-testid="table-header-actions"
+                      className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                    >
                       {/* {tTable('actions')} */}
                     </th>
                   </tr>
@@ -571,19 +574,10 @@ export function StudiosList({
                           <Skeleton className="h-4 w-32" />
                         </td>
                         <td className="px-6 py-4">
-                          <Skeleton className="h-4 w-16" />
-                        </td>
-                        <td className="px-6 py-4">
                           <Skeleton className="h-4 w-24" />
                         </td>
                         <td className="px-6 py-4">
                           <Skeleton className="h-4 w-20" />
-                        </td>
-                        <td className="px-6 py-4">
-                          <Skeleton className="h-4 w-16" />
-                        </td>
-                        <td className="px-6 py-4">
-                          <Skeleton className="h-4 w-24" />
                         </td>
                         <td className="px-6 py-4">
                           <Skeleton className="h-6 w-6 mx-auto" />

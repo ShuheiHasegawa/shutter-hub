@@ -48,6 +48,7 @@ export function StudioMobileCompactCard({
 
   return (
     <div
+      data-testid={`studio-mobile-compact-card-${studio.id}`}
       className={`flex gap-4 rounded-xl shadow-sm hover:shadow-md transition-all border border-gray-200 dark:border-gray-800 cursor-pointer ${
         isSelected ? 'ring-2 ring-theme-primary' : ''
       }`}

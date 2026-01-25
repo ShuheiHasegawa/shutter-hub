@@ -1,12 +1,7 @@
 'use client';
 
 import React from 'react';
-import {
-  MapPinIcon,
-  UsersIcon,
-  TruckIcon,
-  WifiIcon,
-} from '@heroicons/react/24/outline';
+import { MapPinIcon } from '@heroicons/react/24/outline';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { EmptyImage } from '@/components/ui/empty-image';
@@ -15,6 +10,7 @@ import { StudioWithStats } from '@/types/database';
 import { FavoriteHeartButton } from '@/components/ui/favorite-heart-button';
 import { FormattedPrice } from '@/components/ui/formatted-display';
 import { StarRating } from '@/components/ui/star-rating';
+import { Badge } from '@/components/ui/badge';
 import { getDefaultFavoriteState } from '@/lib/utils/favorite';
 import { getStudioImageUrl, getStudioImageAlt } from '@/lib/utils/studio';
 
@@ -72,32 +68,26 @@ export function StudioTableRow({
               className="object-cover object-center"
             />
           </div>
-          <div className="min-w-0">
+          <div>
             <div className="text-sm font-medium text-gray-900 dark:text-white line-clamp-1">
               {studio.name}
             </div>
-            {studio.prefecture && (
-              <div className="text-xs text-gray-500 dark:text-gray-400">
-                {tPrefecture(studio.prefecture)}
-              </div>
-            )}
           </div>
         </div>
       </td>
 
       {/* 住所 */}
       <td className="px-6 py-4">
-        <div className="flex items-center gap-2 text-sm text-gray-900 dark:text-white max-w-[200px]">
-          <MapPinIcon className="w-4 h-4 flex-shrink-0" />
-          <span className="truncate">{studio.address}</span>
-        </div>
-      </td>
-
-      {/* 最大収容人数 */}
-      <td className="px-6 py-4 whitespace-nowrap">
-        <div className="flex items-center gap-2 text-sm text-gray-900 dark:text-white">
-          <UsersIcon className="w-4 h-4 flex-shrink-0" />
-          <span>{studio.max_capacity || '-'}</span>
+        <div className="flex flex-col gap-1 max-w-[200px]">
+          {studio.prefecture && (
+            <Badge className="bg-theme-primary text-xs w-fit">
+              {tPrefecture(studio.prefecture)}
+            </Badge>
+          )}
+          <div className="flex items-center gap-2 text-sm text-gray-900 dark:text-white">
+            <MapPinIcon className="w-4 h-4 flex-shrink-0" />
+            <span className="truncate">{studio.address}</span>
+          </div>
         </div>
       </td>
 
@@ -138,35 +128,6 @@ export function StudioTableRow({
         ) : (
           <span className="text-sm text-gray-500 dark:text-gray-400">-</span>
         )}
-      </td>
-
-      {/* 設備 */}
-      <td className="px-6 py-4">
-        <div className="flex items-center gap-3">
-          {studio.parking_available && (
-            <div className="flex items-center gap-1 text-xs">
-              <TruckIcon className="w-4 h-4" />
-              <span className="sr-only">{t('parking')}</span>
-            </div>
-          )}
-          {studio.wifi_available && (
-            <div className="flex items-center gap-1 text-xs">
-              <WifiIcon className="w-4 h-4" />
-              <span className="sr-only">{t('wifi')}</span>
-            </div>
-          )}
-          {!studio.parking_available && !studio.wifi_available && (
-            <span className="text-xs text-gray-500 dark:text-gray-400">-</span>
-          )}
-        </div>
-      </td>
-
-      {/* 統計情報 */}
-      <td className="px-6 py-4 whitespace-nowrap">
-        <div className="text-xs text-gray-500 dark:text-gray-400">
-          <div>{t('photoCount', { count: studio.photo_count })}</div>
-          <div>{t('equipmentCount', { count: studio.equipment_count })}</div>
-        </div>
       </td>
 
       {/* アクション */}
