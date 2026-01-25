@@ -220,6 +220,7 @@ export default function StudiosPage() {
               {/* 活動拠点で絞る（プロフィールに都道府県が設定されている場合のみ表示） */}
               {!profileLoading && profile?.prefecture && (
                 <Toggle
+                  data-testid="filter-activity-location-toggle"
                   pressed={filterByActivityLocation}
                   onPressedChange={pressed => {
                     logger.info('活動拠点フィルター変更:', {
