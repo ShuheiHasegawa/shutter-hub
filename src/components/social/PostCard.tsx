@@ -17,6 +17,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { ImageDialog } from '@/components/ui/image-dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,8 +36,6 @@ import {
   Edit,
   Trash2,
   Flag,
-  ChevronLeft,
-  ChevronRight,
   Camera,
   Verified,
 } from 'lucide-react';
@@ -220,18 +219,6 @@ export function PostCard({
     }
   };
 
-  const handlePreviousImage = () => {
-    setCurrentImageIndex(prev =>
-      prev === 0 ? (displayPost.image_urls?.length || 1) - 1 : prev - 1
-    );
-  };
-
-  const handleNextImage = () => {
-    setCurrentImageIndex(prev =>
-      prev === (displayPost.image_urls?.length || 1) - 1 ? 0 : prev + 1
-    );
-  };
-
   const formatContent = (content: string) => {
     return content
       .replace(
@@ -383,68 +370,33 @@ export function PostCard({
         {/* 画像表示 */}
         {displayPost.image_urls && displayPost.image_urls.length > 0 && (
           <div className="relative">
-            <Dialog
+            <div
+              className="relative cursor-pointer group max-h-[400px] w-full"
+              onClick={() => setIsImageDialogOpen(true)}
+            >
+              <Image
+                src={displayPost.image_urls[currentImageIndex]}
+                alt="投稿画像"
+                fill
+                className="object-cover rounded-lg"
+                sizes="(max-width: 768px) 100vw, 50vw"
+              />
+              {displayPost.image_urls.length > 1 && (
+                <Badge className="absolute top-2 right-2">
+                  {currentImageIndex + 1}/{displayPost.image_urls.length}
+                </Badge>
+              )}
+              <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all rounded-lg" />
+            </div>
+            <ImageDialog
+              images={displayPost.image_urls}
               open={isImageDialogOpen}
               onOpenChange={setIsImageDialogOpen}
-            >
-              <DialogTrigger asChild>
-                <div className="relative cursor-pointer group max-h-[400px] w-full">
-                  <Image
-                    src={displayPost.image_urls[currentImageIndex]}
-                    alt="投稿画像"
-                    fill
-                    className="object-cover rounded-lg"
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                  />
-                  {displayPost.image_urls.length > 1 && (
-                    <Badge className="absolute top-2 right-2">
-                      {currentImageIndex + 1}/{displayPost.image_urls.length}
-                    </Badge>
-                  )}
-                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all rounded-lg" />
-                </div>
-              </DialogTrigger>
-              <DialogContent className="max-w-4xl">
-                <DialogHeader>
-                  <DialogTitle>画像を表示</DialogTitle>
-                </DialogHeader>
-                <div className="relative max-h-[70vh] w-full">
-                  <Image
-                    src={displayPost.image_urls[currentImageIndex]}
-                    alt="投稿画像"
-                    fill
-                    className="object-contain"
-                    sizes="100vw"
-                  />
-                  {displayPost.image_urls.length > 1 && (
-                    <>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="absolute left-2 top-1/2 transform -translate-y-1/2"
-                        onClick={handlePreviousImage}
-                      >
-                        <ChevronLeft className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="absolute right-2 top-1/2 transform -translate-y-1/2"
-                        onClick={handleNextImage}
-                      >
-                        <ChevronRight className="h-4 w-4" />
-                      </Button>
-                      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
-                        <Badge>
-                          {currentImageIndex + 1}/
-                          {displayPost.image_urls.length}
-                        </Badge>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </DialogContent>
-            </Dialog>
+              currentIndex={currentImageIndex}
+              onIndexChange={setCurrentImageIndex}
+              alt="投稿画像"
+              size="default"
+            />
 
             {/* 画像ナビゲーション */}
             {displayPost.image_urls.length > 1 && (

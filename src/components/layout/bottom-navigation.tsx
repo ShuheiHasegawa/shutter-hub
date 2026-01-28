@@ -1,23 +1,29 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useMemo } from 'react';
 import {
   LayoutDashboard,
   Camera,
   Calendar,
   MessageCircle,
   Hash,
+  Home,
+  Building,
+  Zap,
+  LogIn,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { Link } from '@/i18n/routing';
 import { logger } from '@/lib/utils/logger';
 import { useBottomNavigationStore } from '@/stores/bottom-navigation-store';
+import { useAuth } from '@/hooks/useAuth';
 
 export function BottomNavigation() {
   const t = useTranslations('navigation');
   const pathname = usePathname();
+  const { user } = useAuth();
   const isVisible = useBottomNavigationStore(state => state.isVisible);
   const setIsVisible = useBottomNavigationStore(state => state.setIsVisible);
   const lastScrollY = useRef(0);
@@ -249,38 +255,85 @@ export function BottomNavigation() {
     };
   }, [scrollThreshold, setIsVisible]);
 
-  const navigationItems = [
-    {
-      icon: LayoutDashboard,
-      label: t('dashboard'),
-      href: '/dashboard',
-      key: 'dashboard',
-    },
-    {
-      icon: Camera,
-      label: t('photoSessions'),
-      href: '/photo-sessions',
-      key: 'photoSessions',
-    },
-    {
-      icon: Calendar,
-      label: t('bookings'),
-      href: '/bookings',
-      key: 'bookings',
-    },
-    {
-      icon: MessageCircle,
-      label: t('messages'),
-      href: '/messages',
-      key: 'messages',
-    },
-    {
-      icon: Hash,
-      label: t('timeline'),
-      href: '/timeline',
-      key: 'timeline',
-    },
-  ];
+  // 公開用ナビゲーション項目
+  const publicNavigationItems = useMemo(
+    () => [
+      {
+        icon: Home,
+        label: t('home'),
+        href: '/',
+        key: 'home',
+      },
+      {
+        icon: Camera,
+        label: t('photoSessions'),
+        href: '/photo-sessions',
+        key: 'photoSessions',
+      },
+      {
+        icon: Building,
+        label: t('studios'),
+        href: '/studios',
+        key: 'studios',
+      },
+      {
+        icon: Zap,
+        label: t('instant'),
+        href: '/instant',
+        key: 'instant',
+      },
+      {
+        icon: LogIn,
+        label: t('signin'),
+        href: '/auth/signin',
+        key: 'signin',
+      },
+    ],
+    [t]
+  );
+
+  // 認証済み用ナビゲーション項目
+  const authenticatedNavigationItems = useMemo(
+    () => [
+      {
+        icon: LayoutDashboard,
+        label: t('dashboard'),
+        href: '/dashboard',
+        key: 'dashboard',
+      },
+      {
+        icon: Camera,
+        label: t('photoSessions'),
+        href: '/photo-sessions',
+        key: 'photoSessions',
+      },
+      {
+        icon: Calendar,
+        label: t('bookings'),
+        href: '/bookings',
+        key: 'bookings',
+      },
+      {
+        icon: MessageCircle,
+        label: t('messages'),
+        href: '/messages',
+        key: 'messages',
+      },
+      {
+        icon: Hash,
+        label: t('timeline'),
+        href: '/timeline',
+        key: 'timeline',
+      },
+    ],
+    [t]
+  );
+
+  // 認証状態に応じてナビゲーション項目を返す
+  const navigationItems = useMemo(
+    () => (user ? authenticatedNavigationItems : publicNavigationItems),
+    [user, authenticatedNavigationItems, publicNavigationItems]
+  );
 
   // 状態変更をログに記録
   useEffect(() => {

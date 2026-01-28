@@ -3,18 +3,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useSearchParams, notFound } from 'next/navigation';
 import { AuthenticatedLayout } from '@/components/layout/authenticated-layout';
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { ImageDialog } from '@/components/ui/image-dialog';
 import { getStudioDetailAction } from '@/app/actions/studio';
 import { StudioEditHistory } from '@/components/studio/StudioEditHistory';
 import { StudioReportDialog } from '@/components/studio/StudioReportDialog';
@@ -40,8 +36,6 @@ import {
   Share2,
   Flag,
   Info,
-  ChevronLeft,
-  ChevronRight,
   Building2,
   Train,
 } from 'lucide-react';
@@ -60,6 +54,7 @@ export default function StudioDetailPage() {
   const searchParams = useSearchParams();
   const studioId = params.id as string;
   const t = useTranslations('studio');
+  const { user } = useAuth();
 
   const [studio, setStudio] = useState<StudioWithStats | null>(null);
   const [photos, setPhotos] = useState<StudioPhoto[]>([]);
@@ -236,23 +231,9 @@ export default function StudioDetailPage() {
     setSelectedPhotoIndex(index);
   };
 
-  const handlePreviousPhoto = () => {
-    if (selectedPhotoIndex === null || photos.length === 0) return;
-    setSelectedPhotoIndex(
-      selectedPhotoIndex === 0 ? photos.length - 1 : selectedPhotoIndex - 1
-    );
-  };
-
-  const handleNextPhoto = () => {
-    if (selectedPhotoIndex === null || photos.length === 0) return;
-    setSelectedPhotoIndex(
-      selectedPhotoIndex === photos.length - 1 ? 0 : selectedPhotoIndex + 1
-    );
-  };
-
   if (loading) {
     return (
-      <AuthenticatedLayout>
+      <AuthenticatedLayout allowPublic>
         <Skeleton className="h-8 w-64 mb-6" />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
@@ -272,7 +253,7 @@ export default function StudioDetailPage() {
     }
 
     return (
-      <AuthenticatedLayout>
+      <AuthenticatedLayout allowPublic>
         <div className="container mx-auto px-4 py-6">
           <Alert>
             <AlertDescription>{error}</AlertDescription>
@@ -283,19 +264,21 @@ export default function StudioDetailPage() {
   }
 
   return (
-    <AuthenticatedLayout>
+    <AuthenticatedLayout allowPublic>
       {/* ヘッダー */}
       <PageTitleHeaderScrollAware
         defaultTitle="スタジオ詳細"
         scrolledTitle={studio.name}
         backButton={{ href: '/studios', variant: 'ghost' }}
         actions={
-          <Link href={`/studios/${studio.id}/edit`}>
-            <Button variant="cta">
-              <Pencil className="w-4 h-4" />
-              編集
-            </Button>
-          </Link>
+          user && (
+            <Link href={`/studios/${studio.id}/edit`}>
+              <Button variant="cta">
+                <Pencil className="w-4 h-4" />
+                編集
+              </Button>
+            </Link>
+          )
         }
       />
       {/* タイトルと評価 */}
@@ -682,65 +665,21 @@ export default function StudioDetailPage() {
       </Tabs>
 
       {/* 写真拡大表示モーダル */}
-      <Dialog
-        open={selectedPhotoIndex !== null}
-        onOpenChange={open => {
-          if (!open) setSelectedPhotoIndex(null);
-        }}
-      >
-        <DialogContent className="max-w-4xl max-h-[90vh] p-0">
-          <DialogHeader className="sr-only">
-            <DialogTitle>写真拡大表示</DialogTitle>
-          </DialogHeader>
-          {selectedPhotoIndex !== null && photos[selectedPhotoIndex] && (
-            <div className="relative w-full h-full flex flex-col">
-              <div className="flex-1 relative overflow-hidden bg-black">
-                <div className="w-full h-full flex items-center justify-center p-4">
-                  <EmptyImage
-                    src={photos[selectedPhotoIndex].image_url || undefined}
-                    alt={
-                      photos[selectedPhotoIndex].alt_text ||
-                      `${studio.name}の写真`
-                    }
-                    fallbackIcon={Building2}
-                    fallbackIconSize="xl"
-                    width={1200}
-                    height={800}
-                    className="max-w-full max-h-[70vh] object-contain"
-                  />
-                </div>
-
-                {/* 前後の写真へのナビゲーション */}
-                {photos.length > 1 && (
-                  <>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white border-white/20"
-                      onClick={handlePreviousPhoto}
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white border-white/20"
-                      onClick={handleNextPhoto}
-                    >
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
-                    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
-                      <Badge className="bg-black/50 text-white">
-                        {selectedPhotoIndex + 1} / {photos.length}
-                      </Badge>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
+      {photos.length > 0 && (
+        <ImageDialog
+          images={photos.map(photo => photo.image_url || '')}
+          open={selectedPhotoIndex !== null}
+          onOpenChange={open => {
+            if (!open) setSelectedPhotoIndex(null);
+          }}
+          currentIndex={selectedPhotoIndex ?? undefined}
+          onIndexChange={setSelectedPhotoIndex}
+          alt={photos.map(
+            photo => photo.alt_text || `${studio?.name || 'スタジオ'}の写真`
           )}
-        </DialogContent>
-      </Dialog>
+          size="default"
+        />
+      )}
     </AuthenticatedLayout>
   );
 }

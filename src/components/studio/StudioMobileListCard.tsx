@@ -52,6 +52,7 @@ export function StudioMobileListCard({
 
   return (
     <div
+      data-testid={`studio-mobile-list-card-${studio.id}`}
       className={`block bg-white dark:bg-gray-900 rounded-lg shadow-sm hover:shadow-md transition-all p-4 border border-gray-200 dark:border-gray-800 active-overlay cursor-pointer ${
         isSelected ? 'ring-2 ring-theme-primary' : ''
       }`}

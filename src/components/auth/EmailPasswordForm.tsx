@@ -5,10 +5,14 @@ import { logger } from '@/lib/utils/logger';
 import { useRouter, useParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from '@/components/ui/input-group';
 import {
   Select,
   SelectContent,
@@ -31,12 +35,14 @@ interface EmailPasswordFormProps {
   value?: 'signin' | 'signup';
   onValueChange?: (value: 'signin' | 'signup') => void;
   returnUrl?: string | null;
+  onRedirectStart?: () => void;
 }
 
 export function EmailPasswordForm({
   value,
   onValueChange,
   returnUrl,
+  onRedirectStart,
 }: EmailPasswordFormProps = {}) {
   const handleValueChange = (newValue: string) => {
     if (newValue === 'signin' || newValue === 'signup') {
@@ -93,6 +99,9 @@ export function EmailPasswordForm({
       }
 
       toast.success('ログインしました');
+
+      // リダイレクト開始を通知
+      onRedirectStart?.();
 
       // returnUrlの検証とリダイレクト先の決定
       let redirectTo = `/${locale}/dashboard`;
@@ -157,6 +166,10 @@ export function EmailPasswordForm({
       }
 
       toast.success('アカウントを作成しました');
+
+      // リダイレクト開始を通知
+      onRedirectStart?.();
+
       router.push(`/${locale}/dashboard`);
     } catch (error) {
       logger.error('Sign up error:', error);
@@ -173,16 +186,16 @@ export function EmailPasswordForm({
       defaultValue={value ? undefined : 'signin'}
       className="w-full"
     >
-      <TabsList className="grid w-full grid-cols-2 surface-neutral p-1">
+      <TabsList className="grid w-full grid-cols-2">
         <TabsTrigger
           value="signin"
-          className="data-[state=active]:bg-surface-primary-0 data-[state=active]:text-surface-primary-0-text data-[state=active]:shadow-sm transition-all"
+          className="data-[state=active]:shadow-sm transition-all"
         >
-          サインイン
+          ログイン
         </TabsTrigger>
         <TabsTrigger
           value="signup"
-          className="data-[state=active]:bg-surface-primary-0 data-[state=active]:text-surface-primary-0-text data-[state=active]:shadow-sm transition-all"
+          className="data-[state=active]:shadow-sm transition-all"
         >
           新規登録
         </TabsTrigger>
@@ -194,54 +207,56 @@ export function EmailPasswordForm({
         </Alert>
       )}
 
-      <TabsContent value="signin" className="space-y-4 mt-4">
+      <TabsContent value="signin" className="space-y-4 mt-8">
         <form onSubmit={handleSignIn} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="signin-email">メールアドレス</Label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-3 h-4 w-4" />
-              <Input
+            <InputGroup>
+              <InputGroupAddon align="inline-start">
+                <Mail className="h-4 w-4" />
+              </InputGroupAddon>
+              <InputGroupInput
                 id="signin-email"
                 type="email"
                 placeholder="your@email.com"
                 value={formData.email}
                 onChange={e => handleInputChange('email', e.target.value)}
-                className="pl-10"
                 required
               />
-            </div>
+            </InputGroup>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="signin-password">パスワード</Label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-3 h-4 w-4" />
-              <Input
+            <InputGroup>
+              <InputGroupAddon align="inline-start">
+                <Lock className="h-4 w-4" />
+              </InputGroupAddon>
+              <InputGroupInput
                 id="signin-password"
                 type={showPassword ? 'text' : 'password'}
                 placeholder="パスワード"
                 value={formData.password}
                 onChange={e => handleInputChange('password', e.target.value)}
-                className="pl-10 pr-10"
                 required
               />
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-1 top-1 h-7 w-7"
-                aria-label={
-                  showPassword ? 'パスワードを非表示' : 'パスワードを表示'
-                }
-              >
-                {showPassword ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
+              <InputGroupAddon align="inline-end">
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="hover:text-foreground transition-colors cursor-pointer"
+                  aria-label={
+                    showPassword ? 'パスワードを非表示' : 'パスワードを表示'
+                  }
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
+              </InputGroupAddon>
+            </InputGroup>
           </div>
 
           <Button type="submit" className="w-full" disabled={isLoading}>
@@ -253,78 +268,83 @@ export function EmailPasswordForm({
         </form>
       </TabsContent>
 
-      <TabsContent value="signup" className="space-y-4 mt-4">
+      <TabsContent value="signup" className="space-y-4 mt-8">
         <form onSubmit={handleSignUp} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="signup-name">お名前</Label>
-            <div className="relative">
-              <User className="absolute left-3 top-3 h-4 w-4" />
-              <Input
+            <InputGroup>
+              <InputGroupAddon align="inline-start">
+                <User className="h-4 w-4" />
+              </InputGroupAddon>
+              <InputGroupInput
                 id="signup-name"
                 type="text"
                 placeholder="山田太郎"
                 value={formData.fullName}
                 onChange={e => handleInputChange('fullName', e.target.value)}
-                className="pl-10"
                 required
               />
-            </div>
+            </InputGroup>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="signup-email">メールアドレス</Label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-3 h-4 w-4" />
-              <Input
+            <InputGroup>
+              <InputGroupAddon align="inline-start">
+                <Mail className="h-4 w-4" />
+              </InputGroupAddon>
+              <InputGroupInput
                 id="signup-email"
                 type="email"
                 placeholder="your@email.com"
                 value={formData.email}
                 onChange={e => handleInputChange('email', e.target.value)}
-                className="pl-10"
                 required
               />
-            </div>
+            </InputGroup>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="signup-password">パスワード</Label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-3 h-4 w-4" />
-              <Input
+            <InputGroup>
+              <InputGroupAddon align="inline-start">
+                <Lock className="h-4 w-4" />
+              </InputGroupAddon>
+              <InputGroupInput
                 id="signup-password"
                 type={showPassword ? 'text' : 'password'}
                 placeholder="6文字以上"
                 value={formData.password}
                 onChange={e => handleInputChange('password', e.target.value)}
-                className="pl-10 pr-10"
                 required
                 minLength={6}
               />
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-1 top-1 h-7 w-7"
-                aria-label={
-                  showPassword ? 'パスワードを非表示' : 'パスワードを表示'
-                }
-              >
-                {showPassword ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
+              <InputGroupAddon align="inline-end">
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="hover:text-foreground transition-colors cursor-pointer"
+                  aria-label={
+                    showPassword ? 'パスワードを非表示' : 'パスワードを表示'
+                  }
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
+              </InputGroupAddon>
+            </InputGroup>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="signup-confirm-password">パスワード確認</Label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-3 h-4 w-4" />
-              <Input
+            <InputGroup>
+              <InputGroupAddon align="inline-start">
+                <Lock className="h-4 w-4" />
+              </InputGroupAddon>
+              <InputGroupInput
                 id="signup-confirm-password"
                 type={showConfirmPassword ? 'text' : 'password'}
                 placeholder="パスワードを再入力"
@@ -332,28 +352,27 @@ export function EmailPasswordForm({
                 onChange={e =>
                   handleInputChange('confirmPassword', e.target.value)
                 }
-                className="pl-10 pr-10"
                 required
               />
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-1 top-1 h-7 w-7"
-                aria-label={
-                  showConfirmPassword
-                    ? 'パスワード確認を非表示'
-                    : 'パスワード確認を表示'
-                }
-              >
-                {showConfirmPassword ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
+              <InputGroupAddon align="inline-end">
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="hover:text-foreground transition-colors cursor-pointer"
+                  aria-label={
+                    showConfirmPassword
+                      ? 'パスワード確認を非表示'
+                      : 'パスワード確認を表示'
+                  }
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
+              </InputGroupAddon>
+            </InputGroup>
           </div>
 
           <div className="space-y-2 mb-4">

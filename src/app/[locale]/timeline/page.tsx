@@ -231,7 +231,7 @@ export default function TimelinePage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* メインコンテンツ */}
-          <div className="lg:col-span-3 space-y-6">
+          <div className="lg:col-span-3 space-y-4">
             {/* タブナビゲーション */}
             <Tabs
               value={currentTab}
@@ -239,7 +239,7 @@ export default function TimelinePage() {
                 handleTabChange(value as 'timeline' | 'trending' | 'search')
               }
             >
-              <StickyHeader className="space-y-4 mb-6">
+              <StickyHeader>
                 <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
                   <TabsList className="w-full md:w-auto">
                     <TabsTrigger

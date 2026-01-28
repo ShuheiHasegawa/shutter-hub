@@ -18,7 +18,7 @@ export function InfoCard({
 }: InfoCardProps) {
   const variantStyles = {
     default: {
-      header: 'surface-neutral-1',
+      header: 'surface-neutral',
       iconBg: 'surface-primary',
     },
     primary: {
@@ -39,7 +39,7 @@ export function InfoCard({
 
   return (
     <div
-      className={`surface-neutral-0 rounded-2xl overflow-hidden border ${className}`}
+      className={`surface-neutral rounded-2xl overflow-hidden border ${className}`}
     >
       <div className={`${styles.header} px-6 py-4 border-b`}>
         <div className="flex items-center gap-3">

@@ -207,7 +207,7 @@ export default function PhotoSessionsPage() {
   // マウント前はサーバーサイド対応のため最小限のレンダリング
   if (!isMounted) {
     return (
-      <AuthenticatedLayout>
+      <AuthenticatedLayout allowPublic>
         <div className="space-y-6">
           <div className="flex justify-center items-center h-32">
             <div className="animate-spin-slow rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
@@ -221,33 +221,42 @@ export default function PhotoSessionsPage() {
   }
 
   return (
-    <AuthenticatedLayout>
+    <AuthenticatedLayout allowPublic>
       <div className="flex flex-col h-full">
         <PageTitleHeader
           title="撮影会一覧"
           icon={<CameraIcon className="h-6 w-6" />}
           backButton={{ variant: 'ghost' }}
           actions={
-            <Button asChild size="sm" variant="cta" title={t('createSession')}>
-              <Link
-                href={
-                  profile?.user_type === 'organizer'
-                    ? '/photo-sessions/create/organizer'
-                    : '/photo-sessions/create'
-                }
+            profile && (
+              <Button
+                asChild
+                size="sm"
+                variant="cta"
+                title={t('createSession')}
               >
-                <Plus className="h-4 w-4" />
-                <span className="hidden md:inline ml-1">
-                  {t('createSession')}
-                </span>
-                <span className="sr-only md:hidden">{t('createSession')}</span>
-              </Link>
-            </Button>
+                <Link
+                  href={
+                    profile?.user_type === 'organizer'
+                      ? '/photo-sessions/create/organizer'
+                      : '/photo-sessions/create'
+                  }
+                >
+                  <Plus className="h-4 w-4" />
+                  <span className="hidden md:inline ml-1">
+                    {t('createSession')}
+                  </span>
+                  <span className="sr-only md:hidden">
+                    {t('createSession')}
+                  </span>
+                </Link>
+              </Button>
+            )
           }
         />
 
         {/* フィルターとコントロール（StickyHeaderで固定） */}
-        <StickyHeader className="space-y-4">
+        <StickyHeader>
           {/* 1行目: CompactFilterBar（検索バーとフィルターボタン） - デスクトップ表示 */}
           <div className="hidden md:block">
             <CompactFilterBar

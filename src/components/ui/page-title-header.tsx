@@ -15,8 +15,7 @@
  *   />
  *
  * 🎨 レスポンシブ対応:
- * - モバイル: アクションボタンは下段配置
- * - デスクトップ: 右側配置
+ * - モバイル・デスクトップ共通: 1行レイアウト（戻るボタン・タイトル・アクションボタンを横並び）
  */
 
 import React from 'react';
@@ -47,29 +46,28 @@ export function PageTitleHeader({
   className,
 }: PageTitleHeaderProps) {
   return (
-    <div className={cn('min-h-[60px] flex items-center', className)}>
-      {/* グリッドレイアウト: 3列で中央にタイトルを配置 */}
-      <div className="grid grid-cols-[auto,minmax(0,1fr),auto] items-center gap-2 min-w-0 w-full">
-        {/* 左側: 戻るボタン */}
-        <div className="flex items-center justify-start">
+    <div className={cn('flex items-center h-[52px] pt-2', className)}>
+      <div className="flex items-center justify-between w-full gap-2">
+        {/* 左側: 戻るボタン（固定幅） */}
+        <div className="flex-shrink-0 w-10">
           {backButton && <BackButton {...backButton} />}
         </div>
 
         {/* 中央: タイトル */}
-        <div className="flex flex-col items-center justify-center min-w-0">
-          <h1 className="text-lg font-bold flex items-center gap-2">
+        <div className="flex-1 min-w-0 text-center">
+          <h1 className="text-lg font-bold flex items-center justify-center gap-2">
             {icon}
             <span className="truncate">{title}</span>
           </h1>
           {description && (
-            <p className="text-muted-foreground mt-1 text-center">
+            <p className="text-sm text-muted-foreground truncate">
               {description}
             </p>
           )}
         </div>
 
-        {/* 右側: アクションボタン */}
-        <div className="flex items-center justify-end flex-shrink-0">
+        {/* 右側: アクションボタン（固定幅、プレースホルダー） */}
+        <div className="flex-shrink-0 w-10">
           {actions && <div className="flex items-center gap-2">{actions}</div>}
         </div>
       </div>

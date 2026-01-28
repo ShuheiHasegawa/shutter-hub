@@ -7,9 +7,16 @@ import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { createStudioAction } from '@/app/actions/studio';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
@@ -22,6 +29,7 @@ import {
   ActionBarSentinel,
 } from '@/components/ui/action-bar';
 import { StudioImageUpload } from './StudioImageUpload';
+import { useTranslations } from 'next-intl';
 
 // SSRエラー回避のため動的インポート
 const MapPicker = dynamic(
@@ -39,91 +47,12 @@ const MapPicker = dynamic(
   }
 );
 
-const formSchema = z.object({
-  name: z
-    .string()
-    .min(VALIDATION.name.minLength, 'スタジオ名は必須です')
-    .max(
-      VALIDATION.name.maxLength,
-      `スタジオ名は${VALIDATION.name.maxLength}文字以内で入力してください`
-    ),
-  description: z
-    .string()
-    .max(
-      VALIDATION.description.maxLength,
-      `説明は${VALIDATION.description.maxLength}文字以内で入力してください`
-    )
-    .optional(),
-  address: z
-    .string()
-    .min(VALIDATION.address.minLength, '住所は必須です')
-    .max(
-      VALIDATION.address.maxLength,
-      `住所は${VALIDATION.address.maxLength}文字以内で入力してください`
-    ),
-  prefecture: z.string().min(1, '都道府県は必須です'),
-  city: z
-    .string()
-    .min(1, '市区町村は必須です')
-    .max(50, '市区町村は50文字以内で入力してください'),
-  access_info: z
-    .string()
-    .max(300, 'アクセス情報は300文字以内で入力してください')
-    .optional(),
-  phone: z
-    .string()
-    .optional()
-    .refine(
-      value => !value || VALIDATION.phone.pattern.test(value),
-      '有効な電話番号を入力してください'
-    ),
-  email: z
-    .string()
-    .optional()
-    .refine(
-      value => !value || z.string().email().safeParse(value).success,
-      '有効なメールアドレスを入力してください'
-    ),
-  website_url: z
-    .string()
-    .optional()
-    .refine(
-      value => !value || z.string().url().safeParse(value).success,
-      '有効なURLを入力してください'
-    ),
-  total_area: z.coerce
-    .number()
-    .positive('面積は正の数値で入力してください')
-    .optional()
-    .catch(undefined),
-  max_capacity: z.coerce
-    .number()
-    .positive('最大収容人数は正の数値で入力してください')
-    .optional()
-    .catch(undefined),
-  parking_available: z.boolean(),
-  wifi_available: z.boolean(),
-  hourly_rate_min: z.coerce
-    .number()
-    .positive('最低料金は正の数値で入力してください')
-    .optional()
-    .catch(undefined),
-  hourly_rate_max: z.coerce
-    .number()
-    .positive('最高料金は正の数値で入力してください')
-    .optional()
-    .catch(undefined),
-  latitude: z.number().optional(),
-  longitude: z.number().optional(),
-});
-
-// type FormData = z.infer<typeof formSchema>;
-
 interface StudioCreateFormProps {
   onSuccess?: (studioId: string) => void;
 }
 
 export function StudioCreateForm({ onSuccess }: StudioCreateFormProps) {
+  const t = useTranslations('studio.form');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const { toast } = useToast();
@@ -134,6 +63,91 @@ export function StudioCreateForm({ onSuccess }: StudioCreateFormProps) {
   const tempId = useMemo(
     () => `temp_${Date.now()}_${crypto.randomUUID().split('-')[0]}`,
     []
+  );
+
+  // zodスキーマを動的に生成（多言語化対応）
+  const formSchema = useMemo(
+    () =>
+      z.object({
+        name: z
+          .string()
+          .min(VALIDATION.name.minLength, 'スタジオ名は必須です')
+          .max(
+            VALIDATION.name.maxLength,
+            `スタジオ名は${VALIDATION.name.maxLength}文字以内で入力してください`
+          ),
+        description: z
+          .string()
+          .max(
+            VALIDATION.description.maxLength,
+            `説明は${VALIDATION.description.maxLength}文字以内で入力してください`
+          )
+          .optional(),
+        address: z
+          .string()
+          .min(VALIDATION.address.minLength, t('validation.addressRequired'))
+          .max(
+            VALIDATION.address.maxLength,
+            t('validation.addressMaxLength', {
+              max: VALIDATION.address.maxLength,
+            })
+          ),
+        prefecture: z.string().min(1, t('validation.prefectureRequired')),
+        city: z
+          .string()
+          .min(1, t('validation.cityRequired'))
+          .max(50, t('validation.cityMaxLength')),
+        access_info: z
+          .string()
+          .max(300, 'アクセス情報は300文字以内で入力してください')
+          .optional(),
+        phone: z
+          .string()
+          .optional()
+          .refine(
+            value => !value || VALIDATION.phone.pattern.test(value),
+            '有効な電話番号を入力してください'
+          ),
+        email: z
+          .string()
+          .optional()
+          .refine(
+            value => !value || z.string().email().safeParse(value).success,
+            '有効なメールアドレスを入力してください'
+          ),
+        website_url: z
+          .string()
+          .optional()
+          .refine(
+            value => !value || z.string().url().safeParse(value).success,
+            '有効なURLを入力してください'
+          ),
+        total_area: z.coerce
+          .number()
+          .positive('面積は正の数値で入力してください')
+          .optional()
+          .catch(undefined),
+        max_capacity: z.coerce
+          .number()
+          .positive('最大収容人数は正の数値で入力してください')
+          .optional()
+          .catch(undefined),
+        parking_available: z.boolean(),
+        wifi_available: z.boolean(),
+        hourly_rate_min: z.coerce
+          .number()
+          .positive('最低料金は正の数値で入力してください')
+          .optional()
+          .catch(undefined),
+        hourly_rate_max: z.coerce
+          .number()
+          .positive('最高料金は正の数値で入力してください')
+          .optional()
+          .catch(undefined),
+        latitude: z.number().optional(),
+        longitude: z.number().optional(),
+      }),
+    [t]
   );
 
   const form = useForm({
@@ -224,311 +238,397 @@ export function StudioCreateForm({ onSuccess }: StudioCreateFormProps) {
 
   return (
     <>
-      <form
-        ref={formRef}
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="space-y-6"
-      >
-        {/* 画像アップロード */}
-        <Card>
-          <CardHeader>
-            <CardTitle>スタジオ画像</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <StudioImageUpload
-              mode="create"
-              tempId={tempId}
-              initialImageUrls={imageUrls}
-              onImageUrlsChange={setImageUrls}
-              maxImages={10}
+      <Form {...form}>
+        <form
+          ref={formRef}
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="space-y-4"
+        >
+          {/* 画像アップロード */}
+          <Card>
+            <CardHeader>
+              <CardTitle>スタジオ画像</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <StudioImageUpload
+                mode="create"
+                tempId={tempId}
+                initialImageUrls={imageUrls}
+                onImageUrlsChange={setImageUrls}
+                maxImages={10}
+                disabled={isSubmitting}
+              />
+            </CardContent>
+          </Card>
+
+          {/* 基本情報 */}
+          <Card>
+            <CardHeader>
+              <CardTitle>基本情報</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>スタジオ名 *</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="○○スタジオ" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>説明</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        {...field}
+                        value={field.value || ''}
+                        placeholder="スタジオの特徴や設備について説明してください"
+                        rows={3}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </CardContent>
+          </Card>
+
+          {/* 所在地情報 */}
+          <Card>
+            <CardHeader>
+              <CardTitle>所在地情報</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="prefecture"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('labels.prefectureRequired')}</FormLabel>
+                      <FormControl>
+                        <PrefectureSelect
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="city"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('labels.cityRequired')}</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          placeholder={t('labels.cityPlaceholder')}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={form.control}
+                name="address"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('labels.addressRequired')}</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder={t('labels.addressPlaceholder')}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="access_info"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>アクセス情報</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        {...field}
+                        value={field.value || ''}
+                        placeholder="JR渋谷駅より徒歩3分"
+                        rows={2}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* 地図選択 */}
+              <div>
+                <MapPicker
+                  address={form.watch('address')}
+                  prefecture={form.watch('prefecture')}
+                  city={form.watch('city')}
+                  onAddressChange={address => {
+                    form.setValue('address', address, { shouldValidate: true });
+                  }}
+                  onPrefectureChange={prefecture => {
+                    form.setValue('prefecture', prefecture, {
+                      shouldValidate: true,
+                    });
+                  }}
+                  onCityChange={city => {
+                    form.setValue('city', city, { shouldValidate: true });
+                  }}
+                  onCoordinatesChange={(lat, lng) => {
+                    form.setValue('latitude', lat);
+                    form.setValue('longitude', lng);
+                  }}
+                  height="300px"
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 連絡先情報 */}
+          <Card>
+            <CardHeader>
+              <CardTitle>連絡先情報</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>電話番号</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          value={field.value || ''}
+                          placeholder="03-1234-5678"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>メールアドレス</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          value={field.value || ''}
+                          type="email"
+                          placeholder="info@studio.com"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={form.control}
+                name="website_url"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>ウェブサイトURL</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        value={field.value || ''}
+                        placeholder="https://studio.com"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </CardContent>
+          </Card>
+
+          {/* 施設情報 */}
+          <Card>
+            <CardHeader>
+              <CardTitle>施設情報</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="total_area"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>総面積 (㎡)</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          placeholder="50"
+                          value={String(field.value || '')}
+                          onChange={e => {
+                            const value = e.target.value;
+                            field.onChange(
+                              value === '' ? undefined : Number(value)
+                            );
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="max_capacity"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>最大収容人数</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          placeholder="10"
+                          value={String(field.value || '')}
+                          onChange={e => {
+                            const value = e.target.value;
+                            field.onChange(
+                              value === '' ? undefined : Number(value)
+                            );
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="hourly_rate_min"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>最低時間料金 (円)</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          placeholder="3000"
+                          value={String(field.value || '')}
+                          onChange={e => {
+                            const value = e.target.value;
+                            field.onChange(
+                              value === '' ? undefined : Number(value)
+                            );
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="hourly_rate_max"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>最高時間料金 (円)</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          placeholder="8000"
+                          value={String(field.value || '')}
+                          onChange={e => {
+                            const value = e.target.value;
+                            field.onChange(
+                              value === '' ? undefined : Number(value)
+                            );
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="parking_available"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <FormLabel>駐車場あり</FormLabel>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="wifi_available"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <FormLabel>Wi-Fi利用可能</FormLabel>
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* ページ下部の保存ボタン（ActionBar自動制御） */}
+          <ActionBarSentinel className="pt-4">
+            <Button
+              type="button"
+              variant="cta"
+              size="sm"
+              onClick={handleSaveClick}
               disabled={isSubmitting}
-            />
-          </CardContent>
-        </Card>
-
-        {/* 基本情報 */}
-        <Card>
-          <CardHeader>
-            <CardTitle>基本情報</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="name">スタジオ名 *</Label>
-              <Input
-                id="name"
-                {...form.register('name')}
-                placeholder="○○スタジオ"
-              />
-              {form.formState.errors.name && (
-                <p className="text-red-500 text-sm mt-1">
-                  {form.formState.errors.name.message}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <Label htmlFor="description">説明</Label>
-              <Textarea
-                id="description"
-                {...form.register('description')}
-                placeholder="スタジオの特徴や設備について説明してください"
-                rows={3}
-              />
-              {form.formState.errors.description && (
-                <p className="text-red-500 text-sm mt-1">
-                  {form.formState.errors.description.message}
-                </p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* 所在地情報 */}
-        <Card>
-          <CardHeader>
-            <CardTitle>所在地情報</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="prefecture">都道府県 *</Label>
-                <PrefectureSelect
-                  value={form.watch('prefecture')}
-                  onValueChange={value => form.setValue('prefecture', value)}
-                />
-                {form.formState.errors.prefecture && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {form.formState.errors.prefecture.message}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <Label htmlFor="city">市区町村 *</Label>
-                <Input
-                  id="city"
-                  {...form.register('city')}
-                  placeholder="渋谷区"
-                />
-                {form.formState.errors.city && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {form.formState.errors.city.message}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor="address">住所 *</Label>
-              <Input
-                id="address"
-                {...form.register('address')}
-                placeholder="渋谷1-1-1 渋谷ビル3F"
-              />
-              {form.formState.errors.address && (
-                <p className="text-red-500 text-sm mt-1">
-                  {form.formState.errors.address.message}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <Label htmlFor="access_info">アクセス情報</Label>
-              <Textarea
-                id="access_info"
-                {...form.register('access_info')}
-                placeholder="JR渋谷駅より徒歩3分"
-                rows={2}
-              />
-              {form.formState.errors.access_info && (
-                <p className="text-red-500 text-sm mt-1">
-                  {form.formState.errors.access_info.message}
-                </p>
-              )}
-            </div>
-
-            {/* 地図選択 */}
-            <div>
-              <MapPicker
-                address={form.watch('address')}
-                prefecture={form.watch('prefecture')}
-                city={form.watch('city')}
-                onAddressChange={address => {
-                  form.setValue('address', address, { shouldValidate: true });
-                }}
-                onCoordinatesChange={(lat, lng) => {
-                  form.setValue('latitude', lat);
-                  form.setValue('longitude', lng);
-                }}
-                height="300px"
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* 連絡先情報 */}
-        <Card>
-          <CardHeader>
-            <CardTitle>連絡先情報</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="phone">電話番号</Label>
-                <Input
-                  id="phone"
-                  {...form.register('phone')}
-                  placeholder="03-1234-5678"
-                />
-                {form.formState.errors.phone && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {form.formState.errors.phone.message}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <Label htmlFor="email">メールアドレス</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  {...form.register('email')}
-                  placeholder="info@studio.com"
-                />
-                {form.formState.errors.email && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {form.formState.errors.email.message}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor="website_url">ウェブサイトURL</Label>
-              <Input
-                id="website_url"
-                {...form.register('website_url')}
-                placeholder="https://studio.com"
-              />
-              {form.formState.errors.website_url && (
-                <p className="text-red-500 text-sm mt-1">
-                  {form.formState.errors.website_url.message}
-                </p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* 施設情報 */}
-        <Card>
-          <CardHeader>
-            <CardTitle>施設情報</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="total_area">総面積 (㎡)</Label>
-                <Input
-                  id="total_area"
-                  type="number"
-                  {...form.register('total_area')}
-                  placeholder="50"
-                />
-                {form.formState.errors.total_area && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {form.formState.errors.total_area.message}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <Label htmlFor="max_capacity">最大収容人数</Label>
-                <Input
-                  id="max_capacity"
-                  type="number"
-                  {...form.register('max_capacity')}
-                  placeholder="10"
-                />
-                {form.formState.errors.max_capacity && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {form.formState.errors.max_capacity.message}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="hourly_rate_min">最低時間料金 (円)</Label>
-                <Input
-                  id="hourly_rate_min"
-                  type="number"
-                  {...form.register('hourly_rate_min')}
-                  placeholder="3000"
-                />
-                {form.formState.errors.hourly_rate_min && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {form.formState.errors.hourly_rate_min.message}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <Label htmlFor="hourly_rate_max">最高時間料金 (円)</Label>
-                <Input
-                  id="hourly_rate_max"
-                  type="number"
-                  {...form.register('hourly_rate_max')}
-                  placeholder="8000"
-                />
-                {form.formState.errors.hourly_rate_max && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {form.formState.errors.hourly_rate_max.message}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="parking_available"
-                  checked={form.watch('parking_available')}
-                  onCheckedChange={checked =>
-                    form.setValue('parking_available', checked)
-                  }
-                />
-                <Label htmlFor="parking_available">駐車場あり</Label>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="wifi_available"
-                  checked={form.watch('wifi_available')}
-                  onCheckedChange={checked =>
-                    form.setValue('wifi_available', checked)
-                  }
-                />
-                <Label htmlFor="wifi_available">Wi-Fi利用可能</Label>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* ページ下部の保存ボタン（ActionBar自動制御） */}
-        <ActionBarSentinel className="pt-4">
-          <Button
-            type="button"
-            variant="cta"
-            size="sm"
-            onClick={handleSaveClick}
-            disabled={isSubmitting}
-            className="text-base font-medium w-full transition-colors"
-          >
-            {isSubmitting ? '保存中…' : '保存'}
-          </Button>
-        </ActionBarSentinel>
-      </form>
+              className="text-base font-medium w-full transition-colors"
+            >
+              {isSubmitting ? '保存中…' : '保存'}
+            </Button>
+          </ActionBarSentinel>
+        </form>
+      </Form>
 
       {/* 固定フッターアクションバー */}
       <ActionBar

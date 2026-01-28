@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -31,6 +31,23 @@ import {
   ActionBarButton,
   ActionBarSentinel,
 } from '@/components/ui/action-bar';
+import dynamic from 'next/dynamic';
+
+// SSRエラー回避のため動的インポート
+const MapPicker = dynamic(
+  () =>
+    import('@/components/ui/map-picker').then(mod => ({
+      default: mod.MapPicker,
+    })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[300px] bg-gray-100 rounded-lg flex items-center justify-center">
+        地図を読み込み中...
+      </div>
+    ),
+  }
+);
 
 interface StudioEditFormProps {
   studio: StudioWithStats;
@@ -39,77 +56,6 @@ interface StudioEditFormProps {
   onCancel: () => void;
 }
 
-const formSchema = z.object({
-  name: z
-    .string()
-    .min(VALIDATION.name.minLength, 'スタジオ名は必須です')
-    .max(
-      VALIDATION.name.maxLength,
-      `スタジオ名は${VALIDATION.name.maxLength}文字以内で入力してください`
-    ),
-  description: z
-    .string()
-    .max(
-      VALIDATION.description.maxLength,
-      `説明は${VALIDATION.description.maxLength}文字以内で入力してください`
-    )
-    .optional(),
-  address: z
-    .string()
-    .min(1, '住所は必須です')
-    .max(200, '住所は200文字以内で入力してください'),
-  prefecture: z.string().min(1, '都道府県を選択してください'),
-  access_info: z
-    .string()
-    .max(300, 'アクセス情報は300文字以内で入力してください')
-    .optional(),
-  phone: z
-    .string()
-    .optional()
-    .refine(
-      value => !value || /^[\d\-\(\)\+\s]*$/.test(value),
-      '有効な電話番号を入力してください'
-    ),
-  email: z
-    .string()
-    .optional()
-    .refine(
-      value => !value || z.string().email().safeParse(value).success,
-      '有効なメールアドレスを入力してください'
-    ),
-  website_url: z
-    .string()
-    .optional()
-    .refine(
-      value => !value || z.string().url().safeParse(value).success,
-      '有効なURLを入力してください'
-    ),
-  hourly_rate_min: z.coerce
-    .number()
-    .positive('料金は正の数値で入力してください')
-    .optional()
-    .catch(undefined),
-  hourly_rate_max: z.coerce
-    .number()
-    .positive('料金は正の数値で入力してください')
-    .optional()
-    .catch(undefined),
-  total_area: z.coerce
-    .number()
-    .positive('面積は正の数値で入力してください')
-    .optional()
-    .catch(undefined),
-  max_capacity: z.coerce
-    .number()
-    .positive('定員は1人以上の数値で入力してください')
-    .optional()
-    .catch(undefined),
-  parking_available: z.boolean(),
-  wifi_available: z.boolean(),
-});
-
-type FormData = z.infer<typeof formSchema>;
-
 export function StudioEditForm({
   studio,
   initialPhotos = [],
@@ -117,10 +63,93 @@ export function StudioEditForm({
   onCancel,
 }: StudioEditFormProps) {
   const t = useTranslations('studio');
+  const tForm = useTranslations('studio.form');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [photos, setPhotos] = useState<StudioPhoto[]>(initialPhotos);
   const formRef = useRef<HTMLFormElement>(null);
+
+  // zodスキーマを動的に生成（多言語化対応）
+  const formSchema = useMemo(
+    () =>
+      z.object({
+        name: z
+          .string()
+          .min(VALIDATION.name.minLength, 'スタジオ名は必須です')
+          .max(
+            VALIDATION.name.maxLength,
+            `スタジオ名は${VALIDATION.name.maxLength}文字以内で入力してください`
+          ),
+        description: z
+          .string()
+          .max(
+            VALIDATION.description.maxLength,
+            `説明は${VALIDATION.description.maxLength}文字以内で入力してください`
+          )
+          .optional(),
+        address: z
+          .string()
+          .min(1, tForm('validation.addressRequired'))
+          .max(200, tForm('validation.addressMaxLength', { max: 200 })),
+        prefecture: z.string().min(1, tForm('validation.prefectureRequired')),
+        city: z
+          .string()
+          .min(1, tForm('validation.cityRequired'))
+          .max(50, tForm('validation.cityMaxLength')),
+        access_info: z
+          .string()
+          .max(300, 'アクセス情報は300文字以内で入力してください')
+          .optional(),
+        phone: z
+          .string()
+          .optional()
+          .refine(
+            value => !value || /^[\d\-\(\)\+\s]*$/.test(value),
+            '有効な電話番号を入力してください'
+          ),
+        email: z
+          .string()
+          .optional()
+          .refine(
+            value => !value || z.string().email().safeParse(value).success,
+            '有効なメールアドレスを入力してください'
+          ),
+        website_url: z
+          .string()
+          .optional()
+          .refine(
+            value => !value || z.string().url().safeParse(value).success,
+            '有効なURLを入力してください'
+          ),
+        hourly_rate_min: z.coerce
+          .number()
+          .positive('料金は正の数値で入力してください')
+          .optional()
+          .catch(undefined),
+        hourly_rate_max: z.coerce
+          .number()
+          .positive('料金は正の数値で入力してください')
+          .optional()
+          .catch(undefined),
+        total_area: z.coerce
+          .number()
+          .positive('面積は正の数値で入力してください')
+          .optional()
+          .catch(undefined),
+        max_capacity: z.coerce
+          .number()
+          .positive('定員は1人以上の数値で入力してください')
+          .optional()
+          .catch(undefined),
+        parking_available: z.boolean(),
+        wifi_available: z.boolean(),
+        latitude: z.number().optional(),
+        longitude: z.number().optional(),
+      }),
+    [tForm]
+  );
+
+  type FormData = z.infer<typeof formSchema>;
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -129,6 +158,7 @@ export function StudioEditForm({
       description: studio.description || '',
       address: studio.address || '',
       prefecture: studio.prefecture || '',
+      city: studio.city || '',
       access_info: studio.access_info || '',
       phone: studio.phone || '',
       email: studio.email || '',
@@ -139,6 +169,8 @@ export function StudioEditForm({
       max_capacity: studio.max_capacity?.toString() || '',
       parking_available: studio.parking_available || false,
       wifi_available: studio.wifi_available || false,
+      latitude: studio.latitude ?? undefined,
+      longitude: studio.longitude ?? undefined,
     },
   });
 
@@ -280,31 +312,55 @@ export function StudioEditForm({
               <CardTitle>住所・アクセス</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <FormField
-                control={form.control}
-                name="prefecture"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>都道府県 *</FormLabel>
-                    <FormControl>
-                      <PrefectureSelect
-                        value={field.value}
-                        onValueChange={field.onChange}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="prefecture"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        {tForm('labels.prefectureRequired')}
+                      </FormLabel>
+                      <FormControl>
+                        <PrefectureSelect
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="city"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{tForm('labels.cityRequired')}</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          placeholder={tForm('labels.cityPlaceholder')}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               <FormField
                 control={form.control}
                 name="address"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>住所 *</FormLabel>
+                    <FormLabel>{tForm('labels.addressRequired')}</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="詳細住所を入力" />
+                      <Input
+                        {...field}
+                        placeholder={tForm('labels.addressPlaceholder')}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -321,14 +377,39 @@ export function StudioEditForm({
                       <Textarea
                         {...field}
                         value={field.value || ''}
-                        placeholder="最寄り駅からの行き方など"
-                        rows={3}
+                        placeholder="JR渋谷駅より徒歩3分"
+                        rows={2}
                       />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
+              {/* 地図選択 */}
+              <div>
+                <MapPicker
+                  address={form.watch('address')}
+                  prefecture={form.watch('prefecture')}
+                  city={form.watch('city')}
+                  onAddressChange={address => {
+                    form.setValue('address', address, { shouldValidate: true });
+                  }}
+                  onPrefectureChange={prefecture => {
+                    form.setValue('prefecture', prefecture, {
+                      shouldValidate: true,
+                    });
+                  }}
+                  onCityChange={city => {
+                    form.setValue('city', city, { shouldValidate: true });
+                  }}
+                  onCoordinatesChange={(lat, lng) => {
+                    form.setValue('latitude', lat);
+                    form.setValue('longitude', lng);
+                  }}
+                  height="300px"
+                />
+              </div>
             </CardContent>
           </Card>
 

@@ -25,6 +25,12 @@
     "apply": "適用する",
     "scrollToTop": "ページトップに戻る",
     "priceInputPlaceholder": "料金を入力してください",
+    "guestSuffix": "さん",
+    "minutes": "分",
+    "people": "名",
+    "guest": "ゲスト",
+    "budget": "予算",
+    "duration": "時間",
     "empty": {
       "default": {
         "title": "データがありません"
@@ -193,6 +199,98 @@
     "instant": {
       "title": "即座撮影リクエスト",
       "placeholder": "即座撮影機能は後のフェーズで実装予定です。"
+    }
+  },
+  "instant": {
+    "dashboard": {
+      "common": {
+        "guestSuffix": "さん",
+        "minutes": "分",
+        "people": "名"
+      },
+      "onlineStatus": {
+        "title": "即座撮影対応状態",
+        "label": "即座撮影リクエストを受け付ける",
+        "description": "オンラインにすると近くのゲストからリクエストが届きます",
+        "locationRequired": "即座撮影リクエストを受け付けるには位置情報が必要です。ブラウザで位置情報を許可してください。"
+      },
+      "location": {
+        "title": "位置情報",
+        "loading": "取得中...",
+        "failed": "取得失敗",
+        "acquired": "取得済み",
+        "notAcquired": "未取得",
+        "hasLocation": "位置情報あり"
+      },
+      "requests": {
+        "title": "即座撮影リクエスト",
+        "loading": "リクエストを読み込み中...",
+        "empty": "現在リクエストはありません",
+        "emptyHint": "オンライン状態にして新しいリクエストを受け取りましょう"
+      },
+      "status": {
+        "pending": "受付中",
+        "waitingApproval": "承認待ち",
+        "matched": "マッチ済み",
+        "inProgress": "撮影中",
+        "completed": "撮影完了",
+        "cancelled": "キャンセル",
+        "expired": "期限切れ"
+      },
+      "urgency": {
+        "now": "今すぐ",
+        "within30min": "30分以内",
+        "within1hour": "1時間以内",
+        "normal": "通常"
+      },
+      "requestType": {
+        "portrait": "ポートレート",
+        "couple": "カップル",
+        "family": "ファミリー",
+        "group": "グループ",
+        "landscape": "風景",
+        "pet": "ペット"
+      },
+      "actions": {
+        "accept": "受諾する",
+        "decline": "辞退する",
+        "startShooting": "撮影開始",
+        "completeShooting": "撮影完了",
+        "deliverPhotos": "写真配信",
+        "redelivery": "再配信（上書き）",
+        "waitingGuestApproval": "ゲストの承認をお待ちください"
+      },
+      "remainingTime": "残り {time}",
+      "expired": "期限切れ",
+      "specialRequests": {
+        "title": "特別なリクエスト"
+      },
+      "contact": {
+        "title": "連絡先",
+        "hidden": "連絡先は受注後に表示されます"
+      },
+      "completed": {
+        "title": "撮影完了",
+        "message": "写真を配信して収益を受け取りましょう"
+      },
+      "delivered": {
+        "title": "写真配信済み",
+        "message": "配信完了しました。ゲストの受取確認をお待ちください"
+      },
+      "confirmDialog": {
+        "title": "リクエスト詳細確認",
+        "description": "撮影場所と詳細を確認してから受諾してください",
+        "mapLoading": "地図を読み込み中...",
+        "confirm": "受諾する",
+        "cancel": "キャンセル"
+      },
+      "errors": {
+        "fetchFailed": "リクエストの取得に失敗しました",
+        "updateFailed": "ステータスの更新に失敗しました",
+        "responseFailed": "応答の送信に失敗しました",
+        "bookingFetchFailed": "予約情報の取得に失敗しました",
+        "unexpected": "予期しないエラーが発生しました"
+      }
     }
   },
   "photobooks": {
@@ -619,9 +717,14 @@
       "validation": {
         "titleRequired": "タイトルは必須です",
         "locationRequired": "場所は必須です",
-        "dateTimeRequired": "開始日時と終了日時は必須です",
+        "locationOrStudioRequired": "スタジオを選択するか、場所情報を入力してください",
+        "dateTimeRequired": "撮影枠を設定してください。日時が自動計算されます。",
         "startTimeInvalid": "開始日時は現在時刻より後である必要があります",
-        "endTimeInvalid": "終了日時は開始日時より後である必要があります"
+        "endTimeInvalid": "終了日時は開始日時より後である必要があります",
+        "modelRequired": "出演モデルを最低1名選択してください",
+        "modelMaxExceeded": "モデルは最大{max}人まで選択可能です",
+        "modelDuplicate": "同じモデルを重複して選択することはできません",
+        "slotRequired": "撮影枠を最低1つ設定してください"
       },
       "errors": {
         "ratingCheckFailed": "評価チェック中にエラーが発生しました",
@@ -837,89 +940,6 @@
       "maxFileSize": "最大ファイルサイズ: 10MB",
       "firstImageIsMain": "最初の画像がメイン画像として表示されます"
     },
-    "groupChat": {
-      "photoSessionGroupChat": "撮影会グループチャット",
-      "noGroupChatYet": "まだグループチャットがありません",
-      "groupChatDescription": "撮影会参加者専用のグループチャットを作成して、事前の打ち合わせや当日の連絡に活用できます。",
-      "createGroupChat": "グループチャットを作成",
-      "waitForOrganizerToCreate": "主催者がグループチャットを作成するまでお待ちください。",
-      "creating": "作成中...",
-      "openChat": "チャットを開く",
-      "addParticipants": "参加者を追加",
-      "backToInfo": "情報に戻る",
-      "sessionInfo": "撮影会情報",
-      "organizer": "主催者",
-      "quickActions": "クイックアクション",
-      "shareLocation": "位置情報を共有",
-      "setReminder": "リマインダーを設定",
-      "sharePhotos": "写真を共有",
-      "addToCalendar": "カレンダーに追加",
-      "addToGoogleCalendar": "Googleカレンダーに追加",
-      "calendarEventCreated": "カレンダーイベントが作成されました",
-      "photoSharing": "写真共有",
-      "photoSharingComingSoon": "撮影後の写真共有機能は近日公開予定です。",
-      "accessDenied": "このグループチャットにアクセスする権限がありません。",
-      "groupChatCreated": "グループチャットを作成しました",
-      "errorCreatingGroupChat": "グループチャットの作成に失敗しました",
-      "noNewParticipants": "追加する新しい参加者がいません",
-      "newParticipantsAdded": "{count}名の参加者を追加しました",
-      "errorAddingParticipants": "参加者の追加に失敗しました"
-    },
-    "documents": {
-      "title": "ドキュメント管理",
-      "description": "撮影会に関する同意書、契約書、ガイドラインなどの重要書類を管理します。",
-      "tabs": {
-        "documents": "書類一覧",
-        "signatures": "署名状況",
-        "manage": "書類管理"
-      },
-      "noDocuments": "まだ書類がありません",
-      "createFirstDocument": "最初の書類を作成してください。",
-      "required": "必須",
-      "signed": "署名済み",
-      "pending": "未署名",
-      "viewDocument": "書類を確認",
-      "signDocument": "署名する",
-      "signing": "署名中...",
-      "agreeAndSign": "内容に同意して署名する",
-      "sendReminders": "リマインダー送信",
-      "noSignatures": "まだ署名がありません",
-      "createDocument": "書類を作成",
-      "createDocumentDescription": "新しい書類を作成して参加者に署名を求めることができます。",
-      "documentTitle": "書類タイトル",
-      "documentTitlePlaceholder": "例：撮影会参加同意書",
-      "documentType": "書類種別",
-      "documentContent": "書類内容",
-      "documentContentPlaceholder": "書類の詳細な内容を記載してください...",
-      "markAsRequired": "必須書類として設定",
-      "documentTemplates": "書類テンプレート",
-      "documentTemplatesDescription": "よく使用される書類のテンプレートから選択できます。",
-      "types": {
-        "consent": "参加同意書",
-        "contract": "契約書",
-        "portraitRights": "肖像権使用許可書",
-        "guidelines": "撮影ガイドライン",
-        "other": "その他"
-      },
-      "templates": {
-        "basicConsent": "基本参加同意書",
-        "basicConsentDescription": "撮影会参加に関する基本的な同意書",
-        "portraitRights": "肖像権使用許可書",
-        "portraitRightsDescription": "撮影した写真の使用に関する許可書",
-        "shootingGuidelines": "撮影ガイドライン",
-        "shootingGuidelinesDescription": "撮影時の注意事項とルール",
-        "participationContract": "参加契約書",
-        "participationContractDescription": "撮影会参加に関する詳細な契約書"
-      },
-      "fillRequiredFields": "必須項目を入力してください",
-      "documentCreated": "書類を作成しました",
-      "errorCreatingDocument": "書類の作成に失敗しました",
-      "documentSigned": "書類に署名しました",
-      "errorSigningDocument": "署名に失敗しました",
-      "remindersSent": "{count}名にリマインダーを送信しました",
-      "errorSendingReminders": "リマインダーの送信に失敗しました",
-      "errorLoadingDocuments": "書類の読み込みに失敗しました"
-    },
     "booking": {
       "alreadyBookedAlert": {
         "title": "予約済み",
@@ -939,6 +959,19 @@
       "noticeLate": "遅刻される場合は主催者にご連絡ください",
       "noticeHealth": "体調不良の場合は無理をせず参加をお控えください",
       "noticeSlotRestriction": "撮影枠制撮影会では、予約した時間枠以外の参加はできません"
+    },
+    "tabs": {
+      "overview": "概要",
+      "slots": "撮影枠",
+      "community": "コミュニティボード",
+      "reviews": "レビュー"
+    },
+    "detail": {
+      "header": {
+        "title": "撮影会詳細",
+        "availableSlots": "残席",
+        "noSlots": "撮影枠はありません"
+      }
     }
   },
   "lottery": {
@@ -1941,6 +1974,32 @@
         "dragToReorder": "矢印ボタンで画像の順序を変更できます",
         "highQuality": "高画質の画像をアップロードすることを推奨します"
       }
+    },
+    "form": {
+      "labels": {
+        "prefecture": "都道府県",
+        "prefectureRequired": "都道府県 *",
+        "city": "市区町村",
+        "cityRequired": "市区町村 *",
+        "address": "住所",
+        "addressRequired": "住所 *",
+        "addressPlaceholder": "渋谷1-1-1 渋谷ビル3F",
+        "cityPlaceholder": "渋谷区"
+      },
+      "validation": {
+        "prefectureRequired": "都道府県は必須です",
+        "cityRequired": "市区町村は必須です",
+        "cityMaxLength": "市区町村は50文字以内で入力してください",
+        "addressRequired": "住所は必須です",
+        "addressMaxLength": "住所は{max}文字以内で入力してください"
+      }
+    },
+    "mapPicker": {
+      "error": {
+        "title": "住所の取得に失敗しました",
+        "notFound": "住所が見つかりませんでした。別の表記で試してください。",
+        "fetchFailed": "住所の検索に失敗しました。"
+      }
     }
   },
   "userSearch": {
@@ -2090,5 +2149,53 @@
     "miyazaki": "宮崎県",
     "kagoshima": "鹿児島県",
     "okinawa": "沖縄県"
+  },
+  "communityBoard": {
+    "title": "コミュニティボード",
+    "description": "撮影会参加者専用のコミュニティボード。事前の打ち合わせや当日の連絡に活用できます。",
+    "newPost": "新規投稿",
+    "postButton": "投稿する",
+    "placeholder": "投稿内容を入力してください...",
+    "category": "カテゴリー",
+    "categories": {
+      "all": "すべて",
+      "announcement": "お知らせ",
+      "question": "質問",
+      "introduction": "自己紹介",
+      "impression": "感想",
+      "other": "その他"
+    },
+    "likes": "いいね",
+    "share": "共有",
+    "edit": "編集",
+    "delete": "削除",
+    "pin": "ピン留め",
+    "unpin": "ピン留め解除",
+    "organizer": "主催者",
+    "pinned": "ピン留め",
+    "pinnedMessage": "ピン留めされたメッセージ",
+    "participants": "参加者数",
+    "postCount": "投稿数",
+    "eventTime": "開催時間",
+    "confirmDelete": "この投稿を削除しますか？",
+    "emptyPosts": "まだ投稿がありません",
+    "more": "その他",
+    "posting": "投稿中...",
+    "postSuccess": "投稿しました",
+    "postError": "投稿に失敗しました",
+    "editSuccess": "投稿を更新しました",
+    "editError": "更新に失敗しました",
+    "deleteSuccess": "投稿を削除しました",
+    "deleteError": "削除に失敗しました",
+    "likeError": "いいねに失敗しました",
+    "pinSuccess": "ピン留めしました",
+    "unpinSuccess": "ピン留めを解除しました",
+    "pinError": "ピン留めに失敗しました",
+    "postInstructions": "カテゴリーを選択して投稿してください",
+    "sessionInfo": "撮影会情報",
+    "people": "名",
+    "posts": "件",
+    "save": "保存",
+    "cancel": "キャンセル"
   }
 }

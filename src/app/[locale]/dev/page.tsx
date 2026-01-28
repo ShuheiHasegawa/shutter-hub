@@ -27,6 +27,7 @@ import {
   PlayCircle,
   Camera,
   Inbox,
+  MousePointerClick,
 } from 'lucide-react';
 
 interface DevTool {
@@ -143,6 +144,14 @@ const devTools: DevTool[] = [
       '統一的な空状態（Empty State）表示コンポーネントのデザインパターン',
     path: '/dev/empty-state-demo',
     icon: <Inbox className="h-5 w-5" />,
+    status: 'experimental',
+    category: 'ui',
+  },
+  {
+    title: 'カード選択UIプロトタイプ',
+    description: '予約方式選択のUI改善案を3つのバリエーションで比較・検証',
+    path: '/dev/card-selection-demo',
+    icon: <MousePointerClick className="h-5 w-5" />,
     status: 'experimental',
     category: 'ui',
   },

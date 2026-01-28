@@ -13,6 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Link } from '@/i18n/routing';
+import { useTranslations } from 'next-intl';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useSimpleProfile';
 import { NavLink } from '@/components/ui/nav-link';
@@ -24,6 +25,7 @@ export function PublicHeader() {
   const router = useRouter();
   const { logout } = useAuth();
   const { user, avatarUrl, displayName } = useProfile();
+  const t = useTranslations('navigation');
 
   const handleSignOut = async () => {
     await logout();
@@ -74,22 +76,38 @@ export function PublicHeader() {
               className="text-sm font-medium transition-colors"
               variant="sideline"
             >
-              ホーム
+              {t('home')}
+            </NavLink>
+            <NavLink
+              href="/photo-sessions"
+              className="text-sm font-medium transition-colors"
+              variant="sideline"
+            >
+              {t('photoSessionList')}
+            </NavLink>
+            <NavLink
+              href="/studios"
+              className="text-sm font-medium transition-colors"
+              variant="sideline"
+            >
+              {t('studioList')}
             </NavLink>
             <NavLink
               href="/instant"
               className="text-sm font-medium transition-colors"
               variant="sideline"
             >
-              即座撮影
+              {t('instant')}
             </NavLink>
-            <NavLink
-              href="/dashboard"
-              className="text-sm font-medium transition-colors"
-              variant="sideline"
-            >
-              ダッシュボード
-            </NavLink>
+            {user && (
+              <NavLink
+                href="/dashboard"
+                className="text-sm font-medium transition-colors"
+                variant="sideline"
+              >
+                {t('dashboard')}
+              </NavLink>
+            )}
           </nav>
 
           {/* Actions */}
@@ -128,7 +146,7 @@ export function PublicHeader() {
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => router.push('/dashboard')}>
                     <User className="mr-2 h-4 w-4" />
-                    <span>ダッシュボード</span>
+                    <span>{t('dashboard')}</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => {

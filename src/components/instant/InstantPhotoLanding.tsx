@@ -54,7 +54,7 @@ export function InstantPhotoLanding() {
   };
 
   return (
-    <div className="bg-gradient-to-b from-surface-primary-0 via-background to-surface-accent-0 dark:from-surface-primary-1 dark:via-surface-neutral dark:to-surface-accent-1">
+    <div className="bg-gradient-to-b from-surface-primary via-background to-surface-accent dark:from-surface-primary dark:via-surface-neutral dark:to-surface-accent">
       {/* Hero Section */}
       <section className="relative overflow-hidden surface-neutral">
         <div className="absolute inset-0" />

@@ -82,9 +82,9 @@ export function StudioHorizontalCard({
     >
       <CardContent className="p-0">
         {/* Desktop Layout */}
-        <div className="hidden md:flex">
+        <div className="hidden md:flex items-stretch">
           {/* 画像エリア */}
-          <div className="relative w-64 lg:w-80 flex-shrink-0 h-48 lg:h-56 overflow-hidden">
+          <div className="relative w-64 lg:w-80 flex-shrink-0 overflow-hidden self-stretch">
             <EmptyImage
               src={getStudioImageUrl(studio)}
               alt={getStudioImageAlt(studio)}

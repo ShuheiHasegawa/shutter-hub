@@ -394,7 +394,7 @@ export function MultiSlotLotteryEntryForm({
               {isUpdateMode ? '抽選エントリー更新' : '抽選エントリー'}
             </span>
           </div>
-          <Progress value={100} className="h-2 bg-surface-neutral-1" />
+          <Progress value={100} className="h-2 bg-surface-neutral" />
         </div>
         {/* 変更回数表示（更新モードの場合） */}
         {isUpdateMode && (

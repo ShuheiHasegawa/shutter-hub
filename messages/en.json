@@ -25,6 +25,12 @@
     "apply": "Apply",
     "scrollToTop": "Scroll to top",
     "priceInputPlaceholder": "Enter price",
+    "guestSuffix": "",
+    "minutes": "min",
+    "people": "people",
+    "guest": "Guest",
+    "budget": "Budget",
+    "duration": "Duration",
     "empty": {
       "default": {
         "title": "No data available"
@@ -198,6 +204,93 @@
     "instant": {
       "title": "Instant Photo Request",
       "placeholder": "Instant photo functionality will be implemented in a later phase."
+    }
+  },
+  "instant": {
+    "dashboard": {
+      "onlineStatus": {
+        "title": "Instant Photo Availability",
+        "label": "Accept instant photo requests",
+        "description": "When online, you'll receive requests from nearby guests",
+        "locationRequired": "Location information is required to accept instant photo requests. Please allow location access in your browser."
+      },
+      "location": {
+        "title": "Location",
+        "loading": "Acquiring...",
+        "failed": "Failed to acquire",
+        "acquired": "Acquired",
+        "notAcquired": "Not acquired",
+        "hasLocation": "Location available"
+      },
+      "requests": {
+        "title": "Instant Photo Requests",
+        "loading": "Loading requests...",
+        "empty": "No requests at the moment",
+        "emptyHint": "Go online to receive new requests"
+      },
+      "status": {
+        "pending": "Pending",
+        "waitingApproval": "Waiting for approval",
+        "matched": "Matched",
+        "inProgress": "In progress",
+        "completed": "Completed",
+        "cancelled": "Cancelled",
+        "expired": "Expired"
+      },
+      "urgency": {
+        "now": "Right now",
+        "within30min": "Within 30 minutes",
+        "within1hour": "Within 1 hour",
+        "normal": "Normal"
+      },
+      "requestType": {
+        "portrait": "Portrait",
+        "couple": "Couple",
+        "family": "Family",
+        "group": "Group",
+        "landscape": "Landscape",
+        "pet": "Pet"
+      },
+      "actions": {
+        "accept": "Accept",
+        "decline": "Decline",
+        "startShooting": "Start shooting",
+        "completeShooting": "Complete shooting",
+        "deliverPhotos": "Deliver photos",
+        "redelivery": "Redeliver (overwrite)",
+        "waitingGuestApproval": "Waiting for guest approval"
+      },
+      "remainingTime": "Remaining {time}",
+      "expired": "Expired",
+      "specialRequests": {
+        "title": "Special requests"
+      },
+      "contact": {
+        "title": "Contact",
+        "hidden": "Contact information will be displayed after acceptance"
+      },
+      "completed": {
+        "title": "Shooting completed",
+        "message": "Deliver photos and receive payment"
+      },
+      "delivered": {
+        "title": "Photos delivered",
+        "message": "Delivery completed. Waiting for guest confirmation"
+      },
+      "confirmDialog": {
+        "title": "Request Details Confirmation",
+        "description": "Please confirm the shooting location and details before accepting",
+        "mapLoading": "Loading map...",
+        "confirm": "Accept",
+        "cancel": "Cancel"
+      },
+      "errors": {
+        "fetchFailed": "Failed to fetch requests",
+        "updateFailed": "Failed to update status",
+        "responseFailed": "Failed to send response",
+        "bookingFetchFailed": "Failed to fetch booking information",
+        "unexpected": "An unexpected error occurred"
+      }
     }
   },
   "photobooks": {
@@ -631,9 +724,14 @@
       "validation": {
         "titleRequired": "Title is required",
         "locationRequired": "Location is required",
-        "dateTimeRequired": "Start time and end time are required",
+        "locationOrStudioRequired": "Please select a studio or enter location information",
+        "dateTimeRequired": "Please set photo session slots. Date and time will be calculated automatically.",
         "startTimeInvalid": "Start time must be after current time",
-        "endTimeInvalid": "End time must be after start time"
+        "endTimeInvalid": "End time must be after start time",
+        "modelRequired": "Please select at least one model",
+        "modelMaxExceeded": "You can select up to {max} models",
+        "modelDuplicate": "You cannot select the same model multiple times",
+        "slotRequired": "Please set at least one photo session slot"
       },
       "errors": {
         "ratingCheckFailed": "An error occurred while checking ratings",
@@ -837,128 +935,45 @@
       "maxFileSize": "Maximum file size: 10MB",
       "firstImageIsMain": "The first image will be displayed as the main image"
     },
-    "groupChat": {
-      "photoSessionGroupChat": "Photo Session Group Chat",
-      "noGroupChatYet": "No group chat yet",
-      "groupChatDescription": "Create a dedicated group chat for photo session participants to coordinate beforehand and communicate on the day.",
-      "createGroupChat": "Create Group Chat",
-      "waitForOrganizerToCreate": "Please wait for the organizer to create the group chat.",
-      "creating": "Creating...",
-      "openChat": "Open Chat",
-      "addParticipants": "Add Participants",
-      "backToInfo": "Back to Info",
-      "sessionInfo": "Session Info",
-      "organizer": "Organizer",
-      "quickActions": "Quick Actions",
-      "shareLocation": "Share Location",
-      "photobook": {
-        "title": "Photobook",
-        "spreadView": "Spread View",
-        "pageView": "Page View",
-        "loading": "Loading...",
-        "error": "An error occurred",
-        "noPhotos": "No photos",
-        "noLayoutSet": "No layout set",
-        "addPhoto": "Add Photo",
-        "fullscreen": "Fullscreen",
-        "exitFullscreen": "Exit Fullscreen",
-        "zoomIn": "Zoom In",
-        "zoomOut": "Zoom Out",
-        "previousPage": "Previous Page",
-        "nextPage": "Next Page",
-        "pageCounter": "{current} / {total}",
-        "layoutSelector": {
-          "title": "Select Layout",
-          "description": "Please select a layout for your photos",
-          "categories": {
-            "single": "Single",
-            "collage": "Collage",
-            "magazine": "Magazine",
-            "artistic": "Artistic"
-          },
-          "templates": {
-            "single": "Single Photo",
-            "twoVertical": "Two Vertical",
-            "twoHorizontal": "Two Horizontal",
-            "threeGrid": "Three Grid",
-            "fourGrid": "Four Grid",
-            "magazine": "Magazine Style",
-            "artistic": "Artistic"
-          },
-          "premium": "Premium",
-          "premiumRequired": "This layout requires premium features",
-          "select": "Select",
-          "cancel": "Cancel"
-        }
-      },
-      "setReminder": "Set Reminder",
-      "sharePhotos": "Share Photos",
-      "addToCalendar": "Add to Calendar",
-      "addToGoogleCalendar": "Add to Google Calendar",
-      "calendarEventCreated": "Calendar event created",
-      "photoSharing": "Photo Sharing",
-      "photoSharingComingSoon": "Photo sharing feature after the session is coming soon.",
-      "accessDenied": "You don't have access to this group chat.",
-      "groupChatCreated": "Group chat created successfully",
-      "errorCreatingGroupChat": "Failed to create group chat",
-      "noNewParticipants": "No new participants to add",
-      "newParticipantsAdded": "{count} participants added",
-      "errorAddingParticipants": "Failed to add participants"
-    },
-    "documents": {
-      "title": "Document Management",
-      "description": "Manage important documents such as consent forms, contracts, and guidelines for the photo session.",
-      "tabs": {
-        "documents": "Documents",
-        "signatures": "Signatures",
-        "manage": "Manage"
-      },
-      "noDocuments": "No documents yet",
-      "createFirstDocument": "Please create your first document.",
-      "required": "Required",
-      "signed": "Signed",
-      "pending": "Pending",
-      "viewDocument": "View Document",
-      "signDocument": "Sign Document",
-      "signing": "Signing...",
-      "agreeAndSign": "I agree to the terms and sign",
-      "sendReminders": "Send Reminders",
-      "noSignatures": "No signatures yet",
-      "createDocument": "Create Document",
-      "createDocumentDescription": "Create new documents and request signatures from participants.",
-      "documentTitle": "Document Title",
-      "documentTitlePlaceholder": "e.g., Photo Session Consent Form",
-      "documentType": "Document Type",
-      "documentContent": "Document Content",
-      "documentContentPlaceholder": "Enter the detailed content of the document...",
-      "markAsRequired": "Mark as required document",
-      "documentTemplates": "Document Templates",
-      "documentTemplatesDescription": "Choose from commonly used document templates.",
-      "types": {
-        "consent": "Consent Form",
-        "contract": "Contract",
-        "portraitRights": "Portrait Rights Release",
-        "guidelines": "Shooting Guidelines",
-        "other": "Other"
-      },
-      "templates": {
-        "basicConsent": "Basic Consent Form",
-        "basicConsentDescription": "Basic consent form for photo session participation",
-        "portraitRights": "Portrait Rights Release",
-        "portraitRightsDescription": "Permission form for using photographed images",
-        "shootingGuidelines": "Shooting Guidelines",
-        "shootingGuidelinesDescription": "Rules and guidelines for the photo session",
-        "participationContract": "Participation Contract",
-        "participationContractDescription": "Detailed contract for photo session participation"
-      },
-      "fillRequiredFields": "Please fill in all required fields",
-      "documentCreated": "Document created successfully",
-      "errorCreatingDocument": "Failed to create document",
-      "documentSigned": "Document signed successfully",
-      "errorSigningDocument": "Failed to sign document",
-      "remindersSent": "Reminders sent to {count} participants",
-      "errorSendingReminders": "Failed to send reminders",
-      "errorLoadingDocuments": "Failed to load documents"
+    "photobook": {
+      "title": "Photobook",
+      "spreadView": "Spread View",
+      "pageView": "Page View",
+      "loading": "Loading...",
+      "error": "An error occurred",
+      "noPhotos": "No photos",
+      "noLayoutSet": "No layout set",
+      "addPhoto": "Add Photo",
+      "fullscreen": "Fullscreen",
+      "exitFullscreen": "Exit Fullscreen",
+      "zoomIn": "Zoom In",
+      "zoomOut": "Zoom Out",
+      "previousPage": "Previous Page",
+      "nextPage": "Next Page",
+      "pageCounter": "{current} / {total}",
+      "layoutSelector": {
+        "title": "Select Layout",
+        "description": "Please select a layout for your photos",
+        "categories": {
+          "single": "Single",
+          "collage": "Collage",
+          "magazine": "Magazine",
+          "artistic": "Artistic"
+        },
+        "templates": {
+          "single": "Single Photo",
+          "twoVertical": "Two Vertical",
+          "twoHorizontal": "Two Horizontal",
+          "threeGrid": "Three Grid",
+          "fourGrid": "Four Grid",
+          "magazine": "Magazine Style",
+          "artistic": "Artistic"
+        },
+        "premium": "Premium",
+        "premiumRequired": "This layout requires premium features",
+        "select": "Select",
+        "cancel": "Cancel"
+      }
     },
     "booking": {
       "alreadyBookedAlert": {
@@ -979,6 +994,19 @@
       "noticeLate": "Please contact the organizer if you will be late",
       "noticeHealth": "Please do not attend if you are feeling unwell",
       "noticeSlotRestriction": "For slot-based sessions, participation is limited to your reserved time slot"
+    },
+    "tabs": {
+      "overview": "Overview",
+      "slots": "Slots",
+      "community": "Community Board",
+      "reviews": "Reviews"
+    },
+    "detail": {
+      "header": {
+        "title": "Photo Session Details",
+        "availableSlots": "Available",
+        "noSlots": "No slots available"
+      }
     }
   },
   "lottery": {
@@ -1929,6 +1957,32 @@
         "dragToReorder": "You can change the order of images using arrow buttons",
         "highQuality": "We recommend uploading high-quality images"
       }
+    },
+    "form": {
+      "labels": {
+        "prefecture": "Prefecture",
+        "prefectureRequired": "Prefecture *",
+        "city": "City/Municipality",
+        "cityRequired": "City/Municipality *",
+        "address": "Address",
+        "addressRequired": "Address *",
+        "addressPlaceholder": "e.g. 1-1-1 Shibuya, Shibuya Building 3F",
+        "cityPlaceholder": "e.g. Shibuya Ward"
+      },
+      "validation": {
+        "prefectureRequired": "Prefecture is required",
+        "cityRequired": "City/Municipality is required",
+        "cityMaxLength": "City/Municipality must be 50 characters or less",
+        "addressRequired": "Address is required",
+        "addressMaxLength": "Address must be {max} characters or less"
+      }
+    },
+    "mapPicker": {
+      "error": {
+        "title": "Failed to retrieve address",
+        "notFound": "Address not found. Please try a different notation.",
+        "fetchFailed": "Failed to search for address."
+      }
     }
   },
   "userSearch": {
@@ -2078,5 +2132,53 @@
     "miyazaki": "Miyazaki",
     "kagoshima": "Kagoshima",
     "okinawa": "Okinawa"
+  },
+  "communityBoard": {
+    "title": "Community Board",
+    "description": "A community board exclusively for photo session participants. Use it for pre-event coordination and day-of communication.",
+    "newPost": "New Post",
+    "postButton": "Post",
+    "placeholder": "Enter your post content...",
+    "category": "Category",
+    "categories": {
+      "all": "All",
+      "announcement": "Announcement",
+      "question": "Question",
+      "introduction": "Introduction",
+      "impression": "Impression",
+      "other": "Other"
+    },
+    "likes": "Likes",
+    "share": "Share",
+    "edit": "Edit",
+    "delete": "Delete",
+    "pin": "Pin",
+    "unpin": "Unpin",
+    "organizer": "Organizer",
+    "pinned": "Pinned",
+    "pinnedMessage": "Pinned message",
+    "participants": "Participants",
+    "postCount": "Posts",
+    "eventTime": "Event Time",
+    "confirmDelete": "Are you sure you want to delete this post?",
+    "emptyPosts": "No posts yet",
+    "more": "More",
+    "posting": "Posting...",
+    "postSuccess": "Posted successfully",
+    "postError": "Failed to post",
+    "editSuccess": "Updated successfully",
+    "editError": "Failed to update",
+    "deleteSuccess": "Deleted successfully",
+    "deleteError": "Failed to delete",
+    "likeError": "Failed to like",
+    "pinSuccess": "Pinned successfully",
+    "unpinSuccess": "Unpinned successfully",
+    "pinError": "Failed to pin",
+    "postInstructions": "Select a category and post",
+    "sessionInfo": "Session Information",
+    "people": " people",
+    "posts": " posts",
+    "save": "Save",
+    "cancel": "Cancel"
   }
 }

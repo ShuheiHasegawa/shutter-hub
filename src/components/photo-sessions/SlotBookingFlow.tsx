@@ -37,6 +37,10 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { CreditCard, Wallet } from 'lucide-react';
+import {
+  SelectableWrapperGroup,
+  SelectableWrapperItem,
+} from '@/components/ui/selectable-wrapper';
 import { MultiSlotLotteryEntryForm } from '@/components/lottery/MultiSlotLotteryEntryForm';
 import { LotteryEntryConfirmation } from '@/components/lottery/LotteryEntryConfirmation';
 import { getLotterySession } from '@/app/actions/photo-session-lottery';
@@ -199,16 +203,6 @@ export function SlotBookingFlow({
   const handleSlotSelect = useCallback((slotId: string) => {
     setSelectedSlotId(slotId);
     // カード選択のみで自動遷移しない
-  }, []);
-
-  // スロット選択ハンドラー（複数選択）
-  const handleMultipleSlotToggle = useCallback((slotId: string) => {
-    setSelectedSlotIds(prev => {
-      const newSelection = prev.includes(slotId)
-        ? prev.filter(id => id !== slotId)
-        : [...prev, slotId];
-      return newSelection;
-    });
   }, []);
 
   // 複数選択での確認画面への遷移
@@ -527,7 +521,7 @@ export function SlotBookingFlow({
 
     return (
       <div className="flex justify-center py-6">
-        <div className="inline-flex items-center gap-3 surface-neutral-0 backdrop-blur-sm rounded-full px-6 py-3 border">
+        <div className="inline-flex items-center gap-3 surface-neutral backdrop-blur-sm rounded-full px-6 py-3 border">
           {visibleSteps.map((step, index) => {
             const isActive = index === currentStepIndex;
             const isPast = index < currentStepIndex;
@@ -661,7 +655,7 @@ export function SlotBookingFlow({
         </div>
 
         {/* 撮影会情報カード */}
-        <div className="surface-neutral-0 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border">
+        <div className="surface-neutral backdrop-blur-sm rounded-2xl p-4 sm:p-6 border">
           <div className="flex items-center gap-3 sm:gap-4">
             <div className="w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center surface-primary rounded-xl flex-shrink-0">
               <Camera className="h-6 w-6 sm:h-8 sm:w-8" />
@@ -700,44 +694,105 @@ export function SlotBookingFlow({
                 💡&nbsp;この撮影会では複数の時間枠を選択できます。お好みの枠を複数選んでください。
               </Alert>
             )}
-            {slots.map((slot, index) => {
-              // 抽選の場合、エントリー上限をチェック
-              const isEntryFull =
-                session.booking_type === 'lottery' &&
-                lotteryEntryCount &&
-                lotteryEntryCount.max_entries !== null
-                  ? (() => {
-                      const slotEntry = lotteryEntryCount.entries_by_slot.find(
-                        e => e.slot_id === slot.id
-                      );
-                      return (
-                        slotEntry &&
-                        slotEntry.entry_count >= lotteryEntryCount.max_entries
-                      );
-                    })()
-                  : false;
+            {allowMultiple ? (
+              <SelectableWrapperGroup
+                mode="multiple"
+                values={selectedSlotIds}
+                onValuesChange={setSelectedSlotIds}
+              >
+                {slots.map((slot, index) => {
+                  // 抽選の場合、エントリー上限をチェック
+                  const isEntryFull =
+                    session.booking_type === 'lottery' &&
+                    lotteryEntryCount &&
+                    lotteryEntryCount.max_entries !== null
+                      ? (() => {
+                          const slotEntry =
+                            lotteryEntryCount.entries_by_slot.find(
+                              e => e.slot_id === slot.id
+                            );
+                          return (
+                            slotEntry &&
+                            slotEntry.entry_count >=
+                              lotteryEntryCount.max_entries
+                          );
+                        })()
+                      : false;
 
-              return (
-                <SlotCard
-                  key={slot.id}
-                  slot={slot}
-                  index={index}
-                  isSelected={
-                    allowMultiple
-                      ? selectedSlotIds.includes(slot.id)
-                      : selectedSlotId === slot.id
-                  }
-                  allowMultiple={allowMultiple}
-                  onSelect={
-                    allowMultiple
-                      ? () => handleMultipleSlotToggle(slot.id)
-                      : () => handleSlotSelect(slot.id)
-                  }
-                  isEntryFull={isEntryFull}
-                  isLottery={session.booking_type === 'lottery'}
-                />
-              );
-            })}
+                  const isSlotFull =
+                    slot.current_participants >= slot.max_participants;
+                  const isDisabled =
+                    isSlotFull ||
+                    (session.booking_type === 'lottery' && isEntryFull);
+
+                  return (
+                    <SelectableWrapperItem
+                      key={slot.id}
+                      value={slot.id}
+                      disabled={isDisabled}
+                      rounded="2xl"
+                    >
+                      <SlotCardContent
+                        slot={slot}
+                        index={index}
+                        isEntryFull={isEntryFull}
+                        isLottery={session.booking_type === 'lottery'}
+                        isSlotFull={isSlotFull}
+                      />
+                    </SelectableWrapperItem>
+                  );
+                })}
+              </SelectableWrapperGroup>
+            ) : (
+              <SelectableWrapperGroup
+                mode="single"
+                value={selectedSlotId || ''}
+                onValueChange={handleSlotSelect}
+              >
+                {slots.map((slot, index) => {
+                  // 抽選の場合、エントリー上限をチェック
+                  const isEntryFull =
+                    session.booking_type === 'lottery' &&
+                    lotteryEntryCount &&
+                    lotteryEntryCount.max_entries !== null
+                      ? (() => {
+                          const slotEntry =
+                            lotteryEntryCount.entries_by_slot.find(
+                              e => e.slot_id === slot.id
+                            );
+                          return (
+                            slotEntry &&
+                            slotEntry.entry_count >=
+                              lotteryEntryCount.max_entries
+                          );
+                        })()
+                      : false;
+
+                  const isSlotFull =
+                    slot.current_participants >= slot.max_participants;
+                  const isDisabled =
+                    isSlotFull ||
+                    (session.booking_type === 'lottery' && isEntryFull);
+
+                  return (
+                    <SelectableWrapperItem
+                      key={slot.id}
+                      value={slot.id}
+                      disabled={isDisabled}
+                      rounded="2xl"
+                    >
+                      <SlotCardContent
+                        slot={slot}
+                        index={index}
+                        isEntryFull={isEntryFull}
+                        isLottery={session.booking_type === 'lottery'}
+                        isSlotFull={isSlotFull}
+                      />
+                    </SelectableWrapperItem>
+                  );
+                })}
+              </SelectableWrapperGroup>
+            )}
             {allowMultiple && selectedSlotIds.length > 0 && (
               <div className="mt-6 surface-primary rounded-2xl p-6 border border-theme-primary/30">
                 <div className="flex items-center justify-between">
@@ -872,7 +927,7 @@ export function SlotBookingFlow({
                   .map(slot => (
                     <div
                       key={slot.id}
-                      className="surface-primary-0 p-4 rounded-xl border border-theme-primary/20"
+                      className="surface-primary p-4 rounded-xl border border-theme-primary/20"
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
@@ -917,7 +972,7 @@ export function SlotBookingFlow({
           {/* 単一選択の場合 */}
           {!allowMultiple && selectedSlot && (
             <InfoCard title="選択した時間枠" icon={Clock} variant="secondary">
-              <div className="surface-primary-0 p-4 rounded-xl border border-theme-primary/20">
+              <div className="surface-primary p-4 rounded-xl border border-theme-primary/20">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 flex items-center justify-center surface-accent rounded-lg">
@@ -1218,147 +1273,109 @@ export function SlotBookingFlow({
   return null;
 }
 
-// スロットカードコンポーネント
-function SlotCard({
+// スロットカードコンテンツコンポーネント（選択機能なし、表示のみ）
+function SlotCardContent({
   slot,
   index,
-  isSelected,
-  allowMultiple: _allowMultiple,
-  onSelect,
   isEntryFull = false,
   isLottery = false,
+  isSlotFull = false,
 }: {
   slot: PhotoSessionSlot;
   index: number;
-  isSelected: boolean;
-  allowMultiple: boolean;
-  onSelect: () => void;
   isEntryFull?: boolean;
   isLottery?: boolean;
+  isSlotFull?: boolean;
 }) {
-  const isSlotFull = slot.current_participants >= slot.max_participants;
   const isDisabled = isSlotFull || (isLottery && isEntryFull);
   const slotStartTime = new Date(slot.start_time);
   const slotEndTime = new Date(slot.end_time);
 
   return (
-    <button
-      className={`w-full rounded-2xl transition-all duration-200 ${
-        isDisabled
-          ? 'opacity-50 cursor-not-allowed'
-          : isSelected
-            ? 'scale-[1.02]'
-            : 'hover:scale-[1.01]'
-      }`}
-      onClick={onSelect}
-      disabled={isDisabled}
-    >
+    <div className="w-full rounded-2xl overflow-hidden border-2 border-border relative">
+      {/* 背景グラデーション */}
       <div
-        className={`relative overflow-hidden rounded-2xl border-2 ${
-          isDisabled
-            ? 'border-border'
-            : isSelected
-              ? 'border-theme-primary shadow-2xl shadow-theme-primary/30'
-              : 'border-border hover:border-border/80'
+        className={`absolute inset-0 ${
+          isDisabled ? 'bg-card-neutral-1' : 'bg-card-neutral-0'
         }`}
-      >
-        {/* 背景グラデーション */}
-        <div
-          className={`absolute inset-0 ${
-            isDisabled
-              ? 'bg-card-neutral-1'
-              : isSelected
-                ? 'bg-theme-primary/10'
-                : 'bg-card-neutral-0'
-          }`}
-        ></div>
+      ></div>
 
-        {/* コンテンツ */}
-        <div className="relative p-6">
-          <div className="flex items-center gap-6">
-            {/* 枠番号（左側） */}
-            <div
-              className={`flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-2xl flex flex-col items-center justify-center ${
-                isDisabled
-                  ? 'bg-muted'
-                  : isSelected
-                    ? 'surface-primary'
-                    : 'bg-muted'
-              }`}
-            >
-              <div className="text-xs sm:text-sm opacity-80 mb-2">枠</div>
-              <div className="text-3xl sm:text-4xl font-bold">{index + 1}</div>
+      {/* コンテンツ */}
+      <div className="relative p-6">
+        <div className="flex items-center gap-6">
+          {/* 枠番号（左側） */}
+          <div
+            className={`flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-2xl flex flex-col items-center justify-center ${
+              isDisabled ? 'bg-muted' : 'bg-muted'
+            }`}
+          >
+            <div className="text-xs sm:text-sm opacity-80 mb-2">枠</div>
+            <div className="text-3xl sm:text-4xl font-bold">{index + 1}</div>
+          </div>
+
+          {/* 詳細情報（右側グリッド） */}
+          <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+            {/* 時間 */}
+            <div className="text-left">
+              <div className="flex items-center gap-2 text-theme-text-muted mb-2">
+                <Clock className="h-4 w-4 sm:h-5 sm:w-5" />
+                <span className="text-xs sm:text-sm">時間</span>
+              </div>
+              <div className="text-lg sm:text-2xl font-bold">
+                <FormattedDateTime
+                  value={slotStartTime}
+                  format="time-range"
+                  endValue={slotEndTime}
+                />
+              </div>
             </div>
 
-            {/* 詳細情報（右側グリッド） */}
-            <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-              {/* 時間 */}
-              <div className="text-left">
-                <div className="flex items-center gap-2 text-theme-text-muted mb-2">
-                  <Clock className="h-4 w-4 sm:h-5 sm:w-5" />
-                  <span className="text-xs sm:text-sm">時間</span>
-                </div>
-                <div className="text-lg sm:text-2xl font-bold">
-                  <FormattedDateTime
-                    value={slotStartTime}
-                    format="time-range"
-                    endValue={slotEndTime}
+            {/* 料金 */}
+            <div className="text-left">
+              <div className="flex items-center gap-2 text-theme-text-muted mb-2">
+                <CircleDollarSignIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+                <span className="text-xs sm:text-sm">料金</span>
+              </div>
+              <div className="text-lg sm:text-2xl font-bold">
+                {slot.price_per_person === 0 ? (
+                  '無料'
+                ) : (
+                  <FormattedPrice
+                    value={slot.price_per_person}
+                    format="simple"
                   />
-                </div>
+                )}
               </div>
+            </div>
 
-              {/* 料金 */}
-              <div className="text-left">
-                <div className="flex items-center gap-2 text-theme-text-muted mb-2">
-                  <CircleDollarSignIcon className="h-4 w-4 sm:h-5 sm:w-5" />
-                  <span className="text-xs sm:text-sm">料金</span>
-                </div>
-                <div className="text-lg sm:text-2xl font-bold">
-                  {slot.price_per_person === 0 ? (
-                    '無料'
-                  ) : (
-                    <FormattedPrice
-                      value={slot.price_per_person}
-                      format="simple"
-                    />
-                  )}
-                </div>
+            {/* 状態 */}
+            <div className="text-left">
+              <div className="flex items-center gap-2 text-theme-text-muted mb-2">
+                <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5" />
+                <span className="text-xs sm:text-sm">状態</span>
               </div>
-
-              {/* 状態 */}
-              <div className="text-left">
-                <div className="flex items-center gap-2 text-theme-text-muted mb-2">
-                  <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5" />
-                  <span className="text-xs sm:text-sm">状態</span>
-                </div>
-                <div>
-                  {isSelected ? (
-                    <div className="inline-flex items-center gap-2 px-3 py-1 surface-accent rounded-lg">
-                      <CheckCircle className="h-4 w-4" />
-                      <span className="font-bold text-sm">選択中</span>
-                    </div>
-                  ) : isSlotFull || isEntryFull ? (
-                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-destructive/20 rounded-lg border border-destructive/30">
-                      <AlertCircle className="h-4 w-4 text-destructive" />
-                      <span className="text-destructive font-bold text-sm">
-                        {isSlotFull ? '満席' : 'エントリー上限'}
-                      </span>
-                    </div>
-                  ) : (
-                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-muted/50 rounded-lg">
-                      <CheckCircle className="h-4 w-4 opacity-50" />
-                      <span className="font-bold text-sm opacity-80">
-                        空きあり
-                      </span>
-                    </div>
-                  )}
-                </div>
+              <div>
+                {isSlotFull || isEntryFull ? (
+                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-destructive/20 rounded-lg border border-destructive/30">
+                    <AlertCircle className="h-4 w-4 text-destructive" />
+                    <span className="text-destructive font-bold text-sm">
+                      {isSlotFull ? '満席' : 'エントリー上限'}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-muted/50 rounded-lg">
+                    <CheckCircle className="h-4 w-4 opacity-50" />
+                    <span className="font-bold text-sm opacity-80">
+                      空きあり
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </div>
       </div>
-    </button>
+    </div>
   );
 }
 
@@ -1373,7 +1390,7 @@ function SessionInfoDisplay({
 
   return (
     <div className="space-y-4">
-      <Card className="surface-neutral-1">
+      <Card className="surface-neutral">
         <CardContent className="pt-6 space-y-4">
           <div>
             <div className="font-medium text-theme-text-primary">撮影会</div>

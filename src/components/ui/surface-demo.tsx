@@ -30,7 +30,7 @@ export function SurfaceDemo() {
         <h4 className="font-semibold text-theme-text-primary">
           プライマリサーフェース
         </h4>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4">
           <div className="surface-primary p-6 rounded-lg text-center">
             <h5 className="font-medium mb-2">surface-primary</h5>
             <p className="text-sm opacity-90">
@@ -38,20 +38,6 @@ export function SurfaceDemo() {
             </p>
             <div className="mt-3 px-3 py-1 bg-black/10 rounded text-xs">
               自動コントラスト
-            </div>
-          </div>
-          <div className="surface-primary-0 p-6 rounded-lg text-center">
-            <h5 className="font-medium mb-2">surface-primary-0</h5>
-            <p className="text-sm opacity-90">明るいプライマリ</p>
-            <div className="mt-3 px-3 py-1 bg-black/10 rounded text-xs">
-              ライトレベル
-            </div>
-          </div>
-          <div className="surface-primary-1 p-6 rounded-lg text-center">
-            <h5 className="font-medium mb-2">surface-primary-1</h5>
-            <p className="text-sm opacity-90">暗いプライマリ</p>
-            <div className="mt-3 px-3 py-1 bg-white/10 rounded text-xs">
-              ダークレベル
             </div>
           </div>
         </div>
@@ -62,27 +48,13 @@ export function SurfaceDemo() {
         <h4 className="font-semibold text-theme-text-primary">
           アクセントサーフェース
         </h4>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4">
           <div className="surface-accent p-6 rounded-lg text-center">
             <h5 className="font-medium mb-2">surface-accent</h5>
             <p className="text-sm opacity-90">強調・アクション用</p>
             <button className="mt-3 px-3 py-1 bg-white/20 hover:bg-white/30 rounded text-xs transition-colors">
               アクションボタン
             </button>
-          </div>
-          <div className="surface-accent-0 p-6 rounded-lg text-center">
-            <h5 className="font-medium mb-2">surface-accent-0</h5>
-            <p className="text-sm opacity-90">明るいアクセント</p>
-            <div className="mt-3 px-3 py-1 bg-black/10 rounded text-xs">
-              通知バッジ
-            </div>
-          </div>
-          <div className="surface-accent-1 p-6 rounded-lg text-center">
-            <h5 className="font-medium mb-2">surface-accent-1</h5>
-            <p className="text-sm opacity-90">暗いアクセント</p>
-            <div className="mt-3 px-3 py-1 bg-white/10 rounded text-xs">
-              重要な警告
-            </div>
           </div>
         </div>
       </div>
@@ -92,26 +64,12 @@ export function SurfaceDemo() {
         <h4 className="font-semibold text-theme-text-primary">
           ニュートラルサーフェース
         </h4>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4">
           <div className="surface-neutral p-6 rounded-lg text-center">
             <h5 className="font-medium mb-2">surface-neutral</h5>
             <p className="text-sm opacity-90">控えめ・背景用</p>
             <div className="mt-3 px-3 py-1 bg-black/5 rounded text-xs">
               サブテキスト
-            </div>
-          </div>
-          <div className="surface-neutral-0 p-6 rounded-lg text-center">
-            <h5 className="font-medium mb-2">surface-neutral-0</h5>
-            <p className="text-sm opacity-90">明るいニュートラル</p>
-            <div className="mt-3 px-3 py-1 bg-black/5 rounded text-xs">
-              カード背景
-            </div>
-          </div>
-          <div className="surface-neutral-1 p-6 rounded-lg text-center">
-            <h5 className="font-medium mb-2">surface-neutral-1</h5>
-            <p className="text-sm opacity-90">暗いニュートラル</p>
-            <div className="mt-3 px-3 py-1 bg-white/10 rounded text-xs">
-              フッター
             </div>
           </div>
         </div>
@@ -141,16 +99,16 @@ export function SurfaceDemo() {
           </Card>
 
           {/* カード例2 */}
-          <Card className="surface-accent-0 border-0">
+          <Card className="surface-accent border-0">
             <CardHeader>
               <CardTitle className="text-inherit">アクション推奨</CardTitle>
               <CardDescription className="text-inherit opacity-80">
-                明るいアクセントサーフェース
+                アクセントサーフェース
               </CardDescription>
             </CardHeader>
             <CardContent>
               <p className="text-inherit opacity-90 mb-4">
-                アクション促進に最適な明るいアクセント色です。
+                アクション促進に最適なアクセント色です。
               </p>
               <button className="px-4 py-2 bg-black/10 hover:bg-black/20 rounded transition-colors">
                 今すぐ始める
@@ -165,16 +123,12 @@ export function SurfaceDemo() {
         <h4 className="font-semibold text-theme-text-primary">
           使用例（コード）
         </h4>
-        <div className="surface-neutral-1 p-4 rounded-lg font-mono text-sm space-y-2">
+        <div className="surface-neutral p-4 rounded-lg font-mono text-sm space-y-2">
           <div className="text-inherit opacity-60">{`// 従来の記述（2つのクラス）`}</div>
           <div className="text-inherit">{`<div className="bg-theme-primary text-theme-primary-foreground">`}</div>
 
           <div className="text-inherit opacity-60 mt-4">{`// 新システム（1つのクラス）`}</div>
           <div className="text-inherit">{`<div className="surface-primary">`}</div>
-
-          <div className="text-inherit opacity-60 mt-4">{`// レベル指定も可能`}</div>
-          <div className="text-inherit">{`<div className="surface-accent-0">  <!-- 明るめ -->`}</div>
-          <div className="text-inherit">{`<div className="surface-accent-1">  <!-- 暗め -->`}</div>
         </div>
       </div>
     </div>
@@ -231,7 +185,7 @@ export function ComparisonDemo() {
       </div>
 
       {/* ホバー効果デモ */}
-      <div className="surface-neutral-0 p-6 rounded-lg">
+      <div className="surface-neutral p-6 rounded-lg">
         <h4 className="font-semibold mb-4">🎯 ホバー効果の適用</h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div className="space-y-4">
@@ -261,7 +215,7 @@ export function ComparisonDemo() {
       </div>
 
       {/* メリット */}
-      <div className="surface-neutral-0 p-6 rounded-lg">
+      <div className="surface-neutral p-6 rounded-lg">
         <h4 className="font-semibold mb-4">🚀 新システムのメリット</h4>
         <ul className="space-y-2">
           <li className="flex items-start gap-2">

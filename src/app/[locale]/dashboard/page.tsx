@@ -296,13 +296,15 @@ export default function DashboardPage() {
               <CardContent>
                 <div className="flex items-center space-x-4">
                   {profile.avatar_url && (
-                    <Image
-                      className="h-16 w-16 rounded-full object-cover"
-                      src={profile.avatar_url}
-                      alt={profile.display_name}
-                      width={64}
-                      height={64}
-                    />
+                    <Link href={`/${locale}/profile/${profile.id}`}>
+                      <Image
+                        className="h-16 w-16 rounded-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                        src={profile.avatar_url}
+                        alt={profile.display_name}
+                        width={64}
+                        height={64}
+                      />
+                    </Link>
                   )}
                   <div>
                     <h3 className="text-xl font-semibold">

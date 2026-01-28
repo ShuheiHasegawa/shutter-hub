@@ -144,7 +144,7 @@ export function AppHeader({
           <ThemePaletteSelector />
           <ThemeToggle />
 
-          {user && (
+          {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -170,6 +170,10 @@ export function AppHeader({
                 />
               </DropdownMenuContent>
             </DropdownMenu>
+          ) : (
+            <Button asChild variant="cta" size="sm">
+              <Link href="/auth/signin">{t('signin')}</Link>
+            </Button>
           )}
         </div>
       </header>

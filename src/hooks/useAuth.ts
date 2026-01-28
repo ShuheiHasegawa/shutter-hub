@@ -126,9 +126,12 @@ export function useAuth() {
     return () => {
       subscription.unsubscribe();
     };
-  }, []); // 空の依存配列で初回のみ実行
+  }, [supabase]); // supabaseは安定した参照のため、実質的に初回のみ実行
 
-  const logout = async () => {
+  const logout = async (options?: {
+    skipRedirect?: boolean;
+    redirectTo?: string;
+  }) => {
     setLoading(true);
 
     try {
@@ -147,7 +150,20 @@ export function useAuth() {
       }
 
       toast.success('ログアウトしました');
-      router.push('/ja/auth/signin');
+
+      // リダイレクトは呼び出し元で制御（skipRedirectがtrueの場合はスキップ）
+      if (!options?.skipRedirect) {
+        // ロケールを動的に取得（現在のパスから抽出、デフォルトは'ja'）
+        let locale = 'ja';
+        if (typeof window !== 'undefined') {
+          const pathMatch = window.location.pathname.match(/^\/([a-z]{2})\//);
+          if (pathMatch) {
+            locale = pathMatch[1];
+          }
+        }
+        const redirectPath = options?.redirectTo || `/${locale}/auth/signin`;
+        router.push(redirectPath);
+      }
     } catch (error) {
       logger.error('Logout error:', error);
       toast.error('ログアウト処理中にエラーが発生しました');

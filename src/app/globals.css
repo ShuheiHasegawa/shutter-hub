@@ -127,22 +127,10 @@
     /* セマンティックサーフェース（ライトモード） */
     --surface-primary: var(--theme-primary);
     --surface-primary-text: var(--theme-primary-foreground);
-    --surface-primary-0: var(--theme-secondary);
-    --surface-primary-0-text: var(--theme-secondary-foreground);
-    --surface-primary-1: var(--theme-primary);
-    --surface-primary-1-text: var(--theme-primary-foreground);
     --surface-accent: var(--theme-accent);
     --surface-accent-text: var(--theme-accent-foreground);
-    --surface-accent-0: var(--theme-secondary);
-    --surface-accent-0-text: var(--theme-secondary-foreground);
-    --surface-accent-1: var(--theme-accent);
-    --surface-accent-1-text: var(--theme-accent-foreground);
     --surface-neutral: var(--theme-neutral);
     --surface-neutral-text: var(--theme-neutral-foreground);
-    --surface-neutral-0: var(--theme-secondary);
-    --surface-neutral-0-text: var(--theme-secondary-foreground);
-    --surface-neutral-1: var(--theme-neutral);
-    --surface-neutral-1-text: var(--theme-neutral-foreground);
 
     /* ShutterHub セマンティックカラー */
     --success: 158 44% 40%; /* 予約成功・空きあり（緑系 #399170） */
@@ -223,22 +211,10 @@
     /* セマンティックサーフェース（ダークモード） */
     --surface-primary: var(--theme-primary);
     --surface-primary-text: var(--theme-primary-foreground);
-    --surface-primary-0: var(--theme-secondary);
-    --surface-primary-0-text: var(--theme-secondary-foreground);
-    --surface-primary-1: var(--theme-primary);
-    --surface-primary-1-text: var(--theme-primary-foreground);
     --surface-accent: var(--theme-accent);
     --surface-accent-text: var(--theme-accent-foreground);
-    --surface-accent-0: var(--theme-secondary);
-    --surface-accent-0-text: var(--theme-secondary-foreground);
-    --surface-accent-1: var(--theme-accent);
-    --surface-accent-1-text: var(--theme-accent-foreground);
     --surface-neutral: var(--theme-neutral);
     --surface-neutral-text: var(--theme-neutral-foreground);
-    --surface-neutral-0: var(--theme-secondary);
-    --surface-neutral-0-text: var(--theme-secondary-foreground);
-    --surface-neutral-1: var(--theme-neutral);
-    --surface-neutral-1-text: var(--theme-neutral-foreground);
 
     /* ShutterHub セマンティックカラー（ダークモード） */
     --success: 158 44% 40%; /* ダークモードでも視認性良好・空きあり（#399170） */
@@ -262,6 +238,32 @@
   body {
     @apply bg-background text-foreground;
     overflow: hidden;
+  }
+
+  /* グローバルスクロールバースタイル */
+  * {
+    scrollbar-width: thin; /* Firefox */
+    scrollbar-color: hsl(var(--surface-accent) / 0.4)
+      hsl(var(--surface-accent) / 0.1); /* Firefox */
+  }
+
+  *::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: hsl(var(--surface-accent) / 0.1);
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: hsl(var(--surface-accent) / 0.4);
+    border-radius: 3px;
+    transition: background 0.3s ease;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--surface-accent) / 0.6);
   }
 }
 

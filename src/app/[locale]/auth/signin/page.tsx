@@ -9,6 +9,7 @@ import Image from 'next/image';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { logger } from '@/lib/utils/logger';
+import { usePullToRefreshDisabled } from '@/components/providers/pull-to-refresh-provider';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,6 +21,8 @@ import {
 } from '@/components/ui/alert-dialog';
 
 export default function SignInPage() {
+  usePullToRefreshDisabled();
+
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -28,19 +31,21 @@ export default function SignInPage() {
   const [activeTab, setActiveTab] = useState<'signin' | 'signup'>('signin');
   const { user, loading, logout } = useAuth();
   const [showWarning, setShowWarning] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
-  // ログイン済みチェック
+  // ログイン済みチェック（リダイレクト中は警告を表示しない）
   useEffect(() => {
-    if (!loading && user) {
+    if (!loading && user && !isRedirecting) {
       setShowWarning(true);
     }
-  }, [user, loading]);
+  }, [user, loading, isRedirecting]);
 
   // ログアウトして続ける処理
   const handleLogoutAndContinue = async () => {
     try {
       setShowWarning(false);
-      await logout();
+      // skipRedirectを使用して、window.location.hrefのみでリダイレクトを制御
+      await logout({ skipRedirect: true });
       // ログアウト後、ページをリロードして状態をクリア
       window.location.href = `/${locale}/auth/signin`;
     } catch (error) {
@@ -48,6 +53,12 @@ export default function SignInPage() {
       // エラーが発生してもページをリロード
       window.location.href = `/${locale}/auth/signin`;
     }
+  };
+
+  // リダイレクト開始時のコールバック
+  const handleRedirectStart = () => {
+    setIsRedirecting(true);
+    setShowWarning(false);
   };
 
   return (
@@ -83,12 +94,12 @@ export default function SignInPage() {
                 </div>
 
                 {/* フォームエリア（スマホ: 下部、PC: 右側） */}
-                <div className="flex flex-col gap-4 p-6 md:p-10 bg-white dark:bg-gray-800">
+                <div className="flex flex-col gap-4 p-6 md:p-10 bg-white dark:bg-gray-800 min-h-[480px] md:min-h-[800px]">
                   <div className="flex flex-1 items-center justify-center">
-                    <div className="w-full max-w-xs space-y-6">
+                    <div className="w-full max-w-xs space-y-4">
                       <div className="text-center">
                         <h2 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-                          アカウントにサインイン
+                          ShutterHub
                         </h2>
                         <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
                           撮影会予約プラットフォーム
@@ -100,6 +111,7 @@ export default function SignInPage() {
                         value={activeTab}
                         onValueChange={setActiveTab}
                         returnUrl={returnUrl}
+                        onRedirectStart={handleRedirectStart}
                       />
 
                       {/* 区切り線とOAuthボタン（サインインタブの時のみ表示） */}
@@ -112,6 +124,11 @@ export default function SignInPage() {
                             <div className="relative flex justify-center text-xs uppercase">
                               <span className="bg-white dark:bg-gray-800 px-2 text-gray-500 dark:text-gray-400">
                                 または
+                              </span>
+                            </div>
+                            <div className="relative flex justify-center text-xs mt-4">
+                              <span className="bg-white dark:bg-gray-800 px-2 text-gray-500 dark:text-gray-400">
+                                次のアカウントをお持ちの場合、簡単にShutterHubアカウントを作成できます。
                               </span>
                             </div>
                           </div>

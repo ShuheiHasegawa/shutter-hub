@@ -90,11 +90,11 @@ export function TestimonialCarousel() {
           >
             {testimonials.map((testimonial, index) => (
               <div key={index} className="w-full flex-shrink-0">
-                <Card className="mx-2 surface-neutral-0 shadow-lg">
+                <Card className="mx-2 surface-neutral shadow-lg">
                   <CardContent className="p-8">
                     <div className="flex items-start gap-4">
                       <div className="flex-shrink-0">
-                        <div className="w-16 h-16 surface-accent-0 rounded-full flex items-center justify-center text-2xl">
+                        <div className="w-16 h-16 surface-accent rounded-full flex items-center justify-center text-2xl">
                           {testimonial.avatar}
                         </div>
                       </div>

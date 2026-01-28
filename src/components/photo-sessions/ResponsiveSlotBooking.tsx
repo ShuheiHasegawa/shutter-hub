@@ -212,7 +212,7 @@ export const ResponsiveSlotBooking = memo(function ResponsiveSlotBooking({
 
         return (
           <AlertDialog open={isOpen} onOpenChange={onClose}>
-            <AlertDialogContent className="max-w-2xl max-h-[85vh] overflow-hidden surface-neutral-0">
+            <AlertDialogContent className="max-w-2xl max-h-[85vh] overflow-hidden surface-neutral">
               {/* ステップインジケーター */}
               <div className="flex items-center justify-center space-x-8 py-4 border-b border-border">
                 {Object.entries(stepLabels).map(([step, label], index) => {
@@ -229,7 +229,7 @@ export const ResponsiveSlotBooking = memo(function ResponsiveSlotBooking({
                             ? 'surface-accent'
                             : isActive
                               ? 'surface-primary'
-                              : 'surface-neutral-1'
+                              : 'surface-neutral'
                         }`}
                       >
                         {isCompleted ? (
@@ -297,7 +297,7 @@ export const ResponsiveSlotBooking = memo(function ResponsiveSlotBooking({
                   {/* ステップ2: 予約確認 */}
                   {currentStep === 'confirm' && (
                     <div className="space-y-4">
-                      <Card className="surface-neutral-1">
+                      <Card className="surface-neutral">
                         <CardHeader className="pb-3">
                           <CardTitle className="text-lg text-theme-text-primary">
                             予約内容
@@ -536,7 +536,7 @@ export const ResponsiveSlotBooking = memo(function ResponsiveSlotBooking({
             }
           }}
         >
-          <AlertDialogContent className="max-w-sm surface-neutral-0">
+          <AlertDialogContent className="max-w-sm surface-neutral">
             <AlertDialogHeader>
               <AlertDialogTitle className="text-theme-text-primary">
                 予約確認
@@ -621,7 +621,7 @@ export const ResponsiveSlotBooking = memo(function ResponsiveSlotBooking({
 
         {/* 完了ダイアログ（モバイル用） */}
         <AlertDialog open={currentStep === 'complete'} onOpenChange={() => {}}>
-          <AlertDialogContent className="max-w-sm surface-neutral-0">
+          <AlertDialogContent className="max-w-sm surface-neutral">
             <AlertDialogHeader>
               <AlertDialogTitle className="text-theme-text-primary">
                 予約完了
@@ -703,14 +703,14 @@ const SlotCard = memo(
         'p-4 border-2 rounded-lg cursor-pointer transition-all duration-200';
 
       if (isSlotFull) {
-        return `${baseClasses} surface-neutral-1 opacity-50 cursor-not-allowed`;
+        return `${baseClasses} surface-neutral opacity-50 cursor-not-allowed`;
       }
 
       if (isSelected) {
         return `${baseClasses} surface-primary border-theme-primary`;
       }
 
-      return `${baseClasses} surface-neutral-0 border-border hover:surface-primary-0 hover:border-theme-primary/50`;
+      return `${baseClasses} surface-neutral border-border hover:surface-primary hover:border-theme-primary/50`;
     }, [isSlotFull, isSelected]);
 
     const badgeVariant = useMemo(() => {
@@ -799,7 +799,7 @@ function SessionInfoDisplay({
 
   return (
     <div className="space-y-4">
-      <Card className="surface-neutral-1">
+      <Card className="surface-neutral">
         <CardContent className="pt-6 space-y-4">
           <div>
             <div className="font-medium text-theme-text-primary">撮影会</div>
