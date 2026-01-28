@@ -200,16 +200,8 @@ text-theme-neutral-foreground    /* ニュートラル背景用テキスト */
 ```css
 /* 背景色とテキスト色が自動ペア - 最も簡単 */
 surface-primary             /* プライマリサーフェース */
-surface-primary-0           /* 明るいプライマリサーフェース */
-surface-primary-1           /* 暗いプライマリサーフェース */
-
 surface-accent              /* アクセントサーフェース */
-surface-accent-0            /* 明るいアクセントサーフェース */
-surface-accent-1            /* 暗いアクセントサーフェース */
-
 surface-neutral             /* ニュートラルサーフェース */
-surface-neutral-0           /* 明るいニュートラルサーフェース */
-surface-neutral-1           /* 暗いニュートラルサーフェース */
 ```
 
 #### **透明度対応（全色）**
@@ -271,8 +263,8 @@ hover:bg-theme-primary/90   /* ホバー時背景色透明度 */
 ```tsx
 function PhotoSessionCard() {
   return (
-    <div className="surface-neutral-0 rounded-lg p-6 transition-colors">
-      <div className="surface-primary-0 p-4 rounded mb-4">
+    <div className="surface-neutral rounded-lg p-6 transition-colors">
+      <div className="surface-primary p-4 rounded mb-4">
         <h3 className="font-semibold">撮影会タイトル</h3>
         <p className="opacity-70">詳細情報</p>
       </div>
@@ -281,7 +273,7 @@ function PhotoSessionCard() {
         <button className="surface-accent px-3 py-2 rounded text-sm">
           予約する
         </button>
-        <button className="surface-neutral-1 px-3 py-2 rounded text-sm">
+        <button className="surface-neutral px-3 py-2 rounded text-sm">
           詳細
         </button>
       </div>
@@ -462,7 +454,7 @@ src/
 
 ✅ 適切な視覚的階層（opacity, levels）
 <p className="opacity-80">セカンダリ情報</p>
-<div className="surface-primary-0">明るめレベル</div>
+<div className="surface-primary">明るめレベル</div>
 
 ✅ トランジション効果を追加
 <div className="transition-colors duration-300 surface-accent">
@@ -499,9 +491,9 @@ src/
 <button className="surface-accent">アクション</button>
 
 // ✅ パターン2：レベル分けでバリエーション
-<div className="surface-primary-0">    // 明るめ
+<div className="surface-primary">    // 明るめ
 <div className="surface-primary">      // 標準
-<div className="surface-primary-1">    // 暗め
+<div className="surface-primary">    // 暗め
 
 // ✅ パターン3：透明度で重ね合わせ効果
 <div className="surface-neutral/80 backdrop-blur">
@@ -739,16 +731,8 @@ text-theme-neutral-foreground    /* ニュートラル背景用テキスト */
 ```css
 /* 背景色とテキスト色が自動ペア - 最も簡単 */
 surface-primary             /* プライマリサーフェース */
-surface-primary-0           /* 明るいプライマリサーフェース */
-surface-primary-1           /* 暗いプライマリサーフェース */
-
 surface-accent              /* アクセントサーフェース */
-surface-accent-0            /* 明るいアクセントサーフェース */
-surface-accent-1            /* 暗いアクセントサーフェース */
-
 surface-neutral             /* ニュートラルサーフェース */
-surface-neutral-0           /* 明るいニュートラルサーフェース */
-surface-neutral-1           /* 暗いニュートラルサーフェース */
 ```
 
 #### **透明度対応（全色）**
@@ -810,8 +794,8 @@ hover:bg-theme-primary/90   /* ホバー時背景色透明度 */
 ```tsx
 function PhotoSessionCard() {
   return (
-    <div className="surface-neutral-0 rounded-lg p-6 transition-colors">
-      <div className="surface-primary-0 p-4 rounded mb-4">
+    <div className="surface-neutral rounded-lg p-6 transition-colors">
+      <div className="surface-primary p-4 rounded mb-4">
         <h3 className="font-semibold">撮影会タイトル</h3>
         <p className="opacity-70">詳細情報</p>
       </div>
@@ -820,7 +804,7 @@ function PhotoSessionCard() {
         <button className="surface-accent px-3 py-2 rounded text-sm">
           予約する
         </button>
-        <button className="surface-neutral-1 px-3 py-2 rounded text-sm">
+        <button className="surface-neutral px-3 py-2 rounded text-sm">
           詳細
         </button>
       </div>
@@ -1001,7 +985,7 @@ src/
 
 ✅ 適切な視覚的階層（opacity, levels）
 <p className="opacity-80">セカンダリ情報</p>
-<div className="surface-primary-0">明るめレベル</div>
+<div className="surface-primary">明るめレベル</div>
 
 ✅ トランジション効果を追加
 <div className="transition-colors duration-300 surface-accent">
@@ -1038,9 +1022,9 @@ src/
 <button className="surface-accent">アクション</button>
 
 // ✅ パターン2：レベル分けでバリエーション
-<div className="surface-primary-0">    // 明るめ
+<div className="surface-primary">    // 明るめ
 <div className="surface-primary">      // 標準
-<div className="surface-primary-1">    // 暗め
+<div className="surface-primary">    // 暗め
 
 // ✅ パターン3：透明度で重ね合わせ効果
 <div className="surface-neutral/80 backdrop-blur">

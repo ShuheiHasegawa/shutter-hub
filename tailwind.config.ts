@@ -107,26 +107,14 @@ const config: Config = {
           // プライマリサーフェース（メインブランド色）
           primary: 'hsl(var(--surface-primary))',
           'primary-text': 'hsl(var(--surface-primary-text))',
-          'primary-0': 'hsl(var(--surface-primary-0))', // 明るめバリエーション
-          'primary-0-text': 'hsl(var(--surface-primary-0-text))',
-          'primary-1': 'hsl(var(--surface-primary-1))', // 暗めバリエーション
-          'primary-1-text': 'hsl(var(--surface-primary-1-text))',
 
           // アクセントサーフェース（強調・アクション用）
           accent: 'hsl(var(--surface-accent))',
           'accent-text': 'hsl(var(--surface-accent-text))',
-          'accent-0': 'hsl(var(--surface-accent-0))', // 明るめバリエーション
-          'accent-0-text': 'hsl(var(--surface-accent-0-text))',
-          'accent-1': 'hsl(var(--surface-accent-1))', // 暗めバリエーション
-          'accent-1-text': 'hsl(var(--surface-accent-1-text))',
 
           // ニュートラルサーフェース（控えめ・サブ要素用）
           neutral: 'hsl(var(--surface-neutral))',
           'neutral-text': 'hsl(var(--surface-neutral-text))',
-          'neutral-0': 'hsl(var(--surface-neutral-0))', // 明るめバリエーション
-          'neutral-0-text': 'hsl(var(--surface-neutral-0-text))',
-          'neutral-1': 'hsl(var(--surface-neutral-1))', // 暗めバリエーション
-          'neutral-1-text': 'hsl(var(--surface-neutral-1-text))',
 
           // 🎯 意図ベースサーフェース
           cta: 'hsl(var(--surface-cta))',

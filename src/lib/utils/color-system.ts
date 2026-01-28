@@ -59,8 +59,10 @@ export const colorPalettes: ColorPalette[] = [
       },
       navigation: {
         // 通常操作（移動・戻る）
-        light: '#64748B', // neutral -> navigation (通常操作)
-        dark: '#64748B',
+        // light: '#64748B', // neutral -> navigation (通常操作)
+        // dark: '#64748B',
+        light: 'dfdddc', // neutral -> navigation (通常操作)
+        dark: 'dfdddc',
       },
     },
   },

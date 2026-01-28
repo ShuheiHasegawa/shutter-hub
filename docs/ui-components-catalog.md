@@ -86,11 +86,12 @@
 
 ## 画像関連
 
-### ImageLightbox
+### ImageDialog
 - **用途**: 画像の拡大表示（ライトボックス）
-- **特徴**: 全画面表示、背景クリックで閉じる
-- **使用例**: 撮影会画像、プロフィール画像の拡大
-- **ファイル**: `src/components/ui/image-lightbox.tsx`
+- **特徴**: 単一画像・複数画像対応、前後ナビゲーション、インデックス表示
+- **使用例**: 撮影会画像、スタジオ写真、投稿画像の拡大表示
+- **ファイル**: `src/components/ui/image-dialog.tsx`
+- **サイズバリアント**: `default` (max-w-4xl), `large` (max-w-6xl), `fullscreen` (max-w-7xl w-[95vw])`
 
 ### ImageUpload
 - **用途**: 画像アップロード機能
@@ -389,8 +390,33 @@
 | コンポーネント | 用途 | 特徴 |
 |--------------|------|------|
 | EmptyImage | 画像なし時のフォールバック | アイコン + グラデーション |
-| ImageLightbox | 拡大表示 | 全画面ライトボックス |
+| ImageDialog | 画像拡大表示 | 単一・複数画像対応、ナビゲーション機能 |
 | OptimizedImage | 最適化表示 | Next.js Image最適化 |
+
+**画像拡大表示の実装例**:
+画像の拡大表示には`ImageDialog`コンポーネントを使用します。×ボタンは自動的に右上に配置され、Radix UI Portalにより親要素のCSSの影響を受けません。
+
+```tsx
+// 単一画像
+<ImageDialog
+  images={imageUrl}
+  open={isOpen}
+  onOpenChange={setIsOpen}
+  alt="画像の説明"
+  size="large"
+/>
+
+// 複数画像（ナビゲーション付き）
+<ImageDialog
+  images={imageUrls}
+  open={isOpen}
+  onOpenChange={setIsOpen}
+  currentIndex={currentIndex}
+  onIndexChange={setCurrentIndex}
+  alt={imageAlts}
+  size="default"
+/>
+```
 
 ### ローディング表示
 
@@ -406,3 +432,5 @@
 
 - 2025-01-16: 初版作成
 - 2025-01-16: StatItemコンポーネント追加
+- 2026-01-27: ImageLightbox削除、Dialogコンポーネントによる画像拡大表示パターンに更新
+- 2026-01-27: ImageDialogコンポーネント追加、画像表示を共通化
