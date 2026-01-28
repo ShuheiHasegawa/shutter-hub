@@ -44,20 +44,12 @@ export function AuthenticatedLayout({
     );
   }
 
-  // allowPublicがtrueで未ログインの場合、レイアウトなしで表示
-  if (!user && allowPublic) {
-    return (
-      <div className="min-h-screen bg-background">
-        <div className="px-4 py-4 space-y-4">{children}</div>
-      </div>
-    );
-  }
-
   // 未ログインでallowPublicがfalseの場合
-  if (!user) {
+  if (!user && !allowPublic) {
     return null;
   }
 
+  // allowPublicがtrueまたはログイン済みの場合、同じレイアウト構造を返す
   return (
     <div className="flex bg-background overflow-hidden h-screen">
       {/* 固定サイドバー */}

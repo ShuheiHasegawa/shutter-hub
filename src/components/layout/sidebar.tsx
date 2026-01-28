@@ -34,6 +34,7 @@ import {
   Ticket,
 } from 'lucide-react';
 import { useProfile } from '@/hooks/useSimpleProfile';
+import { useAuth } from '@/hooks/useAuth';
 import {
   Collapsible,
   CollapsibleContent,
@@ -61,6 +62,7 @@ function useSidebarNavigation() {
   const router = useRouter();
   const t = useTranslations('navigation');
   const { profile } = useProfile();
+  const { user } = useAuth();
   const [openSections, setOpenSections] = useState<string[]>([
     'photoSessions',
     'studio',
@@ -78,7 +80,35 @@ function useSidebarNavigation() {
     router.push(href as '/dashboard'); // Type assertion for dynamic routes
   };
 
-  const navItems: NavItem[] = useMemo(
+  // 公開用ナビゲーション項目
+  const publicNavItems: NavItem[] = useMemo(
+    () => [
+      {
+        title: t('home'),
+        href: '/',
+        icon: Home,
+      },
+      {
+        title: t('photoSessionList'),
+        href: '/photo-sessions',
+        icon: List,
+      },
+      {
+        title: t('studioList'),
+        href: '/studios',
+        icon: Building,
+      },
+      {
+        title: t('instant'),
+        href: '/instant',
+        icon: Zap,
+      },
+    ],
+    [t]
+  );
+
+  // 認証済み用ナビゲーション項目
+  const authenticatedNavItems: NavItem[] = useMemo(
     () => [
       {
         title: t('dashboard'),
@@ -200,8 +230,18 @@ function useSidebarNavigation() {
     [t, profile?.user_type]
   );
 
+  // 認証状態に応じてナビゲーション項目を返す
+  const navItems: NavItem[] = useMemo(
+    () => (user ? authenticatedNavItems : publicNavItems),
+    [user, authenticatedNavItems, publicNavItems]
+  );
+
   const isActive = (href: string) => {
     const currentPath = String(pathname);
+    // ホームは完全一致のみ
+    if (href === '/') {
+      return currentPath === '/';
+    }
     if (href === '/dashboard') {
       return currentPath === '/dashboard' || currentPath.endsWith('/dashboard');
     }
@@ -306,17 +346,18 @@ function useSidebarNavigation() {
     navItems,
     renderNavItem,
     navigate,
+    user,
   };
 }
 
 export function Sidebar({ className }: SidebarProps) {
-  const { navItems, renderNavItem, navigate } = useSidebarNavigation();
+  const { navItems, renderNavItem, navigate, user } = useSidebarNavigation();
 
   const SidebarContent = () => (
     <div className="flex h-full flex-col">
       <div className="flex h-12 items-center border-b px-4">
         <button
-          onClick={() => navigate('/dashboard')}
+          onClick={() => navigate(user ? '/dashboard' : '/')}
           className="flex items-center space-x-2"
         >
           <Camera className="h-6 w-6 text-primary" />
