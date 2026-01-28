@@ -25,6 +25,12 @@
     "apply": "適用する",
     "scrollToTop": "ページトップに戻る",
     "priceInputPlaceholder": "料金を入力してください",
+    "guestSuffix": "さん",
+    "minutes": "分",
+    "people": "名",
+    "guest": "ゲスト",
+    "budget": "予算",
+    "duration": "時間",
     "empty": {
       "default": {
         "title": "データがありません"
@@ -193,6 +199,98 @@
     "instant": {
       "title": "即座撮影リクエスト",
       "placeholder": "即座撮影機能は後のフェーズで実装予定です。"
+    }
+  },
+  "instant": {
+    "dashboard": {
+      "common": {
+        "guestSuffix": "さん",
+        "minutes": "分",
+        "people": "名"
+      },
+      "onlineStatus": {
+        "title": "即座撮影対応状態",
+        "label": "即座撮影リクエストを受け付ける",
+        "description": "オンラインにすると近くのゲストからリクエストが届きます",
+        "locationRequired": "即座撮影リクエストを受け付けるには位置情報が必要です。ブラウザで位置情報を許可してください。"
+      },
+      "location": {
+        "title": "位置情報",
+        "loading": "取得中...",
+        "failed": "取得失敗",
+        "acquired": "取得済み",
+        "notAcquired": "未取得",
+        "hasLocation": "位置情報あり"
+      },
+      "requests": {
+        "title": "即座撮影リクエスト",
+        "loading": "リクエストを読み込み中...",
+        "empty": "現在リクエストはありません",
+        "emptyHint": "オンライン状態にして新しいリクエストを受け取りましょう"
+      },
+      "status": {
+        "pending": "受付中",
+        "waitingApproval": "承認待ち",
+        "matched": "マッチ済み",
+        "inProgress": "撮影中",
+        "completed": "撮影完了",
+        "cancelled": "キャンセル",
+        "expired": "期限切れ"
+      },
+      "urgency": {
+        "now": "今すぐ",
+        "within30min": "30分以内",
+        "within1hour": "1時間以内",
+        "normal": "通常"
+      },
+      "requestType": {
+        "portrait": "ポートレート",
+        "couple": "カップル",
+        "family": "ファミリー",
+        "group": "グループ",
+        "landscape": "風景",
+        "pet": "ペット"
+      },
+      "actions": {
+        "accept": "受諾する",
+        "decline": "辞退する",
+        "startShooting": "撮影開始",
+        "completeShooting": "撮影完了",
+        "deliverPhotos": "写真配信",
+        "redelivery": "再配信（上書き）",
+        "waitingGuestApproval": "ゲストの承認をお待ちください"
+      },
+      "remainingTime": "残り {time}",
+      "expired": "期限切れ",
+      "specialRequests": {
+        "title": "特別なリクエスト"
+      },
+      "contact": {
+        "title": "連絡先",
+        "hidden": "連絡先は受注後に表示されます"
+      },
+      "completed": {
+        "title": "撮影完了",
+        "message": "写真を配信して収益を受け取りましょう"
+      },
+      "delivered": {
+        "title": "写真配信済み",
+        "message": "配信完了しました。ゲストの受取確認をお待ちください"
+      },
+      "confirmDialog": {
+        "title": "リクエスト詳細確認",
+        "description": "撮影場所と詳細を確認してから受諾してください",
+        "mapLoading": "地図を読み込み中...",
+        "confirm": "受諾する",
+        "cancel": "キャンセル"
+      },
+      "errors": {
+        "fetchFailed": "リクエストの取得に失敗しました",
+        "updateFailed": "ステータスの更新に失敗しました",
+        "responseFailed": "応答の送信に失敗しました",
+        "bookingFetchFailed": "予約情報の取得に失敗しました",
+        "unexpected": "予期しないエラーが発生しました"
+      }
     }
   },
   "photobooks": {

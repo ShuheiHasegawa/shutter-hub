@@ -51,7 +51,7 @@ import Image from 'next/image';
 import { getLotterySession } from '@/app/actions/photo-session-lottery';
 import { getPhotoSessionStudioAction } from '@/app/actions/photo-session-studio';
 import { BookingCheckInStatus } from '@/components/bookings/BookingCheckInStatus';
-import { ImageLightbox } from '@/components/ui/image-lightbox';
+import { ImageDialog } from '@/components/ui/image-dialog';
 import { StatItem } from '@/components/ui/stat-item';
 import { PageTitleHeaderScrollAware } from '@/components/ui/page-title-header-scroll-aware';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -771,13 +771,15 @@ export function PhotoSessionDetail({
 
       {/* タブ構造 */}
       <Tabs defaultValue="overview" className="print:hidden">
-        <TabsList>
+        <TabsList className="sticky top-[60px] z-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
           <TabsTrigger value="overview">{tTabs('overview')}</TabsTrigger>
           <TabsTrigger value="slots">{tTabs('slots')}</TabsTrigger>
           {user && (isOrganizer || isParticipant) && (
             <TabsTrigger value="community">{tTabs('community')}</TabsTrigger>
           )}
-          <TabsTrigger value="reviews">{tTabs('reviews')}</TabsTrigger>
+          {user && (
+            <TabsTrigger value="reviews">{tTabs('reviews')}</TabsTrigger>
+          )}
         </TabsList>
 
         {/* 概要タブ */}
@@ -1525,38 +1527,40 @@ export function PhotoSessionDetail({
         )}
 
         {/* レビュータブ */}
-        <TabsContent value="reviews" className="mt-6">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Star className="h-5 w-5" />
-                  レビュー
-                </CardTitle>
-                {canReview && userBooking && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      router.push(
-                        `/${locale}/photo-sessions/${session.id}/reviews`
-                      );
-                    }}
-                  >
-                    <Star className="h-4 w-4" />
-                    {hasExistingReview ? 'レビュー修正' : 'レビューを書く'}
-                  </Button>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent>
-              <ReviewList
-                photoSessionId={session.id}
-                showAddReviewButton={false}
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
+        {user && (
+          <TabsContent value="reviews" className="mt-6">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Star className="h-5 w-5" />
+                    レビュー
+                  </CardTitle>
+                  {canReview && userBooking && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        router.push(
+                          `/${locale}/photo-sessions/${session.id}/reviews`
+                        );
+                      }}
+                    >
+                      <Star className="h-4 w-4" />
+                      {hasExistingReview ? 'レビュー修正' : 'レビューを書く'}
+                    </Button>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent>
+                <ReviewList
+                  photoSessionId={session.id}
+                  showAddReviewButton={false}
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
+        )}
       </Tabs>
 
       {/* 固定フッターアクションバー */}
@@ -1570,12 +1574,15 @@ export function PhotoSessionDetail({
       )}
 
       {/* 画像ライトボックス */}
-      <ImageLightbox
-        imageUrl={lightboxImage}
-        isOpen={lightboxOpen}
-        onClose={() => setLightboxOpen(false)}
-        alt="撮影会画像"
-      />
+      {lightboxImage && (
+        <ImageDialog
+          images={lightboxImage}
+          open={lightboxOpen}
+          onOpenChange={() => setLightboxOpen(false)}
+          alt="撮影会画像"
+          size="large"
+        />
+      )}
     </div>
   );
 }

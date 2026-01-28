@@ -521,7 +521,7 @@ export function SlotBookingFlow({
 
     return (
       <div className="flex justify-center py-6">
-        <div className="inline-flex items-center gap-3 surface-neutral-0 backdrop-blur-sm rounded-full px-6 py-3 border">
+        <div className="inline-flex items-center gap-3 surface-neutral backdrop-blur-sm rounded-full px-6 py-3 border">
           {visibleSteps.map((step, index) => {
             const isActive = index === currentStepIndex;
             const isPast = index < currentStepIndex;
@@ -655,7 +655,7 @@ export function SlotBookingFlow({
         </div>
 
         {/* 撮影会情報カード */}
-        <div className="surface-neutral-0 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border">
+        <div className="surface-neutral backdrop-blur-sm rounded-2xl p-4 sm:p-6 border">
           <div className="flex items-center gap-3 sm:gap-4">
             <div className="w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center surface-primary rounded-xl flex-shrink-0">
               <Camera className="h-6 w-6 sm:h-8 sm:w-8" />
@@ -730,6 +730,7 @@ export function SlotBookingFlow({
                       key={slot.id}
                       value={slot.id}
                       disabled={isDisabled}
+                      rounded="2xl"
                     >
                       <SlotCardContent
                         slot={slot}
@@ -778,6 +779,7 @@ export function SlotBookingFlow({
                       key={slot.id}
                       value={slot.id}
                       disabled={isDisabled}
+                      rounded="2xl"
                     >
                       <SlotCardContent
                         slot={slot}
@@ -925,7 +927,7 @@ export function SlotBookingFlow({
                   .map(slot => (
                     <div
                       key={slot.id}
-                      className="surface-primary-0 p-4 rounded-xl border border-theme-primary/20"
+                      className="surface-primary p-4 rounded-xl border border-theme-primary/20"
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
@@ -970,7 +972,7 @@ export function SlotBookingFlow({
           {/* 単一選択の場合 */}
           {!allowMultiple && selectedSlot && (
             <InfoCard title="選択した時間枠" icon={Clock} variant="secondary">
-              <div className="surface-primary-0 p-4 rounded-xl border border-theme-primary/20">
+              <div className="surface-primary p-4 rounded-xl border border-theme-primary/20">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 flex items-center justify-center surface-accent rounded-lg">
@@ -1388,7 +1390,7 @@ function SessionInfoDisplay({
 
   return (
     <div className="space-y-4">
-      <Card className="surface-neutral-1">
+      <Card className="surface-neutral">
         <CardContent className="pt-6 space-y-4">
           <div>
             <div className="font-medium text-theme-text-primary">撮影会</div>

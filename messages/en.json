@@ -25,6 +25,12 @@
     "apply": "Apply",
     "scrollToTop": "Scroll to top",
     "priceInputPlaceholder": "Enter price",
+    "guestSuffix": "",
+    "minutes": "min",
+    "people": "people",
+    "guest": "Guest",
+    "budget": "Budget",
+    "duration": "Duration",
     "empty": {
       "default": {
         "title": "No data available"
@@ -198,6 +204,93 @@
     "instant": {
       "title": "Instant Photo Request",
       "placeholder": "Instant photo functionality will be implemented in a later phase."
+    }
+  },
+  "instant": {
+    "dashboard": {
+      "onlineStatus": {
+        "title": "Instant Photo Availability",
+        "label": "Accept instant photo requests",
+        "description": "When online, you'll receive requests from nearby guests",
+        "locationRequired": "Location information is required to accept instant photo requests. Please allow location access in your browser."
+      },
+      "location": {
+        "title": "Location",
+        "loading": "Acquiring...",
+        "failed": "Failed to acquire",
+        "acquired": "Acquired",
+        "notAcquired": "Not acquired",
+        "hasLocation": "Location available"
+      },
+      "requests": {
+        "title": "Instant Photo Requests",
+        "loading": "Loading requests...",
+        "empty": "No requests at the moment",
+        "emptyHint": "Go online to receive new requests"
+      },
+      "status": {
+        "pending": "Pending",
+        "waitingApproval": "Waiting for approval",
+        "matched": "Matched",
+        "inProgress": "In progress",
+        "completed": "Completed",
+        "cancelled": "Cancelled",
+        "expired": "Expired"
+      },
+      "urgency": {
+        "now": "Right now",
+        "within30min": "Within 30 minutes",
+        "within1hour": "Within 1 hour",
+        "normal": "Normal"
+      },
+      "requestType": {
+        "portrait": "Portrait",
+        "couple": "Couple",
+        "family": "Family",
+        "group": "Group",
+        "landscape": "Landscape",
+        "pet": "Pet"
+      },
+      "actions": {
+        "accept": "Accept",
+        "decline": "Decline",
+        "startShooting": "Start shooting",
+        "completeShooting": "Complete shooting",
+        "deliverPhotos": "Deliver photos",
+        "redelivery": "Redeliver (overwrite)",
+        "waitingGuestApproval": "Waiting for guest approval"
+      },
+      "remainingTime": "Remaining {time}",
+      "expired": "Expired",
+      "specialRequests": {
+        "title": "Special requests"
+      },
+      "contact": {
+        "title": "Contact",
+        "hidden": "Contact information will be displayed after acceptance"
+      },
+      "completed": {
+        "title": "Shooting completed",
+        "message": "Deliver photos and receive payment"
+      },
+      "delivered": {
+        "title": "Photos delivered",
+        "message": "Delivery completed. Waiting for guest confirmation"
+      },
+      "confirmDialog": {
+        "title": "Request Details Confirmation",
+        "description": "Please confirm the shooting location and details before accepting",
+        "mapLoading": "Loading map...",
+        "confirm": "Accept",
+        "cancel": "Cancel"
+      },
+      "errors": {
+        "fetchFailed": "Failed to fetch requests",
+        "updateFailed": "Failed to update status",
+        "responseFailed": "Failed to send response",
+        "bookingFetchFailed": "Failed to fetch booking information",
+        "unexpected": "An unexpected error occurred"
+      }
     }
   },
   "photobooks": {
