@@ -124,23 +124,25 @@ export default function StudiosPage() {
   };
 
   return (
-    <AuthenticatedLayout>
+    <AuthenticatedLayout allowPublic>
       <PageTitleHeader
         title={t('title')}
         icon={<BuildingIcon className="h-6 w-6" />}
         actions={
-          <Link href="/studios/create">
-            <Button
-              data-testid="studio-create-button"
-              className="flex items-center gap-2 whitespace-nowrap"
-              variant="cta"
-              title={t('addNew')}
-            >
-              <PlusIcon className="w-4 h-4" />
-              <span className="hidden md:inline ml-1">{t('addNew')}</span>
-              <span className="sr-only md:hidden">{t('addNew')}</span>
-            </Button>
-          </Link>
+          profile && (
+            <Link href="/studios/create">
+              <Button
+                data-testid="studio-create-button"
+                className="flex items-center gap-2 whitespace-nowrap"
+                variant="cta"
+                title={t('addNew')}
+              >
+                <PlusIcon className="w-4 h-4" />
+                <span className="hidden md:inline ml-1">{t('addNew')}</span>
+                <span className="sr-only md:hidden">{t('addNew')}</span>
+              </Button>
+            </Link>
+          )
         }
       />
       <div className="flex flex-col flex-1 min-h-0">
