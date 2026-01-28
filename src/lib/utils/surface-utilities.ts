@@ -86,7 +86,7 @@ export function getInteractiveSurface(
   isDisabled?: boolean
 ): string {
   if (isDisabled) {
-    return 'surface-neutral-0';
+    return 'surface-neutral';
   }
 
   if (isActive) {
