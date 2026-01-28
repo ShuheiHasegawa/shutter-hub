@@ -90,105 +90,125 @@ const SelectableWrapperGroup = React.forwardRef<
 });
 SelectableWrapperGroup.displayName = 'SelectableWrapperGroup';
 
+// 角丸クラスのマッピング
+const roundedClasses = {
+  none: 'rounded-none',
+  sm: 'rounded-sm',
+  md: 'rounded-md',
+  lg: 'rounded-lg',
+  xl: 'rounded-xl',
+  '2xl': 'rounded-2xl',
+  '3xl': 'rounded-3xl',
+  full: 'rounded-full',
+} as const;
+
 interface SelectableWrapperItemProps {
   value: string;
   className?: string;
   disabled?: boolean;
   children: React.ReactNode;
+  rounded?: 'none' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | 'full';
 }
 
 const SelectableWrapperItem = React.forwardRef<
   HTMLDivElement,
   SelectableWrapperItemProps
->(({ value, className, disabled = false, children, ...props }, ref) => {
-  // 単一選択用のContextを試す
-  const singleContext = React.useContext(SelectableWrapperSingleContext);
-  // 複数選択用のContextを試す
-  const multipleContext = React.useContext(SelectableWrapperMultipleContext);
+>(
+  (
+    { value, className, disabled = false, rounded = 'lg', children, ...props },
+    ref
+  ) => {
+    // 単一選択用のContextを試す
+    const singleContext = React.useContext(SelectableWrapperSingleContext);
+    // 複数選択用のContextを試す
+    const multipleContext = React.useContext(SelectableWrapperMultipleContext);
 
-  if (!singleContext && !multipleContext) {
-    throw new Error(
-      'SelectableWrapperItem must be used within SelectableWrapperGroup'
-    );
-  }
+    if (!singleContext && !multipleContext) {
+      throw new Error(
+        'SelectableWrapperItem must be used within SelectableWrapperGroup'
+      );
+    }
 
-  const isSingleMode = !!singleContext;
-  const isSelected = isSingleMode
-    ? singleContext!.value === value
-    : multipleContext!.values.includes(value);
+    const isSingleMode = !!singleContext;
+    const isSelected = isSingleMode
+      ? singleContext!.value === value
+      : multipleContext!.values.includes(value);
 
-  const id = `selectable-wrapper-${value}`;
+    const id = `selectable-wrapper-${value}`;
 
-  const handleMultipleChange = (checked: boolean) => {
-    if (disabled) return;
-    const currentValues = multipleContext!.values;
-    const newValues = checked
-      ? [...currentValues, value]
-      : currentValues.filter(v => v !== value);
-    multipleContext!.onValuesChange(newValues);
-  };
+    const handleMultipleChange = (checked: boolean) => {
+      if (disabled) return;
+      const currentValues = multipleContext!.values;
+      const newValues = checked
+        ? [...currentValues, value]
+        : currentValues.filter(v => v !== value);
+      multipleContext!.onValuesChange(newValues);
+    };
 
-  return (
-    <div ref={ref} className={cn('relative', className)} {...props}>
-      {/* 単一選択モード: RadioGroupItem */}
-      {isSingleMode && (
-        <RadioGroupItem
-          value={value}
-          id={id}
-          className="sr-only"
-          disabled={disabled}
-        />
-      )}
-
-      {/* 複数選択モード: Checkbox */}
-      {!isSingleMode && (
-        <Checkbox
-          id={id}
-          checked={isSelected}
-          disabled={disabled}
-          className="sr-only"
-          onCheckedChange={handleMultipleChange}
-        />
-      )}
-
-      <Label
-        htmlFor={id}
-        className={cn(
-          'block transition-all duration-200 group cursor-pointer',
-          disabled && 'opacity-50 cursor-not-allowed'
+    return (
+      <div ref={ref} className={cn('relative', className)} {...props}>
+        {/* 単一選択モード: RadioGroupItem */}
+        {isSingleMode && (
+          <RadioGroupItem
+            value={value}
+            id={id}
+            className="sr-only"
+            disabled={disabled}
+          />
         )}
-      >
-        <div
+
+        {/* 複数選択モード: Checkbox */}
+        {!isSingleMode && (
+          <Checkbox
+            id={id}
+            checked={isSelected}
+            disabled={disabled}
+            className="sr-only"
+            onCheckedChange={handleMultipleChange}
+          />
+        )}
+
+        <Label
+          htmlFor={id}
           className={cn(
-            'relative transition-all duration-200 active:scale-[0.98]',
-            isSelected
-              ? 'ring-2 ring-primary shadow-md'
-              : 'group-hover:ring-2 group-hover:ring-muted-foreground'
+            'block transition-all duration-200 group cursor-pointer',
+            disabled && 'opacity-50 cursor-not-allowed'
           )}
         >
-          {/* 選択オーバーレイ */}
           <div
             className={cn(
-              'absolute inset-0 rounded-lg transition-all duration-300 z-10 pointer-events-none',
+              'relative transition-all duration-200 active:scale-[0.98]',
+              roundedClasses[rounded],
               isSelected
-                ? 'bg-primary/20 backdrop-blur-[1px]'
-                : 'bg-transparent'
+                ? 'ring-2 ring-primary shadow-md'
+                : 'group-hover:ring-2 group-hover:ring-muted-foreground'
             )}
           >
-            {isSelected && (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <CheckCircle2 className="h-16 w-16 text-primary animate-in zoom-in-50 duration-300" />
-              </div>
-            )}
-          </div>
+            {/* 選択オーバーレイ */}
+            <div
+              className={cn(
+                'absolute inset-0 transition-all duration-300 z-10 pointer-events-none',
+                roundedClasses[rounded],
+                isSelected
+                  ? 'bg-primary/20 backdrop-blur-[1px]'
+                  : 'bg-transparent'
+              )}
+            >
+              {isSelected && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <CheckCircle2 className="h-16 w-16 text-primary animate-in zoom-in-50 duration-300" />
+                </div>
+              )}
+            </div>
 
-          {/* 子コンテンツ */}
-          <div className="relative z-0">{children}</div>
-        </div>
-      </Label>
-    </div>
-  );
-});
+            {/* 子コンテンツ */}
+            <div className="relative z-0">{children}</div>
+          </div>
+        </Label>
+      </div>
+    );
+  }
+);
 SelectableWrapperItem.displayName = 'SelectableWrapperItem';
 
 export { SelectableWrapperGroup, SelectableWrapperItem };

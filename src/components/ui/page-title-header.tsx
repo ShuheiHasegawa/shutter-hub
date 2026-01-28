@@ -46,10 +46,10 @@ export function PageTitleHeader({
   className,
 }: PageTitleHeaderProps) {
   return (
-    <div className={cn('flex items-center h-[52px] py-2', className)}>
+    <div className={cn('flex items-center h-[52px] pt-2', className)}>
       <div className="flex items-center justify-between w-full gap-2">
-        {/* 左側: 戻るボタン */}
-        <div className="flex-shrink-0">
+        {/* 左側: 戻るボタン（固定幅） */}
+        <div className="flex-shrink-0 w-10">
           {backButton && <BackButton {...backButton} />}
         </div>
 
@@ -66,8 +66,8 @@ export function PageTitleHeader({
           )}
         </div>
 
-        {/* 右側: アクションボタン */}
-        <div className="flex-shrink-0">
+        {/* 右側: アクションボタン（固定幅、プレースホルダー） */}
+        <div className="flex-shrink-0 w-10">
           {actions && <div className="flex items-center gap-2">{actions}</div>}
         </div>
       </div>
