@@ -14,6 +14,7 @@ interface PullToRefreshContextType {
   isRefreshing: boolean;
   pullProgress: number;
   triggerRefresh: () => Promise<void>;
+  setDisabled: (disabled: boolean) => void;
 }
 
 const PullToRefreshContext = createContext<PullToRefreshContextType | null>(
@@ -32,6 +33,7 @@ export function PullToRefreshProvider({
   const pathname = usePathname();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
+  const [isDisabledByHook, setIsDisabledByHook] = useState(false);
   const touchStartY = useRef(0);
   const touchStartScrollTop = useRef(0);
   const isPulling = useRef(false);
@@ -45,6 +47,9 @@ export function PullToRefreshProvider({
     pathname?.startsWith('/en/instant') ||
     pathname === '/' ||
     pathname?.match(/^\/(ja|en)\/?$/);
+
+  // フックによる無効化も考慮
+  const isDisabled = isPublicPage || isDisabledByHook;
 
   const triggerRefresh = useCallback(async () => {
     if (isRefreshing) return;
@@ -100,8 +105,8 @@ export function PullToRefreshProvider({
 
   const handleTouchStart = useCallback(
     (e: TouchEvent) => {
-      // publicページではPull-to-Refreshを無効化
-      if (isPublicPage) return;
+      // 無効化されている場合はPull-to-Refreshを無効化
+      if (isDisabled) return;
 
       // リフレッシュ中は無視
       if (isRefreshing) return;
@@ -119,13 +124,13 @@ export function PullToRefreshProvider({
         isPulling.current = false;
       }
     },
-    [isRefreshing, getScrollTop, isAtTop, isAtBottom, isPublicPage]
+    [isRefreshing, getScrollTop, isAtTop, isAtBottom, isDisabled]
   );
 
   const handleTouchMove = useCallback(
     (e: TouchEvent) => {
-      // publicページではPull-to-Refreshを無効化
-      if (isPublicPage) return;
+      // 無効化されている場合はPull-to-Refreshを無効化
+      if (isDisabled) return;
 
       if (!isPulling.current || isRefreshing) return;
 
@@ -156,12 +161,12 @@ export function PullToRefreshProvider({
         setPullDistance(0);
       }
     },
-    [isRefreshing, getScrollTop, isAtBottom, isPublicPage]
+    [isRefreshing, getScrollTop, isAtBottom, isDisabled]
   );
 
   const handleTouchEnd = useCallback(() => {
-    // publicページではPull-to-Refreshを無効化
-    if (isPublicPage) return;
+    // 無効化されている場合はPull-to-Refreshを無効化
+    if (isDisabled) return;
 
     if (!isPulling.current) return;
     isPulling.current = false;
@@ -171,11 +176,11 @@ export function PullToRefreshProvider({
     } else {
       setPullDistance(0);
     }
-  }, [pullDistance, isRefreshing, triggerRefresh, isPublicPage]);
+  }, [pullDistance, isRefreshing, triggerRefresh, isDisabled]);
 
   useEffect(() => {
-    // publicページではイベントリスナーを登録しない
-    if (isPublicPage) return;
+    // 無効化されている場合はイベントリスナーを登録しない
+    if (isDisabled) return;
 
     const options: AddEventListenerOptions = { passive: false };
 
@@ -188,17 +193,22 @@ export function PullToRefreshProvider({
       window.removeEventListener('touchmove', handleTouchMove);
       window.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [handleTouchStart, handleTouchMove, handleTouchEnd, isPublicPage]);
+  }, [handleTouchStart, handleTouchMove, handleTouchEnd, isDisabled]);
 
   const pullProgress = Math.min(pullDistance / PULL_THRESHOLD, 1);
 
   return (
     <PullToRefreshContext.Provider
-      value={{ isRefreshing, pullProgress, triggerRefresh }}
+      value={{
+        isRefreshing,
+        pullProgress,
+        triggerRefresh,
+        setDisabled: setIsDisabledByHook,
+      }}
     >
       <div ref={containerRef} className="relative min-h-screen">
-        {/* プルインジケーター（publicページでは非表示） */}
-        {!isPublicPage && (
+        {/* プルインジケーター（無効化されている場合は非表示） */}
+        {!isDisabled && (
           <div
             className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center pointer-events-none transition-transform duration-200 ease-out"
             style={{
@@ -247,7 +257,7 @@ export function PullToRefreshProvider({
           className="transition-transform duration-200 ease-out"
           style={{
             transform:
-              !isPublicPage && pullDistance > 0
+              !isDisabled && pullDistance > 0
                 ? `translateY(${pullDistance}px)`
                 : undefined,
           }}
@@ -267,4 +277,21 @@ export function usePullToRefresh() {
     );
   }
   return context;
+}
+
+/**
+ * Pull-to-Refreshを無効化するフック
+ * ページコンポーネント内で呼び出すとそのページではPull-to-Refreshが無効になる
+ */
+export function usePullToRefreshDisabled() {
+  const context = useContext(PullToRefreshContext);
+
+  useEffect(() => {
+    if (!context) return;
+
+    context.setDisabled(true);
+    return () => {
+      context.setDisabled(false);
+    };
+  }, [context]);
 }
